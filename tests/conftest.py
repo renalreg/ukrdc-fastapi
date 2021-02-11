@@ -1,0 +1,297 @@
+from fastapi.testclient import TestClient
+from ukrdc_fastapi.main import app
+from ukrdc_fastapi.dependencies import get_ukrdc3, get_jtrace
+from ukrdc_fastapi.models.ukrdc import (
+    Base as UKRDC3Base,
+    Address,
+    Diagnosis,
+    Document,
+    LabOrder,
+    Medication,
+    Name,
+    Observation,
+    Patient,
+    PatientNumber,
+    PatientRecord,
+    RenalDiagnosis,
+    ResultItem,
+)
+from ukrdc_fastapi.models.empi import Base as JtraceBase
+from ukrdc_fastapi.models.pkb import PKBLink
+
+from datetime import datetime
+
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine
+import pytest
+
+ukrdc3_engine = create_engine(
+    "sqlite:///./ukrdc3_test.sqlite", connect_args={"check_same_thread": False}
+)
+Ukrdc3TestSession = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=ukrdc3_engine,
+)
+
+jtrace_engine = create_engine(
+    "sqlite:///./jtrace_test.sqlite", connect_args={"check_same_thread": False}
+)
+JtraceTestSession = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=jtrace_engine,
+)
+
+
+def populate_ukrdc3_session(session):
+    pid: str = "PYTEST01:PV:00000000A"
+
+    patient_record = PatientRecord(
+        pid=pid,
+        sendingfacility="PATIENT_RECORD_SENDING_FACILITY_1",
+        sendingextract="PV",
+        localpatientid="00000000A",
+        ukrdcid="000000000",
+        lastupdated=datetime(2020, 3, 16),
+        repository_creation_date=datetime(2020, 3, 16),
+    )
+    patient_record.update_date = datetime(2021, 1, 21)
+    patient_record.repository_update_date = datetime(2021, 1, 21)
+    session.add(patient_record)
+
+    name = Name(id=1, pid=pid, family="Star", given="Patrick", nameuse="L")
+    address = Address(
+        id="ADDRESS1",
+        pid=pid,
+        street="120 Conch Street",
+        town="Bikini Bottom",
+        county="Bikini County",
+        postcode="XX0 1AA",
+        country_description="Pacific Ocean",
+    )
+    patient = Patient(pid=pid, birthtime=datetime(1984, 3, 17), gender="1")
+    patient_number = PatientNumber(
+        id=1, pid=pid, number="999999999", organization="NHS", numbertype="NI"
+    )
+    session.add(name)
+    session.add(address)
+    session.add(patient)
+    session.add(patient_number)
+
+    diagnosis_1 = Diagnosis(
+        id="DIAGNOSIS1",
+        pid=pid,
+        diagnosis_code="DIAGNOSIS_CODE",
+        diagnosis_code_std="DIAGNOSIS_CODE_STD",
+        diagnosis_desc="DIAGNOSIS_DESCRIPTION",
+        identification_time=datetime(2020, 3, 16),
+        onset_time=datetime(2019, 3, 16),
+        comments="DIAGNOSIS_COMMENTS",
+    )
+    pkb_link_1 = PKBLink(
+        coding_standard="DIAGNOSIS",
+        code="DIAGNOSIS_CODE",
+        link="http://pkb_link.1",
+        link_name="PKB_LINK_1",
+    )
+    diagnosis_2 = Diagnosis(
+        id="DIAGNOSIS2",
+        pid=pid,
+        diagnosis_code="DIAGNOSIS_CODE_2",
+        diagnosis_code_std="DIAGNOSIS_CODE_STD_2",
+        identification_time=datetime(2020, 3, 16),
+        onset_time=datetime(2019, 3, 16),
+        comments="DIAGNOSIS_COMMENTS_2",
+    )
+    pkb_link_2 = PKBLink(
+        coding_standard="DIAGNOSIS",
+        code="DIAGNOSIS_CODE_2",
+        link="http://pkb_link.2",
+        link_name="PKB_LINK_2",
+    )
+    session.add(diagnosis_1)
+    session.add(pkb_link_1)
+    session.add(diagnosis_2)
+    session.add(pkb_link_2)
+
+    renal_diagnosis_1 = RenalDiagnosis(
+        pid=pid,
+        diagnosis_code="R_DIAGNOSIS_CODE",
+        diagnosis_code_std="R_DIAGNOSIS_CODE_STD",
+        diagnosis_desc="R_DIAGNOSIS_DESCRIPTION",
+        identification_time=datetime(2020, 3, 16),
+        comments="R_DIAGNOSIS_COMMENTS",
+    )
+    renal_pkb_link_2 = PKBLink(
+        coding_standard="TREATMENT",
+        code="R_DIAGNOSIS_CODE",
+        link="http://renal_pkb_link.2",
+        link_name="RENAL_PKB_LINK_2",
+    )
+    session.add(renal_diagnosis_1)
+    session.add(renal_pkb_link_2)
+
+    medication_1 = Medication(
+        id="MEDICATION1",
+        pid=pid,
+        frequency="FREQUENCY",
+        from_time=datetime(2019, 3, 16),
+        to_time=None,
+        drug_product_generic="DRUG_PRODUCT_GENERIC",
+        dose_quantity="DOSE_QUANTITY",
+        dose_uom_code="DOSE_UOM_CODE",
+        dose_uom_description="DOSE_UOM_DESCRIPTION",
+        dose_uom_code_std="DOSE_UOM_CODE_STD",
+    )
+    medication_2 = Medication(
+        id="MEDICATION2",
+        pid=pid,
+        frequency="FREQUENCY_2",
+        from_time=datetime(2019, 3, 16),
+        to_time=datetime(9999, 3, 16),
+        drug_product_generic="DRUG_PRODUCT_GENERIC_2",
+        dose_quantity="DOSE_QUANTITY_2",
+        dose_uom_code="DOSE_UOM_CODE_2",
+        dose_uom_description="DOSE_UOM_DESCRIPTION_2",
+        dose_uom_code_std="DOSE_UOM_CODE_STD_2",
+    )
+    session.add(medication_1)
+    session.add(medication_2)
+
+    laborder = LabOrder(
+        id="LABORDER1",
+        pid=pid,
+        external_id="EXTERNAL_ID",
+        order_category="ORDER_CATEGORY",
+        specimen_collected_time=datetime(2020, 3, 16),
+    )
+    resultitem = ResultItem(
+        id="RESULTITEM1",
+        order_id="LABORDER1",
+        service_id_std="SERVICE_ID_STD",
+        service_id="SERVICE_ID",
+        service_id_description="SERVICE_ID_DESCRIPTION",
+        value="VALUE",
+        value_units="VALUE_UNITS",
+        observation_time=datetime(2020, 3, 16),
+    )
+    session.add(laborder)
+    session.add(resultitem)
+
+    observation = Observation(
+        id="OBSERVATION1",
+        pid=pid,
+        observation_code_std="OBSERVATION_CODE_STD",
+        observation_code="OBSERVATION_CODE",
+        observation_desc="OBSERVATION_DESC",
+        observation_value="OBSERVATION_VALUE",
+        observation_units="OBSERVATION_UNITS",
+        observation_time=datetime(2020, 3, 16),
+    )
+    session.add(observation)
+
+    observation_dia = Observation(
+        id="OBSERVATION_DIA_1",
+        pid=pid,
+        observation_code_std="PV",
+        observation_code="bpdia",
+        observation_desc="OBSERVATION_DIA_1_DESC",
+        observation_value="OBSERVATION_DIA_1_VALUE",
+        observation_units="OBSERVATION_DIA_1_UNITS",
+        observation_time=datetime(2020, 3, 16, 11, 30, 00),
+    )
+    observation_sys = Observation(
+        id="OBSERVATION_SYS_1",
+        pid=pid,
+        observation_code_std="PV",
+        observation_code="bpsys",
+        observation_desc="OBSERVATION_SYS_1_DESC",
+        observation_value="OBSERVATION_SYS_1_VALUE",
+        observation_units="OBSERVATION_SYS_1_UNITS",
+        observation_time=datetime(2020, 3, 16, 11, 35, 00),
+    )
+    session.add(observation_dia)
+    session.add(observation_sys)
+
+    document_pdf = Document(
+        id="DOCUMENT_PDF", pid=pid, documenttime=datetime(2020, 3, 16)
+    )
+    document_pdf.stream = (
+        b"%PDF-1.0\n\n"
+        + b"1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj 2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj 3 0 obj<</Type/Page/+ MediaBox[0 0 3 3]>>endobj\n"
+        + b"xref\n"
+        + b"0 4\n"
+        + b"0000000000 65535 f\n"
+        + b"0000000010 00000 n\n"
+        + b"0000000053 00000 n\n"
+        + b"0000000102 00000 n\n"
+        + b"trailer<</Size 4/Root 1 0 R>>\n"
+        + b"startxref\n"
+        + b"149\n"
+        + b"%%EOF"
+    )
+    document_pdf.filetype = "application/pdf"
+    document_txt = Document(
+        id="DOCUMENT_TXT",
+        pid=pid,
+        documenttime=datetime(2020, 3, 16),
+        notetext="DOCUMENT_TXT_NOTETEXT",
+    )
+    session.add(document_pdf)
+    session.add(document_txt)
+
+    session.commit()
+
+
+def override_get_ukrdc3():
+    print("Creating test session for UKRDC3")
+    db = Ukrdc3TestSession()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+def override_get_jtrace():
+    print("Creating test session for JTRACE")
+    db = JtraceTestSession()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+app.dependency_overrides[get_ukrdc3] = override_get_ukrdc3
+app.dependency_overrides[get_jtrace] = override_get_jtrace
+
+
+@pytest.fixture(scope="session", autouse=True)
+def create_test_database():
+    """
+    Create a clean database on every test case.
+
+    We use the `sqlalchemy_utils` package here for a few helpers in consistently
+    creating and dropping the database.
+    """
+    # Create tables
+    print("Emptying old tables...")
+    UKRDC3Base.metadata.drop_all(bind=ukrdc3_engine)
+    JtraceBase.metadata.drop_all(bind=jtrace_engine)
+    print("Creating new tables...")
+    UKRDC3Base.metadata.create_all(bind=ukrdc3_engine)
+    JtraceBase.metadata.create_all(bind=jtrace_engine)
+    # Populate with test data
+    populate_ukrdc3_session(Ukrdc3TestSession())
+    print("Running tests")
+    yield  # Run tests
+    # Drop tables
+    print("Closing session. Dropping tables")
+    UKRDC3Base.metadata.drop_all(bind=ukrdc3_engine)
+    JtraceBase.metadata.drop_all(bind=jtrace_engine)
+    print("Done")
+
+
+@pytest.fixture(scope="function")
+def client():
+    return TestClient(app)
