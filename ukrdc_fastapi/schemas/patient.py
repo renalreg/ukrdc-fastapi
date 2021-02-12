@@ -1,21 +1,21 @@
 import datetime
 from typing import List, Optional
 
-from .base import ORMModel
+from .base import OrmModel
 
 
-class NameSchema(ORMModel):
+class NameSchema(OrmModel):
     given: str
     family: str
 
 
-class NumberSchema(ORMModel):
+class NumberSchema(OrmModel):
     patientid: str
     organization: str
     numbertype: str
 
 
-class AddressSchema(ORMModel):
+class AddressSchema(OrmModel):
     from_time: Optional[datetime.datetime]
     to_time: Optional[datetime.datetime]
     street: str
@@ -25,7 +25,7 @@ class AddressSchema(ORMModel):
     country_description: str
 
 
-class PatientSchema(ORMModel):
+class PatientSchema(OrmModel):
     names: List[NameSchema]
     numbers: List[NumberSchema]
     addresses: List[AddressSchema]

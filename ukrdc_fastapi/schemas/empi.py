@@ -1,10 +1,10 @@
 import datetime
 from typing import List
 
-from .base import ORMModel
+from .base import OrmModel
 
 
-class MasterRecordSchema(ORMModel):
+class MasterRecordSchema(OrmModel):
     id: int
     last_updated: datetime.datetime
     date_of_birth: datetime.date
@@ -20,7 +20,7 @@ class MasterRecordSchema(ORMModel):
     work_items: "List[WorkItemSchema]"
 
 
-class PidXRefSchema(ORMModel):
+class PidXRefSchema(OrmModel):
     id: int
     pid: str
     sending_facility: str
@@ -28,7 +28,7 @@ class PidXRefSchema(ORMModel):
     localid: str
 
 
-class PersonSchema(ORMModel):
+class PersonSchema(OrmModel):
     id: int
     originator: str
     localid: str
@@ -41,13 +41,13 @@ class PersonSchema(ORMModel):
     xref_entries: List[PidXRefSchema]
 
 
-class LinkRecordSchema(ORMModel):
+class LinkRecordSchema(OrmModel):
     id: int
     person: PersonSchema
     master_record: MasterRecordSchema
 
 
-class WorkItemSchema(ORMModel):
+class WorkItemSchema(OrmModel):
     id: int
     person_id: int
     master_id: int

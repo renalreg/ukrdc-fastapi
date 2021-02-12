@@ -17,8 +17,7 @@ from sqlalchemy.orm import relationship
 metadata = MetaData()
 Base = declarative_base(metadata=metadata)
 
-# GLOBAL_LAZY = "dynamic"
-GLOBAL_LAZY = False
+GLOBAL_LAZY = "dynamic"
 
 
 class PatientRecord(Base):

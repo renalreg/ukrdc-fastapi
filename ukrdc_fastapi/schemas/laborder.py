@@ -1,17 +1,17 @@
 import datetime
 from typing import List
 
-from .base import ORMModel
+from .base import OrmModel
 
 
-class LabOrderShortSchema(ORMModel):
+class LabOrderShortSchema(OrmModel):
     id: str
     entered_at_description: str
     entered_at: str
     specimen_collected_time: datetime.datetime
 
 
-class ResultItemSchema(ORMModel):
+class ResultItemSchema(OrmModel):
     id: str
     order_id: str
     service_id: str
