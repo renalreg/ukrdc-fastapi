@@ -70,12 +70,22 @@ def populate_ukrdc3_session(session):
         postcode="XX0 1AA",
         country_description="Pacific Ocean",
     )
+    address_alt = Address(
+        id="ADDRESS2",
+        pid=pid,
+        street="121 Conch Street",
+        town="Bikini Bottom",
+        county="Bikini County",
+        postcode="XX0 1AA",
+        country_description="Pacific Ocean",
+    )
     patient = Patient(pid=pid, birthtime=datetime(1984, 3, 17), gender="1")
     patient_number = PatientNumber(
         id=1, pid=pid, number="999999999", organization="NHS", numbertype="NI"
     )
     session.add(name)
     session.add(address)
+    session.add(address_alt)
     session.add(patient)
     session.add(patient_number)
 
@@ -295,3 +305,12 @@ def create_test_database():
 @pytest.fixture(scope="function")
 def client():
     return TestClient(app)
+
+
+@pytest.fixture(scope="function")
+def ukrdc3_session():
+    db = Ukrdc3TestSession()
+    try:
+        yield db
+    finally:
+        db.close()
