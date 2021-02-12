@@ -17,6 +17,8 @@ from sqlalchemy.orm import relationship
 metadata = MetaData()
 Base = declarative_base(metadata=metadata)
 
+GLOBAL_LAZY = False
+
 
 class PatientRecord(Base):
     __tablename__ = "patientrecord"
@@ -37,45 +39,49 @@ class PatientRecord(Base):
         "Patient", backref="record", uselist=False, cascade="all, delete-orphan"
     )
     lab_orders = relationship(
-        "LabOrder", backref="record", lazy="dynamic", cascade="all, delete-orphan"
+        "LabOrder", backref="record", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
     social_histories = relationship("SocialHistory", cascade="all, delete-orphan")
     family_histories = relationship("FamilyHistory", cascade="all, delete-orphan")
     observations = relationship(
-        "Observation", backref="record", lazy="dynamic", cascade="all, delete-orphan"
+        "Observation", backref="record", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
     allergies = relationship("Allergy", cascade="all, delete-orphan")
-    diagnoses = relationship("Diagnosis", lazy="dynamic", cascade="all, delete-orphan")
+    diagnoses = relationship(
+        "Diagnosis", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
     cause_of_death = relationship(
-        "CauseOfDeath", lazy="dynamic", cascade="all, delete-orphan"
+        "CauseOfDeath", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
     renaldiagnoses = relationship(
-        "RenalDiagnosis", lazy="dynamic", cascade="all, delete-orphan"
+        "RenalDiagnosis", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
     medications = relationship(
-        "Medication", lazy="dynamic", cascade="all, delete-orphan"
+        "Medication", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )  # noqa
     dialysis_sessions = relationship(
-        "DialysisSession", lazy="dynamic", cascade="all, delete-orphan"
+        "DialysisSession", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
     procedures = relationship("Procedure", cascade="all, delete-orphan")
-    documents = relationship("Document", lazy="dynamic", cascade="all, delete-orphan")
+    documents = relationship("Document", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
     encounters = relationship("Encounter", cascade="all, delete-orphan")
-    treatments = relationship("Treatment", lazy="dynamic", cascade="all, delete-orphan")
+    treatments = relationship(
+        "Treatment", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
+    )
     program_memberships = relationship(
         "ProgramMembership", cascade="all, delete-orphan"
     )
     transplants = relationship(
-        "Transplant", lazy="dynamic", cascade="all, delete-orphan"
+        "Transplant", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    opt_outs = relationship("OptOut", lazy="dynamic", cascade="all, delete-orphan")
+    opt_outs = relationship("OptOut", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
     clinical_relationships = relationship(
         "ClinicalRelationship", cascade="all, delete-orphan"
     )
 
     surveys = relationship("Survey", cascade="all, delete-orphan")
     pvdata = relationship("PVData", uselist=False, cascade="all, delete-orphan")
-    pvdelete = relationship("PVDelete", lazy="dynamic", cascade="all, delete-orphan")
+    pvdelete = relationship("PVDelete", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
 
     def __init__(
         self,
@@ -141,13 +147,16 @@ class Patient(Base):
     updated_on = Column("updatedon", DateTime)
 
     numbers = relationship(
-        "PatientNumber", backref="patient", lazy="dynamic", cascade="all, delete-orphan"
+        "PatientNumber",
+        backref="patient",
+        lazy=GLOBAL_LAZY,
+        cascade="all, delete-orphan",
     )
-    names = relationship("Name", lazy="dynamic", cascade="all, delete-orphan")
+    names = relationship("Name", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
     contact_details = relationship(
-        "ContactDetail", lazy="dynamic", cascade="all, delete-orphan"
+        "ContactDetail", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
-    addresses = relationship("Address", lazy="dynamic", cascade="all, delete-orphan")
+    addresses = relationship("Address", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
     familydoctor = relationship(
         "FamilyDoctor", uselist=False, cascade="all, delete-orphan"
     )
@@ -725,7 +734,7 @@ class LabOrder(Base):
     entering_organization_description = Column("enteringorganizationdesc", String)
 
     result_items = relationship(
-        "ResultItem", lazy="dynamic", backref="order", cascade="all, delete-orphan"
+        "ResultItem", lazy=GLOBAL_LAZY, backref="order", cascade="all, delete-orphan"
     )
 
 
