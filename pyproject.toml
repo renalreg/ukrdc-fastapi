@@ -41,5 +41,8 @@ multi_line_output = 3
 use_parentheses = true
 
 [tool.pylint.'MESSAGES CONTROL']
-disable = "fixme, missing-module-docstring, missing-class-docstring, too-few-public-methods"
+disable = "fixme, missing-module-docstring, missing-class-docstring, too-few-public-methods, too-many-arguments"
 max-line-length = 88
+
+[tool.pylint.'TYPECHECK']
+ignored-classes = "Session" # PyLint struggles with dynamic SQLAlchemy sessions
