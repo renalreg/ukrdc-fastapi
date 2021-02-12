@@ -1,4 +1,4 @@
-def test_patient_records(client):
+def test_records(client):
     response = client.get("/viewer/records?ni=999999999")
     assert response.status_code == 200
     assert response.json() == [
@@ -12,3 +12,13 @@ def test_patient_records(client):
             "ukrdcid": "000000000",
         }
     ]
+
+
+def test_records_no_ni(client):
+    response = client.get("/viewer/records")
+    assert response.status_code == 422
+
+
+def test_records_missing_ni(client):
+    response = client.get("/viewer/records?ni=111111111")
+    assert response.json() == []
