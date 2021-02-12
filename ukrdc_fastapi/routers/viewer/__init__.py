@@ -6,7 +6,10 @@ from fastapi import Depends
 from ukrdc_fastapi.dependencies import get_ukrdc3
 from fastapi import APIRouter
 
+from . import record
+
 router = APIRouter()
+router.include_router(record.router, prefix="/record")
 
 
 @router.get("/records", response_model=List[PatientRecordShortSchema])
