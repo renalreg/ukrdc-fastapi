@@ -1,9 +1,17 @@
+from datetime import datetime
+
+import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+from ukrdc_fastapi.dependencies import get_jtrace, get_ukrdc3
 from ukrdc_fastapi.main import app
-from ukrdc_fastapi.dependencies import get_ukrdc3, get_jtrace
+from ukrdc_fastapi.models.empi import Base as JtraceBase
+from ukrdc_fastapi.models.pkb import PKBLink
+from ukrdc_fastapi.models.ukrdc import Address
+from ukrdc_fastapi.models.ukrdc import Base as UKRDC3Base
 from ukrdc_fastapi.models.ukrdc import (
-    Base as UKRDC3Base,
-    Address,
     Diagnosis,
     Document,
     LabOrder,
@@ -16,14 +24,6 @@ from ukrdc_fastapi.models.ukrdc import (
     RenalDiagnosis,
     ResultItem,
 )
-from ukrdc_fastapi.models.empi import Base as JtraceBase
-from ukrdc_fastapi.models.pkb import PKBLink
-
-from datetime import datetime
-
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy import create_engine
-import pytest
 
 ukrdc3_engine = create_engine(
     "sqlite:///./ukrdc3_test.sqlite", connect_args={"check_same_thread": False}

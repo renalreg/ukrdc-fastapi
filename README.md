@@ -11,6 +11,20 @@
 
 ## Developer notes
 
+### VSCode config for auto-formatting
+
+```json
+{
+  "editor.formatOnSave": true,
+  "python.formatting.provider": "black",
+  "[python]": {
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": true
+    }
+  }
+}
+```
+
 ### Why the duplicated models?
 
 Currently, the SQLAlchemy models we use are part of a large `services` library. Because of this, using the models involves installing all dependencies of everything in the `services` library. Additionally, that library exists only on a private repository, complicating Docker image generation and dependency resolution.

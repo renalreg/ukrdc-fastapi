@@ -47,15 +47,9 @@ class PatientRecord(Base):
         "Observation", backref="record", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )
     allergies = relationship("Allergy", cascade="all, delete-orphan")
-    diagnoses = relationship(
-        "Diagnosis", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
-    )
-    cause_of_death = relationship(
-        "CauseOfDeath", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
-    )
-    renaldiagnoses = relationship(
-        "RenalDiagnosis", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
-    )
+    diagnoses = relationship("Diagnosis", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
+    cause_of_death = relationship("CauseOfDeath", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
+    renaldiagnoses = relationship("RenalDiagnosis", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
     medications = relationship(
         "Medication", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
     )  # noqa
@@ -65,19 +59,11 @@ class PatientRecord(Base):
     procedures = relationship("Procedure", cascade="all, delete-orphan")
     documents = relationship("Document", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
     encounters = relationship("Encounter", cascade="all, delete-orphan")
-    treatments = relationship(
-        "Treatment", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
-    )
-    program_memberships = relationship(
-        "ProgramMembership", cascade="all, delete-orphan"
-    )
-    transplants = relationship(
-        "Transplant", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
-    )
+    treatments = relationship("Treatment", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
+    program_memberships = relationship("ProgramMembership", cascade="all, delete-orphan")
+    transplants = relationship("Transplant", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
     opt_outs = relationship("OptOut", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
-    clinical_relationships = relationship(
-        "ClinicalRelationship", cascade="all, delete-orphan"
-    )
+    clinical_relationships = relationship("ClinicalRelationship", cascade="all, delete-orphan")
 
     surveys = relationship("Survey", cascade="all, delete-orphan")
     pvdata = relationship("PVData", uselist=False, cascade="all, delete-orphan")
@@ -127,9 +113,7 @@ class Patient(Base):
     person_to_contact_name = Column("persontocontactname", String)
     person_to_contact_number = Column("persontocontact_contactnumber", String)
     person_to_contact_relationship = Column("persontocontact_relationship", String)
-    person_to_contact_number_comments = Column(
-        "persontocontact_contactnumbercomments", String
-    )
+    person_to_contact_number_comments = Column("persontocontact_contactnumbercomments", String)
     person_to_contact_number_type = Column("persontocontact_contactnumbertype", String)
     occupation_code = Column("occupationcode", String)
     occupation_codestd = Column("occupationcodestd", String)
@@ -153,13 +137,9 @@ class Patient(Base):
         cascade="all, delete-orphan",
     )
     names = relationship("Name", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
-    contact_details = relationship(
-        "ContactDetail", lazy=GLOBAL_LAZY, cascade="all, delete-orphan"
-    )
+    contact_details = relationship("ContactDetail", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
     addresses = relationship("Address", lazy=GLOBAL_LAZY, cascade="all, delete-orphan")
-    familydoctor = relationship(
-        "FamilyDoctor", uselist=False, cascade="all, delete-orphan"
-    )
+    familydoctor = relationship("FamilyDoctor", uselist=False, cascade="all, delete-orphan")
 
     def __init__(self, pid=None, birthtime=None, gender=None):
         if pid:
@@ -241,9 +221,7 @@ class FamilyDoctor(Base):
     commenttext = Column(String)
 
     def __str__(self):
-        return (
-            f"{self.__class__.__name__}({self.id}) <" f"{self.gpname} {self.gpid}" f">"
-        )
+        return f"{self.__class__.__name__}({self.id}) <" f"{self.gpname} {self.gpid}" f">"
 
 
 class SocialHistory(Base):
@@ -428,9 +406,7 @@ class ProgramMembership(Base):
 
     def __str__(self):
         return (
-            f"{self.__class__.__name__}({self.pid}) <"
-            f"{self.program_name} {self.from_time}"
-            f">"
+            f"{self.__class__.__name__}({self.pid}) <" f"{self.program_name} {self.from_time}" f">"
         )
 
 
@@ -466,11 +442,7 @@ class Name(Base):
             self.given = given
 
     def __str__(self):
-        return (
-            f"{self.__class__.__name__}({self.pid}) <"
-            f"{self.given} {self.family}"
-            f">"
-        )
+        return f"{self.__class__.__name__}({self.pid}) <" f"{self.given} {self.family}" f">"
 
 
 class PatientNumber(Base):
@@ -482,9 +454,7 @@ class PatientNumber(Base):
     organization = Column(String)
     numbertype = Column(String)
 
-    def __init__(
-        self, id=None, pid=None, number=None, organization=None, numbertype=None
-    ):
+    def __init__(self, id=None, pid=None, number=None, organization=None, numbertype=None):
         if id:
             self.id = id
         if pid:

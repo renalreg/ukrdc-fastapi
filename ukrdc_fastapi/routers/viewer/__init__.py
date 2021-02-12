@@ -1,10 +1,11 @@
-from ukrdc_fastapi.schemas.patientrecord import PatientRecordShortSchema
-from ukrdc_fastapi.models.ukrdc import PatientNumber, PatientRecord
 from typing import List
+
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from fastapi import Depends
+
 from ukrdc_fastapi.dependencies import get_ukrdc3
-from fastapi import APIRouter
+from ukrdc_fastapi.models.ukrdc import PatientNumber, PatientRecord
+from ukrdc_fastapi.schemas.patientrecord import PatientRecordShortSchema
 
 from . import record
 
