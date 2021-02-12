@@ -7,7 +7,9 @@ class OrmModel(BaseModel):
         orm_mode = True
 
     @validator("*", pre=True)
-    def evaluate_lazy_columns(cls, value):  # pylint: disable=no-self-argument,no-self-use
+    def evaluate_lazy_columns(
+        cls, value
+    ):  # pylint: disable=no-self-argument,no-self-use
         """
         Find field values with Query type and evaluate to actual data.
 

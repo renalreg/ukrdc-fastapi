@@ -6,7 +6,9 @@ from ukrdc_fastapi.schemas.patientrecord import PatientRecordSchema
 
 def test_patient_record(ukrdc3_session):
     pid = "PYTEST01:PV:00000000A"
-    record = ukrdc3_session.query(PatientRecord).filter(PatientRecord.pid == pid).first()
+    record = (
+        ukrdc3_session.query(PatientRecord).filter(PatientRecord.pid == pid).first()
+    )
 
     model = PatientRecordSchema.from_orm(record)
     assert model.dict() == {
@@ -20,7 +22,9 @@ def test_patient_record(ukrdc3_session):
         "program_memberships": [],
         "patient": {
             "names": [{"given": "Patrick", "family": "Star"}],
-            "numbers": [{"patientid": "999999999", "organization": "NHS", "numbertype": "NI"}],
+            "numbers": [
+                {"patientid": "999999999", "organization": "NHS", "numbertype": "NI"}
+            ],
             "addresses": [
                 {
                     "from_time": None,
