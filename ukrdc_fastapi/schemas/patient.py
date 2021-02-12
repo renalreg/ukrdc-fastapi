@@ -1,5 +1,5 @@
 import datetime
-from typing import List
+from typing import List, Optional
 
 from .base import ORMModel
 
@@ -16,8 +16,8 @@ class NumberSchema(ORMModel):
 
 
 class AddressSchema(ORMModel):
-    from_time: datetime.datetime
-    to_time: datetime.datetime
+    from_time: Optional[datetime.datetime]
+    to_time: Optional[datetime.datetime]
     street: str
     town: str
     county: str
@@ -26,10 +26,10 @@ class AddressSchema(ORMModel):
 
 
 class PatientSchema(ORMModel):
-    # names: List[NameSchema]
+    names: List[NameSchema]
     numbers: List[NumberSchema]
-    # addresses: List[AddressSchema]
+    addresses: List[AddressSchema]
 
     birth_time: datetime.date
-    death_time: datetime.date
+    death_time: Optional[datetime.date]
     gender: str
