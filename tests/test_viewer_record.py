@@ -51,3 +51,24 @@ def test_record_missing(client):
     response = client.get("/viewer/record/MISSING_PID")
     assert response.status_code == 404
     assert response.json() == {"detail": "Record not found"}
+
+
+# Record lab orders
+
+
+def test_record_laborders(client):
+    response = client.get("/viewer/record/PYTEST01:PV:00000000A/laborders")
+    assert response.status_code == 200
+    assert response.json() == [
+        {
+            "entered_at": None,
+            "entered_at_description": None,
+            "id": "LABORDER1",
+            "specimen_collected_time": "2020-03-16T00:00:00",
+        }
+    ]
+
+
+def test_record_laborders_missing(client):
+    response = client.get("/viewer/record/MISSING_PID/laborders")
+    assert response.json() == []

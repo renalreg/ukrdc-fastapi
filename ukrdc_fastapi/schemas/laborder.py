@@ -1,13 +1,13 @@
 import datetime
-from typing import List
+from typing import List, Optional
 
 from .base import OrmModel
 
 
 class LabOrderShortSchema(OrmModel):
     id: str
-    entered_at_description: str
-    entered_at: str
+    entered_at_description: Optional[str]
+    entered_at: Optional[str]
     specimen_collected_time: datetime.datetime
 
 

@@ -15,7 +15,6 @@ router.include_router(record.router, prefix="/record")
 
 @router.get("/records", response_model=List[PatientRecordShortSchema])
 def patient_records(ni: str, ukrdc3: Session = Depends(get_ukrdc3)):
-
     # Only look for data if an NI was given
     if ni:
         pids = ukrdc3.query(PatientNumber.pid).filter(
@@ -44,5 +43,4 @@ def patient_records(ni: str, ukrdc3: Session = Depends(get_ukrdc3)):
             .all()
         )
         return records
-
     return []
