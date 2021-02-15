@@ -3,7 +3,7 @@ from pydantic import BaseSettings
 
 class Settings(BaseSettings):
     secret_key: str = "changeme"
-    mirth: str = "http://localhost:9004"
+    mirth_url: str = "http://localhost:9004"
 
     ukrdc_host: str = "localhost"
     ukrdc_port: int = 5432
