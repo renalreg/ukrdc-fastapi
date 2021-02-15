@@ -72,3 +72,67 @@ def test_record_laborders(client):
 def test_record_laborders_missing(client):
     response = client.get("/viewer/record/MISSING_PID/laborders")
     assert response.json() == []
+
+
+# Record observations
+
+
+def test_record_observations(client):
+    response = client.get("/viewer/record/PYTEST01:PV:00000000A/observations")
+    assert response.status_code == 200
+    assert response.json() == [
+        {
+            "entered_at": None,
+            "entered_at_description": None,
+            "observation_desc": "OBSERVATION_SYS_1_DESC",
+            "observation_time": "2020-03-16T11:35:00",
+            "observation_units": "OBSERVATION_SYS_1_UNITS",
+            "observation_value": "OBSERVATION_SYS_1_VALUE",
+            "pre_post": None,
+        },
+        {
+            "entered_at": None,
+            "entered_at_description": None,
+            "observation_desc": "OBSERVATION_DIA_1_DESC",
+            "observation_time": "2020-03-16T11:30:00",
+            "observation_units": "OBSERVATION_DIA_1_UNITS",
+            "observation_value": "OBSERVATION_DIA_1_VALUE",
+            "pre_post": None,
+        },
+        {
+            "entered_at": None,
+            "entered_at_description": None,
+            "observation_desc": "OBSERVATION_DESC",
+            "observation_time": "2020-03-16T00:00:00",
+            "observation_units": "OBSERVATION_UNITS",
+            "observation_value": "OBSERVATION_VALUE",
+            "pre_post": None,
+        },
+    ]
+
+
+def test_record_observations_missing(client):
+    response = client.get("/viewer/record/MISSING_PID/observations")
+    assert response.json() == []
+
+
+# Record export-data
+
+
+def test_record_export_data(client):
+    response = client.post(
+        "/viewer/record/PYTEST01:PV:00000000A/export-data",
+        json={"data": "FULL_PV_TESTS_EXTRACT_TEMPLATE", "path": "/", "mirth": False},
+    )
+    assert response.json() == {
+        "message": "<result><pid>PYTEST01:PV:00000000A</pid><tests>FULL</tests></result>",
+        "status": "ignored",
+    }
+
+
+def test_record_export_data_error(client):
+    response = client.post(
+        "/viewer/record/PYTEST01:PV:00000000A/export-data",
+        json={"data": "FULL_PV_TESTS_EXTRACT_TEMPLATE", "path": "/", "mirth": True},
+    )
+    assert response.status_code == 502
