@@ -1,9 +1,13 @@
 # UKRDC-FastAPI
 
-## Installation
+## Developer Installation
 
 - Install Poetry
 - Run `poetry install`
+
+## Basic Installation
+
+- `pip install .`
 
 ## Run the server
 
