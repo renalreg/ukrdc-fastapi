@@ -72,13 +72,13 @@ def patient_observations(pid: str, ukrdc3: Session = Depends(get_ukrdc3)):
 @router.get("/{pid}/medications", response_model=List[MedicationSchema])
 def patient_medications(pid: str, ukrdc3: Session = Depends(get_ukrdc3)):
     medications = ukrdc3.query(Medication).filter(Medication.pid == pid)
-    return medications.order_by(Medication.from_time)
+    return medications.order_by(Medication.from_time).all()
 
 
 @router.get("/{pid}/surveys", response_model=List[SurveySchema])
 def patient_surveys(pid: str, ukrdc3: Session = Depends(get_ukrdc3)):
     surveys = ukrdc3.query(Survey).filter(Survey.pid == pid)
-    return surveys.order_by(Survey.surveytime)
+    return surveys.order_by(Survey.surveytime).all()
 
 
 @router.post("/{pid}/export-data", response_model=ExportResponseSchema)
