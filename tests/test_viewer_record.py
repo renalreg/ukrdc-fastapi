@@ -116,6 +116,78 @@ def test_record_observations_missing(client):
     assert response.json() == []
 
 
+# Record medications
+
+
+def test_record_medications(client):
+    response = client.get("/viewer/record/PYTEST01:PV:00000000A/medications")
+    assert response.status_code == 200
+    assert response.json() == [
+        {
+            "from_time": "2019-03-16T00:00:00",
+            "to_time": None,
+            "drug_product_generic": "DRUG_PRODUCT_GENERIC",
+            "comment": None,
+            "entering_organization_code": None,
+            "entering_organization_description": None,
+        },
+        {
+            "from_time": "2019-03-16T00:00:00",
+            "to_time": "9999-03-16T00:00:00",
+            "drug_product_generic": "DRUG_PRODUCT_GENERIC_2",
+            "comment": None,
+            "entering_organization_code": None,
+            "entering_organization_description": None,
+        },
+    ]
+
+
+def test_record_medications_missing(client):
+    response = client.get("/viewer/record/MISSING_PID/medications")
+    assert response.json() == []
+
+
+# Record surveys
+
+
+def test_record_surveys(client):
+    response = client.get("/viewer/record/PYTEST01:PV:00000000A/surveys")
+    assert response.status_code == 200
+    assert response.json() == [
+        {
+            "questions": [
+                {
+                    "id": "QUESTION1",
+                    "questiontypecode": "TYPECODE1",
+                    "response": "RESPONSE1",
+                },
+                {
+                    "id": "QUESTION2",
+                    "questiontypecode": "TYPECODE2",
+                    "response": "RESPONSE2",
+                },
+            ],
+            "scores": [
+                {"id": "SCORE1", "value": "SCORE_VALUE", "scoretypecode": "TYPECODE"}
+            ],
+            "levels": [
+                {"id": "LEVEL1", "value": "LEVEL_VALUE", "leveltypecode": "TYPECODE"}
+            ],
+            "id": "SURVEY1",
+            "pid": "PYTEST01:PV:00000000A",
+            "surveytime": "2020-03-16T18:00:00",
+            "surveytypecode": "TYPECODE",
+            "enteredbycode": "ENTEREDBYCODE",
+            "enteredatcode": "ENTEREDATCODE",
+        }
+    ]
+
+
+def test_record_surveys_missing(client):
+    response = client.get("/viewer/record/MISSING_PID/surveys")
+    assert response.json() == []
+
+
 # Record export-data
 
 
@@ -136,3 +208,11 @@ def test_record_export_data_error(client):
         json={"data": "FULL_PV_TESTS_EXTRACT_TEMPLATE", "path": "/", "mirth": True},
     )
     assert response.status_code == 502
+
+
+def test_record_export_data_invalid_template(client):
+    response = client.post(
+        "/viewer/record/PYTEST01:PV:00000000A/export-data",
+        json={"data": "INVALID", "path": "/", "mirth": True},
+    )
+    assert response.status_code == 400
