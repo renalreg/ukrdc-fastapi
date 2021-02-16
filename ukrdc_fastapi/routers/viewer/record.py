@@ -50,7 +50,7 @@ EXPORT_TEMPLATES = {
 
 
 @router.get("/{pid}", response_model=PatientRecordSchema)
-def patient_records(pid: str, ukrdc3: Session = Depends(get_ukrdc3)):
+def patient_record(pid: str, ukrdc3: Session = Depends(get_ukrdc3)):
     record = ukrdc3.query(PatientRecord).filter(PatientRecord.pid == pid).first()
     if not record:
         raise HTTPException(404, detail="Record not found")
