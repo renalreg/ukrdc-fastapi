@@ -15,14 +15,18 @@ from ukrdc_fastapi.models.ukrdc import (
     Diagnosis,
     Document,
     LabOrder,
+    Level,
     Medication,
     Name,
     Observation,
     Patient,
     PatientNumber,
     PatientRecord,
+    Question,
     RenalDiagnosis,
     ResultItem,
+    Score,
+    Survey,
 )
 
 ukrdc3_engine = create_engine(
@@ -223,6 +227,38 @@ def populate_ukrdc3_session(session):
     )
     session.add(observation_dia)
     session.add(observation_sys)
+
+    survey_1 = Survey(
+        id="SURVEY1",
+        pid=pid,
+        surveytime=datetime(2020, 3, 16, 18, 00),
+        surveytypecode="TYPECODE",
+        enteredbycode="ENTEREDBYCODE",
+        enteredatcode="ENTEREDATCODE",
+    )
+    question_1 = Question(
+        id="QUESTION1",
+        surveyid="SURVEY1",
+        questiontypecode="TYPECODE1",
+        response="RESPONSE1",
+    )
+    question_2 = Question(
+        id="QUESTION2",
+        surveyid="SURVEY1",
+        questiontypecode="TYPECODE2",
+        response="RESPONSE2",
+    )
+    score = Score(
+        id="SCORE1", surveyid="SURVEY1", value="SCORE_VALUE", scoretypecode="TYPECODE"
+    )
+    level = Level(
+        id="LEVEL1", surveyid="SURVEY1", value="LEVEL_VALUE", leveltypecode="TYPECODE"
+    )
+    session.add(survey_1)
+    session.add(question_1)
+    session.add(question_2)
+    session.add(score)
+    session.add(level)
 
     document_pdf = Document(
         id="DOCUMENT_PDF", pid=pid, documenttime=datetime(2020, 3, 16)
