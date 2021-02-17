@@ -29,6 +29,10 @@ from .laborders import _inject_href as _inject_laborder_href
 router = APIRouter()
 
 
+def _inject_href(request: Request, record: PatientRecord):
+    record.href = request.url_for("patient_record", pid=record.pid)
+
+
 class ExportResponseSchema(BaseModel):
     """Response schema for data export view"""
 
@@ -56,7 +60,7 @@ EXPORT_TEMPLATES = {
 
 
 @router.get("/", response_model=List[PatientRecordShortSchema])
-def patient_records(ni: str, ukrdc3: Session = Depends(get_ukrdc3)):
+def patient_records(ni: str, request: Request, ukrdc3: Session = Depends(get_ukrdc3)):
     # Only look for data if an NI was given
     if ni:
         pids = ukrdc3.query(PatientNumber.pid).filter(
@@ -84,20 +88,25 @@ def patient_records(ni: str, ukrdc3: Session = Depends(get_ukrdc3)):
             .filter(PatientRecord.ukrdcid.in_(ukrdcids))
             .all()
         )
+        for item in records:
+            _inject_href(request, item)
         return records
     return []
 
 
 @router.get("/{pid}", response_model=PatientRecordSchema)
-def patient_record(pid: str, ukrdc3: Session = Depends(get_ukrdc3)):
+def patient_record(pid: str, request: Request, ukrdc3: Session = Depends(get_ukrdc3)):
     record = ukrdc3.query(PatientRecord).filter(PatientRecord.pid == pid).first()
     if not record:
         raise HTTPException(404, detail="Record not found")
+    _inject_href(request, record)
     return record
 
 
 @router.get("/{pid}/laborders", response_model=List[LabOrderShortSchema])
-def patient_laborders(pid: str, request: Request, ukrdc3: Session = Depends(get_ukrdc3)):
+def patient_laborders(
+    pid: str, request: Request, ukrdc3: Session = Depends(get_ukrdc3)
+):
     laborders = ukrdc3.query(LabOrder).filter(LabOrder.pid == pid)
     items: List[LabOrder] = laborders.order_by(
         LabOrder.specimen_collected_time.desc()

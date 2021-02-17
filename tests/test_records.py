@@ -3,6 +3,7 @@ def test_record(client):
     assert response.status_code == 200
     assert response.json() == {
         "pid": "PYTEST01:PV:00000000A",
+        "href": "http://testserver/records/PYTEST01:PV:00000000A",
         "sendingfacility": "PATIENT_RECORD_SENDING_FACILITY_1",
         "sendingextract": "PV",
         "localpatientid": "00000000A",
@@ -55,6 +56,7 @@ def test_records(client):
         {
             "localpatientid": "00000000A",
             "pid": "PYTEST01:PV:00000000A",
+            "href": "http://testserver/records/PYTEST01:PV:00000000A",
             "repository_creation_date": "2020-03-16T00:00:00",
             "repository_update_date": "2021-01-21T00:00:00",
             "sendingextract": "PV",
