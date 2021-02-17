@@ -10,13 +10,17 @@ from ukrdc_fastapi.models.ukrdc import (
     LabOrder,
     Medication,
     Observation,
+    PatientNumber,
     PatientRecord,
     Survey,
 )
 from ukrdc_fastapi.schemas.laborder import LabOrderShortSchema
 from ukrdc_fastapi.schemas.medication import MedicationSchema
 from ukrdc_fastapi.schemas.observation import ObservationSchema
-from ukrdc_fastapi.schemas.patientrecord import PatientRecordSchema
+from ukrdc_fastapi.schemas.patientrecord import (
+    PatientRecordSchema,
+    PatientRecordShortSchema,
+)
 from ukrdc_fastapi.schemas.survey import SurveySchema
 from ukrdc_fastapi.utils import post_mirth_message
 
@@ -47,6 +51,39 @@ EXPORT_TEMPLATES = {
     "FULL_PV_EXTRACT_TEMPLATE": "<result><pid>{pid}</pid><tests>FULL</tests><documents>FULL</documents></result>",
     "RADAR_EXTRACT_TEMPLATE": "<result><pid>{pid}</pid></result>",
 }
+
+
+@router.get("/", response_model=List[PatientRecordShortSchema])
+def patient_records(ni: str, ukrdc3: Session = Depends(get_ukrdc3)):
+    # Only look for data if an NI was given
+    if ni:
+        pids = ukrdc3.query(PatientNumber.pid).filter(
+            PatientNumber.patientid == ni,
+            PatientNumber.numbertype == "NI",
+        )
+        if pids.count() == 0:
+            return []
+
+        # Find different ukrdcids
+        query = (
+            ukrdc3.query(PatientRecord.ukrdcid)
+            .filter(PatientRecord.pid.in_(pids))
+            .distinct()
+        )
+
+        ukrdcids = [ukrdcid for (ukrdcid,) in query.all()]
+
+        if not ukrdcids:
+            return []
+
+        # Find all the records with ukrdc ids
+        records = (
+            ukrdc3.query(PatientRecord)
+            .filter(PatientRecord.ukrdcid.in_(ukrdcids))
+            .all()
+        )
+        return records
+    return []
 
 
 @router.get("/{pid}", response_model=PatientRecordSchema)
