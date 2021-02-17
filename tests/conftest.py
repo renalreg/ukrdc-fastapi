@@ -8,6 +8,7 @@ from sqlalchemy.orm import sessionmaker
 from ukrdc_fastapi.dependencies import get_jtrace, get_ukrdc3
 from ukrdc_fastapi.main import app
 from ukrdc_fastapi.models.empi import Base as JtraceBase
+from ukrdc_fastapi.models.empi import LinkRecord, MasterRecord, Person, WorkItem
 from ukrdc_fastapi.models.pkb import PKBLink
 from ukrdc_fastapi.models.ukrdc import Address
 from ukrdc_fastapi.models.ukrdc import Base as UKRDC3Base
@@ -290,6 +291,103 @@ def populate_ukrdc3_session(session):
     session.commit()
 
 
+def populate_jtrace_session(session):
+    master_record = MasterRecord(
+        id=1,
+        status=0,
+        last_updated=datetime(2020, 3, 16),
+        date_of_birth=datetime(1950, 1, 1),
+        nationalid="999999999",
+        nationalid_type="UKRDC",
+        effective_date=datetime(2020, 3, 16),
+    )
+
+    person_1 = Person(
+        id=1,
+        originator="UKRDC",
+        localid="123456789",
+        localid_type="CLPID",
+        date_of_birth=datetime(1950, 1, 1),
+        gender="9",
+    )
+
+    person_2 = Person(
+        id=2,
+        originator="UKRDC",
+        localid="987654321",
+        localid_type="CLPID",
+        date_of_birth=datetime(1950, 1, 1),
+        gender="9",
+    )
+
+    person_3 = Person(
+        id=3,
+        originator="UKRDC",
+        localid="192837465",
+        localid_type="CLPID",
+        date_of_birth=datetime(1950, 1, 1),
+        gender="9",
+    )
+
+    person_4 = Person(
+        id=4,
+        originator="UKRDC",
+        localid="918273645",
+        localid_type="CLPID",
+        date_of_birth=datetime(1950, 1, 1),
+        gender="9",
+    )
+
+    link_record_1 = LinkRecord(
+        id=1,
+        person_id=1,
+        master_id=1,
+        link_type=0,
+        link_code=0,
+        last_updated=datetime(2019, 1, 1),
+    )
+    link_record_2 = LinkRecord(
+        id=2,
+        person_id=2,
+        master_id=1,
+        link_type=0,
+        link_code=0,
+        last_updated=datetime(2020, 3, 16),
+    )
+
+    work_item_1 = WorkItem(
+        id=1,
+        person_id=3,
+        master_id=1,
+        type=9,
+        description="DESCRIPTION_1",
+        status=1,
+        last_updated=datetime(2020, 3, 16),
+    )
+
+    work_item_2 = WorkItem(
+        id=2,
+        person_id=4,
+        master_id=1,
+        type=9,
+        description="DESCRIPTION_2",
+        status=1,
+        last_updated=datetime(2021, 1, 1),
+    )
+
+    session.add(master_record)
+    session.add(person_1)
+    session.add(person_2)
+    session.add(person_3)
+    session.add(person_4)
+    session.add(link_record_1)
+    session.add(link_record_2)
+    session.add(work_item_1)
+    session.add(work_item_2)
+
+    session.commit()
+
+
 def override_get_ukrdc3():
     print("Creating test session for UKRDC3")
     db = Ukrdc3TestSession()
@@ -329,6 +427,7 @@ def create_test_database():
     JtraceBase.metadata.create_all(bind=jtrace_engine)
     # Populate with test data
     populate_ukrdc3_session(Ukrdc3TestSession())
+    populate_jtrace_session(JtraceTestSession())
     print("Running tests")
     yield  # Run tests
     # Drop tables
