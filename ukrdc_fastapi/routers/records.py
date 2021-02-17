@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 from requests.exceptions import RequestException
 from sqlalchemy.orm import Session
@@ -23,6 +23,8 @@ from ukrdc_fastapi.schemas.patientrecord import (
 )
 from ukrdc_fastapi.schemas.survey import SurveySchema
 from ukrdc_fastapi.utils import post_mirth_message
+
+from .laborders import _inject_href as _inject_laborder_href
 
 router = APIRouter()
 
@@ -95,9 +97,14 @@ def patient_record(pid: str, ukrdc3: Session = Depends(get_ukrdc3)):
 
 
 @router.get("/{pid}/laborders", response_model=List[LabOrderShortSchema])
-def patient_laborders(pid: str, ukrdc3: Session = Depends(get_ukrdc3)):
+def patient_laborders(pid: str, request: Request, ukrdc3: Session = Depends(get_ukrdc3)):
     laborders = ukrdc3.query(LabOrder).filter(LabOrder.pid == pid)
-    return laborders.order_by(LabOrder.specimen_collected_time.desc()).all()
+    items: List[LabOrder] = laborders.order_by(
+        LabOrder.specimen_collected_time.desc()
+    ).all()
+    for item in items:
+        _inject_laborder_href(request, item)
+    return items
 
 
 @router.get("/{pid}/observations", response_model=List[ObservationSchema])

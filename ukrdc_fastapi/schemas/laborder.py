@@ -10,6 +10,8 @@ class LabOrderShortSchema(OrmModel):
     entered_at: Optional[str]
     specimen_collected_time: datetime.datetime
 
+    href: Optional[str]
+
 
 class ResultItemSchema(OrmModel):
     id: str

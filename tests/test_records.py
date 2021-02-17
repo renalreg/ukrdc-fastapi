@@ -86,6 +86,7 @@ def test_record_laborders(client):
             "entered_at_description": None,
             "id": "LABORDER1",
             "specimen_collected_time": "2020-03-16T00:00:00",
+            "href": "http://testserver/laborders/LABORDER1",
         }
     ]
 

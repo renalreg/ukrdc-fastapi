@@ -1,5 +1,5 @@
 import datetime
-from typing import List
+from typing import List, Optional
 
 from .base import OrmModel
 
@@ -8,16 +8,13 @@ class MasterRecordSchema(OrmModel):
     id: int
     last_updated: datetime.datetime
     date_of_birth: datetime.date
-    gender: str
-    givenname: str
-    surname: str
+    gender: Optional[str]
+    givenname: Optional[str]
+    surname: Optional[str]
     nationalid: str
     nationalid_type: str
     status: int
     effective_date: datetime.datetime
-
-    link_records: "List[LinkRecordSchema]"
-    work_items: "List[WorkItemSchema]"
 
 
 class PidXRefSchema(OrmModel):
@@ -35,9 +32,9 @@ class PersonSchema(OrmModel):
     localid_type: str
     date_of_birth: datetime.date
     gender: str
-    date_of_death: datetime.date
-    givenname: str
-    surname: str
+    date_of_death: Optional[datetime.date]
+    givenname: Optional[str]
+    surname: Optional[str]
     xref_entries: List[PidXRefSchema]
 
 
@@ -47,19 +44,42 @@ class LinkRecordSchema(OrmModel):
     master_record: MasterRecordSchema
 
 
-class WorkItemSchema(OrmModel):
+class WorkItemSummarySchema(OrmModel):
+    id: int
+    person_id: int
+    master_id: int
+
+    href: Optional[str]
+
+
+class WorkItemShortSchema(OrmModel):
     id: int
     person_id: int
     master_id: int
     type: int
     description: str
     status: int
-    updated_by: str
-    update_description: str
-    attributes: str
+    last_updated: datetime.datetime
+    updated_by: Optional[str]
+    update_description: Optional[str]
+    attributes: Optional[str]
+
+    href: Optional[str]
+
+
+class WorkItemSchema(WorkItemShortSchema):
+    id: int
+    person_id: int
+    master_id: int
+    type: int
+    description: str
+    status: int
+    last_updated: datetime.datetime
+    updated_by: Optional[str]
+    update_description: Optional[str]
+    attributes: Optional[str]
     person: PersonSchema
     master_record: MasterRecordSchema
 
-
-# Update link_records and work_items annotations
-MasterRecordSchema.update_forward_refs()
+    # `related` attribute isn't part of ORM and needs to be injected
+    related: Optional[List[WorkItemSummarySchema]]

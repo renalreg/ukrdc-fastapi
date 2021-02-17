@@ -1,21 +1,20 @@
 from typing import List, Optional, Set, Tuple
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
 
 from ukrdc_fastapi.dependencies import get_jtrace
-from ukrdc_fastapi.models.empi import LinkRecord, MasterRecord, WorkItem
-from ukrdc_fastapi.schemas.empi import WorkItemSchema
+from ukrdc_fastapi.models.empi import LinkRecord, MasterRecord, Person, WorkItem
+from ukrdc_fastapi.schemas.empi import WorkItemSchema, WorkItemShortSchema
 
 router = APIRouter()
 
 
-@router.get("/workitems", response_model=List[WorkItemSchema])
-def workitems(
-    self,
-    ukrdcid: Optional[List[str]] = Query(None),
-    jtrace: Session = Depends(get_jtrace),
-):
+def _inject_href(request: Request, workitem: WorkItem):
+    workitem.href = request.url_for("workitems_detail", workitem_id=workitem.id)
+
+
+def _find_related_ids(ukrdcid: List[str], jtrace: Session) -> Tuple[Set[int], Set[int]]:
     records: List[Tuple[int]] = (
         jtrace.query(MasterRecord.id)
         .filter(
@@ -47,9 +46,67 @@ def workitems(
             found_new = False
         seen_master_ids |= master_ids
         seen_person_ids |= person_ids
+    return (seen_master_ids, seen_person_ids)
 
-    workitems = jtrace.query(WorkItem).filter(
-        (WorkItem.master_id.in_(seen_master_ids))
-        | (WorkItem.person_id.in_(seen_person_ids))
+
+@router.get("/", response_model=List[WorkItemShortSchema])
+def workitems_list(
+    request: Request,
+    ukrdcid: Optional[List[str]] = Query(None),
+    jtrace: Session = Depends(get_jtrace),
+):
+
+    # Get a query of all workitems
+    query = jtrace.query(WorkItem)
+
+    # If a list of UKRDCIDs is found in the query, filter by UKRDCIDs
+    if ukrdcid:
+        # Fetch a list of master/person IDs related to each UKRDCID
+        seen_master_ids: Set[int]
+        seen_person_ids: Set[int]
+        seen_master_ids, seen_person_ids = _find_related_ids(ukrdcid, jtrace)
+
+        # Filter workitems by the matching IDs
+        query = query.filter(
+            (WorkItem.master_id.in_(seen_master_ids))
+            | (WorkItem.person_id.in_(seen_person_ids))
+        )
+
+    items: List[WorkItem] = (
+        query.filter(WorkItem.status == 1).order_by(WorkItem.id).all()
     )
-    return workitems.filter(WorkItem.status == 1).all()
+    # Insert URLs to related workitems
+    for item in items:
+        _inject_href(request, item)
+
+    # Filter by status, sort, and return all
+    return items
+
+
+@router.get("/{workitem_id}", response_model=WorkItemSchema)
+def workitems_detail(
+    workitem_id: int,
+    request: Request,
+    jtrace: Session = Depends(get_jtrace),
+):
+
+    workitem = jtrace.query(WorkItem).get(workitem_id)
+    if not workitem:
+        raise HTTPException(404, detail="Work item not found")
+
+    # Insert self-link
+    _inject_href(request, workitem)
+
+    other_workitems = jtrace.query(WorkItem).filter(
+        WorkItem.master_id == workitem.master_id,
+        WorkItem.id != workitem.id,
+        WorkItem.status == 1,
+    )
+
+    # Insert URLs to related workitems
+    for item in other_workitems.all():
+        _inject_href(request, item)
+
+    # Inject related workitems
+    workitem.related = other_workitems.all()
+    return workitem
