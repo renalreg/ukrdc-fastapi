@@ -1,6 +1,8 @@
 import datetime
 from typing import List, Optional
 
+from pydantic import AnyHttpUrl
+
 from .base import OrmModel
 from .patient import PatientSchema
 
@@ -20,7 +22,7 @@ class PatientRecordShortSchema(OrmModel):
     repository_creation_date: datetime.datetime
     repository_update_date: datetime.datetime
 
-    href: Optional[str]
+    href: Optional[AnyHttpUrl]
 
 
 class PatientRecordSchema(PatientRecordShortSchema):

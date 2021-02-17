@@ -1,6 +1,8 @@
 import datetime
 from typing import List, Optional
 
+from pydantic import AnyHttpUrl
+
 from .base import OrmModel
 
 
@@ -10,7 +12,7 @@ class LabOrderShortSchema(OrmModel):
     entered_at: Optional[str]
     specimen_collected_time: datetime.datetime
 
-    href: Optional[str]
+    href: Optional[AnyHttpUrl]
 
 
 class ResultItemSchema(OrmModel):
