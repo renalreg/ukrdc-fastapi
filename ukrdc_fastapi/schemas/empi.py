@@ -66,16 +66,6 @@ class WorkItemShortSchema(OrmModel):
 
 
 class WorkItemSchema(WorkItemShortSchema):
-    id: int
-    person_id: int
-    master_id: int
-    type: int
-    description: str
-    status: int
-    last_updated: datetime.datetime
-    updated_by: Optional[str]
-    update_description: Optional[str]
-    attributes: Optional[str]
     person: PersonSchema
     master_record: MasterRecordSchema
 
