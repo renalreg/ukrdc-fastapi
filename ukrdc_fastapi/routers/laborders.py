@@ -10,16 +10,13 @@ from ukrdc_fastapi.schemas.laborder import LabOrderSchema
 router = APIRouter()
 
 
-def _inject_href(request: Request, laborder: LabOrder):
-    laborder.href = request.url_for("laborder_get", order_id=laborder.id)
-
-
 @router.get("/{order_id}", response_model=LabOrderSchema)
-def laborder_get(self, order_id: str, ukrdc3: Session = Depends(get_ukrdc3)):
+def laborder_get(
+    self, request: Request, order_id: str, ukrdc3: Session = Depends(get_ukrdc3)
+):
     laborder = ukrdc3.query(LabOrder).get(order_id)
     if not laborder:
         raise HTTPException(404, detail="Lab order not found")
-    _inject_href(laborder)
     return laborder
 
 

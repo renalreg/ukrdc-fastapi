@@ -13,7 +13,6 @@ def test_workitems_list(client):
             "updated_by": None,
             "update_description": None,
             "attributes": None,
-            "href": "http://testserver/workitems/1",
         },
         {
             "id": 2,
@@ -26,7 +25,6 @@ def test_workitems_list(client):
             "updated_by": None,
             "update_description": None,
             "attributes": None,
-            "href": "http://testserver/workitems/2",
         },
     ]
 
@@ -45,7 +43,6 @@ def test_workitems_detail(client):
         "updated_by": None,
         "update_description": None,
         "attributes": None,
-        "href": "http://testserver/workitems/1",
         "person": {
             "id": 3,
             "originator": "UKRDC",
@@ -75,7 +72,6 @@ def test_workitems_detail(client):
                 "id": 2,
                 "person_id": 4,
                 "master_id": 1,
-                "href": "http://testserver/workitems/2",
             }
         ],
     }

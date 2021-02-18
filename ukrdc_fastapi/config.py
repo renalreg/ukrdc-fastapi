@@ -23,5 +23,8 @@ class Settings(BaseSettings):
     crowd_name: str = "ukrdc-user-api"
     crowd_pass: str = "****"
 
+    class Config:
+        env_file = ".env"
+
 
 settings = Settings()

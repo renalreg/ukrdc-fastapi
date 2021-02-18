@@ -1,9 +1,11 @@
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi_pagination import Page
+from fastapi_pagination.ext.sqlalchemy import paginate
 from pydantic import BaseModel
 from requests.exceptions import RequestException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Query, Session
 
 from ukrdc_fastapi.dependencies import get_ukrdc3
 from ukrdc_fastapi.models.ukrdc import (
@@ -24,13 +26,7 @@ from ukrdc_fastapi.schemas.patientrecord import (
 from ukrdc_fastapi.schemas.survey import SurveySchema
 from ukrdc_fastapi.utils import post_mirth_message
 
-from .laborders import _inject_href as _inject_laborder_href
-
 router = APIRouter()
-
-
-def _inject_href(request: Request, record: PatientRecord):
-    record.href = request.url_for("patient_record", pid=record.pid)
 
 
 class ExportResponseSchema(BaseModel):
@@ -59,60 +55,45 @@ EXPORT_TEMPLATES = {
 }
 
 
-@router.get("/", response_model=List[PatientRecordShortSchema])
-def patient_records(ni: str, request: Request, ukrdc3: Session = Depends(get_ukrdc3)):
+@router.get("/", response_model=Page[PatientRecordShortSchema])
+def patient_records(ni: Optional[str] = None, ukrdc3: Session = Depends(get_ukrdc3)):
+    records: Query = ukrdc3.query(PatientRecord)
     # Only look for data if an NI was given
     if ni:
         pids = ukrdc3.query(PatientNumber.pid).filter(
             PatientNumber.patientid == ni,
             PatientNumber.numbertype == "NI",
         )
-        if pids.count() == 0:
-            return []
 
         # Find different ukrdcids
-        query = (
+        query: Query = (
             ukrdc3.query(PatientRecord.ukrdcid)
             .filter(PatientRecord.pid.in_(pids))
             .distinct()
         )
-
-        ukrdcids = [ukrdcid for (ukrdcid,) in query.all()]
-
-        if not ukrdcids:
-            return []
+        ukrdcids: List[str] = [ukrdcid for (ukrdcid,) in query.all()]
 
         # Find all the records with ukrdc ids
-        records = (
-            ukrdc3.query(PatientRecord)
-            .filter(PatientRecord.ukrdcid.in_(ukrdcids))
-            .all()
-        )
-        for item in records:
-            _inject_href(request, item)
-        return records
-    return []
+        records = records.filter(PatientRecord.ukrdcid.in_(ukrdcids))
+
+    # Return page
+    return paginate(records)
 
 
 @router.get("/{pid}", response_model=PatientRecordSchema)
-def patient_record(pid: str, request: Request, ukrdc3: Session = Depends(get_ukrdc3)):
+def patient_record(pid: str, ukrdc3: Session = Depends(get_ukrdc3)):
     record = ukrdc3.query(PatientRecord).filter(PatientRecord.pid == pid).first()
     if not record:
         raise HTTPException(404, detail="Record not found")
-    _inject_href(request, record)
     return record
 
 
 @router.get("/{pid}/laborders", response_model=List[LabOrderShortSchema])
-def patient_laborders(
-    pid: str, request: Request, ukrdc3: Session = Depends(get_ukrdc3)
-):
+def patient_laborders(pid: str, ukrdc3: Session = Depends(get_ukrdc3)):
     laborders = ukrdc3.query(LabOrder).filter(LabOrder.pid == pid)
     items: List[LabOrder] = laborders.order_by(
         LabOrder.specimen_collected_time.desc()
     ).all()
-    for item in items:
-        _inject_laborder_href(request, item)
     return items
 
 

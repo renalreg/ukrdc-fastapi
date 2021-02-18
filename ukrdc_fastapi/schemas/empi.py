@@ -1,8 +1,6 @@
 import datetime
 from typing import List, Optional
 
-from pydantic import AnyHttpUrl
-
 from .base import OrmModel
 
 
@@ -51,8 +49,6 @@ class WorkItemSummarySchema(OrmModel):
     person_id: int
     master_id: int
 
-    href: Optional[AnyHttpUrl]
-
 
 class WorkItemShortSchema(OrmModel):
     id: int
@@ -65,8 +61,6 @@ class WorkItemShortSchema(OrmModel):
     updated_by: Optional[str]
     update_description: Optional[str]
     attributes: Optional[str]
-
-    href: Optional[AnyHttpUrl]
 
 
 class WorkItemSchema(WorkItemShortSchema):

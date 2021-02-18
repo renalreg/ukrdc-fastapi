@@ -10,10 +10,6 @@ from ukrdc_fastapi.schemas.empi import WorkItemSchema, WorkItemShortSchema
 router = APIRouter()
 
 
-def _inject_href(request: Request, workitem: WorkItem):
-    workitem.href = request.url_for("workitems_detail", workitem_id=workitem.id)
-
-
 def _find_related_ids(ukrdcid: List[str], jtrace: Session) -> Tuple[Set[int], Set[int]]:
     records: List[Tuple[int]] = (
         jtrace.query(MasterRecord.id)
@@ -75,9 +71,6 @@ def workitems_list(
     items: List[WorkItem] = (
         query.filter(WorkItem.status == 1).order_by(WorkItem.id).all()
     )
-    # Insert URLs to related workitems
-    for item in items:
-        _inject_href(request, item)
 
     # Filter by status, sort, and return all
     return items
@@ -94,18 +87,11 @@ def workitems_detail(
     if not workitem:
         raise HTTPException(404, detail="Work item not found")
 
-    # Insert self-link
-    _inject_href(request, workitem)
-
     other_workitems = jtrace.query(WorkItem).filter(
         WorkItem.master_id == workitem.master_id,
         WorkItem.id != workitem.id,
         WorkItem.status == 1,
     )
-
-    # Insert URLs to related workitems
-    for item in other_workitems.all():
-        _inject_href(request, item)
 
     # Inject related workitems
     workitem.related = other_workitems.all()
