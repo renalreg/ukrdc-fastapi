@@ -7,8 +7,8 @@ from .patient import PatientSchema
 
 class ProgramMembershipSchema(OrmModel):
     program_name: str
-    from_time: datetime.datetime
-    to_time: datetime.datetime
+    from_time: Optional[datetime.datetime]
+    to_time: Optional[datetime.datetime]
 
 
 class PatientRecordShortSchema(OrmModel):
