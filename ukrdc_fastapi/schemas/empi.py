@@ -1,6 +1,8 @@
 import datetime
 from typing import List, Optional
 
+from pydantic import Json
+
 from .base import OrmModel
 
 
@@ -60,7 +62,7 @@ class WorkItemShortSchema(OrmModel):
     last_updated: datetime.datetime
     updated_by: Optional[str]
     update_description: Optional[str]
-    attributes: Optional[str]
+    attributes: Optional[Json]
 
 
 class WorkItemSchema(WorkItemShortSchema):
