@@ -1,6 +1,8 @@
 from typing import List, Optional, Set, Tuple
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi_pagination import Page
+from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy.orm import Session
 
 from ukrdc_fastapi.dependencies import get_jtrace
@@ -45,9 +47,8 @@ def _find_related_ids(ukrdcid: List[str], jtrace: Session) -> Tuple[Set[int], Se
     return (seen_master_ids, seen_person_ids)
 
 
-@router.get("/", response_model=List[WorkItemShortSchema])
+@router.get("/", response_model=Page[WorkItemShortSchema])
 def workitems_list(
-    request: Request,
     ukrdcid: Optional[List[str]] = Query(None),
     jtrace: Session = Depends(get_jtrace),
 ):
@@ -68,18 +69,15 @@ def workitems_list(
             | (WorkItem.person_id.in_(seen_person_ids))
         )
 
-    items: List[WorkItem] = (
-        query.filter(WorkItem.status == 1).order_by(WorkItem.id).all()
-    )
+    query = query.filter(WorkItem.status == 1).order_by(WorkItem.id)
 
     # Filter by status, sort, and return all
-    return items
+    return paginate(query)
 
 
 @router.get("/{workitem_id}", response_model=WorkItemSchema)
 def workitems_detail(
     workitem_id: int,
-    request: Request,
     jtrace: Session = Depends(get_jtrace),
 ):
 
