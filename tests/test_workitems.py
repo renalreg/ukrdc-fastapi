@@ -1,7 +1,7 @@
 def test_workitems_list(client):
     response = client.get("/workitems")
     assert response.status_code == 200
-    assert response.json() == [
+    assert response.json()["items"] == [
         {
             "id": 1,
             "person_id": 3,
