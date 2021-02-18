@@ -4,8 +4,6 @@ from sqlalchemy.orm import sessionmaker
 from .config import settings
 from .utils import build_db_uri
 
-print(settings.jtrace_pass)
-
 Ukrdc3Session = sessionmaker(
     autocommit=False,
     autoflush=False,
