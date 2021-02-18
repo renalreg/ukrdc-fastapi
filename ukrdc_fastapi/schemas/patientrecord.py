@@ -1,5 +1,5 @@
 import datetime
-from typing import List
+from typing import List, Optional
 
 from .base import OrmModel
 from .patient import PatientSchema
@@ -7,8 +7,8 @@ from .patient import PatientSchema
 
 class ProgramMembershipSchema(OrmModel):
     program_name: str
-    from_time: Optional[datetime.datetime]
-    to_time: Optional[datetime.datetime]
+    from_time: Optional[datetime.date]
+    to_time: Optional[datetime.date]
 
 
 class PatientRecordShortSchema(OrmModel):
