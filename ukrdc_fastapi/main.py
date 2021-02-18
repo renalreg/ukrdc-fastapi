@@ -1,4 +1,5 @@
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
+from fastapi_pagination import pagination_params
 from starlette.responses import RedirectResponse
 
 from ukrdc_fastapi.routers import laborders, records, workitems
@@ -7,11 +8,13 @@ app = FastAPI(
     title="UKRDC API v2",
     description="Early test version of an updated, simpler UKRDC API",
     version="0.0.0",
+    dependencies=[Depends(pagination_params)],
 )
 
 
 @app.get("/", include_in_schema=False)
 def root():
+    """Redirect to documentation"""
     return RedirectResponse(url="/docs")
 
 

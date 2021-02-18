@@ -3,7 +3,6 @@ def test_record(client):
     assert response.status_code == 200
     assert response.json() == {
         "pid": "PYTEST01:PV:00000000A",
-        "href": "http://testserver/records/PYTEST01:PV:00000000A",
         "sendingfacility": "PATIENT_RECORD_SENDING_FACILITY_1",
         "sendingextract": "PV",
         "localpatientid": "00000000A",
@@ -52,11 +51,10 @@ def test_record_missing(client):
 def test_records(client):
     response = client.get("/records?ni=999999999")
     assert response.status_code == 200
-    assert response.json() == [
+    assert response.json()["items"] == [
         {
             "localpatientid": "00000000A",
             "pid": "PYTEST01:PV:00000000A",
-            "href": "http://testserver/records/PYTEST01:PV:00000000A",
             "repository_creation_date": "2020-03-16T00:00:00",
             "repository_update_date": "2021-01-21T00:00:00",
             "sendingextract": "PV",
@@ -68,12 +66,12 @@ def test_records(client):
 
 def test_records_no_ni(client):
     response = client.get("/records")
-    assert response.status_code == 422
+    assert response.status_code == 200
 
 
 def test_records_missing_ni(client):
     response = client.get("/records?ni=111111111")
-    assert response.json() == []
+    assert response.json()["items"] == []
 
 
 # Record lab orders
@@ -88,7 +86,6 @@ def test_record_laborders(client):
             "entered_at_description": None,
             "id": "LABORDER1",
             "specimen_collected_time": "2020-03-16T00:00:00",
-            "href": "http://testserver/laborders/LABORDER1",
         }
     ]
 
