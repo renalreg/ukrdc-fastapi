@@ -2,7 +2,7 @@ from typing import Optional
 
 import requests
 
-from .config import settings
+from ukrdc_fastapi.config import settings
 
 
 def build_db_uri(
