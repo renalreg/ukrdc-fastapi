@@ -12,7 +12,6 @@ from ukrdc_fastapi.models.ukrdc import (
     LabOrder,
     Medication,
     Observation,
-    PatientNumber,
     PatientRecord,
     Survey,
 )
@@ -24,7 +23,7 @@ from ukrdc_fastapi.schemas.patientrecord import (
     PatientRecordShortSchema,
 )
 from ukrdc_fastapi.schemas.survey import SurveySchema
-from ukrdc_fastapi.utils import post_mirth_message
+from ukrdc_fastapi.utils import filters, post_mirth_message
 
 router = APIRouter()
 
@@ -58,23 +57,9 @@ EXPORT_TEMPLATES = {
 @router.get("/", response_model=Page[PatientRecordShortSchema])
 def patient_records(ni: Optional[str] = None, ukrdc3: Session = Depends(get_ukrdc3)):
     records: Query = ukrdc3.query(PatientRecord)
-    # Only look for data if an NI was given
     if ni:
-        pids = ukrdc3.query(PatientNumber.pid).filter(
-            PatientNumber.patientid == ni,
-            PatientNumber.numbertype == "NI",
-        )
-
-        # Find different ukrdcids
-        query: Query = (
-            ukrdc3.query(PatientRecord.ukrdcid)
-            .filter(PatientRecord.pid.in_(pids))
-            .distinct()
-        )
-        ukrdcids: List[str] = [ukrdcid for (ukrdcid,) in query.all()]
-
         # Find all the records with ukrdc ids
-        records = records.filter(PatientRecord.ukrdcid.in_(ukrdcids))
+        records = filters.patientrecords_by_ni(ukrdc3, records, ni)
 
     # Return page
     return paginate(records)
