@@ -41,6 +41,55 @@ def _find_related_ids(ukrdcid: List[str], jtrace: Session) -> Tuple[Set[int], Se
     return (seen_master_ids, seen_person_ids)
 
 
+def _find_related_link_records(session: Session, master_ids: List[str]) -> Set[int]:
+    """
+    Return a list of person <-> masterrecord LinkRecord IDs
+    This function is non-trivial since linked records can
+    form a kind of "web". E.g:
+    For master records M{n}, link records L{n}, and Person records P{n},
+    we could have
+    M1 <-> L1 <-> P1 <-> L2 <-> M2 <-> L3 <-> P2 etc etc
+    This function basically follows the complete chain.
+    """
+
+    linkrecord_ids: Set[int] = set()
+
+    for master_id in master_ids:
+        entries: Query = session.query(LinkRecord).filter(
+            LinkRecord.master_id == master_id
+        )
+
+        # Set of personid-masterid tuples from query
+        new_entries: Set[Tuple[str, str]] = {
+            (entry.person_id, entry.master_id) for entry in entries
+        }
+        # Add LinkRecord IDs to our output set
+        linkrecord_ids |= {entry.id for entry in entries}
+
+        # For each personid-masterid tuple
+        while new_entries:
+            # Remove the element from the set
+            person_id, master_id = new_entries.pop()
+
+            # Filter every possible LinkRecord by personid OR masterid
+            link_records: Query = session.query(LinkRecord).filter(
+                (LinkRecord.person_id == person_id)
+                | (LinkRecord.master_id == master_id)
+            )
+
+            # For each match (either personid or masterid)
+            for record in link_records:
+                # If it's already in the original set, skip
+                if record.id in linkrecord_ids:
+                    continue
+                # Add the matched entry to the set we're iterating through
+                new_entries.add((record.person_id, record.master_id))
+                # Add the LinkRecord ID to our output
+                linkrecord_ids.add(record.id)
+
+    return linkrecord_ids
+
+
 def patientrecords_by_ni(session: Session, query: Query, patientid: str) -> Query:
     """Filter a query of PatientRecord objects by a given NI patient ID
 
@@ -67,6 +116,33 @@ def patientrecords_by_ni(session: Session, query: Query, patientid: str) -> Quer
 
     # Find all the records with ukrdc ids
     return query.filter(PatientRecord.ukrdcid.in_(ukrdcids))
+
+
+def linkrecords_by_ni(session: Session, query: Query, nationalid: str) -> Query:
+    """Filter a query of LinkRecord objects by a given NI patient ID.
+    Note: This works by scanning all LinkRecords to find all those
+    related to the given NI, following a chain of relationships.
+    The input query is then filtered by these found LinkRecords.
+    This means that if you pass in an already filtered query, you
+    may not get ALL related LinkRecord objects back, rather, you
+    will get back the items from your original query which are related.
+
+    Args:
+        session (Session): Jtrace session
+        query (Query): Current session query to filter
+        nationalid (str): NI patient ID to filter by
+
+    Returns:
+        Query: A new query containing filtered results
+    """
+    master_records: Query = session.query(MasterRecord).filter(
+        MasterRecord.nationalid == nationalid
+    )
+    master_ids: List[str] = [record.id for record in master_records.all()]
+
+    link_record_ids: Set[int] = _find_related_link_records(session, master_ids)
+
+    return query.filter(LinkRecord.id.in_(link_record_ids))
 
 
 def workitems_by_ukrdcids(session: Session, query: Query, ukrdcids: List[str]) -> Query:
