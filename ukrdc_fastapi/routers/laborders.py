@@ -1,19 +1,25 @@
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi_pagination import Page
+from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy.orm import Session
 
 from ukrdc_fastapi.dependencies import get_ukrdc3
 from ukrdc_fastapi.models.ukrdc import LabOrder, PVDelete
-from ukrdc_fastapi.schemas.laborder import LabOrderSchema
+from ukrdc_fastapi.schemas.laborder import LabOrderSchema, LabOrderShortSchema
 
 router = APIRouter()
 
 
+@router.get("/", response_model=Page[LabOrderShortSchema])
+def laborders(ukrdc3: Session = Depends(get_ukrdc3)):
+    laborders = ukrdc3.query(LabOrder)
+    return paginate(laborders)
+
+
 @router.get("/{order_id}", response_model=LabOrderSchema)
-def laborder_get(
-    self, request: Request, order_id: str, ukrdc3: Session = Depends(get_ukrdc3)
-):
+def laborder_get(order_id: str, ukrdc3: Session = Depends(get_ukrdc3)):
     laborder = ukrdc3.query(LabOrder).get(order_id)
     if not laborder:
         raise HTTPException(404, detail="Lab order not found")
@@ -21,7 +27,7 @@ def laborder_get(
 
 
 @router.delete("/{order_id}", status_code=204)
-def laborder_delete(self, order_id: str, ukrdc3: Session = Depends(get_ukrdc3)):
+def laborder_delete(order_id: str, ukrdc3: Session = Depends(get_ukrdc3)):
     laborder: LabOrder = ukrdc3.query(LabOrder).get(order_id)
     pid = laborder.pid
     deletes = [
