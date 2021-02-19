@@ -18,6 +18,7 @@ requests = "^2.25.1"
 uvicorn = "^0.13.3" 
 
 [tool.poetry.dev-dependencies]
+bandit = "^1.7.0"
 black = "^20.8b1"
 isort = "^5.7.0"
 mypy = "^0.800"
@@ -27,7 +28,6 @@ pytest-cov = "^2.11.1"
 requests = "^2.25.1"
 sqlalchemy-stubs = "*"
 tox = "^3.21.4"
-bandit = "^1.7.0"
 
 [build-system]
 build-backend = "poetry.core.masonry.api"
@@ -51,3 +51,6 @@ max-line-length = 88
 
 [tool.pylint.'TYPECHECK']
 ignored-classes = "Session" # PyLint struggles with dynamic SQLAlchemy sessions
+
+[tool.pylint.'MASTER']
+extension-pkg-whitelist = "pydantic" # PyLint struggles with Pydantic in GH Actions
