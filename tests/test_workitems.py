@@ -26,6 +26,92 @@ def test_workitems_list(client):
             "update_description": None,
             "attributes": None,
         },
+        {
+            "id": 3,
+            "person_id": 4,
+            "master_id": 2,
+            "type": 9,
+            "description": "DESCRIPTION_3",
+            "status": 1,
+            "last_updated": "2021-01-01T00:00:00",
+            "updated_by": None,
+            "update_description": None,
+            "attributes": None,
+        },
+    ]
+
+
+def test_workitems_list_ukrdcid_filter_single(client):
+    response = client.get("/workitems?ukrdcid=999999999")
+    assert response.status_code == 200
+    assert response.json()["items"] == [
+        {
+            "id": 1,
+            "person_id": 3,
+            "master_id": 1,
+            "type": 9,
+            "description": "DESCRIPTION_1",
+            "status": 1,
+            "last_updated": "2020-03-16T00:00:00",
+            "updated_by": None,
+            "update_description": None,
+            "attributes": None,
+        },
+        {
+            "id": 2,
+            "person_id": 4,
+            "master_id": 1,
+            "type": 9,
+            "description": "DESCRIPTION_2",
+            "status": 1,
+            "last_updated": "2021-01-01T00:00:00",
+            "updated_by": None,
+            "update_description": None,
+            "attributes": None,
+        },
+    ]
+
+
+def test_workitems_list_ukrdcid_filter_multiple(client):
+    response = client.get("/workitems?ukrdcid=999999999&ukrdcid=999999911")
+    assert response.status_code == 200
+    assert response.json()["items"] == [
+        {
+            "id": 1,
+            "person_id": 3,
+            "master_id": 1,
+            "type": 9,
+            "description": "DESCRIPTION_1",
+            "status": 1,
+            "last_updated": "2020-03-16T00:00:00",
+            "updated_by": None,
+            "update_description": None,
+            "attributes": None,
+        },
+        {
+            "id": 2,
+            "person_id": 4,
+            "master_id": 1,
+            "type": 9,
+            "description": "DESCRIPTION_2",
+            "status": 1,
+            "last_updated": "2021-01-01T00:00:00",
+            "updated_by": None,
+            "update_description": None,
+            "attributes": None,
+        },
+        {
+            "id": 3,
+            "person_id": 4,
+            "master_id": 2,
+            "type": 9,
+            "description": "DESCRIPTION_3",
+            "status": 1,
+            "last_updated": "2021-01-01T00:00:00",
+            "updated_by": None,
+            "update_description": None,
+            "attributes": None,
+        },
     ]
 
 
@@ -75,3 +161,8 @@ def test_workitems_detail(client):
             }
         ],
     }
+
+
+def test_workitems_detail_not_found(client):
+    response = client.get("/workitems/9999")
+    assert response.status_code == 404
