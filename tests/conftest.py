@@ -4,6 +4,7 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
 
 from ukrdc_fastapi.dependencies import get_jtrace, get_ukrdc3
 from ukrdc_fastapi.main import app
@@ -31,7 +32,7 @@ from ukrdc_fastapi.models.ukrdc import (
 )
 
 ukrdc3_engine = create_engine(
-    "sqlite:///./ukrdc3_test.sqlite", connect_args={"check_same_thread": False}
+    "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
 )
 Ukrdc3TestSession = sessionmaker(
     autocommit=False,
@@ -40,7 +41,7 @@ Ukrdc3TestSession = sessionmaker(
 )
 
 jtrace_engine = create_engine(
-    "sqlite:///./jtrace_test.sqlite", connect_args={"check_same_thread": False}
+    "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
 )
 JtraceTestSession = sessionmaker(
     autocommit=False,
@@ -419,9 +420,9 @@ def create_test_database():
     creating and dropping the database.
     """
     # Create tables
-    print("Emptying old tables...")
-    UKRDC3Base.metadata.drop_all(bind=ukrdc3_engine)
-    JtraceBase.metadata.drop_all(bind=jtrace_engine)
+    # print("Emptying old tables...")
+    # UKRDC3Base.metadata.drop_all(bind=ukrdc3_engine)
+    # JtraceBase.metadata.drop_all(bind=jtrace_engine)
     print("Creating new tables...")
     UKRDC3Base.metadata.create_all(bind=ukrdc3_engine)
     JtraceBase.metadata.create_all(bind=jtrace_engine)
