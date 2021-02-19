@@ -7,7 +7,6 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from ukrdc_fastapi.dependencies import get_jtrace, get_ukrdc3
-from ukrdc_fastapi.main import app
 from ukrdc_fastapi.models.empi import Base as JtraceBase
 from ukrdc_fastapi.models.empi import LinkRecord, MasterRecord, Person, WorkItem
 from ukrdc_fastapi.models.pkb import PKBLink
@@ -29,24 +28,6 @@ from ukrdc_fastapi.models.ukrdc import (
     ResultItem,
     Score,
     Survey,
-)
-
-ukrdc3_engine = create_engine(
-    "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
-)
-Ukrdc3TestSession = sessionmaker(
-    autocommit=False,
-    autoflush=False,
-    bind=ukrdc3_engine,
-)
-
-jtrace_engine = create_engine(
-    "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
-)
-JtraceTestSession = sessionmaker(
-    autocommit=False,
-    autoflush=False,
-    bind=jtrace_engine,
 )
 
 
@@ -389,64 +370,81 @@ def populate_jtrace_session(session):
     session.commit()
 
 
-def override_get_ukrdc3():
-    print("Creating test session for UKRDC3")
-    db = Ukrdc3TestSession()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
-def override_get_jtrace():
-    print("Creating test session for JTRACE")
-    db = JtraceTestSession()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
-app.dependency_overrides[get_ukrdc3] = override_get_ukrdc3
-app.dependency_overrides[get_jtrace] = override_get_jtrace
-
-
-@pytest.fixture(scope="session", autouse=True)
-def create_test_database():
+@pytest.fixture(scope="function")
+def jtrace_sessionmaker():
     """
-    Create a clean database on every test case.
-
-    We use the `sqlalchemy_utils` package here for a few helpers in consistently
-    creating and dropping the database.
+    Create a new function-scoped in-memory JTRACE database,
+    populate with test data, and return the session class
     """
-    # Create tables
-    # print("Emptying old tables...")
-    # UKRDC3Base.metadata.drop_all(bind=ukrdc3_engine)
-    # JtraceBase.metadata.drop_all(bind=jtrace_engine)
-    print("Creating new tables...")
-    UKRDC3Base.metadata.create_all(bind=ukrdc3_engine)
-    JtraceBase.metadata.create_all(bind=jtrace_engine)
-    # Populate with test data
-    populate_ukrdc3_session(Ukrdc3TestSession())
+    engine = create_engine(
+        "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
+    )
+    JtraceTestSession = sessionmaker(
+        autocommit=False,
+        autoflush=False,
+        bind=engine,
+    )
+    JtraceBase.metadata.create_all(bind=engine)
     populate_jtrace_session(JtraceTestSession())
-    print("Running tests")
-    yield  # Run tests
-    # Drop tables
-    print("Closing session. Dropping tables")
-    UKRDC3Base.metadata.drop_all(bind=ukrdc3_engine)
-    JtraceBase.metadata.drop_all(bind=jtrace_engine)
-    print("Done")
+    return JtraceTestSession
 
 
 @pytest.fixture(scope="function")
-def client():
-    return TestClient(app)
+def ukrdc3_sessionmaker():
+    """
+    Create a new function-scoped in-memory UKRDC3 database,
+    populate with test data, and return the session class
+    """
+    engine = create_engine(
+        "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
+    )
+    UKRDCTestSession = sessionmaker(
+        autocommit=False,
+        autoflush=False,
+        bind=engine,
+    )
+    UKRDC3Base.metadata.create_all(bind=engine)
+    populate_ukrdc3_session(UKRDCTestSession())
+    return UKRDCTestSession
 
 
 @pytest.fixture(scope="function")
-def ukrdc3_session():
-    db = Ukrdc3TestSession()
+def ukrdc3_session(ukrdc3_sessionmaker):
+    """Create and yield a fresh in-memory test UKRDC3 database session"""
+    db = ukrdc3_sessionmaker()
     try:
         yield db
     finally:
         db.close()
+
+
+@pytest.fixture(scope="function")
+def jtrace_session(jtrace_sessionmaker):
+    """Create and yield a fresh in-memory test JTRACE database session"""
+    db = jtrace_sessionmaker()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+@pytest.fixture(scope="function")
+def app(jtrace_session, ukrdc3_session):
+    from ukrdc_fastapi.main import app
+
+    def _get_ukrdc3():
+        return ukrdc3_session
+
+    def _get_jtrace():
+        return jtrace_session
+
+    # Override FastAPI dependencies to point to function-scoped sessions
+    app.dependency_overrides[get_ukrdc3] = _get_ukrdc3
+    app.dependency_overrides[get_jtrace] = _get_jtrace
+
+    return app
+
+
+@pytest.fixture(scope="function")
+def client(app):
+    return TestClient(app)
