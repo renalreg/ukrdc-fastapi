@@ -274,7 +274,7 @@ def populate_ukrdc3_session(session):
 
 
 def populate_jtrace_session(session):
-    master_record = MasterRecord(
+    master_record_1 = MasterRecord(
         id=1,
         status=0,
         last_updated=datetime(2020, 3, 16),
@@ -282,6 +282,16 @@ def populate_jtrace_session(session):
         nationalid="999999999",
         nationalid_type="UKRDC",
         effective_date=datetime(2020, 3, 16),
+    )
+
+    master_record_2 = MasterRecord(
+        id=2,
+        status=0,
+        last_updated=datetime(2021, 1, 1),
+        date_of_birth=datetime(1980, 12, 12),
+        nationalid="999999911",
+        nationalid_type="UKRDC",
+        effective_date=datetime(2021, 1, 1),
     )
 
     person_1 = Person(
@@ -357,7 +367,18 @@ def populate_jtrace_session(session):
         last_updated=datetime(2021, 1, 1),
     )
 
-    session.add(master_record)
+    work_item_3 = WorkItem(
+        id=3,
+        person_id=4,
+        master_id=2,
+        type=9,
+        description="DESCRIPTION_3",
+        status=1,
+        last_updated=datetime(2021, 1, 1),
+    )
+
+    session.add(master_record_1)
+    session.add(master_record_2)
     session.add(person_1)
     session.add(person_2)
     session.add(person_3)
@@ -366,6 +387,7 @@ def populate_jtrace_session(session):
     session.add(link_record_2)
     session.add(work_item_1)
     session.add(work_item_2)
+    session.add(work_item_3)
 
     session.commit()
 
