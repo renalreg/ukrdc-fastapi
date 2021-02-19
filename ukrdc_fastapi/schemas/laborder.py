@@ -21,4 +21,4 @@ class ResultItemSchema(OrmModel):
 
 
 class LabOrderSchema(LabOrderShortSchema):
-    results: List[ResultItemSchema]
+    result_items: List[ResultItemSchema]
