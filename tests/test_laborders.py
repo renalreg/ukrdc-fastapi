@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from ukrdc_fastapi.models.ukrdc import LabOrder
+from ukrdc_fastapi.models.ukrdc import LabOrder, ResultItem
 
 
 def test_laborders_list(client):
@@ -55,10 +55,23 @@ def test_laborder_delete(client, ukrdc3_session):
         order_category="ORDER_CATEGORY_TEMP",
         specimen_collected_time=datetime(2020, 3, 16),
     )
+    resultitem = ResultItem(
+        id="RESULTITEM_TEMP",
+        order_id="LABORDER_TEMP",
+        service_id_std="SERVICE_ID_STD_TEMP",
+        service_id="SERVICE_ID_TEMP",
+        service_id_description="SERVICE_ID_DESCRIPTION_TEMP",
+        value="VALUE_TEMP",
+        value_units="VALUE_UNITS_TEMP",
+        observation_time=datetime(2020, 3, 16),
+    )
     ukrdc3_session.add(laborder)
+    ukrdc3_session.add(resultitem)
     ukrdc3_session.commit()
 
     # Make sure the laborder was created
+    assert ukrdc3_session.query(LabOrder).get("LABORDER_TEMP")
+    assert ukrdc3_session.query(ResultItem).get("RESULTITEM_TEMP")
     response = client.get("/laborders/LABORDER_TEMP")
     assert response.status_code == 200
 
@@ -69,3 +82,5 @@ def test_laborder_delete(client, ukrdc3_session):
     # Make sure the lab order was deleted
     response = client.get("/laborders/LABORDER_TEMP")
     assert response.status_code == 404
+    assert not ukrdc3_session.query(LabOrder).get("LABORDER_TEMP")
+    assert not ukrdc3_session.query(ResultItem).get("RESULTITEM_TEMP")
