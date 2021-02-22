@@ -1,6 +1,8 @@
 import datetime
 from typing import List, Optional
 
+from fastapi_hypermodel import HyperRef
+
 from .base import OrmModel
 
 
@@ -9,6 +11,11 @@ class LabOrderShortSchema(OrmModel):
     entered_at_description: Optional[str]
     entered_at: Optional[str]
     specimen_collected_time: datetime.datetime
+    href: HyperRef
+
+    class Href:
+        endpoint = "laborder_get"
+        values = {"order_id": "<id>"}
 
 
 class ResultItemSchema(OrmModel):

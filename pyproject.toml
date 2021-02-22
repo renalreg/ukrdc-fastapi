@@ -16,6 +16,7 @@ pydantic = {extras = ["dotenv"], version = "^1.7.3"}
 python = "^3.8" 
 requests = "^2.25.1" 
 uvicorn = "^0.13.3" 
+fastapi-hypermodel = "^0.1.0"
 
 [tool.poetry.dev-dependencies]
 black = "^20.8b1"
