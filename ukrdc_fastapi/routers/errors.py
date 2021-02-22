@@ -7,7 +7,7 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy.orm import Session
 
 from ukrdc_fastapi.dependencies import get_errorsdb
-from ukrdc_fastapi.models.errors import Message
+from ukrdc_fastapi.models.errorsdb import Message
 from ukrdc_fastapi.schemas.errors import MessageSchema
 
 router = APIRouter()

@@ -12,7 +12,7 @@ class Channel(Base):
     __tablename__ = "channels"
 
     id = Column(String, primary_key=True)
-    name = Column(String, max_length=100)
+    name = Column(String)
     store_first_message = Column(Boolean)
     store_last_message = Column(Boolean)
 
