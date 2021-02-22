@@ -33,3 +33,18 @@ JtraceSession = sessionmaker(
         )
     ),
 )
+
+ErrorsSession = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=create_engine(
+        build_db_uri(
+            settings.errors_driver,
+            settings.errors_host,
+            settings.errors_port,
+            settings.errors_user,
+            settings.errors_pass,
+            settings.errors_name,
+        )
+    ),
+)

@@ -19,6 +19,13 @@ class Settings(BaseSettings):
     jtrace_name: str = "JTRACE"
     jtrace_driver: str = "postgresql+psycopg2"
 
+    errors_host: str = "localhost"
+    errors_port: int = 5432
+    errors_user: str = "ukrdc"
+    errors_pass: str = "****"
+    errors_name: str = "errorsdb"
+    errors_driver: str = "postgresql+psycopg2"
+
     crowd_url: str = "https://crowd.renalregistry.nhs.uk/crowd"
     crowd_name: str = "ukrdc-user-api"
     crowd_pass: str = "****"
