@@ -4,7 +4,6 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi_pagination import Page
 from fastapi_pagination.ext.sqlalchemy import paginate
 from pydantic import BaseModel
-from requests.exceptions import RequestException
 from sqlalchemy.orm import Query, Session
 
 from ukrdc_fastapi.dependencies import get_ukrdc3
@@ -23,7 +22,7 @@ from ukrdc_fastapi.schemas.patientrecord import (
     PatientRecordShortSchema,
 )
 from ukrdc_fastapi.schemas.survey import SurveySchema
-from ukrdc_fastapi.utils import filters, post_mirth_message
+from ukrdc_fastapi.utils import filters, post_mirth_message_and_catch
 
 router = APIRouter()
 
@@ -106,14 +105,6 @@ def patient_export(pid: str, args: ExportRequestSchema):
     template: Optional[str] = EXPORT_TEMPLATES.get(args.data, "")
     if not template:
         raise HTTPException(400, detail=f"Unknown export data operation {args.data}")
-    msg: str = template.format(pid=pid)
-    # Allows us to test without actually sending to Mirth
-    if args.mirth:
-        try:
-            post_mirth_message(args.path, msg.strip())
-            status = "success"
-        except RequestException:
-            raise HTTPException(502, detail="Error exporting data to Mirth")
-    else:
-        status = "ignored"
-    return {"status": status, "message": msg}
+    message: str = template.format(pid=pid)
+
+    return post_mirth_message_and_catch(args.path, message.strip(), args.mirth)
