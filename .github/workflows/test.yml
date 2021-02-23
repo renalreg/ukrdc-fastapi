@@ -35,3 +35,11 @@ jobs:
       - name: Run Tox
         # Run tox using the version of Python in `PATH`
         run: poetry run tox
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella-${{ matrix.python }}
+          fail_ci_if_error: false
