@@ -88,7 +88,7 @@ def workitems_list(
 
 
 @router.get("/{workitem_id}", response_model=WorkItemSchema)
-def workitems_detail(
+def workitem_detail(
     workitem_id: int,
     jtrace: Session = Depends(get_jtrace),
 ):
@@ -164,7 +164,8 @@ def workitem_merge(
     # If we don't have 2 records, something has gone wrong
     if len(master_with_ukrdc) != 2:
         raise HTTPException(
-            400, detail="Got more or less than 2 entries with different UKRDC IDs"
+            400,
+            detail=f"Got {len(master_with_ukrdc)} master record(s) with different UKRDC IDs. Expected 2.",
         )
 
     # Create and send the Mirth message
