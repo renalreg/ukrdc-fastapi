@@ -15,6 +15,7 @@ router = APIRouter()
 
 @router.get("/", response_model=Page[MessageSchema])
 def error_messages(
+    ni: Optional[str] = None,
     facility: Optional[str] = None,
     fromdays: Optional[int] = None,
     untildays: Optional[int] = None,
@@ -41,6 +42,8 @@ def error_messages(
     if facility:
         messages = messages.filter(Message.facility == facility)
 
-    # TODO: Filter by NI
+    # Optionally filter by NI
+    if ni:
+        messages = messages.filter(Message.ni == ni)
 
     return paginate(messages)
