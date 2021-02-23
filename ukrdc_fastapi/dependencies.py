@@ -2,7 +2,7 @@ from typing import Generator
 
 from sqlalchemy.orm import Session
 
-from .database import JtraceSession, Ukrdc3Session
+from .database import ErrorsSession, JtraceSession, Ukrdc3Session
 
 
 def get_ukrdc3() -> Generator[Session, None, None]:
@@ -25,6 +25,19 @@ def get_jtrace() -> Generator[Session, None, None]:
         Generator[Session]: JTRACE database session
     """
     session = JtraceSession()
+    try:
+        yield session
+    finally:
+        session.close()
+
+
+def get_errorsdb() -> Generator[Session, None, None]:
+    """Yeild a new errorsdb database session
+
+    Yields:
+        Generator[Session]: errorsdb database session
+    """
+    session = ErrorsSession()
     try:
         yield session
     finally:

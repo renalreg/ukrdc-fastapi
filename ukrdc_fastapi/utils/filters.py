@@ -1,9 +1,12 @@
-from typing import List, Set, Tuple
+from collections import namedtuple
+from typing import List, Optional, Set, Tuple
 
 from sqlalchemy.orm import Query, Session
 
 from ukrdc_fastapi.models.empi import LinkRecord, MasterRecord, WorkItem
 from ukrdc_fastapi.models.ukrdc import PatientNumber, PatientRecord
+
+PersonMasterLink = namedtuple("PersonMasterLink", ("id", "person_id", "master_id"))
 
 
 def _find_related_ids(ukrdcid: List[str], jtrace: Session) -> Tuple[Set[int], Set[int]]:
@@ -41,7 +44,9 @@ def _find_related_ids(ukrdcid: List[str], jtrace: Session) -> Tuple[Set[int], Se
     return (seen_master_ids, seen_person_ids)
 
 
-def _find_related_link_records(session: Session, master_ids: List[str]) -> Set[int]:
+def find_related_link_records(
+    session: Session, master_id: str, person_id: Optional[str] = None
+) -> Set[PersonMasterLink]:
     """
     Return a list of person <-> masterrecord LinkRecord IDs
     This function is non-trivial since linked records can
@@ -52,40 +57,48 @@ def _find_related_link_records(session: Session, master_ids: List[str]) -> Set[i
     This function basically follows the complete chain.
     """
 
-    linkrecord_ids: Set[int] = set()
+    linkrecord_ids: Set[PersonMasterLink] = set()
+    new_entries: Set[Tuple[str, str]] = set()
+    entries: Query
 
-    for master_id in master_ids:
-        entries: Query = session.query(LinkRecord).filter(
-            LinkRecord.master_id == master_id
+    # If no explicit person_id is give, we'll derive one
+    if person_id:
+        entries = session.query(LinkRecord).filter(
+            LinkRecord.master_id == master_id, LinkRecord.person_id == person_id
+        )
+        new_entries = {(person_id, master_id)}
+    else:
+        entries = session.query(LinkRecord).filter(LinkRecord.master_id == master_id)
+        new_entries = {(entry.person_id, entry.master_id) for entry in entries}
+
+    # Add LinkRecord IDs to our output set
+    linkrecord_ids |= {
+        PersonMasterLink(entry.id, entry.person_id, entry.master_id)
+        for entry in entries
+    }
+
+    # For each personid-masterid tuple
+    while new_entries:
+        # Remove the element from the set
+        person_id, master_id = new_entries.pop()
+
+        # Filter every possible LinkRecord by personid OR masterid
+        link_records: Query = session.query(LinkRecord).filter(
+            (LinkRecord.person_id == person_id) | (LinkRecord.master_id == master_id)
         )
 
-        # Set of personid-masterid tuples from query
-        new_entries: Set[Tuple[str, str]] = {
-            (entry.person_id, entry.master_id) for entry in entries
-        }
-        # Add LinkRecord IDs to our output set
-        linkrecord_ids |= {entry.id for entry in entries}
-
-        # For each personid-masterid tuple
-        while new_entries:
-            # Remove the element from the set
-            person_id, master_id = new_entries.pop()
-
-            # Filter every possible LinkRecord by personid OR masterid
-            link_records: Query = session.query(LinkRecord).filter(
-                (LinkRecord.person_id == person_id)
-                | (LinkRecord.master_id == master_id)
+        # For each match (either personid or masterid)
+        for record in link_records:
+            person_master_link: PersonMasterLink = PersonMasterLink(
+                record.id, record.person_id, record.master_id
             )
-
-            # For each match (either personid or masterid)
-            for record in link_records:
-                # If it's already in the original set, skip
-                if record.id in linkrecord_ids:
-                    continue
-                # Add the matched entry to the set we're iterating through
-                new_entries.add((record.person_id, record.master_id))
-                # Add the LinkRecord ID to our output
-                linkrecord_ids.add(record.id)
+            # If it's already in the original set, skip
+            if person_master_link in linkrecord_ids:
+                continue
+            # Add the matched entry to the set we're iterating through
+            new_entries.add((record.person_id, record.master_id))
+            # Add the LinkRecord ID to our output
+            linkrecord_ids.add(person_master_link)
 
     return linkrecord_ids
 
@@ -140,7 +153,11 @@ def linkrecords_by_ni(session: Session, query: Query, nationalid: str) -> Query:
     )
     master_ids: List[str] = [record.id for record in master_records.all()]
 
-    link_record_ids: Set[int] = _find_related_link_records(session, master_ids)
+    link_record_ids: Set[int] = set()
+    for master_id in master_ids:
+        link_record_ids |= {
+            pml.id for pml in find_related_link_records(session, master_id)
+        }
 
     return query.filter(LinkRecord.id.in_(link_record_ids))
 
