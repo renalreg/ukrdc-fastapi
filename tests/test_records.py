@@ -223,14 +223,6 @@ def test_record_export_data(client):
     }
 
 
-def test_record_export_data_error(client):
-    response = client.post(
-        "/records/PYTEST01:PV:00000000A/export-data",
-        json={"data": "FULL_PV_TESTS_EXTRACT_TEMPLATE", "path": "/", "mirth": True},
-    )
-    assert response.status_code == 502
-
-
 def test_record_export_data_invalid_template(client):
     response = client.post(
         "/records/PYTEST01:PV:00000000A/export-data",
