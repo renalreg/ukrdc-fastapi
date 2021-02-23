@@ -59,16 +59,16 @@ def find_related_link_records(
 
     linkrecord_ids: Set[PersonMasterLink] = set()
     new_entries: Set[Tuple[str, str]] = set()
+    entries: Query
 
     # If no explicit person_id is give, we'll derive one
     if person_id:
+        entries = session.query(LinkRecord).filter(
+            LinkRecord.master_id == master_id, LinkRecord.person_id == person_id
+        )
         new_entries = {(person_id, master_id)}
     else:
-        entries: Query = session.query(LinkRecord).filter(
-            LinkRecord.master_id == master_id
-        )
-
-        # Set of personid-masterid tuples from query
+        entries = session.query(LinkRecord).filter(LinkRecord.master_id == master_id)
         new_entries = {(entry.person_id, entry.master_id) for entry in entries}
 
     # Add LinkRecord IDs to our output set
