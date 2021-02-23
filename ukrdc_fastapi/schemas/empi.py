@@ -54,7 +54,7 @@ class WorkItemSummarySchema(OrmModel):
     href: HyperRef
 
     class Href:
-        endpoint = "workitems_detail"
+        endpoint = "workitem_detail"
         values = {"workitem_id": "<id>"}
 
 
@@ -72,7 +72,7 @@ class WorkItemShortSchema(OrmModel):
     href: HyperRef
 
     class Href:
-        endpoint = "workitems_detail"
+        endpoint = "workitem_detail"
         values = {"workitem_id": "<id>"}
 
 
