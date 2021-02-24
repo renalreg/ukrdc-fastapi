@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi_pagination import Page
@@ -8,13 +9,19 @@ from sqlalchemy.orm import Session
 from ukrdc_fastapi.dependencies import get_ukrdc3
 from ukrdc_fastapi.models.ukrdc import LabOrder, PVDelete
 from ukrdc_fastapi.schemas.laborder import LabOrderSchema, LabOrderShortSchema
+from ukrdc_fastapi.utils import filters
 
 router = APIRouter()
 
 
 @router.get("/", response_model=Page[LabOrderShortSchema])
-def laborders(ukrdc3: Session = Depends(get_ukrdc3)):
+def laborders(ni: Optional[str] = None, ukrdc3: Session = Depends(get_ukrdc3)):
     laborders = ukrdc3.query(LabOrder)
+    # Optionally filter by NI
+    if ni:
+        laborders = filters.laborders_by_ni(ukrdc3, laborders, ni)
+    # Sort by collected time
+    laborders = laborders.order_by(LabOrder.specimen_collected_time.desc())
     return paginate(laborders)
 
 

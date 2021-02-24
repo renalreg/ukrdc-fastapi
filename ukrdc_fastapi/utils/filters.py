@@ -1,10 +1,10 @@
 from collections import namedtuple
-from typing import List, Optional, Set, Tuple
+from typing import Iterable, List, Optional, Set, Tuple
 
 from sqlalchemy.orm import Query, Session
 
 from ukrdc_fastapi.models.empi import LinkRecord, MasterRecord, WorkItem
-from ukrdc_fastapi.models.ukrdc import PatientNumber, PatientRecord
+from ukrdc_fastapi.models.ukrdc import LabOrder, PatientNumber, PatientRecord
 
 PersonMasterLink = namedtuple("PersonMasterLink", ("id", "person_id", "master_id"))
 
@@ -183,3 +183,43 @@ def workitems_by_ukrdcids(session: Session, query: Query, ukrdcids: List[str]) -
         (WorkItem.master_id.in_(seen_master_ids))
         | (WorkItem.person_id.in_(seen_person_ids))
     )
+
+
+def get_pids_from_ni(session: Session, ni: str) -> List[str]:
+    """Get a list of PIDs associated with a particular NI
+
+    Args:
+        session (Session): UKRDC3 session
+        ni (str): NI number
+
+    Returns:
+        List[str]: List of PIDs
+    """
+    pids = session.query(PatientNumber.pid).filter(
+        PatientNumber.patientid == ni, PatientNumber.numbertype == "NI"
+    )
+    ukrdcid = (
+        session.query(PatientRecord.ukrdcid)
+        .filter(PatientRecord.pid.in_(pids))
+        .first()[0]  # TODO: Are we sure we only want first()
+    )
+
+    pid_tuples = (
+        session.query(PatientRecord.pid).filter(PatientRecord.ukrdcid == ukrdcid).all()
+    )
+    return [pid[0] for pid in pid_tuples]
+
+
+def laborders_by_ni(session: Session, query: Query, ni: str) -> Query:
+    """Filter a query of LabOrder objects by a given NI
+
+    Args:
+        session (Session): JTrace Session
+        query (Query): Current session query to filter
+        ni (str): NI number
+
+    Returns:
+        Query: A new query containing filtered results
+    """
+    pids: Iterable[str] = get_pids_from_ni(session, ni)
+    return query.filter(LabOrder.pid.in_(pids))
