@@ -14,7 +14,7 @@ T = TypeVar("T")  # pylint: disable=invalid-name
 
 
 @use_as_page
-class Page(AbstractPage[T], Generic[T]):
+class Page(AbstractPage[T], Generic[T]):  # pylint: disable=too-many-ancestors
     items: Sequence[T]
     page: int = Field(..., ge=0)
     size: int = Field(..., gt=0)
