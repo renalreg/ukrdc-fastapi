@@ -68,6 +68,7 @@ def test_resultitems_list(client):
     assert response.json()["items"] == [
         {
             "id": "RESULTITEM1",
+            "href": "/resultitems/RESULTITEM1",
             "order_id": "LABORDER1",
             "service_id": "SERVICE_ID",
             "service_id_description": "SERVICE_ID_DESCRIPTION",
@@ -87,6 +88,7 @@ def test_resultitems_list_filtered_ni(ukrdc3_session, client):
     assert response.json()["items"] == [
         {
             "id": "RESULTITEM_TEST2_1",
+            "href": "/resultitems/RESULTITEM_TEST2_1",
             "order_id": "LABORDER_TEST2_1",
             "service_id": "SERVICE_ID_TEST2_1",
             "service_id_description": "SERVICE_ID_DESCRIPTION_TEST2_1",
@@ -106,6 +108,7 @@ def test_resultitems_list_filtered_service_id(ukrdc3_session, client):
     assert response.json()["items"] == [
         {
             "id": "RESULTITEM_TEST2_1",
+            "href": "/resultitems/RESULTITEM_TEST2_1",
             "order_id": "LABORDER_TEST2_1",
             "service_id": "SERVICE_ID_TEST2_1",
             "service_id_description": "SERVICE_ID_DESCRIPTION_TEST2_1",
@@ -129,6 +132,7 @@ def test_resultitems_list_filtered_service_id_delete(ukrdc3_session, client):
     assert response.json()["items"] == [
         {
             "id": "RESULTITEM1",
+            "href": "/resultitems/RESULTITEM1",
             "order_id": "LABORDER1",
             "service_id": "SERVICE_ID",
             "service_id_description": "SERVICE_ID_DESCRIPTION",
@@ -155,6 +159,7 @@ def test_resultitem_detail(client):
     assert response.status_code == 200
     assert response.json() == {
         "id": "RESULTITEM1",
+        "href": "/resultitems/RESULTITEM1",
         "order_id": "LABORDER1",
         "service_id": "SERVICE_ID",
         "service_id_description": "SERVICE_ID_DESCRIPTION",

@@ -25,6 +25,11 @@ class ResultItemSchema(OrmModel):
     service_id_description: str
     value: str
     value_units: Optional[str]
+    href: HyperRef
+
+    class Href:
+        endpoint = "resultitem_detail"
+        values = {"resultitem_id": "<id>"}
 
 
 class LabOrderSchema(LabOrderShortSchema):

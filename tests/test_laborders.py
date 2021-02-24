@@ -81,6 +81,7 @@ def test_laborder(client):
         "result_items": [
             {
                 "id": "RESULTITEM1",
+                "href": "/resultitems/RESULTITEM1",
                 "order_id": "LABORDER1",
                 "service_id": "SERVICE_ID",
                 "service_id_description": "SERVICE_ID_DESCRIPTION",

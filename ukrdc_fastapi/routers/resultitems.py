@@ -113,7 +113,7 @@ def resultitem_detail(
 
 
 @router.delete("/{resultitem_id}", status_code=204)
-def resultitem_detail(
+def resultitem_delete(
     resultitem_id: str,
     ukrdc3: Session = Depends(get_ukrdc3),
 ):
