@@ -4,7 +4,12 @@ from typing import Iterable, List, Optional, Set, Tuple
 from sqlalchemy.orm import Query, Session
 
 from ukrdc_fastapi.models.empi import LinkRecord, MasterRecord, WorkItem
-from ukrdc_fastapi.models.ukrdc import LabOrder, PatientNumber, PatientRecord
+from ukrdc_fastapi.models.ukrdc import (
+    LabOrder,
+    PatientNumber,
+    PatientRecord,
+    ResultItem,
+)
 
 PersonMasterLink = namedtuple("PersonMasterLink", ("id", "person_id", "master_id"))
 
@@ -103,6 +108,31 @@ def find_related_link_records(
     return linkrecord_ids
 
 
+def get_pids_from_ni(session: Session, ni: str) -> List[str]:
+    """Get a list of PIDs associated with a particular NI
+
+    Args:
+        session (Session): UKRDC3 session
+        ni (str): NI number
+
+    Returns:
+        List[str]: List of PIDs
+    """
+    pids = session.query(PatientNumber.pid).filter(
+        PatientNumber.patientid == ni, PatientNumber.numbertype == "NI"
+    )
+    ukrdcid = (
+        session.query(PatientRecord.ukrdcid)
+        .filter(PatientRecord.pid.in_(pids))
+        .first()[0]  # TODO: Are we sure we only want first()
+    )
+
+    pid_tuples = (
+        session.query(PatientRecord.pid).filter(PatientRecord.ukrdcid == ukrdcid).all()
+    )
+    return [pid[0] for pid in pid_tuples]
+
+
 def patientrecords_by_ni(session: Session, query: Query, patientid: str) -> Query:
     """Filter a query of PatientRecord objects by a given NI patient ID
 
@@ -185,36 +215,11 @@ def workitems_by_ukrdcids(session: Session, query: Query, ukrdcids: List[str]) -
     )
 
 
-def get_pids_from_ni(session: Session, ni: str) -> List[str]:
-    """Get a list of PIDs associated with a particular NI
-
-    Args:
-        session (Session): UKRDC3 session
-        ni (str): NI number
-
-    Returns:
-        List[str]: List of PIDs
-    """
-    pids = session.query(PatientNumber.pid).filter(
-        PatientNumber.patientid == ni, PatientNumber.numbertype == "NI"
-    )
-    ukrdcid = (
-        session.query(PatientRecord.ukrdcid)
-        .filter(PatientRecord.pid.in_(pids))
-        .first()[0]  # TODO: Are we sure we only want first()
-    )
-
-    pid_tuples = (
-        session.query(PatientRecord.pid).filter(PatientRecord.ukrdcid == ukrdcid).all()
-    )
-    return [pid[0] for pid in pid_tuples]
-
-
 def laborders_by_ni(session: Session, query: Query, ni: str) -> Query:
     """Filter a query of LabOrder objects by a given NI
 
     Args:
-        session (Session): JTrace Session
+        session (Session): UKRDC3 Session
         query (Query): Current session query to filter
         ni (str): NI number
 
@@ -223,3 +228,20 @@ def laborders_by_ni(session: Session, query: Query, ni: str) -> Query:
     """
     pids: Iterable[str] = get_pids_from_ni(session, ni)
     return query.filter(LabOrder.pid.in_(pids))
+
+
+def resultitems_by_ni(session: Session, query: Query, ni: str) -> Query:
+    """Filter a query of ResultItem objects by a given NI
+
+    Args:
+        session (Session): UKRDC3 Session
+        query (Query): Current session query to filter
+        ni (str): NI number
+
+    Returns:
+        Query: A new query containing filtered results
+    """
+    pids: Iterable[str] = get_pids_from_ni(session, ni)
+    order_ids_query: Query = session.query(LabOrder.id).filter(LabOrder.pid.in_(pids))
+    order_ids: List[str] = [id_tuple[0] for id_tuple in order_ids_query.all()]
+    return query.filter(ResultItem.order_id.in_(order_ids)).distinct()

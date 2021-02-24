@@ -24,7 +24,7 @@ class ResultItemSchema(OrmModel):
     service_id: str
     service_id_description: str
     value: str
-    value_units: str
+    value_units: Optional[str]
 
 
 class LabOrderSchema(LabOrderShortSchema):
