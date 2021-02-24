@@ -1,6 +1,8 @@
 import datetime
 from typing import List, Optional
 
+from fastapi_hypermodel import HyperRef
+
 from .base import OrmModel
 from .patient import PatientSchema
 
@@ -19,6 +21,11 @@ class PatientRecordShortSchema(OrmModel):
     ukrdcid: str
     repository_creation_date: datetime.datetime
     repository_update_date: datetime.datetime
+    href: HyperRef
+
+    class Href:
+        endpoint = "patient_record"
+        values = {"pid": "<pid>"}
 
 
 class PatientRecordSchema(PatientRecordShortSchema):

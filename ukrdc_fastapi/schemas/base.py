@@ -1,8 +1,9 @@
-from pydantic import BaseModel, validator
+from fastapi_hypermodel import HyperModel
+from pydantic import validator
 from sqlalchemy.orm import Query
 
 
-class OrmModel(BaseModel):
+class OrmModel(HyperModel):
     class Config:
         orm_mode = True
 

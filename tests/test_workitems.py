@@ -11,6 +11,7 @@ def test_workitems_list(client):
     assert response.json()["items"] == [
         {
             "id": 1,
+            "href": "/workitems/1",
             "person_id": 3,
             "master_id": 1,
             "type": 9,
@@ -23,6 +24,7 @@ def test_workitems_list(client):
         },
         {
             "id": 2,
+            "href": "/workitems/2",
             "person_id": 4,
             "master_id": 1,
             "type": 9,
@@ -35,6 +37,7 @@ def test_workitems_list(client):
         },
         {
             "id": 3,
+            "href": "/workitems/3",
             "person_id": 4,
             "master_id": 2,
             "type": 9,
@@ -54,6 +57,7 @@ def test_workitems_list_ukrdcid_filter_single(client):
     assert response.json()["items"] == [
         {
             "id": 1,
+            "href": "/workitems/1",
             "person_id": 3,
             "master_id": 1,
             "type": 9,
@@ -66,6 +70,7 @@ def test_workitems_list_ukrdcid_filter_single(client):
         },
         {
             "id": 2,
+            "href": "/workitems/2",
             "person_id": 4,
             "master_id": 1,
             "type": 9,
@@ -85,6 +90,7 @@ def test_workitems_list_ukrdcid_filter_multiple(client):
     assert response.json()["items"] == [
         {
             "id": 1,
+            "href": "/workitems/1",
             "person_id": 3,
             "master_id": 1,
             "type": 9,
@@ -97,6 +103,7 @@ def test_workitems_list_ukrdcid_filter_multiple(client):
         },
         {
             "id": 2,
+            "href": "/workitems/2",
             "person_id": 4,
             "master_id": 1,
             "type": 9,
@@ -109,6 +116,7 @@ def test_workitems_list_ukrdcid_filter_multiple(client):
         },
         {
             "id": 3,
+            "href": "/workitems/3",
             "person_id": 4,
             "master_id": 2,
             "type": 9,
@@ -127,6 +135,7 @@ def test_workitem_detail(client):
     assert response.status_code == 200
     assert response.json() == {
         "id": 1,
+        "href": "/workitems/1",
         "person_id": 3,
         "master_id": 1,
         "type": 9,
@@ -163,6 +172,7 @@ def test_workitem_detail(client):
         "related": [
             {
                 "id": 2,
+                "href": "/workitems/2",
                 "person_id": 4,
                 "master_id": 1,
             }

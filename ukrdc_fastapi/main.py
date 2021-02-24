@@ -1,4 +1,5 @@
 from fastapi import Depends, FastAPI
+from fastapi_hypermodel import HyperModel
 from fastapi_pagination import pagination_params
 from starlette.responses import RedirectResponse
 
@@ -10,6 +11,8 @@ app = FastAPI(
     version="0.0.0",
     dependencies=[Depends(pagination_params)],
 )
+
+HyperModel.init_app(app)
 
 
 @app.get("/", include_in_schema=False)
