@@ -1,5 +1,5 @@
 import datetime
-from typing import Iterable, List, Optional, Set
+from typing import Iterable, List, Optional, Set, Union
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Query as SqlQuery
@@ -84,7 +84,7 @@ def _ids_from_full_name(session: Session, names: Iterable[str]):
     return matched_person_ids
 
 
-def _ids_from_dob(session: Session, dobs: Iterable[datetime.date]):
+def _ids_from_dob(session: Session, dobs: Iterable[Union[str, datetime.date]]):
     """Finds Ids from date of birth"""
     conditions = [Person.date_of_birth.like(dob) for dob in dobs]
     matched_person_ids = set(
