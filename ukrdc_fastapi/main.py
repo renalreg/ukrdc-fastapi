@@ -9,6 +9,7 @@ from ukrdc_fastapi.routers import (
     linkrecords,
     records,
     resultitems,
+    search,
     workitems,
 )
 
@@ -34,6 +35,7 @@ app.include_router(workitems.router, prefix="/workitems", tags=["Work Items"])
 app.include_router(linkrecords.router, prefix="/linkrecords", tags=["Link Records"])
 app.include_router(errors.router, prefix="/errors", tags=["Errors"])
 app.include_router(resultitems.router, prefix="/resultitems", tags=["Result Items"])
+app.include_router(search.router, prefix="/search", tags=["Search"])
 
 if __name__ == "__main__":
     import uvicorn
