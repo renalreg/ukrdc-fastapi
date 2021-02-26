@@ -1,67 +1,18 @@
 from datetime import datetime
 
 from ukrdc_fastapi.models.empi import LinkRecord, MasterRecord, Person
+from ukrdc_fastapi.schemas.empi import LinkRecordSchema
 
 
 def test_linkrecords_list(client):
-    response = client.get("/linkrecords")
+    response = client.get("/empi/linkrecords")
     assert response.status_code == 200
-    assert response.json()["items"] == [
-        {
-            "id": 1,
-            "person": {
-                "id": 1,
-                "originator": "UKRDC",
-                "localid": "123456789",
-                "localid_type": "CLPID",
-                "date_of_birth": "1950-01-01",
-                "gender": "9",
-                "date_of_death": None,
-                "givenname": None,
-                "surname": None,
-                "xref_entries": [],
-            },
-            "master_record": {
-                "id": 1,
-                "last_updated": "2020-03-16T00:00:00",
-                "date_of_birth": "1950-01-01",
-                "gender": None,
-                "givenname": None,
-                "surname": None,
-                "nationalid": "999999999",
-                "nationalid_type": "UKRDC",
-                "status": 0,
-                "effective_date": "2020-03-16T00:00:00",
-            },
-        },
-        {
-            "id": 2,
-            "person": {
-                "id": 2,
-                "originator": "UKRDC",
-                "localid": "987654321",
-                "localid_type": "CLPID",
-                "date_of_birth": "1950-01-01",
-                "gender": "9",
-                "date_of_death": None,
-                "givenname": None,
-                "surname": None,
-                "xref_entries": [],
-            },
-            "master_record": {
-                "id": 1,
-                "last_updated": "2020-03-16T00:00:00",
-                "date_of_birth": "1950-01-01",
-                "gender": None,
-                "givenname": None,
-                "surname": None,
-                "nationalid": "999999999",
-                "nationalid_type": "UKRDC",
-                "status": 0,
-                "effective_date": "2020-03-16T00:00:00",
-            },
-        },
-    ]
+
+    returned_ids = {item["id"] for item in response.json()["items"]}
+    assert returned_ids == {1, 2}
+
+    for item in response.json()["items"]:
+        assert LinkRecordSchema(**item)
 
 
 def test_linkrecords_complex_chain(client, jtrace_session):
@@ -108,7 +59,7 @@ def test_linkrecords_complex_chain(client, jtrace_session):
 
     # Test the complex chain
 
-    response = client.get("/linkrecords?ni=101")
+    response = client.get("/empi/linkrecords?ni=101")
     assert response.status_code == 200
     # Get a list of all returned LinkRecord IDs
     returned_linkrecord_ids = [item.get("id") for item in response.json()["items"]]
@@ -117,7 +68,7 @@ def test_linkrecords_complex_chain(client, jtrace_session):
 
     # Test the simple chain
 
-    response = client.get("/linkrecords?ni=201")
+    response = client.get("/empi/linkrecords?ni=201")
     assert response.status_code == 200
     # Get a list of all returned LinkRecord IDs
     returned_linkrecord_ids = [item.get("id") for item in response.json()["items"]]

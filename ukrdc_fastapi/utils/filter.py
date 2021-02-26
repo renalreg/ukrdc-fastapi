@@ -14,14 +14,14 @@ from ukrdc_fastapi.models.ukrdc import (
 PersonMasterLink = namedtuple("PersonMasterLink", ("id", "person_id", "master_id"))
 
 
-def _find_related_ids(ukrdcid: List[str], jtrace: Session) -> Tuple[Set[int], Set[int]]:
+def _find_related_ids(
+    nationalid: List[str], jtrace: Session, nationalid_type: Optional[str] = None
+) -> Tuple[Set[int], Set[int]]:
+    master_record_filters = [MasterRecord.nationalid.in_(nationalid)]
+    if nationalid_type:
+        master_record_filters.append(MasterRecord.nationalid_type.is_(nationalid_type))
     records: List[Tuple[int]] = (
-        jtrace.query(MasterRecord.id)
-        .filter(
-            MasterRecord.nationalid_type == "UKRDC",
-            MasterRecord.nationalid.in_(ukrdcid),
-        )
-        .all()
+        jtrace.query(MasterRecord.id).filter(*master_record_filters).all()
     )
     flat_ids: List[int] = [masterid for masterid, in records]
 
@@ -206,7 +206,9 @@ def workitems_by_ukrdcids(session: Session, query: Query, ukrdcids: List[str]) -
     # Fetch a list of master/person IDs related to each UKRDCID
     seen_master_ids: Set[int]
     seen_person_ids: Set[int]
-    seen_master_ids, seen_person_ids = _find_related_ids(ukrdcids, session)
+    seen_master_ids, seen_person_ids = _find_related_ids(
+        ukrdcids, session, nationalid_type="UKRDC"
+    )
 
     # Filter workitems by the matching IDs
     return query.filter(

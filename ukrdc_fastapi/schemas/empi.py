@@ -9,15 +9,24 @@ from .base import OrmModel
 
 class MasterRecordSchema(OrmModel):
     id: int
+    nationalid: str
+    nationalid_type: str
     last_updated: datetime.datetime
     date_of_birth: datetime.date
     gender: Optional[str]
     givenname: Optional[str]
     surname: Optional[str]
-    nationalid: str
-    nationalid_type: str
     status: int
     effective_date: datetime.datetime
+
+    links = LinkSet(
+        {
+            "self": UrlFor("master_record_detail", {"record_id": "<id>"}),
+            "related": UrlFor("master_record_related", {"record_id": "<id>"}),
+            "persons": UrlFor("master_record_persons", {"record_id": "<id>"}),
+            "workitems": UrlFor("master_record_workitems", {"record_id": "<id>"}),
+        }
+    )
 
 
 class PidXRefSchema(OrmModel):
@@ -40,6 +49,13 @@ class PersonSchema(OrmModel):
     surname: Optional[str]
     xref_entries: List[PidXRefSchema]
 
+    links = LinkSet(
+        {
+            "self": UrlFor("person_detail", {"person_id": "<id>"}),
+            "patientrecord": UrlFor("patient_record", {"pid": "<localid>"}),
+        }
+    )
+
 
 class LinkRecordSchema(OrmModel):
     id: int
@@ -55,10 +71,7 @@ class WorkItemSummarySchema(OrmModel):
     links = LinkSet({"self": UrlFor("workitem_detail", {"workitem_id": "<id>"})})
 
 
-class WorkItemShortSchema(OrmModel):
-    id: int
-    person_id: int
-    master_id: int
+class WorkItemShortSchema(WorkItemSummarySchema):
     type: int
     description: str
     status: int
@@ -67,12 +80,7 @@ class WorkItemShortSchema(OrmModel):
     update_description: Optional[str]
     attributes: Optional[Json]
 
-    links = LinkSet({"self": UrlFor("workitem_detail", {"workitem_id": "<id>"})})
-
 
 class WorkItemSchema(WorkItemShortSchema):
     person: PersonSchema
     master_record: MasterRecordSchema
-
-    # `related` attribute isn't part of ORM and needs to be injected
-    related: Optional[List[WorkItemSummarySchema]]

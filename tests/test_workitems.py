@@ -3,94 +3,30 @@ from datetime import datetime
 import pytest
 
 from ukrdc_fastapi.models.empi import LinkRecord, MasterRecord, WorkItem
+from ukrdc_fastapi.schemas.empi import WorkItemSchema
 
 
 def test_workitems_list(client):
-    response = client.get("/workitems")
+    response = client.get("/empi/workitems")
     assert response.status_code == 200
-    assert response.json()["items"] == [
-        {
-            "id": 1,
-            "links": {"self": "/workitems/1"},
-            "person_id": 3,
-            "master_id": 1,
-            "type": 9,
-            "description": "DESCRIPTION_1",
-            "status": 1,
-            "last_updated": "2020-03-16T00:00:00",
-            "updated_by": None,
-            "update_description": None,
-            "attributes": None,
-        },
-        {
-            "id": 2,
-            "links": {"self": "/workitems/2"},
-            "person_id": 4,
-            "master_id": 1,
-            "type": 9,
-            "description": "DESCRIPTION_2",
-            "status": 1,
-            "last_updated": "2021-01-01T00:00:00",
-            "updated_by": None,
-            "update_description": None,
-            "attributes": None,
-        },
-        {
-            "id": 3,
-            "links": {"self": "/workitems/3"},
-            "person_id": 4,
-            "master_id": 2,
-            "type": 9,
-            "description": "DESCRIPTION_3",
-            "status": 1,
-            "last_updated": "2021-01-01T00:00:00",
-            "updated_by": None,
-            "update_description": None,
-            "attributes": None,
-        },
-    ]
+    returned_ids = {item["id"] for item in response.json()["items"]}
+    assert returned_ids == {1, 2, 3}
 
 
 def test_workitems_list_ukrdcid_filter_single(client):
-    response = client.get("/workitems?ukrdcid=999999999")
+    response = client.get("/empi/workitems?ukrdcid=999999999")
     assert response.status_code == 200
-    assert response.json()["items"] == [
-        {
-            "id": 1,
-            "links": {"self": "/workitems/1"},
-            "person_id": 3,
-            "master_id": 1,
-            "type": 9,
-            "description": "DESCRIPTION_1",
-            "status": 1,
-            "last_updated": "2020-03-16T00:00:00",
-            "updated_by": None,
-            "update_description": None,
-            "attributes": None,
-        },
-        {
-            "id": 2,
-            "links": {"self": "/workitems/2"},
-            "person_id": 4,
-            "master_id": 1,
-            "type": 9,
-            "description": "DESCRIPTION_2",
-            "status": 1,
-            "last_updated": "2021-01-01T00:00:00",
-            "updated_by": None,
-            "update_description": None,
-            "attributes": None,
-        },
-    ]
+    returned_ids = {item["id"] for item in response.json()["items"]}
+    assert returned_ids == {1, 2}
 
 
 def test_workitems_list_ukrdcid_filter_multiple(client):
-    response = client.get("/workitems?ukrdcid=999999999&ukrdcid=999999911")
+    response = client.get("/empi/workitems?ukrdcid=999999999&ukrdcid=999999911")
     assert response.status_code == 200
     assert response.json()["items"] == [
         {
             "id": 1,
-            "links": {"self": "/workitems/1"},
+            "links": {"self": "/empi/workitems/1"},
             "person_id": 3,
             "master_id": 1,
             "type": 9,
@@ -103,7 +39,7 @@ def test_workitems_list_ukrdcid_filter_multiple(client):
         },
         {
             "id": 2,
-            "links": {"self": "/workitems/2"},
+            "links": {"self": "/empi/workitems/2"},
             "person_id": 4,
             "master_id": 1,
             "type": 9,
@@ -116,7 +52,7 @@ def test_workitems_list_ukrdcid_filter_multiple(client):
         },
         {
             "id": 3,
-            "links": {"self": "/workitems/3"},
+            "links": {"self": "/empi/workitems/3"},
             "person_id": 4,
             "master_id": 2,
             "type": 9,
@@ -131,64 +67,21 @@ def test_workitems_list_ukrdcid_filter_multiple(client):
 
 
 def test_workitem_detail(client):
-    response = client.get("/workitems/1")
+    response = client.get("/empi/workitems/1")
     assert response.status_code == 200
-    assert response.json() == {
-        "id": 1,
-        "links": {"self": "/workitems/1"},
-        "person_id": 3,
-        "master_id": 1,
-        "type": 9,
-        "description": "DESCRIPTION_1",
-        "status": 1,
-        "last_updated": "2020-03-16T00:00:00",
-        "updated_by": None,
-        "update_description": None,
-        "attributes": None,
-        "person": {
-            "id": 3,
-            "originator": "UKRDC",
-            "localid": "192837465",
-            "localid_type": "CLPID",
-            "date_of_birth": "1950-01-01",
-            "gender": "9",
-            "date_of_death": None,
-            "givenname": None,
-            "surname": None,
-            "xref_entries": [],
-        },
-        "master_record": {
-            "id": 1,
-            "last_updated": "2020-03-16T00:00:00",
-            "date_of_birth": "1950-01-01",
-            "gender": None,
-            "givenname": None,
-            "surname": None,
-            "nationalid": "999999999",
-            "nationalid_type": "UKRDC",
-            "status": 0,
-            "effective_date": "2020-03-16T00:00:00",
-        },
-        "related": [
-            {
-                "id": 2,
-                "links": {"self": "/workitems/2"},
-                "person_id": 4,
-                "master_id": 1,
-            }
-        ],
-    }
+    wi = WorkItemSchema(**response.json())
+    assert wi.id == 1
 
 
 def test_workitem_detail_not_found(client):
-    response = client.get("/workitems/9999")
+    response = client.get("/empi/workitems/9999")
     assert response.status_code == 404
 
 
 @pytest.mark.parametrize("workitem_id", [1, 2, 3])
 def test_workitem_close(client, workitem_id):
     response = client.post(
-        f"/workitems/{workitem_id}/close",
+        f"/empi/workitems/{workitem_id}/close",
         json={"mirth": False},
     )
     assert response.json().get("status") == "ignored"
@@ -200,7 +93,7 @@ def test_workitem_close(client, workitem_id):
 
 def test_workitem_close_not_found(client):
     response = client.post(
-        f"/workitems/9999/close",
+        f"/empi/workitems/9999/close",
         json={"mirth": False},
     )
     assert response.status_code == 404
@@ -247,7 +140,7 @@ def test_workitem_merge(client, jtrace_session):
     jtrace_session.commit()
 
     response = client.post(
-        f"/workitems/4/merge",
+        f"/empi/workitems/4/merge",
         json={"mirth": False},
     )
     assert response.json().get("status") == "ignored"
@@ -261,7 +154,7 @@ def test_workitem_merge(client, jtrace_session):
 def test_workitem_merge_nothing_to_merge(client):
 
     response = client.post(
-        f"/workitems/1/merge",
+        f"/empi/workitems/1/merge",
         json={"mirth": False},
     )
 
@@ -272,7 +165,7 @@ def test_workitem_merge_nothing_to_merge(client):
 
 def test_workitem_merge_not_found(client):
     response = client.post(
-        f"/workitems/9999/merge",
+        f"/empi/workitems/9999/merge",
         json={"mirth": False},
     )
     assert response.status_code == 404
@@ -283,7 +176,7 @@ def test_workitem_merge_not_found(client):
 @pytest.mark.parametrize("comment", [None, "", "COMMENT"])
 def test_workitem_unlink(client, master_record, person_id, comment):
     response = client.post(
-        f"/workitems/unlink",
+        f"/empi/workitems/unlink",
         json={
             "master_record": master_record,
             "person_id": person_id,

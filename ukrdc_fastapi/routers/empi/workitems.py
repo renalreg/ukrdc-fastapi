@@ -96,15 +96,26 @@ def workitem_detail(
     if not workitem:
         raise HTTPException(404, detail="Work item not found")
 
+    return workitem
+
+
+@router.get("/{workitem_id}/related", response_model=List[WorkItemSchema])
+def workitem_related(
+    workitem_id: int,
+    jtrace: Session = Depends(get_jtrace),
+):
+
+    workitem = jtrace.query(WorkItem).get(workitem_id)
+    if not workitem:
+        raise HTTPException(404, detail="Work item not found")
+
     other_workitems = jtrace.query(WorkItem).filter(
         WorkItem.master_id == workitem.master_id,
         WorkItem.id != workitem.id,
         WorkItem.status == 1,
     )
 
-    # Inject related workitems
-    workitem.related = other_workitems.all()
-    return workitem
+    return other_workitems.all()
 
 
 @router.post("/{workitem_id}/close", response_model=MirthMessageResponseSchema)
