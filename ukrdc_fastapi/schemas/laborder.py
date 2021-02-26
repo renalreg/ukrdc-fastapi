@@ -1,7 +1,7 @@
 import datetime
 from typing import List, Optional
 
-from fastapi_hypermodel import HyperRef
+from fastapi_hypermodel import LinkSet, UrlFor
 
 from .base import OrmModel
 
@@ -11,11 +11,8 @@ class LabOrderShortSchema(OrmModel):
     entered_at_description: Optional[str]
     entered_at: Optional[str]
     specimen_collected_time: datetime.datetime
-    href: HyperRef
 
-    class Href:
-        endpoint = "laborder_get"
-        values = {"order_id": "<id>"}
+    links = LinkSet({"self": UrlFor("laborder_get", {"order_id": "<id>"})})
 
 
 class ResultItemSchema(OrmModel):
@@ -25,11 +22,8 @@ class ResultItemSchema(OrmModel):
     service_id_description: str
     value: str
     value_units: Optional[str]
-    href: HyperRef
 
-    class Href:
-        endpoint = "resultitem_detail"
-        values = {"resultitem_id": "<id>"}
+    links = LinkSet({"self": UrlFor("resultitem_detail", {"resultitem_id": "<id>"})})
 
 
 class LabOrderSchema(LabOrderShortSchema):

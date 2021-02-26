@@ -14,7 +14,7 @@ def test_laborders_list(client):
     assert response.json()["items"] == [
         {
             "id": "LABORDER1",
-            "href": "/laborders/LABORDER1",
+            "links": {"self": "/laborders/LABORDER1"},
             "entered_at_description": None,
             "entered_at": None,
             "specimen_collected_time": "2020-03-16T00:00:00",
@@ -61,7 +61,7 @@ def test_laborders_list_filtered_ni(ukrdc3_session, client):
     assert response.json()["items"] == [
         {
             "id": "LABORDER_TEST1_1",
-            "href": "/laborders/LABORDER_TEST1_1",
+            "links": {"self": "/laborders/LABORDER_TEST1_1"},
             "entered_at_description": None,
             "entered_at": None,
             "specimen_collected_time": "2020-03-16T00:00:00",
@@ -74,14 +74,14 @@ def test_laborder(client):
     assert response.status_code == 200
     assert response.json() == {
         "id": "LABORDER1",
-        "href": "/laborders/LABORDER1",
+        "links": {"self": "/laborders/LABORDER1"},
         "entered_at_description": None,
         "entered_at": None,
         "specimen_collected_time": "2020-03-16T00:00:00",
         "result_items": [
             {
                 "id": "RESULTITEM1",
-                "href": "/resultitems/RESULTITEM1",
+                "links": {"self": "/resultitems/RESULTITEM1"},
                 "order_id": "LABORDER1",
                 "service_id": "SERVICE_ID",
                 "service_id_description": "SERVICE_ID_DESCRIPTION",

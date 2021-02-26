@@ -1,7 +1,7 @@
 import datetime
 from typing import List, Optional
 
-from fastapi_hypermodel import HyperRef
+from fastapi_hypermodel import LinkSet, UrlFor
 from pydantic import Json
 
 from .base import OrmModel
@@ -51,11 +51,8 @@ class WorkItemSummarySchema(OrmModel):
     id: int
     person_id: int
     master_id: int
-    href: HyperRef
 
-    class Href:
-        endpoint = "workitem_detail"
-        values = {"workitem_id": "<id>"}
+    links = LinkSet({"self": UrlFor("workitem_detail", {"workitem_id": "<id>"})})
 
 
 class WorkItemShortSchema(OrmModel):
@@ -69,11 +66,8 @@ class WorkItemShortSchema(OrmModel):
     updated_by: Optional[str]
     update_description: Optional[str]
     attributes: Optional[Json]
-    href: HyperRef
 
-    class Href:
-        endpoint = "workitem_detail"
-        values = {"workitem_id": "<id>"}
+    links = LinkSet({"self": UrlFor("workitem_detail", {"workitem_id": "<id>"})})
 
 
 class WorkItemSchema(WorkItemShortSchema):

@@ -1,7 +1,7 @@
 import datetime
 from typing import List, Optional
 
-from fastapi_hypermodel import HyperRef
+from fastapi_hypermodel import LinkSet, UrlFor
 
 from .base import OrmModel
 from .patient import PatientSchema
@@ -21,11 +21,17 @@ class PatientRecordShortSchema(OrmModel):
     ukrdcid: str
     repository_creation_date: datetime.datetime
     repository_update_date: datetime.datetime
-    href: HyperRef
 
-    class Href:
-        endpoint = "patient_record"
-        values = {"pid": "<pid>"}
+    links = LinkSet(
+        {
+            "self": UrlFor("patient_record", {"pid": "<pid>"}),
+            "laborders": UrlFor("patient_laborders", {"pid": "<pid>"}),
+            "observations": UrlFor("patient_observations", {"pid": "<pid>"}),
+            "medications": UrlFor("patient_medications", {"pid": "<pid>"}),
+            "surveys": UrlFor("patient_surveys", {"pid": "<pid>"}),
+            "export-data": UrlFor("patient_export", {"pid": "<pid>"}),
+        }
+    )
 
 
 class PatientRecordSchema(PatientRecordShortSchema):
