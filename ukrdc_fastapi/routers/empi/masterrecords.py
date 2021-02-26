@@ -31,7 +31,7 @@ def master_record_detail(record_id: str, jtrace: Session = Depends(get_jtrace)):
 
 @router.get("/{record_id}/related", response_model=List[MasterRecordSchema])
 def master_record_related(record_id: str, jtrace: Session = Depends(get_jtrace)):
-    record: Query = jtrace.query(MasterRecord).get(record_id)
+    record: MasterRecord = jtrace.query(MasterRecord).get(record_id)
     if not record:
         raise HTTPException(404, detail="Master Record not found")
 
@@ -46,7 +46,7 @@ def master_record_related(record_id: str, jtrace: Session = Depends(get_jtrace))
 
 @router.get("/{record_id}/workitems", response_model=List[WorkItemSchema])
 def master_record_workitems(record_id: str, jtrace: Session = Depends(get_jtrace)):
-    record: Query = jtrace.query(MasterRecord).get(record_id)
+    record: MasterRecord = jtrace.query(MasterRecord).get(record_id)
     if not record:
         raise HTTPException(404, detail="Master Record not found")
 
@@ -60,7 +60,7 @@ def master_record_workitems(record_id: str, jtrace: Session = Depends(get_jtrace
 
 @router.get("/{record_id}/persons", response_model=List[PersonSchema])
 def master_record_persons(record_id: str, jtrace: Session = Depends(get_jtrace)):
-    record: Query = jtrace.query(MasterRecord).get(record_id)
+    record: MasterRecord = jtrace.query(MasterRecord).get(record_id)
     if not record:
         raise HTTPException(404, detail="Master Record not found")
 
