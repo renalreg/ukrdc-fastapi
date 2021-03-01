@@ -42,6 +42,7 @@ def _find_related_ids(
 def find_ids_related_to_person(
     localid: List[str], jtrace: Session, localid_type: Optional[str] = None
 ) -> Tuple[Set[int], Set[int]]:
+    """Find all person IDs and master record IDs related to a given person localid"""
     person_filters = [Person.localid.in_(localid)]
     if localid_type:
         person_filters.append(Person.localid_type.is_(localid_type))
@@ -54,6 +55,7 @@ def find_ids_related_to_person(
 def find_ids_related_to_masterrecord(
     nationalid: List[str], jtrace: Session, nationalid_type: Optional[str] = None
 ) -> Tuple[Set[int], Set[int]]:
+    """Find all person IDs and master record IDs related to a given master record nationalid"""
     master_record_filters = [MasterRecord.nationalid.in_(nationalid)]
     if nationalid_type:
         master_record_filters.append(MasterRecord.nationalid_type.is_(nationalid_type))
