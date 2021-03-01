@@ -15,34 +15,37 @@ router = APIRouter()
 
 @router.get("/", response_model=Page[LabOrderShortSchema])
 def laborders(ni: Optional[str] = None, ukrdc3: Session = Depends(get_ukrdc3)):
-    laborders = ukrdc3.query(LabOrder)
+    """Retreive a list of all lab orders"""
+    orders = ukrdc3.query(LabOrder)
     # Optionally filter by NI
     if ni:
-        laborders = filters.laborders_by_ni(ukrdc3, laborders, ni)
+        orders = filters.laborders_by_ni(ukrdc3, orders, ni)
     # Sort by collected time
-    laborders = laborders.order_by(LabOrder.specimen_collected_time.desc())
-    return paginate(laborders)
+    orders = orders.order_by(LabOrder.specimen_collected_time.desc())
+    return paginate(orders)
 
 
 @router.get("/{order_id}", response_model=LabOrderSchema)
 def laborder_get(order_id: str, ukrdc3: Session = Depends(get_ukrdc3)):
-    laborder = ukrdc3.query(LabOrder).get(order_id)
-    if not laborder:
+    """Retreive a particular lab order"""
+    order = ukrdc3.query(LabOrder).get(order_id)
+    if not order:
         raise HTTPException(404, detail="Lab order not found")
-    return laborder
+    return order
 
 
 @router.delete("/{order_id}", status_code=204)
 def laborder_delete(order_id: str, ukrdc3: Session = Depends(get_ukrdc3)):
-    laborder: LabOrder = ukrdc3.query(LabOrder).get(order_id)
-    pid = laborder.pid
+    """Mark a particular lab order for deletion"""
+    order: LabOrder = ukrdc3.query(LabOrder).get(order_id)
+    pid = order.pid
     deletes = [
         PVDelete(
             pid=pid,
             observation_time=item.observation_time,
             service_id=item.service_id,
         )
-        for item in laborder.result_items
+        for item in order.result_items
     ]
     ukrdc3.bulk_save_objects(deletes)
 
@@ -53,7 +56,7 @@ def laborder_delete(order_id: str, ukrdc3: Session = Depends(get_ukrdc3)):
             item.service_id,
             item.observation_time,
         )
-    logging.info("DELETING lab order: %s - %s", laborder.id, laborder.pid)
+    logging.info("DELETING lab order: %s - %s", order.id, order.pid)
 
-    ukrdc3.delete(laborder)
+    ukrdc3.delete(order)
     ukrdc3.commit()

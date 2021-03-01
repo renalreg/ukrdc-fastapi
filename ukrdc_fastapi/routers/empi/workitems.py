@@ -75,6 +75,7 @@ def workitems_list(
     ukrdcid: Optional[List[str]] = Query(None),
     jtrace: Session = Depends(get_jtrace),
 ):
+    """Retreive a list of open work items from the EMPI"""
     # Get a query of open workitems
     query = jtrace.query(WorkItem).filter(WorkItem.status == 1)
 
@@ -91,7 +92,7 @@ def workitem_detail(
     workitem_id: int,
     jtrace: Session = Depends(get_jtrace),
 ):
-
+    """Retreive a particular work item from the EMPI"""
     workitem = jtrace.query(WorkItem).get(workitem_id)
     if not workitem:
         raise HTTPException(404, detail="Work item not found")
@@ -104,7 +105,7 @@ def workitem_related(
     workitem_id: int,
     jtrace: Session = Depends(get_jtrace),
 ):
-
+    """Retreive a list of other work items related to a particular work item"""
     workitem = jtrace.query(WorkItem).get(workitem_id)
     if not workitem:
         raise HTTPException(404, detail="Work item not found")
@@ -124,7 +125,7 @@ def workitem_close(
     args: CloseWorkItemRequestSchema,
     jtrace: Session = Depends(get_jtrace),
 ):
-
+    """Update and close a particular work item"""
     workitem = jtrace.query(WorkItem).get(workitem_id)
     if not workitem:
         raise HTTPException(404, detail="Work item not found")
@@ -146,7 +147,7 @@ def workitem_merge(
     args: MergeWorkItemRequestSchema,
     jtrace: Session = Depends(get_jtrace),
 ):
-
+    """Merge a particular work item"""
     workitem = jtrace.query(WorkItem).get(workitem_id)
     if not workitem:
         raise HTTPException(404, detail="Work item not found")
@@ -190,7 +191,7 @@ def workitem_merge(
 def workitems_unlink(
     args: UnlinkWorkItemRequestSchema,
 ):
-
+    """Unlink the master record and person record in a particular work item"""
     message = UNLINK_TEMPLATE.format(
         masterrecord=args.master_record,
         personid=args.person_id,

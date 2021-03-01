@@ -13,14 +13,16 @@ router = APIRouter()
 
 @router.get("/", response_model=Page[PersonSchema])
 def persons(ni: Optional[str] = None, jtrace: Session = Depends(get_jtrace)):
-    persons: Query = jtrace.query(Person)
+    """Retreive a list of person records from the EMPI"""
+    people: Query = jtrace.query(Person)
     if ni:
-        persons = persons.filter(Person.nationalid == ni)
-    return paginate(persons)
+        people = people.filter(Person.nationalid == ni)
+    return paginate(people)
 
 
 @router.get("/{person_id}", response_model=PersonSchema)
 def person_detail(person_id: str, jtrace: Session = Depends(get_jtrace)):
+    """Retreive a particular person record from the EMPI"""
     person = jtrace.query(Person).get(person_id)
     if not person:
         raise HTTPException(404, detail="EMPI Person not found")
