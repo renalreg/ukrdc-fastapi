@@ -3,7 +3,7 @@ from typing import Iterable, List, Optional, Set, Tuple
 
 from sqlalchemy.orm import Query, Session
 
-from ukrdc_fastapi.models.empi import LinkRecord, MasterRecord, WorkItem
+from ukrdc_fastapi.models.empi import LinkRecord, MasterRecord, Person, WorkItem
 from ukrdc_fastapi.models.ukrdc import (
     LabOrder,
     PatientNumber,
@@ -15,18 +15,8 @@ PersonMasterLink = namedtuple("PersonMasterLink", ("id", "person_id", "master_id
 
 
 def _find_related_ids(
-    nationalid: List[str], jtrace: Session, nationalid_type: Optional[str] = None
-) -> Tuple[Set[int], Set[int]]:
-    master_record_filters = [MasterRecord.nationalid.in_(nationalid)]
-    if nationalid_type:
-        master_record_filters.append(MasterRecord.nationalid_type.is_(nationalid_type))
-    records: List[Tuple[int]] = (
-        jtrace.query(MasterRecord.id).filter(*master_record_filters).all()
-    )
-    flat_ids: List[int] = [masterid for masterid, in records]
-
-    seen_master_ids: Set[int] = set(flat_ids)
-    seen_person_ids: Set[int] = set()
+    jtrace: Session, seen_master_ids: Set[int], seen_person_ids: Set[int]
+):
     found_new: bool = True
     while found_new:
         links: List[LinkRecord] = (
@@ -47,6 +37,32 @@ def _find_related_ids(
         seen_master_ids |= master_ids
         seen_person_ids |= person_ids
     return (seen_master_ids, seen_person_ids)
+
+
+def find_ids_related_to_person(
+    localid: List[str], jtrace: Session, localid_type: Optional[str] = None
+) -> Tuple[Set[int], Set[int]]:
+    person_filters = [Person.localid.in_(localid)]
+    if localid_type:
+        person_filters.append(Person.localid_type.is_(localid_type))
+    records: List[Tuple[int]] = jtrace.query(Person.id).filter(*person_filters).all()
+    flat_ids: List[int] = [personid for personid, in records]
+
+    return _find_related_ids(jtrace, set(), set(flat_ids))
+
+
+def find_ids_related_to_masterrecord(
+    nationalid: List[str], jtrace: Session, nationalid_type: Optional[str] = None
+) -> Tuple[Set[int], Set[int]]:
+    master_record_filters = [MasterRecord.nationalid.in_(nationalid)]
+    if nationalid_type:
+        master_record_filters.append(MasterRecord.nationalid_type.is_(nationalid_type))
+    records: List[Tuple[int]] = (
+        jtrace.query(MasterRecord.id).filter(*master_record_filters).all()
+    )
+    flat_ids: List[int] = [masterid for masterid, in records]
+
+    return _find_related_ids(jtrace, set(flat_ids), set())
 
 
 def find_related_link_records(
@@ -206,7 +222,7 @@ def workitems_by_ukrdcids(session: Session, query: Query, ukrdcids: List[str]) -
     # Fetch a list of master/person IDs related to each UKRDCID
     seen_master_ids: Set[int]
     seen_person_ids: Set[int]
-    seen_master_ids, seen_person_ids = _find_related_ids(
+    seen_master_ids, seen_person_ids = find_ids_related_to_masterrecord(
         ukrdcids, session, nationalid_type="UKRDC"
     )
 

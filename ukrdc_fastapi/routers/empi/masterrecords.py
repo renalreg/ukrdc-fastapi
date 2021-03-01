@@ -6,7 +6,7 @@ from sqlalchemy.orm import Query, Session
 from ukrdc_fastapi.dependencies import get_jtrace
 from ukrdc_fastapi.models.empi import MasterRecord, Person, WorkItem
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema, PersonSchema, WorkItemSchema
-from ukrdc_fastapi.utils.filters import _find_related_ids
+from ukrdc_fastapi.utils.filters import find_ids_related_to_masterrecord
 from ukrdc_fastapi.utils.paginate import Page, paginate
 
 router = APIRouter()
@@ -38,7 +38,9 @@ def master_record_related(record_id: str, jtrace: Session = Depends(get_jtrace))
     if not record:
         raise HTTPException(404, detail="Master Record not found")
 
-    related_master_ids, _ = _find_related_ids([record.nationalid], jtrace)
+    related_master_ids, _ = find_ids_related_to_masterrecord(
+        [record.nationalid], jtrace
+    )
 
     other_records = jtrace.query(MasterRecord).filter(
         MasterRecord.id.in_(related_master_ids)
@@ -69,7 +71,9 @@ def master_record_persons(record_id: str, jtrace: Session = Depends(get_jtrace))
     if not record:
         raise HTTPException(404, detail="Master Record not found")
 
-    _, related_person_ids = _find_related_ids([record.nationalid], jtrace)
+    _, related_person_ids = find_ids_related_to_masterrecord(
+        [record.nationalid], jtrace
+    )
 
     persons: Query = jtrace.query(Person).filter(Person.id.in_(related_person_ids))
 
