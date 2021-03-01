@@ -21,6 +21,7 @@ def error_messages(
     untildays: Optional[int] = None,
     errorsdb: Session = Depends(get_errorsdb),
 ):
+    """Retreive a list of error messages, optionally filtered by NI, facility, or date"""
     messages = errorsdb.query(Message)
 
     # Default to showing last 7 days

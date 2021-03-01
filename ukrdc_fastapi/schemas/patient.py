@@ -18,11 +18,11 @@ class NumberSchema(OrmModel):
 class AddressSchema(OrmModel):
     from_time: Optional[datetime.datetime]
     to_time: Optional[datetime.datetime]
-    street: str
-    town: str
-    county: str
-    postcode: str
-    country_description: str
+    street: Optional[str]
+    town: Optional[str]
+    county: Optional[str]
+    postcode: Optional[str]
+    country_description: Optional[str]
 
 
 class PatientSchema(OrmModel):

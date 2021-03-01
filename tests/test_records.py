@@ -1,5 +1,5 @@
 def test_record(client):
-    response = client.get("/records/PYTEST01:PV:00000000A")
+    response = client.get("/patientrecords/PYTEST01:PV:00000000A")
     assert response.status_code == 200
     print(response.json())
     assert response.json() == {
@@ -11,12 +11,12 @@ def test_record(client):
         "repository_creation_date": "2020-03-16T00:00:00",
         "repository_update_date": "2021-01-21T00:00:00",
         "links": {
-            "self": "/records/PYTEST01:PV:00000000A",
-            "laborders": "/records/PYTEST01:PV:00000000A/laborders",
-            "observations": "/records/PYTEST01:PV:00000000A/observations",
-            "medications": "/records/PYTEST01:PV:00000000A/medications",
-            "surveys": "/records/PYTEST01:PV:00000000A/surveys",
-            "export-data": "/records/PYTEST01:PV:00000000A/export-data",
+            "self": "/patientrecords/PYTEST01:PV:00000000A",
+            "laborders": "/patientrecords/PYTEST01:PV:00000000A/laborders",
+            "observations": "/patientrecords/PYTEST01:PV:00000000A/observations",
+            "medications": "/patientrecords/PYTEST01:PV:00000000A/medications",
+            "surveys": "/patientrecords/PYTEST01:PV:00000000A/surveys",
+            "export-data": "/patientrecords/PYTEST01:PV:00000000A/export-data",
         },
         "program_memberships": [],
         "patient": {
@@ -52,25 +52,25 @@ def test_record(client):
 
 
 def test_record_missing(client):
-    response = client.get("/records/MISSING_PID")
+    response = client.get("/patientrecords/MISSING_PID")
     assert response.status_code == 404
     assert response.json() == {"detail": "Record not found"}
 
 
 def test_records(client):
-    response = client.get("/records?ni=999999999")
+    response = client.get("/patientrecords?ni=999999999")
     assert response.status_code == 200
     assert response.json()["items"] == [
         {
             "localpatientid": "00000000A",
             "pid": "PYTEST01:PV:00000000A",
             "links": {
-                "self": "/records/PYTEST01:PV:00000000A",
-                "laborders": "/records/PYTEST01:PV:00000000A/laborders",
-                "observations": "/records/PYTEST01:PV:00000000A/observations",
-                "medications": "/records/PYTEST01:PV:00000000A/medications",
-                "surveys": "/records/PYTEST01:PV:00000000A/surveys",
-                "export-data": "/records/PYTEST01:PV:00000000A/export-data",
+                "self": "/patientrecords/PYTEST01:PV:00000000A",
+                "laborders": "/patientrecords/PYTEST01:PV:00000000A/laborders",
+                "observations": "/patientrecords/PYTEST01:PV:00000000A/observations",
+                "medications": "/patientrecords/PYTEST01:PV:00000000A/medications",
+                "surveys": "/patientrecords/PYTEST01:PV:00000000A/surveys",
+                "export-data": "/patientrecords/PYTEST01:PV:00000000A/export-data",
             },
             "repository_creation_date": "2020-03-16T00:00:00",
             "repository_update_date": "2021-01-21T00:00:00",
@@ -82,12 +82,12 @@ def test_records(client):
 
 
 def test_records_no_ni(client):
-    response = client.get("/records")
+    response = client.get("/patientrecords")
     assert response.status_code == 200
 
 
 def test_records_missing_ni(client):
-    response = client.get("/records?ni=111111111")
+    response = client.get("/patientrecords?ni=111111111")
     assert response.json()["items"] == []
 
 
@@ -95,7 +95,7 @@ def test_records_missing_ni(client):
 
 
 def test_record_laborders(client):
-    response = client.get("/records/PYTEST01:PV:00000000A/laborders")
+    response = client.get("/patientrecords/PYTEST01:PV:00000000A/laborders")
     assert response.status_code == 200
     assert response.json() == [
         {
@@ -109,7 +109,7 @@ def test_record_laborders(client):
 
 
 def test_record_laborders_missing(client):
-    response = client.get("/records/MISSING_PID/laborders")
+    response = client.get("/patientrecords/MISSING_PID/laborders")
     assert response.json() == []
 
 
@@ -117,7 +117,7 @@ def test_record_laborders_missing(client):
 
 
 def test_record_observations(client):
-    response = client.get("/records/PYTEST01:PV:00000000A/observations")
+    response = client.get("/patientrecords/PYTEST01:PV:00000000A/observations")
     assert response.status_code == 200
     assert response.json() == [
         {
@@ -151,7 +151,7 @@ def test_record_observations(client):
 
 
 def test_record_observations_missing(client):
-    response = client.get("/records/MISSING_PID/observations")
+    response = client.get("/patientrecords/MISSING_PID/observations")
     assert response.json() == []
 
 
@@ -159,7 +159,7 @@ def test_record_observations_missing(client):
 
 
 def test_record_medications(client):
-    response = client.get("/records/PYTEST01:PV:00000000A/medications")
+    response = client.get("/patientrecords/PYTEST01:PV:00000000A/medications")
     assert response.status_code == 200
     assert response.json() == [
         {
@@ -182,7 +182,7 @@ def test_record_medications(client):
 
 
 def test_record_medications_missing(client):
-    response = client.get("/records/MISSING_PID/medications")
+    response = client.get("/patientrecords/MISSING_PID/medications")
     assert response.json() == []
 
 
@@ -190,7 +190,7 @@ def test_record_medications_missing(client):
 
 
 def test_record_surveys(client):
-    response = client.get("/records/PYTEST01:PV:00000000A/surveys")
+    response = client.get("/patientrecords/PYTEST01:PV:00000000A/surveys")
     assert response.status_code == 200
     assert response.json() == [
         {
@@ -223,7 +223,7 @@ def test_record_surveys(client):
 
 
 def test_record_surveys_missing(client):
-    response = client.get("/records/MISSING_PID/surveys")
+    response = client.get("/patientrecords/MISSING_PID/surveys")
     assert response.json() == []
 
 
@@ -232,7 +232,7 @@ def test_record_surveys_missing(client):
 
 def test_record_export_data(client):
     response = client.post(
-        "/records/PYTEST01:PV:00000000A/export-data",
+        "/patientrecords/PYTEST01:PV:00000000A/export-data",
         json={"data": "FULL_PV_TESTS_EXTRACT_TEMPLATE", "path": "/", "mirth": False},
     )
     assert response.json() == {
@@ -243,7 +243,7 @@ def test_record_export_data(client):
 
 def test_record_export_data_invalid_template(client):
     response = client.post(
-        "/records/PYTEST01:PV:00000000A/export-data",
+        "/patientrecords/PYTEST01:PV:00000000A/export-data",
         json={"data": "INVALID", "path": "/", "mirth": True},
     )
     assert response.status_code == 400

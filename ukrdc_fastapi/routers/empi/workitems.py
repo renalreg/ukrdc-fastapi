@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from ukrdc_fastapi.dependencies import get_jtrace
 from ukrdc_fastapi.models.empi import MasterRecord, WorkItem
 from ukrdc_fastapi.schemas.empi import WorkItemSchema, WorkItemShortSchema
-from ukrdc_fastapi.utils import filter, post_mirth_message_and_catch
+from ukrdc_fastapi.utils import filters, post_mirth_message_and_catch
 from ukrdc_fastapi.utils.paginate import Page, paginate
 
 router = APIRouter()
@@ -75,12 +75,13 @@ def workitems_list(
     ukrdcid: Optional[List[str]] = Query(None),
     jtrace: Session = Depends(get_jtrace),
 ):
+    """Retreive a list of open work items from the EMPI"""
     # Get a query of open workitems
     query = jtrace.query(WorkItem).filter(WorkItem.status == 1)
 
     # If a list of UKRDCIDs is found in the query, filter by UKRDCIDs
     if ukrdcid:
-        query = filter.workitems_by_ukrdcids(jtrace, query, ukrdcid)
+        query = filters.workitems_by_ukrdcids(jtrace, query, ukrdcid)
 
     # Sort, paginate, and return
     return paginate(query.order_by(WorkItem.id))
@@ -91,7 +92,20 @@ def workitem_detail(
     workitem_id: int,
     jtrace: Session = Depends(get_jtrace),
 ):
+    """Retreive a particular work item from the EMPI"""
+    workitem = jtrace.query(WorkItem).get(workitem_id)
+    if not workitem:
+        raise HTTPException(404, detail="Work item not found")
 
+    return workitem
+
+
+@router.get("/{workitem_id}/related", response_model=List[WorkItemSchema])
+def workitem_related(
+    workitem_id: int,
+    jtrace: Session = Depends(get_jtrace),
+):
+    """Retreive a list of other work items related to a particular work item"""
     workitem = jtrace.query(WorkItem).get(workitem_id)
     if not workitem:
         raise HTTPException(404, detail="Work item not found")
@@ -102,9 +116,7 @@ def workitem_detail(
         WorkItem.status == 1,
     )
 
-    # Inject related workitems
-    workitem.related = other_workitems.all()
-    return workitem
+    return other_workitems.all()
 
 
 @router.post("/{workitem_id}/close", response_model=MirthMessageResponseSchema)
@@ -113,7 +125,7 @@ def workitem_close(
     args: CloseWorkItemRequestSchema,
     jtrace: Session = Depends(get_jtrace),
 ):
-
+    """Update and close a particular work item"""
     workitem = jtrace.query(WorkItem).get(workitem_id)
     if not workitem:
         raise HTTPException(404, detail="Work item not found")
@@ -135,15 +147,15 @@ def workitem_merge(
     args: MergeWorkItemRequestSchema,
     jtrace: Session = Depends(get_jtrace),
 ):
-
+    """Merge a particular work item"""
     workitem = jtrace.query(WorkItem).get(workitem_id)
     if not workitem:
         raise HTTPException(404, detail="Work item not found")
 
     # Get a set of related link record (id, person_id, master_id) tuples
     related_person_master_links: Set[
-        filter.PersonMasterLink
-    ] = filter.find_related_link_records(
+        filters.PersonMasterLink
+    ] = filters.find_related_link_records(
         jtrace, workitem.master_id, person_id=workitem.person_id
     )
 
@@ -179,7 +191,7 @@ def workitem_merge(
 def workitems_unlink(
     args: UnlinkWorkItemRequestSchema,
 ):
-
+    """Unlink the master record and person record in a particular work item"""
     message = UNLINK_TEMPLATE.format(
         masterrecord=args.master_record,
         personid=args.person_id,

@@ -46,23 +46,15 @@ def test_search_nhsno(jtrace_session, client):
     for i in test_range:
         # NHS number is master record `nationalid`
         nhs_number = f"{i}".zfill(9)[::-1]
+        url = f"/empi/search/person?nhs_number={nhs_number}"
+        print(url)
 
-        response = client.get(f"/search?nhs_number={nhs_number}")
+        response = client.get(url)
+        print(response.json())
         assert response.status_code == 200
-        assert response.json()["items"] == [
-            {
-                "id": i,
-                "originator": "UKRDC",
-                "localid": nhs_number[::-1],
-                "localid_type": "CLPID",
-                "date_of_birth": f"1950-01-{i}",
-                "gender": "9",
-                "date_of_death": None,
-                "givenname": None,
-                "surname": None,
-                "xref_entries": [],
-            }
-        ]
+
+        returned_ids = {item["id"] for item in response.json()["items"]}
+        assert returned_ids == {i}
 
 
 def test_search_multiple_nhsno(jtrace_session, client):
@@ -74,7 +66,7 @@ def test_search_multiple_nhsno(jtrace_session, client):
         _commit_extra_patients(jtrace_session, i, number_type="NHS")
 
     # Add extra test items
-    path = "/search?"
+    path = "/empi/search/person?"
     for i in search_range:
         # NHS number is master record `nationalid`
         nhs_number = f"{i}".zfill(9)[::-1]
@@ -83,29 +75,6 @@ def test_search_multiple_nhsno(jtrace_session, client):
 
     response = client.get(path)
     assert response.status_code == 200
-    assert response.json()["items"] == [
-        {
-            "id": 10,
-            "originator": "UKRDC",
-            "localid": "000000010",
-            "localid_type": "CLPID",
-            "date_of_birth": "1950-01-10",
-            "gender": "9",
-            "date_of_death": None,
-            "givenname": None,
-            "surname": None,
-            "xref_entries": [],
-        },
-        {
-            "id": 11,
-            "originator": "UKRDC",
-            "localid": "000000011",
-            "localid_type": "CLPID",
-            "date_of_birth": "1950-01-11",
-            "gender": "9",
-            "date_of_death": None,
-            "givenname": None,
-            "surname": None,
-            "xref_entries": [],
-        },
-    ]
+
+    returned_ids = {item["id"] for item in response.json()["items"]}
+    assert returned_ids == {10, 11}
