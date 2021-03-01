@@ -24,7 +24,7 @@ def master_records(ni: Optional[str] = None, jtrace: Session = Depends(get_jtrac
 @router.get("/{record_id}", response_model=MasterRecordSchema)
 def master_record_detail(record_id: str, jtrace: Session = Depends(get_jtrace)):
     """Retreive a particular master record from the EMPI"""
-    record: Query = jtrace.query(MasterRecord).get(record_id)
+    record: MasterRecord = jtrace.query(MasterRecord).get(record_id)
     if not record:
         raise HTTPException(404, detail="Master Record not found")
 

@@ -139,16 +139,18 @@ def get_pids_from_ni(session: Session, ni: str) -> List[str]:
     pids = session.query(PatientNumber.pid).filter(
         PatientNumber.patientid == ni, PatientNumber.numbertype == "NI"
     )
-    ukrdcid = (
+    result: PatientRecord = (
         session.query(PatientRecord.ukrdcid)
         .filter(PatientRecord.pid.in_(pids))
-        .first()[0]  # TODO: Are we sure we only want first()
+        .first()  # TODO: Are we sure we only want first()
     )
 
-    pid_tuples = (
-        session.query(PatientRecord.pid).filter(PatientRecord.ukrdcid == ukrdcid).all()
+    record_results: Iterable[PatientRecord] = (
+        session.query(PatientRecord.pid)
+        .filter(PatientRecord.ukrdcid == result.ukrdcid)
+        .all()
     )
-    return [pid[0] for pid in pid_tuples]
+    return [record.pid for record in record_results]
 
 
 def patientrecords_by_ni(session: Session, query: Query, patientid: str) -> Query:

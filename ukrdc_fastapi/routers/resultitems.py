@@ -113,7 +113,7 @@ def resultitem_detail(resultitem_id: str, ukrdc3: Session = Depends(get_ukrdc3))
 @router.delete("/{resultitem_id}", status_code=204)
 def resultitem_delete(resultitem_id: str, ukrdc3: Session = Depends(get_ukrdc3)):
     """Mark a particular lab result for deletion"""
-    resultitem = ukrdc3.query(ResultItem).get(resultitem_id)
+    resultitem: ResultItem = ukrdc3.query(ResultItem).get(resultitem_id)
     if not resultitem:
         raise HTTPException(404, detail="Result item not found")
 
@@ -125,10 +125,10 @@ def resultitem_delete(resultitem_id: str, ukrdc3: Session = Depends(get_ukrdc3))
         resultitem.value,
         resultitem.value_units if resultitem.value_units else "",
     )
-    order_id = resultitem.order_id
+    order_id: str = resultitem.order_id
     ukrdc3.delete(resultitem)
     ukrdc3.commit()
-    order = ukrdc3.query(LabOrder).get(order_id)
+    order: LabOrder = ukrdc3.query(LabOrder).get(order_id)
     if order.result_items.count() == 0:
         logging.info(
             "DELETING laborder without any result items: %s %s",
