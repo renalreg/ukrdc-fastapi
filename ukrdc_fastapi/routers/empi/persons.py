@@ -1,11 +1,12 @@
-from typing import Optional
+from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Query, Session
 
 from ukrdc_fastapi.dependencies import get_jtrace
-from ukrdc_fastapi.models.empi import Person
-from ukrdc_fastapi.schemas.empi import PersonSchema
+from ukrdc_fastapi.models.empi import MasterRecord, Person
+from ukrdc_fastapi.schemas.empi import MasterRecordSchema, PersonSchema
+from ukrdc_fastapi.utils.filters import find_ids_related_to_person
 from ukrdc_fastapi.utils.paginate import Page, paginate
 
 router = APIRouter()
@@ -27,3 +28,19 @@ def person_detail(person_id: str, jtrace: Session = Depends(get_jtrace)):
     if not person:
         raise HTTPException(404, detail="EMPI Person not found")
     return person
+
+
+@router.get("/{person_id}/masterrecords", response_model=List[MasterRecordSchema])
+def person_masterrecords(person_id: str, jtrace: Session = Depends(get_jtrace)):
+    """Retreive a particular person record from the EMPI"""
+    person = jtrace.query(Person).get(person_id)
+    if not person:
+        raise HTTPException(404, detail="EMPI Person not found")
+
+    related_masterrecord_ids, _ = find_ids_related_to_person([person.localid], jtrace)
+
+    masterrecords: Query = jtrace.query(MasterRecord).filter(
+        MasterRecord.id.in_(related_masterrecord_ids)
+    )
+
+    return masterrecords.all()

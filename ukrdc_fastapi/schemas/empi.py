@@ -53,6 +53,7 @@ class PersonSchema(OrmModel):
         {
             "self": UrlFor("person_detail", {"person_id": "<id>"}),
             "patientrecord": UrlFor("patient_record", {"pid": "<localid>"}),
+            "masterrecords": UrlFor("person_masterrecords", {"person_id": "<id>"}),
         }
     )
 
