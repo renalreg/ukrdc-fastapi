@@ -8,7 +8,7 @@ from sqlalchemy.orm import Query, Session
 from ukrdc_fastapi.dependencies import get_ukrdc3
 from ukrdc_fastapi.models.ukrdc import LabOrder, PVDelete, ResultItem
 from ukrdc_fastapi.schemas.laborder import ResultItemSchema
-from ukrdc_fastapi.utils import filter
+from ukrdc_fastapi.utils import filters
 from ukrdc_fastapi.utils.paginate import Page, paginate
 
 router = APIRouter()
@@ -31,7 +31,7 @@ def resultitems(
         resultitems = resultitems.filter(ResultItem.service_id == service_id)
     # Optionally filter by NI
     if ni:
-        resultitems = filter.resultitems_by_ni(ukrdc3, resultitems, ni)
+        resultitems = filters.resultitems_by_ni(ukrdc3, resultitems, ni)
     resultitems = resultitems.order_by(ResultItem.service_id_description)
     return paginate(resultitems)
 
@@ -58,7 +58,7 @@ def resultitems_delete(
         resultitems = resultitems.filter(ResultItem.service_id == args.service_id)
     # Optionally filter by NI
     if args.ni:
-        resultitems = filter.resultitems_by_ni(ukrdc3, resultitems, args.ni)
+        resultitems = filters.resultitems_by_ni(ukrdc3, resultitems, args.ni)
 
     # We now have a query of all the results we wish to remove
 

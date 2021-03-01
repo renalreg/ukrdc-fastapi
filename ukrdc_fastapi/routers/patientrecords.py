@@ -20,7 +20,7 @@ from ukrdc_fastapi.schemas.patientrecord import (
     PatientRecordShortSchema,
 )
 from ukrdc_fastapi.schemas.survey import SurveySchema
-from ukrdc_fastapi.utils import filter, post_mirth_message_and_catch
+from ukrdc_fastapi.utils import filters, post_mirth_message_and_catch
 from ukrdc_fastapi.utils.paginate import Page, paginate
 
 router = APIRouter()
@@ -57,7 +57,7 @@ def patient_records(ni: Optional[str] = None, ukrdc3: Session = Depends(get_ukrd
     records: Query = ukrdc3.query(PatientRecord)
     if ni:
         # Find all the records with ukrdc ids
-        records = filter.patientrecords_by_ni(ukrdc3, records, ni)
+        records = filters.patientrecords_by_ni(ukrdc3, records, ni)
 
     # Return page
     return paginate(records)

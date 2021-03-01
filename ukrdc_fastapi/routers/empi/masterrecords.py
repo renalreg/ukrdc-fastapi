@@ -6,7 +6,7 @@ from sqlalchemy.orm import Query, Session
 from ukrdc_fastapi.dependencies import get_jtrace
 from ukrdc_fastapi.models.empi import MasterRecord, Person, WorkItem
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema, PersonSchema, WorkItemSchema
-from ukrdc_fastapi.utils.filter import _find_related_ids, find_related_link_records
+from ukrdc_fastapi.utils.filters import _find_related_ids, find_related_link_records
 from ukrdc_fastapi.utils.paginate import Page, paginate
 
 router = APIRouter()

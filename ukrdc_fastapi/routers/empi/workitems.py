@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from ukrdc_fastapi.dependencies import get_jtrace
 from ukrdc_fastapi.models.empi import MasterRecord, WorkItem
 from ukrdc_fastapi.schemas.empi import WorkItemSchema, WorkItemShortSchema
-from ukrdc_fastapi.utils import filter, post_mirth_message_and_catch
+from ukrdc_fastapi.utils import filters, post_mirth_message_and_catch
 from ukrdc_fastapi.utils.paginate import Page, paginate
 
 router = APIRouter()
@@ -80,7 +80,7 @@ def workitems_list(
 
     # If a list of UKRDCIDs is found in the query, filter by UKRDCIDs
     if ukrdcid:
-        query = filter.workitems_by_ukrdcids(jtrace, query, ukrdcid)
+        query = filters.workitems_by_ukrdcids(jtrace, query, ukrdcid)
 
     # Sort, paginate, and return
     return paginate(query.order_by(WorkItem.id))
@@ -153,8 +153,8 @@ def workitem_merge(
 
     # Get a set of related link record (id, person_id, master_id) tuples
     related_person_master_links: Set[
-        filter.PersonMasterLink
-    ] = filter.find_related_link_records(
+        filters.PersonMasterLink
+    ] = filters.find_related_link_records(
         jtrace, workitem.master_id, person_id=workitem.person_id
     )
 
