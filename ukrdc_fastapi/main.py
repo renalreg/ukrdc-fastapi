@@ -52,7 +52,7 @@ app.include_router(
     empi.router,
     prefix="/empi",
     tags=["Master-Patient Index"],
-    dependencies=[],
+    dependencies=[Security(auth.get_user)],
 )
 app.include_router(
     patientrecords.router,
