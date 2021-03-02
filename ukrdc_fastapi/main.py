@@ -42,14 +42,42 @@ def root():
     return RedirectResponse(url="/docs")
 
 
-app.include_router(dashboard.router, prefix="/dash")
-app.include_router(empi.router, prefix="/empi")
 app.include_router(
-    patientrecords.router, prefix="/patientrecords", tags=["Patient Records"]
+    dashboard.router,
+    prefix="/dash",
+    tags=["Summary Dashboard"],
+    dependencies=[Security(auth.get_user)],
 )
-app.include_router(laborders.router, prefix="/laborders", tags=["Lab Orders"])
-app.include_router(errors.router, prefix="/errors", tags=["Errors"])
-app.include_router(resultitems.router, prefix="/resultitems", tags=["Result Items"])
+app.include_router(
+    empi.router,
+    prefix="/empi",
+    tags=["Master-Patient Index"],
+    dependencies=[Security(auth.get_user)],
+)
+app.include_router(
+    patientrecords.router,
+    prefix="/patientrecords",
+    tags=["Patient Records"],
+    dependencies=[Security(auth.get_user)],
+)
+app.include_router(
+    laborders.router,
+    prefix="/laborders",
+    tags=["Lab Orders"],
+    dependencies=[Security(auth.get_user)],
+)
+app.include_router(
+    errors.router,
+    prefix="/errors",
+    tags=["Errors"],
+    dependencies=[Security(auth.get_user)],
+)
+app.include_router(
+    resultitems.router,
+    prefix="/resultitems",
+    tags=["Result Items"],
+    dependencies=[Security(auth.get_user)],
+)
 
 if __name__ == "__main__":
     import uvicorn
