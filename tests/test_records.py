@@ -8,8 +8,8 @@ def test_record(client):
         "sendingextract": "PV",
         "localpatientid": "00000000A",
         "ukrdcid": "000000000",
-        "repository_creation_date": "2020-03-16T00:00:00",
-        "repository_update_date": "2021-01-21T00:00:00",
+        "repositoryCreationDate": "2020-03-16T00:00:00",
+        "repositoryUpdateDate": "2021-01-21T00:00:00",
         "links": {
             "self": "/patientrecords/PYTEST01:PV:00000000A",
             "laborders": "/patientrecords/PYTEST01:PV:00000000A/laborders",
@@ -18,7 +18,7 @@ def test_record(client):
             "surveys": "/patientrecords/PYTEST01:PV:00000000A/surveys",
             "export-data": "/patientrecords/PYTEST01:PV:00000000A/export-data",
         },
-        "program_memberships": [],
+        "programMemberships": [],
         "patient": {
             "names": [{"given": "Patrick", "family": "Star"}],
             "numbers": [
@@ -26,26 +26,26 @@ def test_record(client):
             ],
             "addresses": [
                 {
-                    "from_time": None,
-                    "to_time": None,
+                    "fromTime": None,
+                    "toTime": None,
                     "street": "120 Conch Street",
                     "town": "Bikini Bottom",
                     "county": "Bikini County",
                     "postcode": "XX0 1AA",
-                    "country_description": "Pacific Ocean",
+                    "countryDescription": "Pacific Ocean",
                 },
                 {
-                    "from_time": None,
-                    "to_time": None,
+                    "fromTime": None,
+                    "toTime": None,
                     "street": "121 Conch Street",
                     "town": "Bikini Bottom",
                     "county": "Bikini County",
                     "postcode": "XX0 1AA",
-                    "country_description": "Pacific Ocean",
+                    "countryDescription": "Pacific Ocean",
                 },
             ],
-            "birth_time": "1984-03-17",
-            "death_time": None,
+            "birthTime": "1984-03-17",
+            "deathTime": None,
             "gender": "1",
         },
     }
@@ -72,8 +72,8 @@ def test_records(client):
                 "surveys": "/patientrecords/PYTEST01:PV:00000000A/surveys",
                 "export-data": "/patientrecords/PYTEST01:PV:00000000A/export-data",
             },
-            "repository_creation_date": "2020-03-16T00:00:00",
-            "repository_update_date": "2021-01-21T00:00:00",
+            "repositoryCreationDate": "2020-03-16T00:00:00",
+            "repositoryUpdateDate": "2021-01-21T00:00:00",
             "sendingextract": "PV",
             "sendingfacility": "PATIENT_RECORD_SENDING_FACILITY_1",
             "ukrdcid": "000000000",
@@ -99,11 +99,11 @@ def test_record_laborders(client):
     assert response.status_code == 200
     assert response.json() == [
         {
-            "entered_at": None,
-            "entered_at_description": None,
+            "enteredAt": None,
+            "enteredAtDescription": None,
             "id": "LABORDER1",
             "links": {"self": "/laborders/LABORDER1"},
-            "specimen_collected_time": "2020-03-16T00:00:00",
+            "specimenCollectedTime": "2020-03-16T00:00:00",
         }
     ]
 
@@ -121,31 +121,31 @@ def test_record_observations(client):
     assert response.status_code == 200
     assert response.json() == [
         {
-            "entered_at": None,
-            "entered_at_description": None,
-            "observation_desc": "OBSERVATION_SYS_1_DESC",
-            "observation_time": "2020-03-16T11:35:00",
-            "observation_units": "OBSERVATION_SYS_1_UNITS",
-            "observation_value": "OBSERVATION_SYS_1_VALUE",
-            "pre_post": None,
+            "enteredAt": None,
+            "enteredAtDescription": None,
+            "observationDesc": "OBSERVATION_SYS_1_DESC",
+            "observationTime": "2020-03-16T11:35:00",
+            "observationUnits": "OBSERVATION_SYS_1_UNITS",
+            "observationValue": "OBSERVATION_SYS_1_VALUE",
+            "prePost": None,
         },
         {
-            "entered_at": None,
-            "entered_at_description": None,
-            "observation_desc": "OBSERVATION_DIA_1_DESC",
-            "observation_time": "2020-03-16T11:30:00",
-            "observation_units": "OBSERVATION_DIA_1_UNITS",
-            "observation_value": "OBSERVATION_DIA_1_VALUE",
-            "pre_post": None,
+            "enteredAt": None,
+            "enteredAtDescription": None,
+            "observationDesc": "OBSERVATION_DIA_1_DESC",
+            "observationTime": "2020-03-16T11:30:00",
+            "observationUnits": "OBSERVATION_DIA_1_UNITS",
+            "observationValue": "OBSERVATION_DIA_1_VALUE",
+            "prePost": None,
         },
         {
-            "entered_at": None,
-            "entered_at_description": None,
-            "observation_desc": "OBSERVATION_DESC",
-            "observation_time": "2020-03-16T00:00:00",
-            "observation_units": "OBSERVATION_UNITS",
-            "observation_value": "OBSERVATION_VALUE",
-            "pre_post": None,
+            "enteredAt": None,
+            "enteredAtDescription": None,
+            "observationDesc": "OBSERVATION_DESC",
+            "observationTime": "2020-03-16T00:00:00",
+            "observationUnits": "OBSERVATION_UNITS",
+            "observationValue": "OBSERVATION_VALUE",
+            "prePost": None,
         },
     ]
 
@@ -163,20 +163,20 @@ def test_record_medications(client):
     assert response.status_code == 200
     assert response.json() == [
         {
-            "from_time": "2019-03-16T00:00:00",
-            "to_time": None,
-            "drug_product_generic": "DRUG_PRODUCT_GENERIC",
+            "fromTime": "2019-03-16T00:00:00",
+            "toTime": None,
+            "drugProductGeneric": "DRUG_PRODUCT_GENERIC",
             "comment": None,
-            "entering_organization_code": None,
-            "entering_organization_description": None,
+            "enteringOrganizationCode": None,
+            "enteringOrganizationDescription": None,
         },
         {
-            "from_time": "2019-03-16T00:00:00",
-            "to_time": "9999-03-16T00:00:00",
-            "drug_product_generic": "DRUG_PRODUCT_GENERIC_2",
+            "fromTime": "2019-03-16T00:00:00",
+            "toTime": "9999-03-16T00:00:00",
+            "drugProductGeneric": "DRUG_PRODUCT_GENERIC_2",
             "comment": None,
-            "entering_organization_code": None,
-            "entering_organization_description": None,
+            "enteringOrganizationCode": None,
+            "enteringOrganizationDescription": None,
         },
     ]
 

@@ -69,11 +69,11 @@ def test_resultitems_list(client):
         {
             "id": "RESULTITEM1",
             "links": {"self": "/resultitems/RESULTITEM1"},
-            "order_id": "LABORDER1",
-            "service_id": "SERVICE_ID",
-            "service_id_description": "SERVICE_ID_DESCRIPTION",
+            "orderId": "LABORDER1",
+            "serviceId": "SERVICE_ID",
+            "serviceIdDescription": "SERVICE_ID_DESCRIPTION",
             "value": "VALUE",
-            "value_units": "VALUE_UNITS",
+            "valueUnits": "VALUE_UNITS",
         }
     ]
 
@@ -89,16 +89,16 @@ def test_resultitems_list_filtered_ni(ukrdc3_session, client):
         {
             "id": "RESULTITEM_TEST2_1",
             "links": {"self": "/resultitems/RESULTITEM_TEST2_1"},
-            "order_id": "LABORDER_TEST2_1",
-            "service_id": "SERVICE_ID_TEST2_1",
-            "service_id_description": "SERVICE_ID_DESCRIPTION_TEST2_1",
+            "orderId": "LABORDER_TEST2_1",
+            "serviceId": "SERVICE_ID_TEST2_1",
+            "serviceIdDescription": "SERVICE_ID_DESCRIPTION_TEST2_1",
             "value": "VALUE_TEST2_1",
-            "value_units": "VALUE_UNITS_TEST2_1",
+            "valueUnits": "VALUE_UNITS_TEST2_1",
         },
     ]
 
 
-def test_resultitems_list_filtered_service_id(ukrdc3_session, client):
+def test_resultitems_list_filtered_serviceId(ukrdc3_session, client):
     # Add an extra test item
     _commit_extra_resultitem_and_check(ukrdc3_session, client)
 
@@ -109,16 +109,16 @@ def test_resultitems_list_filtered_service_id(ukrdc3_session, client):
         {
             "id": "RESULTITEM_TEST2_1",
             "links": {"self": "/resultitems/RESULTITEM_TEST2_1"},
-            "order_id": "LABORDER_TEST2_1",
-            "service_id": "SERVICE_ID_TEST2_1",
-            "service_id_description": "SERVICE_ID_DESCRIPTION_TEST2_1",
+            "orderId": "LABORDER_TEST2_1",
+            "serviceId": "SERVICE_ID_TEST2_1",
+            "serviceIdDescription": "SERVICE_ID_DESCRIPTION_TEST2_1",
             "value": "VALUE_TEST2_1",
-            "value_units": "VALUE_UNITS_TEST2_1",
+            "valueUnits": "VALUE_UNITS_TEST2_1",
         },
     ]
 
 
-def test_resultitems_list_filtered_service_id_delete(ukrdc3_session, client):
+def test_resultitems_list_filtered_serviceId_delete(ukrdc3_session, client):
     # Add an extra test item
     _commit_extra_resultitem_and_check(ukrdc3_session, client)
 
@@ -133,11 +133,11 @@ def test_resultitems_list_filtered_service_id_delete(ukrdc3_session, client):
         {
             "id": "RESULTITEM1",
             "links": {"self": "/resultitems/RESULTITEM1"},
-            "order_id": "LABORDER1",
-            "service_id": "SERVICE_ID",
-            "service_id_description": "SERVICE_ID_DESCRIPTION",
+            "orderId": "LABORDER1",
+            "serviceId": "SERVICE_ID",
+            "serviceIdDescription": "SERVICE_ID_DESCRIPTION",
             "value": "VALUE",
-            "value_units": "VALUE_UNITS",
+            "valueUnits": "VALUE_UNITS",
         }
     ]
     # Check the orphaned laborder was deleted
@@ -147,9 +147,9 @@ def test_resultitems_list_filtered_service_id_delete(ukrdc3_session, client):
         {
             "id": "LABORDER1",
             "links": {"self": "/laborders/LABORDER1"},
-            "entered_at_description": None,
-            "entered_at": None,
-            "specimen_collected_time": "2020-03-16T00:00:00",
+            "enteredAtDescription": None,
+            "enteredAt": None,
+            "specimenCollectedTime": "2020-03-16T00:00:00",
         }
     ]
 
@@ -160,11 +160,11 @@ def test_resultitem_detail(client):
     assert response.json() == {
         "id": "RESULTITEM1",
         "links": {"self": "/resultitems/RESULTITEM1"},
-        "order_id": "LABORDER1",
-        "service_id": "SERVICE_ID",
-        "service_id_description": "SERVICE_ID_DESCRIPTION",
+        "orderId": "LABORDER1",
+        "serviceId": "SERVICE_ID",
+        "serviceIdDescription": "SERVICE_ID_DESCRIPTION",
         "value": "VALUE",
-        "value_units": "VALUE_UNITS",
+        "valueUnits": "VALUE_UNITS",
     }
 
 
