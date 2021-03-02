@@ -5,7 +5,7 @@ from typing import Generic, Optional, Sequence, TypeVar
 from fastapi_pagination import use_as_page
 from fastapi_pagination.api import create_page, resolve_params
 from fastapi_pagination.bases import AbstractPage, AbstractParams
-from pydantic import Field
+from pydantic import conint
 from sqlalchemy.orm import Query
 from sqlalchemy.sql import Select
 
@@ -16,8 +16,8 @@ T = TypeVar("T")  # pylint: disable=invalid-name
 @use_as_page
 class Page(AbstractPage[T], Generic[T]):  # pylint: disable=too-many-ancestors
     items: Sequence[T]
-    page: int = Field(..., ge=0)
-    size: int = Field(..., gt=0)
+    page: conint(ge=0)  # type: ignore
+    size: conint(gt=0)  # type: ignore
 
     @classmethod
     def create(  # pylint: disable=missing-function-docstring

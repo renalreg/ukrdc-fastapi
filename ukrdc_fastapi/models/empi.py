@@ -31,6 +31,7 @@ class MasterRecord(Base):
     nationalid_type = Column("nationalidtype", String, nullable=False)
     status = Column(Integer, nullable=False)
     effective_date = Column("effectivedate", DateTime, nullable=False)
+    creation_date = Column("creationdate", DateTime)
 
     link_records = relationship(
         "LinkRecord", backref="master_record", cascade="all, delete-orphan"
