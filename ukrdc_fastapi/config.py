@@ -2,6 +2,9 @@ from pydantic import BaseSettings
 
 
 class Settings(BaseSettings):
+    # Used to correct linking when behind a reverse proxy
+    root_path: str = ""
+
     secret_key: str = "changeme"
     mirth_url: str = "http://localhost:9004"
 

@@ -5,6 +5,7 @@ from fastapi_pagination import pagination_params
 from starlette.responses import RedirectResponse
 
 from ukrdc_fastapi.auth import auth
+from ukrdc_fastapi.config import settings
 from ukrdc_fastapi.routers import (
     dashboard,
     empi,
@@ -19,6 +20,7 @@ app = FastAPI(
     description="Early test version of an updated, simpler UKRDC API",
     version="0.0.0",
     dependencies=[Depends(pagination_params), Depends(auth.implicit_scheme)],
+    root_path=settings.root_path,
 )
 
 app.add_middleware(
