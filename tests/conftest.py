@@ -2,10 +2,12 @@ from datetime import datetime
 
 import pytest
 from fastapi.testclient import TestClient
+from fastapi_auth0 import Auth0User, auth0_rule_namespace
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
+from ukrdc_fastapi.auth import auth
 from ukrdc_fastapi.dependencies import get_jtrace, get_ukrdc3
 from ukrdc_fastapi.models.empi import Base as JtraceBase
 from ukrdc_fastapi.models.empi import LinkRecord, MasterRecord, Person, WorkItem
@@ -460,9 +462,20 @@ def app(jtrace_session, ukrdc3_session):
     def _get_jtrace():
         return jtrace_session
 
+    def _get_user():
+        usr = Auth0User(
+            **{
+                "sub": "TEST_ID",
+                "permissions": [],
+                f"{auth0_rule_namespace}/email": "TEST@UKRDC_FASTAPI",
+            }
+        )
+        return usr
+
     # Override FastAPI dependencies to point to function-scoped sessions
     app.dependency_overrides[get_ukrdc3] = _get_ukrdc3
     app.dependency_overrides[get_jtrace] = _get_jtrace
+    app.dependency_overrides[auth.get_user] = _get_user
 
     return app
 
