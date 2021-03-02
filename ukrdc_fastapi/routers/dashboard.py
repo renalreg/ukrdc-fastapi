@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Query, Session
 
 from ukrdc_fastapi.auth import auth
-from ukrdc_fastapi.dependencies import get_jtrace, get_ukrdc3
+from ukrdc_fastapi.dependencies import get_jtrace
 from ukrdc_fastapi.models.empi import Base as EMPIBase
 from ukrdc_fastapi.models.empi import MasterRecord, WorkItem
 
@@ -65,6 +65,7 @@ def dashboard(
     user: Auth0User = Security(auth.get_user),
     jtrace: Session = Depends(get_jtrace),
 ):
+    """Retreive basic statistics about recent records"""
     # Workitem stats
     open_workitems: Query = jtrace.query(WorkItem).filter(WorkItem.status == 1)
     ukrdc_masterrecords: Query = jtrace.query(MasterRecord).filter(
