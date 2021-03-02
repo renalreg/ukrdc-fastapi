@@ -15,9 +15,9 @@ def test_laborders_list(client):
         {
             "id": "LABORDER1",
             "links": {"self": "/laborders/LABORDER1"},
-            "entered_at_description": None,
-            "entered_at": None,
-            "specimen_collected_time": "2020-03-16T00:00:00",
+            "enteredAtDescription": None,
+            "enteredAt": None,
+            "specimenCollectedTime": "2020-03-16T00:00:00",
         }
     ]
 
@@ -62,9 +62,9 @@ def test_laborders_list_filtered_ni(ukrdc3_session, client):
         {
             "id": "LABORDER_TEST1_1",
             "links": {"self": "/laborders/LABORDER_TEST1_1"},
-            "entered_at_description": None,
-            "entered_at": None,
-            "specimen_collected_time": "2020-03-16T00:00:00",
+            "enteredAtDescription": None,
+            "enteredAt": None,
+            "specimenCollectedTime": "2020-03-16T00:00:00",
         }
     ]
 
@@ -75,18 +75,18 @@ def test_laborder(client):
     assert response.json() == {
         "id": "LABORDER1",
         "links": {"self": "/laborders/LABORDER1"},
-        "entered_at_description": None,
-        "entered_at": None,
-        "specimen_collected_time": "2020-03-16T00:00:00",
-        "result_items": [
+        "enteredAtDescription": None,
+        "enteredAt": None,
+        "specimenCollectedTime": "2020-03-16T00:00:00",
+        "resultItems": [
             {
                 "id": "RESULTITEM1",
                 "links": {"self": "/resultitems/RESULTITEM1"},
-                "order_id": "LABORDER1",
-                "service_id": "SERVICE_ID",
-                "service_id_description": "SERVICE_ID_DESCRIPTION",
+                "orderId": "LABORDER1",
+                "serviceId": "SERVICE_ID",
+                "serviceIdDescription": "SERVICE_ID_DESCRIPTION",
                 "value": "VALUE",
-                "value_units": "VALUE_UNITS",
+                "valueUnits": "VALUE_UNITS",
             }
         ],
     }
