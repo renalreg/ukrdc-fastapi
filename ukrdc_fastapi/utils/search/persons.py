@@ -70,7 +70,7 @@ def person_ids_from_full_name(session: Session, names: Iterable[str]):
 
 def person_ids_from_dob(session: Session, dobs: Iterable[Union[str, datetime.date]]):
     """Finds Ids from date of birth"""
-    conditions = [Person.date_of_birth.like(dob) for dob in dobs]
+    conditions = [Person.date_of_birth == dob for dob in dobs]
     matched_person_ids = {
         tup.id for tup in session.query(Person.id).filter(or_(*conditions)).all()
     }

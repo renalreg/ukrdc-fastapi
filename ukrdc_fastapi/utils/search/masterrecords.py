@@ -71,7 +71,7 @@ def masterrecord_ids_from_dob(
     session: Session, dobs: Iterable[Union[str, datetime.date]]
 ):
     """Finds Ids from date of birth"""
-    conditions = [MasterRecord.date_of_birth.like(dob) for dob in dobs]
+    conditions = [MasterRecord.date_of_birth == dob for dob in dobs]
     matched_ids = {
         mr.id for mr in session.query(MasterRecord.id).filter(or_(*conditions)).all()
     }

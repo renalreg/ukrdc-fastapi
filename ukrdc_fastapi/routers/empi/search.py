@@ -1,5 +1,5 @@
 import datetime
-from typing import List, Optional, Set
+from typing import List, Optional, Set, Tuple
 
 from fastapi import APIRouter, Depends
 from fastapi import Query as QueryParam
@@ -29,6 +29,18 @@ from ukrdc_fastapi.utils.search.persons import (
 router = APIRouter()
 
 
+def _pop_dates(search_items: List[str]) -> Tuple[List[str], List[datetime.date]]:
+    dates: List[datetime.date] = []
+    strings: List[str] = []
+    for item in search_items:
+        try:
+            date = datetime.datetime.strptime(item, "%Y-%m-%d")
+            dates.append(date)
+        except ValueError:
+            strings.append(item)
+    return (strings, dates)
+
+
 @router.get("/person", response_model=Page[PersonSchema])
 def search_person(
     nhs_number: Optional[List[str]] = QueryParam(None),
@@ -47,9 +59,11 @@ def search_person(
     mrn_number_list: List[str] = mrn_number or []
     ukrdc_number_list: List[str] = ukrdc_number or []
     full_name_list: List[str] = full_name or []
-    dob_list: List[datetime.date] = dob or []
     pidx_list: List[str] = pidx or []
-    search_list: List[str] = search or []
+
+    search_list: List[str]
+    date_list: List[datetime.date]
+    search_list, date_list = _pop_dates(search + (dob or []))
 
     if nhs_number or search_list:
         match_sets.append(
@@ -71,8 +85,8 @@ def search_person(
             person_ids_from_full_name(jtrace, (*full_name_list, *search_list))
         )
 
-    if dob or search_list:
-        match_sets.append(person_ids_from_dob(jtrace, (*dob_list, *search_list)))
+    if date_list:
+        match_sets.append(person_ids_from_dob(jtrace, date_list))
 
     if pidx or search_list:
         match_sets.append(
@@ -83,17 +97,19 @@ def search_person(
         match_set for match_set in match_sets if match_set
     ]
 
-    matched_person_ids: Set[str] = set.intersection(*non_empty_sets)
+    matched_ids: Set[str]
+    if non_empty_sets:
+        matched_ids = set.intersection(*non_empty_sets)
+    else:
+        matched_ids = set()
 
-    matched_persons: Query = jtrace.query(Person).filter(
-        Person.id.in_(matched_person_ids)
-    )
+    matched_persons: Query = jtrace.query(Person).filter(Person.id.in_(matched_ids))
 
     return paginate(matched_persons)
 
 
-@router.get("/masterrecord", response_model=Page[MasterRecordSchema])
-def search_masterrecord(
+@router.get("/masterrecords", response_model=Page[MasterRecordSchema])
+def search_masterrecords(
     nhs_number: Optional[List[str]] = QueryParam(None),
     mrn_number: Optional[List[str]] = QueryParam(None),
     ukrdc_number: Optional[List[str]] = QueryParam(None),
@@ -110,9 +126,12 @@ def search_masterrecord(
     mrn_number_list: List[str] = mrn_number or []
     ukrdc_number_list: List[str] = ukrdc_number or []
     full_name_list: List[str] = full_name or []
-    dob_list: List[datetime.date] = dob or []
     pidx_list: List[str] = pidx or []
     search_list: List[str] = search or []
+
+    search_list: List[str]
+    date_list: List[datetime.date]
+    search_list, date_list = _pop_dates(search + (dob or []))
 
     if nhs_number or search_list:
         match_sets.append(
@@ -134,8 +153,8 @@ def search_masterrecord(
             masterrecord_ids_from_full_name(jtrace, (*full_name_list, *search_list))
         )
 
-    if dob or search_list:
-        match_sets.append(masterrecord_ids_from_dob(jtrace, (*dob_list, *search_list)))
+    if date_list:
+        match_sets.append(masterrecord_ids_from_dob(jtrace, date_list))
 
     if pidx or search_list:
         match_sets.append(
@@ -146,7 +165,11 @@ def search_masterrecord(
         match_set for match_set in match_sets if match_set
     ]
 
-    matched_ids: Set[str] = set.intersection(*non_empty_sets)
+    matched_ids: Set[str]
+    if non_empty_sets:
+        matched_ids = set.intersection(*non_empty_sets)
+    else:
+        matched_ids = set()
 
     matched_records: Query = jtrace.query(MasterRecord).filter(
         MasterRecord.id.in_(matched_ids)
