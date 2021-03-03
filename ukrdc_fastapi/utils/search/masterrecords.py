@@ -10,8 +10,8 @@ from ukrdc_fastapi.utils.filters import find_ids_related_to_person
 
 
 def masterrecord_ids_from_nhs_no(session: Session, nhs_nos: Iterable[str]):
-    """Finds Ids from NHS number"""
-    conditions = [MasterRecord.nationalid.like(nhs_no) for nhs_no in nhs_nos]
+    """Finds Ids from NHS number."""
+    conditions = [MasterRecord.nationalid.ilike(nhs_no.strip()) for nhs_no in nhs_nos]
     matched_ids = {
         record.id
         for record in session.query(MasterRecord)
@@ -39,8 +39,13 @@ def masterrecord_ids_from_mrn_no(session: Session, mrn_nos: Iterable[str]):
 
 
 def masterrecord_ids_from_ukrdc_no(session: Session, ukrdc_nos: Iterable[str]):
-    """Finds Ids from UKRDC number"""
-    conditions = [MasterRecord.nationalid.like(ukrdc_no) for ukrdc_no in ukrdc_nos]
+    """Finds Ids from UKRDC number
+    Note: We use the pattern {nhs_no}_ since our nationalid field seems
+    to have trailing spaces. This has a side-effect of allowing partial matching.
+    """
+    conditions = [
+        MasterRecord.nationalid.like(f"{ukrdc_no.strip()}_") for ukrdc_no in ukrdc_nos
+    ]
     matched_ids = {
         mr.id
         for mr in session.query(MasterRecord.id)

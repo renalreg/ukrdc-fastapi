@@ -9,8 +9,10 @@ from ukrdc_fastapi.models.empi import LinkRecord, MasterRecord, Person, PidXRef
 
 
 def person_ids_from_nhs_no(session: Session, nhs_nos: Iterable[str]):
-    """Finds Ids from NHS number"""
-    conditions = [MasterRecord.nationalid.like(nhs_no) for nhs_no in nhs_nos]
+    """
+    Finds Ids from NHS number.
+    """
+    conditions = [MasterRecord.nationalid.ilike(nhs_no.strip()) for nhs_no in nhs_nos]
     matched_person_ids = {
         tup.person_id
         for tup in session.query(LinkRecord.person_id)
@@ -37,8 +39,13 @@ def person_ids_from_mrn_no(session: Session, mrn_nos: Iterable[str]):
 
 
 def person_ids_from_ukrdc_no(session: Session, ukrdc_nos: Iterable[str]):
-    """Finds Ids from UKRDC number"""
-    conditions = [MasterRecord.nationalid.like(ukrdc_no) for ukrdc_no in ukrdc_nos]
+    """Finds Ids from UKRDC number
+    Note: We use the pattern {nhs_no}_ since our nationalid field seems
+    to have trailing spaces. This has a side-effect of allowing partial matching.
+    """
+    conditions = [
+        MasterRecord.nationalid.like(f"{ukrdc_no.strip()}_") for ukrdc_no in ukrdc_nos
+    ]
     matched_person_ids = {
         tup.person_id
         for tup in session.query(LinkRecord.person_id)
@@ -59,7 +66,7 @@ def person_ids_from_full_name(session: Session, names: Iterable[str]):
     conditions += [
         concat(
             Person.givenname, " ", Person.other_given_names, " ", Person.surname
-        ).like(name)
+        ).ilike(name)
         for name in names
     ]
     conditions += [Person.givenname.ilike(name) for name in names]
