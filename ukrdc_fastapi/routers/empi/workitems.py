@@ -1,9 +1,11 @@
 from typing import List, Optional, Set
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Security
+from fastapi_auth0 import Auth0User
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
+from ukrdc_fastapi.auth import auth
 from ukrdc_fastapi.dependencies import get_jtrace
 from ukrdc_fastapi.models.empi import MasterRecord, WorkItem
 from ukrdc_fastapi.schemas.empi import WorkItemSchema, WorkItemShortSchema
@@ -124,6 +126,7 @@ def workitem_close(
     workitem_id: int,
     args: CloseWorkItemRequestSchema,
     jtrace: Session = Depends(get_jtrace),
+    user: Auth0User = Security(auth.get_user),
 ):
     """Update and close a particular work item"""
     workitem = jtrace.query(WorkItem).get(workitem_id)
@@ -135,7 +138,7 @@ def workitem_close(
         workitem=workitem.id,
         status=3,
         description=args.comment or "",
-        user="UKRDC-API-v2-TESTING",  # TODO: Add user details when authenticated
+        user=user.email,
     )
 
     return post_mirth_message_and_catch("workitem-update", message.strip(), args.mirth)
@@ -190,13 +193,14 @@ def workitem_merge(
 @router.post("/unlink", response_model=MirthMessageResponseSchema)
 def workitems_unlink(
     args: UnlinkWorkItemRequestSchema,
+    user: Auth0User = Security(auth.get_user),
 ):
     """Unlink the master record and person record in a particular work item"""
     message = UNLINK_TEMPLATE.format(
         masterrecord=args.master_record,
         personid=args.person_id,
         description=args.comment or "",
-        user="UKRDC-API-v2-TESTING",  # TODO: Add user details when authenticated
+        user=user.email,
     )
 
     return post_mirth_message_and_catch("unlink", message.strip(), args.mirth)

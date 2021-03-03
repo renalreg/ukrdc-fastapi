@@ -89,6 +89,7 @@ def test_workitem_close(client, workitem_id):
 
     assert "<status>3</status>" in message
     assert f"<workitem>{workitem_id}</workitem>" in message
+    assert "<updatedBy>TEST@UKRDC_FASTAPI</updatedBy>" in message
 
 
 def test_workitem_close_not_found(client):
@@ -190,6 +191,7 @@ def test_workitem_unlink(client, master_record, person_id, comment):
 
     assert f"<masterRecord>{master_record}</masterRecord >" in message
     assert f"<personId>{person_id}</personId>" in message
+    assert "<updatedBy>TEST@UKRDC_FASTAPI</updatedBy>" in message
     if comment:
         assert f"<updateDescription>{comment}</updateDescription>" in message
     else:
