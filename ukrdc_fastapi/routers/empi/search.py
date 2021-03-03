@@ -47,7 +47,7 @@ def search_person(
     mrn_number: Optional[List[str]] = QueryParam(None),
     ukrdc_number: Optional[List[str]] = QueryParam(None),
     full_name: Optional[List[str]] = QueryParam(None),
-    dob: Optional[List[datetime.date]] = QueryParam(None),
+    dob: Optional[List[str]] = QueryParam(None),
     pidx: Optional[List[str]] = QueryParam(None),
     search: Optional[List[str]] = QueryParam(None),
     jtrace: Session = Depends(get_jtrace),
@@ -63,7 +63,7 @@ def search_person(
 
     search_list: List[str]
     date_list: List[datetime.date]
-    search_list, date_list = _pop_dates(search + (dob or []))
+    search_list, date_list = _pop_dates((search or []) + (dob or []))
 
     if nhs_number or search_list:
         match_sets.append(
@@ -114,7 +114,7 @@ def search_masterrecords(
     mrn_number: Optional[List[str]] = QueryParam(None),
     ukrdc_number: Optional[List[str]] = QueryParam(None),
     full_name: Optional[List[str]] = QueryParam(None),
-    dob: Optional[List[datetime.date]] = QueryParam(None),
+    dob: Optional[List[str]] = QueryParam(None),
     pidx: Optional[List[str]] = QueryParam(None),
     search: Optional[List[str]] = QueryParam(None),
     jtrace: Session = Depends(get_jtrace),
@@ -127,11 +127,10 @@ def search_masterrecords(
     ukrdc_number_list: List[str] = ukrdc_number or []
     full_name_list: List[str] = full_name or []
     pidx_list: List[str] = pidx or []
-    search_list: List[str] = search or []
 
-    search_list: List[str]
+    search_list: List[str] = search or []
     date_list: List[datetime.date]
-    search_list, date_list = _pop_dates(search + (dob or []))
+    search_list, date_list = _pop_dates((search or []) + (dob or []))
 
     if nhs_number or search_list:
         match_sets.append(
