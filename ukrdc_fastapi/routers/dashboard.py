@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Query, Session
 
 from ukrdc_fastapi.auth import auth
+from ukrdc_fastapi.config import settings
 from ukrdc_fastapi.dependencies import get_jtrace
 from ukrdc_fastapi.models.empi import Base as EMPIBase
 from ukrdc_fastapi.models.empi import MasterRecord, WorkItem
@@ -35,7 +36,7 @@ class UKRDCRecordsDashSchema(_DayPrevTotalSchema):
 
 
 class DashboardSchema(BaseModel):
-    message: str
+    message: Optional[str]
     user: UserSchema
     workitems: WorkItemsDashSchema
     ukrdcrecords: UKRDCRecordsDashSchema
@@ -73,7 +74,7 @@ def dashboard(
     )
 
     return {
-        "message": "hello world!",
+        "message": settings.motd,
         "workitems": _total_day_prev(open_workitems, WorkItem, "last_updated"),
         "ukrdcrecords": _total_day_prev(
             ukrdc_masterrecords, MasterRecord, "creation_date"
