@@ -47,10 +47,8 @@ def test_search_nhsno(jtrace_session, client):
         # NHS number is master record `nationalid`
         nhs_number = f"{i}".zfill(9)[::-1]
         url = f"/empi/search/person?nhs_number={nhs_number}"
-        print(url)
 
         response = client.get(url)
-        print(response.json())
         assert response.status_code == 200
 
         returned_ids = {item["id"] for item in response.json()["items"]}
