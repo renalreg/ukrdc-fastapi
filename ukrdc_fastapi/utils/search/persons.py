@@ -55,12 +55,16 @@ def person_ids_from_ukrdc_no(session: Session, ukrdc_nos: Iterable[str]):
 
 def person_ids_from_full_name(session: Session, names: Iterable[str]):
     """Finds Ids from full name"""
-    conditions = [
+    conditions = []
+    conditions += [
         concat(
             Person.givenname, " ", Person.other_given_names, " ", Person.surname
         ).like(name)
         for name in names
     ]
+    conditions += [Person.givenname.ilike(name) for name in names]
+    conditions += [Person.other_given_names.ilike(name) for name in names]
+    conditions += [Person.surname.ilike(name) for name in names]
     matched_person_ids = {
         tup.id for tup in session.query(Person.id).filter(or_(*conditions)).all()
     }
