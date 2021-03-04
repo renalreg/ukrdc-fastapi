@@ -33,11 +33,14 @@ def _pop_dates(search_items: List[str]) -> Tuple[List[str], List[datetime.date]]
     dates: List[datetime.date] = []
     strings: List[str] = []
     for item in search_items:
-        try:
-            date = datetime.datetime.strptime(item, "%Y-%m-%d")
-            dates.append(date)
-        except ValueError:
-            strings.append(item)
+        for fmt in ('%Y-%m-%d', '%d.%m.%Y', '%d/%m/%Y'):
+            try:
+                date = datetime.datetime.strptime(item, fmt)
+                dates.append(date)
+                break
+            except ValueError:
+                pass
+        strings.append(item)
     return (strings, dates)
 
 
