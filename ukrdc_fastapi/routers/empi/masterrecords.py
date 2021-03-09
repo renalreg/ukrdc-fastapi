@@ -1,7 +1,8 @@
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Query, Session
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy.orm import Query as OrmQuery
+from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import MasterRecord, Person, WorkItem
 
 from ukrdc_fastapi.dependencies import get_jtrace
@@ -13,11 +14,13 @@ router = APIRouter()
 
 
 @router.get("/", response_model=Page[MasterRecordSchema])
-def master_records(ni: Optional[str] = None, jtrace: Session = Depends(get_jtrace)):
+def master_records(
+    ni: Optional[List[str]] = Query(None), jtrace: Session = Depends(get_jtrace)
+):
     """Retreive a list of master records from the EMPI"""
-    records: Query = jtrace.query(MasterRecord)
+    records: OrmQuery = jtrace.query(MasterRecord)
     if ni:
-        records = records.filter(MasterRecord.nationalid == ni)
+        records = records.filter(MasterRecord.nationalid.in_(ni))
     return paginate(records)
 
 
@@ -56,7 +59,7 @@ def master_record_workitems(record_id: str, jtrace: Session = Depends(get_jtrace
     if not record:
         raise HTTPException(404, detail="Master Record not found")
 
-    related_workitems: Query = jtrace.query(WorkItem).filter(
+    related_workitems: OrmQuery = jtrace.query(WorkItem).filter(
         WorkItem.master_id == record.id,
         WorkItem.status == 1,
     )
@@ -75,6 +78,6 @@ def master_record_persons(record_id: str, jtrace: Session = Depends(get_jtrace))
         [record.nationalid], jtrace
     )
 
-    persons: Query = jtrace.query(Person).filter(Person.id.in_(related_person_ids))
+    persons: OrmQuery = jtrace.query(Person).filter(Person.id.in_(related_person_ids))
 
     return persons.all()
