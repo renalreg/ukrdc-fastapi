@@ -4,8 +4,8 @@ from typing import Iterable, Union
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import or_
 from sqlalchemy.sql.functions import concat
+from ukrdc_sqla.empi import MasterRecord, Person, PidXRef
 
-from ukrdc_fastapi.models.empi import MasterRecord, Person, PidXRef
 from ukrdc_fastapi.utils.filters import find_ids_related_to_person
 
 

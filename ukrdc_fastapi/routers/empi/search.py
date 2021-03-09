@@ -4,9 +4,9 @@ from typing import List, Optional, Set, Tuple
 from fastapi import APIRouter, Depends
 from fastapi import Query as QueryParam
 from sqlalchemy.orm import Query, Session
+from ukrdc_sqla.empi import MasterRecord, Person
 
 from ukrdc_fastapi.dependencies import get_jtrace
-from ukrdc_fastapi.models.empi import MasterRecord, Person
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema, PersonSchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
 from ukrdc_fastapi.utils.search.masterrecords import (

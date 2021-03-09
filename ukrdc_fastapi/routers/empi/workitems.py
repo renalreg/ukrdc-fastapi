@@ -4,10 +4,10 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Security
 from fastapi_auth0 import Auth0User
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
+from ukrdc_sqla.empi import MasterRecord, WorkItem
 
 from ukrdc_fastapi.auth import auth
 from ukrdc_fastapi.dependencies import get_jtrace
-from ukrdc_fastapi.models.empi import MasterRecord, WorkItem
 from ukrdc_fastapi.schemas.empi import WorkItemSchema, WorkItemShortSchema
 from ukrdc_fastapi.utils import filters, post_mirth_message_and_catch
 from ukrdc_fastapi.utils.paginate import Page, paginate

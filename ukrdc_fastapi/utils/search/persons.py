@@ -4,8 +4,7 @@ from typing import Iterable, Union
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import or_
 from sqlalchemy.sql.functions import concat
-
-from ukrdc_fastapi.models.empi import LinkRecord, MasterRecord, Person, PidXRef
+from ukrdc_sqla.empi import LinkRecord, MasterRecord, Person, PidXRef
 
 
 def person_ids_from_nhs_no(session: Session, nhs_nos: Iterable[str]):

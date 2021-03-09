@@ -1,11 +1,6 @@
 from datetime import datetime
 
-from ukrdc_fastapi.models.ukrdc import (
-    LabOrder,
-    PatientNumber,
-    PatientRecord,
-    ResultItem,
-)
+from ukrdc_sqla.ukrdc import LabOrder, PatientNumber, PatientRecord, ResultItem
 
 
 def _commit_extra_resultitem(session):
@@ -15,13 +10,13 @@ def _commit_extra_resultitem(session):
         sendingextract="PV",
         localpatientid="00000000L",
         ukrdcid="000000001",
-        lastupdated=datetime(2020, 3, 16),
+        repository_update_date=datetime(2020, 3, 16),
         repository_creation_date=datetime(2020, 3, 16),
     )
     patient_number = PatientNumber(
         id=2,
         pid="PYTEST01:LABORDERS:00000000L",
-        number="111111111",
+        patientid="111111111",
         organization="NHS",
         numbertype="NI",
     )

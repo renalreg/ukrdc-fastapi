@@ -2,9 +2,9 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+from ukrdc_sqla.empi import LinkRecord
 
 from ukrdc_fastapi.dependencies import get_jtrace
-from ukrdc_fastapi.models.empi import LinkRecord
 from ukrdc_fastapi.schemas.empi import LinkRecordSchema
 from ukrdc_fastapi.utils import filters
 from ukrdc_fastapi.utils.paginate import Page, paginate

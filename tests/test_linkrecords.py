@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from ukrdc_fastapi.models.empi import LinkRecord, MasterRecord, Person
+from ukrdc_sqla.empi import LinkRecord, MasterRecord, Person
 from ukrdc_fastapi.schemas.empi import LinkRecordSchema
 
 

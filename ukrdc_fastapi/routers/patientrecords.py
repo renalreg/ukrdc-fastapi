@@ -3,15 +3,9 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Query, Session
+from ukrdc_sqla.ukrdc import LabOrder, Medication, Observation, PatientRecord, Survey
 
 from ukrdc_fastapi.dependencies import get_ukrdc3
-from ukrdc_fastapi.models.ukrdc import (
-    LabOrder,
-    Medication,
-    Observation,
-    PatientRecord,
-    Survey,
-)
 from ukrdc_fastapi.schemas.laborder import LabOrderShortSchema
 from ukrdc_fastapi.schemas.medication import MedicationSchema
 from ukrdc_fastapi.schemas.observation import ObservationSchema

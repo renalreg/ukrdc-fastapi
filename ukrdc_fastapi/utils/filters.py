@@ -2,14 +2,8 @@ from collections import namedtuple
 from typing import Iterable, List, Optional, Set, Tuple
 
 from sqlalchemy.orm import Query, Session
-
-from ukrdc_fastapi.models.empi import LinkRecord, MasterRecord, Person, WorkItem
-from ukrdc_fastapi.models.ukrdc import (
-    LabOrder,
-    PatientNumber,
-    PatientRecord,
-    ResultItem,
-)
+from ukrdc_sqla.empi import LinkRecord, MasterRecord, Person, WorkItem
+from ukrdc_sqla.ukrdc import LabOrder, PatientNumber, PatientRecord, ResultItem
 
 PersonMasterLink = namedtuple("PersonMasterLink", ("id", "person_id", "master_id"))
 

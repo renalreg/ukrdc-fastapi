@@ -3,9 +3,9 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from ukrdc_sqla.ukrdc import LabOrder, PVDelete
 
 from ukrdc_fastapi.dependencies import get_ukrdc3
-from ukrdc_fastapi.models.ukrdc import LabOrder, PVDelete
 from ukrdc_fastapi.schemas.laborder import LabOrderSchema, LabOrderShortSchema
 from ukrdc_fastapi.utils import filters
 from ukrdc_fastapi.utils.paginate import Page, paginate
