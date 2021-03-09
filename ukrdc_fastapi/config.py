@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     # Message to display on user dashboards
     motd: Optional[str] = None
 
-    secret_key: str = "changeme"
+    secret_key: str = "****"
     mirth_url: str = "http://localhost:9004"
 
     ukrdc_host: str = "localhost"
