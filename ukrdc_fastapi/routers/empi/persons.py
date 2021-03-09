@@ -2,9 +2,9 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Query, Session
+from ukrdc_sqla.empi import MasterRecord, Person
 
 from ukrdc_fastapi.dependencies import get_jtrace
-from ukrdc_fastapi.models.empi import MasterRecord, Person
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema, PersonSchema
 from ukrdc_fastapi.utils.filters import find_ids_related_to_person
 from ukrdc_fastapi.utils.paginate import Page, paginate

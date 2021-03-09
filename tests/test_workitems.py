@@ -2,7 +2,7 @@ from datetime import datetime
 
 import pytest
 
-from ukrdc_fastapi.models.empi import LinkRecord, MasterRecord, WorkItem
+from ukrdc_sqla.empi import LinkRecord, MasterRecord, WorkItem
 from ukrdc_fastapi.schemas.empi import WorkItemSchema
 
 

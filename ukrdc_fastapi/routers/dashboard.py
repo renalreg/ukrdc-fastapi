@@ -6,12 +6,12 @@ from fastapi_auth0 import Auth0User
 from fastapi_hypermodel import HyperModel, UrlFor
 from pydantic import BaseModel
 from sqlalchemy.orm import Query, Session
+from ukrdc_sqla.empi import Base as EMPIBase
+from ukrdc_sqla.empi import MasterRecord, WorkItem
 
 from ukrdc_fastapi.auth import auth
 from ukrdc_fastapi.config import settings
 from ukrdc_fastapi.dependencies import get_jtrace
-from ukrdc_fastapi.models.empi import Base as EMPIBase
-from ukrdc_fastapi.models.empi import MasterRecord, WorkItem
 
 router = APIRouter()
 

@@ -6,15 +6,12 @@ from fastapi_auth0 import Auth0User, auth0_rule_namespace
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
-
-from ukrdc_fastapi.auth import auth
-from ukrdc_fastapi.dependencies import get_jtrace, get_ukrdc3
-from ukrdc_fastapi.models.empi import Base as JtraceBase
-from ukrdc_fastapi.models.empi import LinkRecord, MasterRecord, Person, WorkItem
-from ukrdc_fastapi.models.pkb import PKBLink
-from ukrdc_fastapi.models.ukrdc import Address
-from ukrdc_fastapi.models.ukrdc import Base as UKRDC3Base
-from ukrdc_fastapi.models.ukrdc import (
+from ukrdc_sqla.empi import Base as JtraceBase
+from ukrdc_sqla.empi import LinkRecord, MasterRecord, Person, WorkItem
+from ukrdc_sqla.pkb import PKBLink
+from ukrdc_sqla.ukrdc import Address
+from ukrdc_sqla.ukrdc import Base as UKRDC3Base
+from ukrdc_sqla.ukrdc import (
     Diagnosis,
     Document,
     LabOrder,
@@ -32,6 +29,9 @@ from ukrdc_fastapi.models.ukrdc import (
     Survey,
 )
 
+from ukrdc_fastapi.auth import auth
+from ukrdc_fastapi.dependencies import get_jtrace, get_ukrdc3
+
 
 def populate_ukrdc3_session(session):
     pid: str = "PYTEST01:PV:00000000A"
@@ -42,7 +42,7 @@ def populate_ukrdc3_session(session):
         sendingextract="PV",
         localpatientid="00000000A",
         ukrdcid="000000000",
-        lastupdated=datetime(2020, 3, 16),
+        repository_update_date=datetime(2020, 3, 16),
         repository_creation_date=datetime(2020, 3, 16),
     )
     patient_record.update_date = datetime(2021, 1, 21)
@@ -68,9 +68,9 @@ def populate_ukrdc3_session(session):
         postcode="XX0 1AA",
         country_description="Pacific Ocean",
     )
-    patient = Patient(pid=pid, birthtime=datetime(1984, 3, 17), gender="1")
+    patient = Patient(pid=pid, birth_time=datetime(1984, 3, 17), gender="1")
     patient_number = PatientNumber(
-        id=1, pid=pid, number="999999999", organization="NHS", numbertype="NI"
+        id=1, pid=pid, patientid="999999999", organization="NHS", numbertype="NI"
     )
     session.add(name)
     session.add(address)

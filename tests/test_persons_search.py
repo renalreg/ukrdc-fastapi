@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from ukrdc_fastapi.models.empi import LinkRecord, MasterRecord, Person
+from ukrdc_sqla.empi import LinkRecord, MasterRecord, Person
 
 
 def _commit_extra_patients(session, n, number_type="NHS"):

@@ -4,9 +4,9 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Query, Session
+from ukrdc_sqla.ukrdc import LabOrder, PVDelete, ResultItem
 
 from ukrdc_fastapi.dependencies import get_ukrdc3
-from ukrdc_fastapi.models.ukrdc import LabOrder, PVDelete, ResultItem
 from ukrdc_fastapi.schemas.laborder import ResultItemSchema
 from ukrdc_fastapi.utils import filters
 from ukrdc_fastapi.utils.paginate import Page, paginate

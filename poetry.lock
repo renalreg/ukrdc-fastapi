@@ -159,7 +159,7 @@ test = ["pytest (==5.4.3)", "pytest-cov (==2.10.0)", "pytest-asyncio (>=0.14.0,<
 
 [[package]]
 name = "fastapi-auth0"
-version = "0.1.5"
+version = "0.1.6"
 description = ""
 category = "main"
 optional = false
@@ -175,7 +175,7 @@ requests = "*"
 type = "git"
 url = "https://github.com/dorinclisu/fastapi-auth0.git"
 reference = "master"
-resolved_reference = "c1a96e003c0e50b79569706e648a63ee73c703b8"
+resolved_reference = "66578c4c8d8c922646be83fad8f9486a518127cf"
 
 [[package]]
 name = "fastapi-hypermodel"
@@ -206,11 +206,11 @@ typing-extensions = ">=3.7.4,<4.0.0"
 
 [package.extras]
 gino = ["gino[starlette] (>=1.0.1,<2.0.0)", "SQLAlchemy (>=1.3.20,<2.0.0)", "sqlalchemy-stubs (>=0.4,<0.5)"]
-all = ["gino[starlette] (>=1.0.1,<2.0.0)", "SQLAlchemy (>=1.3.20,<2.0.0)", "sqlalchemy-stubs (>=0.4,<0.5)", "databases[postgresql,sqlite,mysql] (>=0.4.0,<0.5.0)", "orm (>=0.1.5,<0.2.0)", "tortoise-orm[aiomysql,aiosqlite,asyncpg] (>=0.16.18,<0.17.0)"]
+all = ["gino[starlette] (>=1.0.1,<2.0.0)", "SQLAlchemy (>=1.3.20,<2.0.0)", "sqlalchemy-stubs (>=0.4,<0.5)", "databases[sqlite,mysql,postgresql] (>=0.4.0,<0.5.0)", "orm (>=0.1.5,<0.2.0)", "tortoise-orm[aiosqlite,aiomysql,asyncpg] (>=0.16.18,<0.17.0)"]
 sqlalchemy = ["SQLAlchemy (>=1.3.20,<2.0.0)", "sqlalchemy-stubs (>=0.4,<0.5)"]
-databases = ["databases[postgresql,sqlite,mysql] (>=0.4.0,<0.5.0)"]
-orm = ["databases[postgresql,sqlite,mysql] (>=0.4.0,<0.5.0)", "orm (>=0.1.5,<0.2.0)"]
-tortoise = ["tortoise-orm[aiomysql,aiosqlite,asyncpg] (>=0.16.18,<0.17.0)"]
+databases = ["databases[sqlite,mysql,postgresql] (>=0.4.0,<0.5.0)"]
+orm = ["databases[sqlite,mysql,postgresql] (>=0.4.0,<0.5.0)", "orm (>=0.1.5,<0.2.0)"]
+tortoise = ["tortoise-orm[aiosqlite,aiomysql,asyncpg] (>=0.16.18,<0.17.0)"]
 
 [[package]]
 name = "filelock"
@@ -652,6 +652,17 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "ukrdc-sqla"
+version = "0.1.0"
+description = "SQLAlchemy models for the UKRDC"
+category = "main"
+optional = false
+python-versions = ">=3.6,<4.0"
+
+[package.dependencies]
+SQLAlchemy = ">=1.3.23,<2.0.0"
+
+[[package]]
 name = "urllib3"
 version = "1.26.3"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
@@ -716,7 +727,7 @@ python-versions = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8" 
-content-hash = "e80ed78de3c57a1b0052cd74d0f72761817b3fd02d070af9839cdffee4826ce6"
+content-hash = "8aa21e46a972a6f8cd88fc9824c0aef99063d00276f719317b52a884a2094b0c"
 
 [metadata.files]
 appdirs = [
@@ -1217,6 +1228,10 @@ typing-extensions = [
     {file = "typing_extensions-3.7.4.3-py2-none-any.whl", hash = "sha256:dafc7639cde7f1b6e1acc0f457842a83e722ccca8eef5270af2d74792619a89f"},
     {file = "typing_extensions-3.7.4.3-py3-none-any.whl", hash = "sha256:7cb407020f00f7bfc3cb3e7881628838e69d8f3fcab2f64742a5e76b2f841918"},
     {file = "typing_extensions-3.7.4.3.tar.gz", hash = "sha256:99d4073b617d30288f569d3f13d2bd7548c3a7e4c8de87db09a9d29bb3a4a60c"},
+]
+ukrdc-sqla = [
+    {file = "ukrdc-sqla-0.1.0.tar.gz", hash = "sha256:b82bf99a5071ac8f882bb1583a662ee048d6061b7698c5d1a1fdd0eb6a348739"},
+    {file = "ukrdc_sqla-0.1.0-py3-none-any.whl", hash = "sha256:60d88353823d32ffa3f207458829fb6c727460fefc19d07a6ce4bdaeb114e6c8"},
 ]
 urllib3 = [
     {file = "urllib3-1.26.3-py2.py3-none-any.whl", hash = "sha256:1b465e494e3e0d8939b50680403e3aedaa2bc434b7d5af64dfd3c958d7f5ae80"},
