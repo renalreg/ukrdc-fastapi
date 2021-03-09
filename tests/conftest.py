@@ -1,6 +1,8 @@
 from datetime import datetime
 
 import pytest
+import requests
+import requests_mock
 from fastapi.testclient import TestClient
 from fastapi_auth0 import Auth0User, auth0_rule_namespace
 from sqlalchemy import create_engine
@@ -483,3 +485,15 @@ def app(jtrace_session, ukrdc3_session):
 @pytest.fixture(scope="function")
 def client(app):
     return TestClient(app)
+
+
+def _requests_mock_callback(request: requests.Request, context):
+    context.status_code = 200
+    return request.text
+
+
+@pytest.fixture
+def requests_session():
+    m = requests_mock.Mocker()
+    m.register_uri(requests_mock.ANY, requests_mock.ANY, text=_requests_mock_callback)
+    return m
