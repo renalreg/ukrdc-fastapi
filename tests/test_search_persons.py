@@ -35,6 +35,26 @@ def _commit_extra_patients(session, n, number_type="NHS"):
     session.commit()
 
 
+def test_search_all(jtrace_session, client):
+    test_range = range(10, 20)
+
+    # Add extra test items
+    for i in test_range:
+        _commit_extra_patients(jtrace_session, i, number_type="NHS")
+
+    # Search for each item individually
+    for i in test_range:
+        # NHS number is master record `nationalid`
+        nhs_number = f"{i}".zfill(9)[::-1]
+        url = f"/empi/search/person?search={nhs_number}"
+
+        response = client.get(url)
+        assert response.status_code == 200
+
+        returned_ids = {item["id"] for item in response.json()["items"]}
+        assert returned_ids == {i}
+
+
 def test_search_nhsno(jtrace_session, client):
     test_range = range(10, 20)
 
@@ -76,3 +96,23 @@ def test_search_multiple_nhsno(jtrace_session, client):
 
     returned_ids = {item["id"] for item in response.json()["items"]}
     assert returned_ids == {10, 11}
+
+
+def test_search_implicit_dob(jtrace_session, client):
+    test_range = range(10, 20)
+
+    # Add extra test items
+    for i in test_range:
+        _commit_extra_patients(jtrace_session, i, number_type="NHS")
+
+    # Search for each item individually
+    for i in test_range:
+        # NHS number is master record `nationalid`
+        dob = f"1950-01-{str(i % 28).zfill(2)}"
+        url = f"/empi/search/person?search={dob}"
+
+        response = client.get(url)
+        assert response.status_code == 200
+
+        returned_ids = {item["id"] for item in response.json()["items"]}
+        assert returned_ids == {i}
