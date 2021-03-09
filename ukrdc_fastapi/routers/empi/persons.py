@@ -1,7 +1,8 @@
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Query, Session
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy.orm import Query as OrmQuery
+from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import MasterRecord, Person
 
 from ukrdc_fastapi.dependencies import get_jtrace
@@ -13,11 +14,13 @@ router = APIRouter()
 
 
 @router.get("/", response_model=Page[PersonSchema])
-def persons(ni: Optional[str] = None, jtrace: Session = Depends(get_jtrace)):
+def persons(
+    clpid: Optional[List[str]] = Query(None), jtrace: Session = Depends(get_jtrace)
+):
     """Retreive a list of person records from the EMPI"""
-    people: Query = jtrace.query(Person)
-    if ni:
-        people = people.filter(Person.nationalid == ni)
+    people: OrmQuery = jtrace.query(Person)
+    if clpid:
+        people = people.filter(Person.localid.in_(clpid))
     return paginate(people)
 
 
@@ -39,7 +42,7 @@ def person_masterrecords(person_id: str, jtrace: Session = Depends(get_jtrace)):
 
     related_masterrecord_ids, _ = find_ids_related_to_person([person.localid], jtrace)
 
-    masterrecords: Query = jtrace.query(MasterRecord).filter(
+    masterrecords: OrmQuery = jtrace.query(MasterRecord).filter(
         MasterRecord.id.in_(related_masterrecord_ids)
     )
 
