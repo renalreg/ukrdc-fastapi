@@ -62,12 +62,14 @@ def person_ids_from_ukrdc_no(session: Session, ukrdc_nos: Iterable[str]):
 def person_ids_from_full_name(session: Session, names: Iterable[str]):
     """Finds Ids from full name"""
     conditions = []
-    conditions += [
-        concat(
-            Person.givenname, " ", Person.other_given_names, " ", Person.surname
-        ).ilike(name)
-        for name in names
-    ]
+    # SQLite has no concat func, so skip for tests :(
+    if session.bind.dialect.name != "sqlite":
+        conditions += [
+            concat(
+                Person.givenname, " ", Person.other_given_names, " ", Person.surname
+            ).ilike(name)
+            for name in names
+        ]
     conditions += [Person.givenname.ilike(name) for name in names]
     conditions += [Person.other_given_names.ilike(name) for name in names]
     conditions += [Person.surname.ilike(name) for name in names]

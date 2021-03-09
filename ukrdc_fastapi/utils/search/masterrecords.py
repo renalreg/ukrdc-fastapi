@@ -62,10 +62,12 @@ def masterrecord_ids_from_ukrdc_no(session: Session, ukrdc_nos: Iterable[str]):
 def masterrecord_ids_from_full_name(session: Session, names: Iterable[str]):
     """Finds Ids from full name"""
     conditions = []
-    conditions += [
-        concat(MasterRecord.givenname, " ", MasterRecord.surname).ilike(name)
-        for name in names
-    ]
+    # SQLite has no concat func, so skip for tests :(
+    if session.bind.dialect.name != "sqlite":
+        conditions += [
+            concat(MasterRecord.givenname, " ", MasterRecord.surname).ilike(name)
+            for name in names
+        ]
     conditions += [MasterRecord.givenname.ilike(name) for name in names]
     conditions += [MasterRecord.surname.ilike(name) for name in names]
     matched_ids = {
