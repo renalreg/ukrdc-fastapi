@@ -25,6 +25,9 @@ class MasterRecordSchema(OrmModel):
             "related": UrlFor("master_record_related", {"record_id": "<id>"}),
             "persons": UrlFor("master_record_persons", {"record_id": "<id>"}),
             "workitems": UrlFor("master_record_workitems", {"record_id": "<id>"}),
+            "patientrecords": UrlFor(
+                "master_record_patientrecords", {"record_id": "<id>"}
+            ),
         }
     )
 

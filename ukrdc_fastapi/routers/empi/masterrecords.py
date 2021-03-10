@@ -4,9 +4,11 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Query as OrmQuery
 from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import MasterRecord, Person, WorkItem
+from ukrdc_sqla.ukrdc import PatientRecord
 
-from ukrdc_fastapi.dependencies import get_jtrace
+from ukrdc_fastapi.dependencies import get_jtrace, get_ukrdc3
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema, PersonSchema, WorkItemSchema
+from ukrdc_fastapi.schemas.patientrecord import PatientRecordShortSchema
 from ukrdc_fastapi.utils.filters import find_ids_related_to_masterrecord
 from ukrdc_fastapi.utils.paginate import Page, paginate
 
@@ -46,7 +48,7 @@ def master_record_related(record_id: str, jtrace: Session = Depends(get_jtrace))
     )
 
     other_records = jtrace.query(MasterRecord).filter(
-        MasterRecord.id.in_(related_master_ids)
+        MasterRecord.id.in_(related_master_ids), MasterRecord.id != record_id
     )
 
     return other_records.all()
@@ -81,3 +83,31 @@ def master_record_persons(record_id: str, jtrace: Session = Depends(get_jtrace))
     persons: OrmQuery = jtrace.query(Person).filter(Person.id.in_(related_person_ids))
 
     return persons.all()
+
+
+@router.get(
+    "/{record_id}/patientrecords", response_model=List[PatientRecordShortSchema]
+)
+def master_record_patientrecords(
+    record_id: str,
+    jtrace: Session = Depends(get_jtrace),
+    ukrdc3: Session = Depends(get_ukrdc3),
+):
+    """Retreive a list of patient records related to a particular master record."""
+    record: MasterRecord = jtrace.query(MasterRecord).get(record_id)
+    if not record:
+        raise HTTPException(404, detail="Master Record not found")
+
+    _, related_person_ids = find_ids_related_to_masterrecord(
+        [record.nationalid], jtrace
+    )
+
+    related_patient_ids = {
+        jtrace.query(Person).get(person_id).localid for person_id in related_person_ids
+    }
+
+    patient_records: OrmQuery = ukrdc3.query(PatientRecord).filter(
+        PatientRecord.pid.in_(related_patient_ids)
+    )
+
+    return patient_records.all()
