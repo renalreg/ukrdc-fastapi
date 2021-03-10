@@ -12,27 +12,27 @@ jobs:
   main:
     runs-on: ubuntu-latest
 
-  steps:
-    - name: Docker meta
-      id: docker_meta
-      uses: crazy-max/ghaction-docker-meta@v1
-      with:
-        images: renalreg/ukrdc-fastapi
-        tag-semver: |
-          {{version}}
-          {{major}}.{{minor}}
+    steps:
+      - name: Docker meta
+        id: docker_meta
+        uses: crazy-max/ghaction-docker-meta@v1
+        with:
+          images: renalreg/ukrdc-fastapi
+          tag-semver: |
+            {{version}}
+            {{major}}.{{minor}}
 
-    - name: Login to GitHub Container Registry
-      if: github.event_name != 'pull_request'
-      uses: docker/login-action@v1
-      with:
-        registry: ghcr.io
-        username: ${{ github.repository_owner }}
-        password: ${{ secrets.GH_PACKAGES_TOKEN }}
+      - name: Login to GitHub Container Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GH_PACKAGES_TOKEN }}
 
-    - name: Build and push
-      uses: docker/build-push-action@v2
-      with:
-        push: ${{ github.event_name != 'pull_request' }}
-        tags: ${{ steps.docker_meta.outputs.tags }}
-        labels: ${{ steps.docker_meta.outputs.labels }}
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.docker_meta.outputs.tags }}
+          labels: ${{ steps.docker_meta.outputs.labels }}
