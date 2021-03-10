@@ -20,7 +20,7 @@ jobs:
         id: docker_meta
         uses: crazy-max/ghaction-docker-meta@v1
         with:
-          images: renalreg/ukrdc-fastapi
+          images: ghcr.io/renalreg/ukrdc-fastapi
           tag-semver: |
             {{version}}
             {{major}}.{{minor}}
