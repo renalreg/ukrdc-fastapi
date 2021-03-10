@@ -1,15 +1,13 @@
 FROM python:3.9-slim
 
 ENV PYTHONUNBUFFERED=1 \
-    POETRY_HOME="/opt/poetry" \
     POETRY_VIRTUALENVS_IN_PROJECT=true \
-    POETRY_NO_INTERACTION=1
-
-ENV PATH="$POETRY_HOME/bin:$VENV_PATH/bin:$PATH"
+    POETRY_NO_INTERACTION=1 \
+    POETRY_VERSION=1.1.5
 
 WORKDIR /app
 
-RUN curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
+RUN python -m pip install -U pip==21.0.1 && pip install poetry
 
 COPY . ./
 
