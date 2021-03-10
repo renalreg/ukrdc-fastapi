@@ -2,6 +2,10 @@
 
 [![codecov](https://codecov.io/gh/renalreg/ukrdc-fastapi/branch/main/graph/badge.svg?token=5GYR8M6G1W)](https://codecov.io/gh/renalreg/ukrdc-fastapi)
 
+## Project Status
+
+This rewrite of the UKRDC API is currently in development, and is not yet being used in production.
+
 ## Developer Installation
 
 - Install Poetry
