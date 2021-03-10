@@ -7,69 +7,23 @@ from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import MasterRecord, WorkItem
 
 from ukrdc_fastapi.auth import auth
-from ukrdc_fastapi.dependencies import get_jtrace
+from ukrdc_fastapi.dependencies import get_jtrace, get_mirth
+from ukrdc_fastapi.mirth import MirthConnection, MirthMessageResponseSchema
 from ukrdc_fastapi.schemas.empi import WorkItemSchema, WorkItemShortSchema
-from ukrdc_fastapi.utils import filters, post_mirth_message_and_catch
+from ukrdc_fastapi.utils import filters
 from ukrdc_fastapi.utils.paginate import Page, paginate
 
 router = APIRouter()
-
-MERGE_TEMPLATE = """<request>
-    <superceding>{superceding}</superceding>
-    <superceeded>{superceeded}</superceeded>
-</request>
-"""
-
-UPDATE_WORKITEM_TEMPLATE = """<request>
-    <workitem>{workitem}</workitem>
-    <status>{status}</status>
-    <updateDescription>{description}</updateDescription>
-    <updatedBy>{user}</updatedBy>
-</request>
-"""
-
-UNLINK_TEMPLATE = """<request>
-    <masterRecord>{masterrecord}</masterRecord >
-    <personId>{personid}</personId>
-    <updateDescription>{description}</updateDescription>
-    <updatedBy>{user}</updatedBy>
-</request>
-"""
 
 
 class UnlinkWorkItemRequestSchema(BaseModel):
     master_record: str = Field(..., title="Master record ID")
     person_id: str = Field(..., title="Person ID")
     comment: Optional[str]
-    mirth: Optional[bool] = Field(
-        True,
-        title="Post to Mirth",
-        description="Disables sending the message to Mirth. Used for offline testing.",
-    )
 
 
 class CloseWorkItemRequestSchema(BaseModel):
     comment: Optional[str]
-    mirth: Optional[bool] = Field(
-        True,
-        title="Post to Mirth",
-        description="Disables sending the message to Mirth. Used for offline testing.",
-    )
-
-
-class MergeWorkItemRequestSchema(BaseModel):
-    mirth: Optional[bool] = Field(
-        True,
-        title="Post to Mirth",
-        description="Disables sending the message to Mirth. Used for offline testing.",
-    )
-
-
-class MirthMessageResponseSchema(BaseModel):
-    """Response schema for Mirth message post views"""
-
-    status: str
-    message: str
 
 
 @router.get("/", response_model=Page[WorkItemShortSchema])
@@ -127,28 +81,21 @@ def workitem_close(
     args: CloseWorkItemRequestSchema,
     jtrace: Session = Depends(get_jtrace),
     user: Auth0User = Security(auth.get_user),
+    mirth: MirthConnection = Depends(get_mirth),
 ):
     """Update and close a particular work item"""
     workitem = jtrace.query(WorkItem).get(workitem_id)
     if not workitem:
         raise HTTPException(404, detail="Work item not found")
 
-    # Create and send the Mirth message
-    message = UPDATE_WORKITEM_TEMPLATE.format(
-        workitem=workitem.id,
-        status=3,
-        description=args.comment or "",
-        user=user.email,
-    )
-
-    return post_mirth_message_and_catch("workitem-update", message.strip(), args.mirth)
+    return mirth.empi.close_workitem(workitem.id, args.comment or "", user.email)
 
 
 @router.post("/{workitem_id}/merge", response_model=MirthMessageResponseSchema)
 def workitem_merge(
     workitem_id: int,
-    args: MergeWorkItemRequestSchema,
     jtrace: Session = Depends(get_jtrace),
+    mirth: MirthConnection = Depends(get_mirth),
 ):
     """Merge a particular work item"""
     workitem = jtrace.query(WorkItem).get(workitem_id)
@@ -182,25 +129,19 @@ def workitem_merge(
             detail=f"Got {len(master_with_ukrdc)} master record(s) with different UKRDC IDs. Expected 2.",
         )
 
-    # Create and send the Mirth message
-    message = MERGE_TEMPLATE.format(
+    return mirth.empi.merge(
         superceding=master_with_ukrdc[0].id, superceeded=master_with_ukrdc[1].id
     )
-
-    return post_mirth_message_and_catch("merge", message.strip(), args.mirth)
 
 
 @router.post("/unlink", response_model=MirthMessageResponseSchema)
 def workitems_unlink(
     args: UnlinkWorkItemRequestSchema,
     user: Auth0User = Security(auth.get_user),
+    mirth: MirthConnection = Depends(get_mirth),
 ):
     """Unlink the master record and person record in a particular work item"""
-    message = UNLINK_TEMPLATE.format(
-        masterrecord=args.master_record,
-        personid=args.person_id,
-        description=args.comment or "",
-        user=user.email,
-    )
 
-    return post_mirth_message_and_catch("unlink", message.strip(), args.mirth)
+    return mirth.empi.unlink(
+        args.master_record, args.person_id, user.email, args.comment
+    )

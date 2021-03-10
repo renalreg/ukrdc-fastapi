@@ -1,8 +1,8 @@
 from datetime import datetime
 
 import pytest
-
 from ukrdc_sqla.empi import LinkRecord, MasterRecord, WorkItem
+
 from ukrdc_fastapi.schemas.empi import WorkItemSchema
 
 
@@ -79,12 +79,12 @@ def test_workitem_detail_not_found(client):
 
 
 @pytest.mark.parametrize("workitem_id", [1, 2, 3])
-def test_workitem_close(client, workitem_id):
-    response = client.post(
-        f"/empi/workitems/{workitem_id}/close",
-        json={"mirth": False},
-    )
-    assert response.json().get("status") == "ignored"
+def test_workitem_close(client, workitem_id, mirth_session):
+    with mirth_session:
+        response = client.post(
+            f"/empi/workitems/{workitem_id}/close",
+            json={},
+        )
     message = response.json().get("message")
 
     assert "<status>3</status>" in message
@@ -92,15 +92,16 @@ def test_workitem_close(client, workitem_id):
     assert "<updatedBy>TEST@UKRDC_FASTAPI</updatedBy>" in message
 
 
-def test_workitem_close_not_found(client):
-    response = client.post(
-        f"/empi/workitems/9999/close",
-        json={"mirth": False},
-    )
+def test_workitem_close_not_found(client, mirth_session):
+    with mirth_session:
+        response = client.post(
+            f"/empi/workitems/9999/close",
+            json={},
+        )
     assert response.status_code == 404
 
 
-def test_workitem_merge(client, jtrace_session):
+def test_workitem_merge(client, jtrace_session, mirth_session):
 
     # Create a new master record
     master_record_3 = MasterRecord(
@@ -140,11 +141,9 @@ def test_workitem_merge(client, jtrace_session):
     jtrace_session.add(work_item_4)
     jtrace_session.commit()
 
-    response = client.post(
-        f"/empi/workitems/4/merge",
-        json={"mirth": False},
-    )
-    assert response.json().get("status") == "ignored"
+    with mirth_session:
+        response = client.post(f"/empi/workitems/4/merge", json={})
+    assert response.json().get("status") == "success"
     message = response.json().get("message")
 
     # Check we are merging master records 1 and 3
@@ -152,47 +151,43 @@ def test_workitem_merge(client, jtrace_session):
     assert f"<superceeded>3</superceeded>" in message
 
 
-def test_workitem_merge_nothing_to_merge(client):
+def test_workitem_merge_nothing_to_merge(client, mirth_session):
 
-    response = client.post(
-        f"/empi/workitems/1/merge",
-        json={"mirth": False},
-    )
+    with mirth_session:
+        response = client.post(f"/empi/workitems/1/merge", json={})
 
     # Expect a 400 error since only 1 master record is associated
     # with this work item, so nothing to merge
     assert response.status_code == 400
 
 
-def test_workitem_merge_not_found(client):
-    response = client.post(
-        f"/empi/workitems/9999/merge",
-        json={"mirth": False},
-    )
+def test_workitem_merge_not_found(client, mirth_session):
+    with mirth_session:
+        response = client.post(f"/empi/workitems/9999/merge", json={})
     assert response.status_code == 404
 
 
 @pytest.mark.parametrize("master_record", [1, 2])
 @pytest.mark.parametrize("person_id", [1, 2, 3, 4])
 @pytest.mark.parametrize("comment", [None, "", "COMMENT"])
-def test_workitem_unlink(client, master_record, person_id, comment):
-    response = client.post(
-        f"/empi/workitems/unlink",
-        json={
-            "master_record": master_record,
-            "person_id": person_id,
-            "comment": comment,
-            "mirth": False,
-        },
-    )
+def test_workitem_unlink(client, master_record, person_id, comment, mirth_session):
+    with mirth_session:
+        response = client.post(
+            f"/empi/workitems/unlink",
+            json={
+                "master_record": master_record,
+                "person_id": person_id,
+                "comment": comment,
+            },
+        )
 
-    assert response.json().get("status") == "ignored"
+    assert response.json().get("status") == "success"
     message = response.json().get("message")
 
-    assert f"<masterRecord>{master_record}</masterRecord >" in message
+    assert f"<masterRecord>{master_record}</masterRecord>" in message
     assert f"<personId>{person_id}</personId>" in message
     assert "<updatedBy>TEST@UKRDC_FASTAPI</updatedBy>" in message
     if comment:
         assert f"<updateDescription>{comment}</updateDescription>" in message
     else:
-        assert f"<updateDescription></updateDescription>" in message
+        assert f"<updateDescription />" in message

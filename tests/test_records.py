@@ -1,53 +1,16 @@
+from ukrdc_sqla.ukrdc import Patient
+
+from ukrdc_fastapi.schemas.patientrecord import (
+    PatientRecordSchema,
+    PatientRecordShortSchema,
+)
+
+
 def test_record(client):
     response = client.get("/patientrecords/PYTEST01:PV:00000000A")
     assert response.status_code == 200
-    assert response.json() == {
-        "pid": "PYTEST01:PV:00000000A",
-        "sendingfacility": "PATIENT_RECORD_SENDING_FACILITY_1",
-        "sendingextract": "PV",
-        "localpatientid": "00000000A",
-        "ukrdcid": "000000000",
-        "repositoryCreationDate": "2020-03-16T00:00:00",
-        "repositoryUpdateDate": "2021-01-21T00:00:00",
-        "links": {
-            "self": "/patientrecords/PYTEST01:PV:00000000A",
-            "laborders": "/patientrecords/PYTEST01:PV:00000000A/laborders",
-            "observations": "/patientrecords/PYTEST01:PV:00000000A/observations",
-            "medications": "/patientrecords/PYTEST01:PV:00000000A/medications",
-            "surveys": "/patientrecords/PYTEST01:PV:00000000A/surveys",
-            "export-data": "/patientrecords/PYTEST01:PV:00000000A/export-data",
-        },
-        "programMemberships": [],
-        "patient": {
-            "names": [{"given": "Patrick", "family": "Star"}],
-            "numbers": [
-                {"patientid": "999999999", "organization": "NHS", "numbertype": "NI"}
-            ],
-            "addresses": [
-                {
-                    "fromTime": None,
-                    "toTime": None,
-                    "street": "120 Conch Street",
-                    "town": "Bikini Bottom",
-                    "county": "Bikini County",
-                    "postcode": "XX0 1AA",
-                    "countryDescription": "Pacific Ocean",
-                },
-                {
-                    "fromTime": None,
-                    "toTime": None,
-                    "street": "121 Conch Street",
-                    "town": "Bikini Bottom",
-                    "county": "Bikini County",
-                    "postcode": "XX0 1AA",
-                    "countryDescription": "Pacific Ocean",
-                },
-            ],
-            "birthTime": "1984-03-17",
-            "deathTime": None,
-            "gender": "1",
-        },
-    }
+    record = PatientRecordSchema(**response.json())
+    assert record.pid == "PYTEST01:PV:00000000A"
 
 
 def test_record_missing(client):
@@ -59,25 +22,11 @@ def test_record_missing(client):
 def test_records(client):
     response = client.get("/patientrecords?ni=999999999")
     assert response.status_code == 200
-    assert response.json()["items"] == [
-        {
-            "localpatientid": "00000000A",
-            "pid": "PYTEST01:PV:00000000A",
-            "links": {
-                "self": "/patientrecords/PYTEST01:PV:00000000A",
-                "laborders": "/patientrecords/PYTEST01:PV:00000000A/laborders",
-                "observations": "/patientrecords/PYTEST01:PV:00000000A/observations",
-                "medications": "/patientrecords/PYTEST01:PV:00000000A/medications",
-                "surveys": "/patientrecords/PYTEST01:PV:00000000A/surveys",
-                "export-data": "/patientrecords/PYTEST01:PV:00000000A/export-data",
-            },
-            "repositoryCreationDate": "2020-03-16T00:00:00",
-            "repositoryUpdateDate": "2021-01-21T00:00:00",
-            "sendingextract": "PV",
-            "sendingfacility": "PATIENT_RECORD_SENDING_FACILITY_1",
-            "ukrdcid": "000000000",
-        }
-    ]
+
+    returned_pids = {
+        PatientRecordShortSchema(**item).pid for item in response.json()["items"]
+    }
+    assert returned_pids == {"PYTEST01:PV:00000000A"}
 
 
 def test_records_no_ni(client):
@@ -229,20 +178,45 @@ def test_record_surveys_missing(client):
 # Record export-data
 
 
-def test_record_export_data(client):
-    response = client.post(
-        "/patientrecords/PYTEST01:PV:00000000A/export-data",
-        json={"data": "FULL_PV_TESTS_EXTRACT_TEMPLATE", "path": "/", "mirth": False},
-    )
-    assert response.json() == {
-        "message": "<result><pid>PYTEST01:PV:00000000A</pid><tests>FULL</tests></result>",
-        "status": "ignored",
-    }
+def test_record_export_data(client, mirth_session):
+    with mirth_session:
+        response = client.post(
+            "/patientrecords/PYTEST01:PV:00000000A/export-pv", json={}
+        )
+        assert response.json() == {
+            "message": "<result><pid>PYTEST01:PV:00000000A</pid><tests>FULL</tests><documents>FULL</documents></result>",
+            "status": "success",
+        }
 
 
-def test_record_export_data_invalid_template(client):
-    response = client.post(
-        "/patientrecords/PYTEST01:PV:00000000A/export-data",
-        json={"data": "INVALID", "path": "/", "mirth": True},
-    )
-    assert response.status_code == 400
+def test_record_export_tests(client, mirth_session):
+    with mirth_session:
+        response = client.post(
+            "/patientrecords/PYTEST01:PV:00000000A/export-pv-tests", json={}
+        )
+        assert response.json() == {
+            "message": "<result><pid>PYTEST01:PV:00000000A</pid><tests>FULL</tests></result>",
+            "status": "success",
+        }
+
+
+def test_record_export_docs(client, mirth_session):
+    with mirth_session:
+        response = client.post(
+            "/patientrecords/PYTEST01:PV:00000000A/export-pv-docs", json={}
+        )
+        assert response.json() == {
+            "message": "<result><pid>PYTEST01:PV:00000000A</pid><documents>FULL</documents></result>",
+            "status": "success",
+        }
+
+
+def test_record_export_radar(client, mirth_session):
+    with mirth_session:
+        response = client.post(
+            "/patientrecords/PYTEST01:PV:00000000A/export-radar", json={}
+        )
+        assert response.json() == {
+            "message": "<result><pid>PYTEST01:PV:00000000A</pid></result>",
+            "status": "success",
+        }
