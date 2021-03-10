@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 
 import pytest
@@ -32,7 +33,8 @@ from ukrdc_sqla.ukrdc import (
 )
 
 from ukrdc_fastapi.auth import auth
-from ukrdc_fastapi.dependencies import get_jtrace, get_ukrdc3
+from ukrdc_fastapi.dependencies import get_jtrace, get_mirth, get_ukrdc3
+from ukrdc_fastapi.mirth import MirthConnection
 
 
 def populate_ukrdc3_session(session):
@@ -493,7 +495,14 @@ def _requests_mock_callback(request: requests.Request, context):
 
 
 @pytest.fixture
-def requests_session():
-    m = requests_mock.Mocker()
-    m.register_uri(requests_mock.ANY, requests_mock.ANY, text=_requests_mock_callback)
+def mirth_session(app):
+    def _get_mirth():
+        return MirthConnection("mock://mirth.url")
+
+    app.dependency_overrides[get_mirth] = _get_mirth
+
+    matcher = re.compile("mock://mirth.url")
+
+    m = requests_mock.Mocker(real_http=True)
+    m.register_uri(requests_mock.ANY, matcher, text=_requests_mock_callback)
     return m

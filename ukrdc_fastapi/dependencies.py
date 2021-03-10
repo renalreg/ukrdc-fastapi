@@ -2,7 +2,9 @@ from typing import Generator
 
 from sqlalchemy.orm import Session
 
+from .config import settings
 from .database import ErrorsSession, JtraceSession, Ukrdc3Session
+from .mirth import MirthConnection
 
 
 def get_ukrdc3() -> Generator[Session, None, None]:
@@ -42,3 +44,8 @@ def get_errorsdb() -> Generator[Session, None, None]:
         yield session
     finally:
         session.close()
+
+
+def get_mirth() -> MirthConnection:
+    """Returns a new Mirth API connection"""
+    return MirthConnection(settings.mirth_url)

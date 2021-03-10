@@ -1,11 +1,11 @@
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
 from sqlalchemy.orm import Query, Session
 from ukrdc_sqla.ukrdc import LabOrder, Medication, Observation, PatientRecord, Survey
 
-from ukrdc_fastapi.dependencies import get_ukrdc3
+from ukrdc_fastapi.dependencies import get_mirth, get_ukrdc3
+from ukrdc_fastapi.mirth import MirthConnection, MirthMessageResponseSchema
 from ukrdc_fastapi.schemas.laborder import LabOrderShortSchema
 from ukrdc_fastapi.schemas.medication import MedicationSchema
 from ukrdc_fastapi.schemas.observation import ObservationSchema
@@ -14,23 +14,10 @@ from ukrdc_fastapi.schemas.patientrecord import (
     PatientRecordShortSchema,
 )
 from ukrdc_fastapi.schemas.survey import SurveySchema
-from ukrdc_fastapi.utils import filters, post_mirth_message_and_catch
+from ukrdc_fastapi.utils import filters
 from ukrdc_fastapi.utils.paginate import Page, paginate
 
 router = APIRouter()
-
-
-class ExportResponseSchema(BaseModel):
-    """Response schema for data export view"""
-
-    status: str
-    message: str
-
-
-class ExportRequestSchema(BaseModel):
-    data: str
-    path: str
-    mirth: Optional[bool] = True
 
 
 # Mirth export message templates
@@ -100,13 +87,37 @@ def patient_surveys(pid: str, ukrdc3: Session = Depends(get_ukrdc3)):
     return surveys.order_by(Survey.surveytime).all()
 
 
-@router.post("/{pid}/export-data", response_model=ExportResponseSchema)
-def patient_export(pid: str, args: ExportRequestSchema):
-    """Export a specific patient's data to Mirth"""
-    # Fetch the relevant template
-    template: Optional[str] = EXPORT_TEMPLATES.get(args.data, "")
-    if not template:
-        raise HTTPException(400, detail=f"Unknown export data operation {args.data}")
-    message: str = template.format(pid=pid)
+@router.post("/{pid}/export-pv", response_model=MirthMessageResponseSchema)
+def patient_export_pv(
+    pid: str,
+    mirth: MirthConnection = Depends(get_mirth),
+):
+    """Export a specific patient's data to PV"""
+    return mirth.pv.export_all(pid)
 
-    return post_mirth_message_and_catch(args.path, message.strip(), args.mirth)
+
+@router.post("/{pid}/export-pv-tests", response_model=MirthMessageResponseSchema)
+def patient_export_pv_tests(
+    pid: str,
+    mirth: MirthConnection = Depends(get_mirth),
+):
+    """Export a specific patient's test data to PV"""
+    return mirth.pv.export_tests(pid)
+
+
+@router.post("/{pid}/export-pv-docs", response_model=MirthMessageResponseSchema)
+def patient_export_pv_docs(
+    pid: str,
+    mirth: MirthConnection = Depends(get_mirth),
+):
+    """Export a specific patient's documents data to PV"""
+    return mirth.pv.export_docs(pid)
+
+
+@router.post("/{pid}/export-radar", response_model=MirthMessageResponseSchema)
+def patient_export_radar(
+    pid: str,
+    mirth: MirthConnection = Depends(get_mirth),
+):
+    """Export a specific patient's data to RaDaR"""
+    return mirth.pv.export_radar(pid)
