@@ -3,9 +3,9 @@ name: Publish Docker image
 on:
   push:
     branches:
-      - '**'
+      - "**"
     tags:
-      - 'v*'
+      - "v*"
   pull_request:
 
 jobs:
@@ -13,14 +13,14 @@ jobs:
     runs-on: ubuntu-latest
 
   steps:
-      - name: Docker meta
-        id: docker_meta
-        uses: crazy-max/ghaction-docker-meta@v1
-        with:
-          images: renalreg/ukrdc-fastapi
-          tag-semver: |
-            {{version}}
-            {{major}}.{{minor}}
+    - name: Docker meta
+      id: docker_meta
+      uses: crazy-max/ghaction-docker-meta@v1
+      with:
+        images: renalreg/ukrdc-fastapi
+        tag-semver: |
+          {{version}}
+          {{major}}.{{minor}}
 
     - name: Login to GitHub Container Registry
       if: github.event_name != 'pull_request'
