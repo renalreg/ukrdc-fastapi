@@ -20,7 +20,7 @@ app = FastAPI(
     description="Early test version of an updated, simpler UKRDC API",
     version="0.0.0",
     dependencies=[Depends(pagination_params), Depends(auth.implicit_scheme)],
-    root_path=settings.root_path,
+    root_path=settings.api_base,
 )
 
 app.add_middleware(

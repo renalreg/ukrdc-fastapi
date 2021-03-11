@@ -5,7 +5,7 @@ from pydantic import BaseSettings
 
 class Settings(BaseSettings):
     # Used to correct linking when behind a reverse proxy
-    root_path: str = ""
+    api_base: str = ""
 
     # Message to display on user dashboards
     motd: Optional[str] = None
