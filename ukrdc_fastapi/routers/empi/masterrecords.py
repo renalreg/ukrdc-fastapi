@@ -102,9 +102,11 @@ def master_record_patientrecords(
         [record.nationalid], jtrace
     )
 
-    related_patient_ids = {
-        jtrace.query(Person).get(person_id).localid for person_id in related_person_ids
-    }
+    related_patient_ids = set()
+    for person_id in related_person_ids:
+        person: Optional[Person] = jtrace.query(Person).get(person_id)
+        if person:
+            related_patient_ids.add(person.localid)
 
     patient_records: OrmQuery = ukrdc3.query(PatientRecord).filter(
         PatientRecord.pid.in_(related_patient_ids)
