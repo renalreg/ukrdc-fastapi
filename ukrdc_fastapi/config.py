@@ -34,10 +34,6 @@ class Settings(BaseSettings):
     errors_name: str = "errorsdb"
     errors_driver: str = "postgresql+psycopg2"
 
-    crowd_url: str = "https://crowd.renalregistry.nhs.uk/crowd"
-    crowd_name: str = "ukrdc-user-api"
-    crowd_pass: str = "****"
-
     class Config:
         env_file = ".env"
 
