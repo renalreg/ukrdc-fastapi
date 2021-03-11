@@ -41,7 +41,7 @@ HyperModel.init_app(app)
 @app.get("/", include_in_schema=False)
 def root():
     """Redirect to documentation"""
-    return RedirectResponse(url="/docs")
+    return RedirectResponse(url=f"{app.root_path.rstrip('/')}/docs")
 
 
 app.include_router(
