@@ -75,7 +75,7 @@ def test_masterrecord_related(client, jtrace_session):
     # Check MR3 is identified as related to MR1
     mrecs = [MasterRecordSchema(**item) for item in response.json()]
     returned_ids = {item.id for item in mrecs}
-    assert returned_ids == {1, 3}
+    assert returned_ids == {3}
 
 
 def test_masterrecord_workitems(client):
