@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 from pydantic import BaseSettings
 
@@ -33,6 +33,12 @@ class Settings(BaseSettings):
     errors_pass: str = "****"
     errors_name: str = "errorsdb"
     errors_driver: str = "postgresql+psycopg2"
+
+    allowed_origins: List[str] = [
+        "http://localhost",
+        "http://localhost:8000",
+        "http://localhost:3000",
+    ]
 
     class Config:
         env_file = ".env"
