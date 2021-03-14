@@ -34,11 +34,7 @@ class Settings(BaseSettings):
     errors_name: str = "errorsdb"
     errors_driver: str = "postgresql+psycopg2"
 
-    allowed_origins: List[str] = [
-        "http://localhost",
-        "http://localhost:8000",
-        "http://localhost:3000",
-    ]
+    allowed_origins: List[str] = []
 
     class Config:
         env_file = ".env"
