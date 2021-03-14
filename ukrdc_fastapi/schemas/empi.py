@@ -86,5 +86,5 @@ class WorkItemShortSchema(WorkItemSummarySchema):
 
 
 class WorkItemSchema(WorkItemShortSchema):
-    person: PersonSchema
-    master_record: MasterRecordSchema
+    person: Optional[PersonSchema]
+    master_record: Optional[MasterRecordSchema]
