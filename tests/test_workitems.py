@@ -23,47 +23,9 @@ def test_workitems_list_ukrdcid_filter_single(client):
 def test_workitems_list_ukrdcid_filter_multiple(client):
     response = client.get("/api/empi/workitems?ukrdcid=999999999&ukrdcid=999999911")
     assert response.status_code == 200
-    assert response.json()["items"] == [
-        {
-            "id": 1,
-            "links": {"self": "/api/empi/workitems/1"},
-            "personId": 3,
-            "masterId": 1,
-            "type": 9,
-            "description": "DESCRIPTION_1",
-            "status": 1,
-            "lastUpdated": "2020-03-16T00:00:00",
-            "updatedBy": None,
-            "updateDescription": None,
-            "attributes": None,
-        },
-        {
-            "id": 2,
-            "links": {"self": "/api/empi/workitems/2"},
-            "personId": 4,
-            "masterId": 1,
-            "type": 9,
-            "description": "DESCRIPTION_2",
-            "status": 1,
-            "lastUpdated": "2021-01-01T00:00:00",
-            "updatedBy": None,
-            "updateDescription": None,
-            "attributes": None,
-        },
-        {
-            "id": 3,
-            "links": {"self": "/api/empi/workitems/3"},
-            "personId": 4,
-            "masterId": 2,
-            "type": 9,
-            "description": "DESCRIPTION_3",
-            "status": 1,
-            "lastUpdated": "2021-01-01T00:00:00",
-            "updatedBy": None,
-            "updateDescription": None,
-            "attributes": None,
-        },
-    ]
+
+    returned_ids = {item["id"] for item in response.json()["items"]}
+    assert returned_ids == {1, 2, 3}
 
 
 def test_workitem_detail(client):
