@@ -72,7 +72,14 @@ class WorkItemSummarySchema(OrmModel):
     person_id: int
     master_id: int
 
-    links = LinkSet({"self": UrlFor("workitem_detail", {"workitem_id": "<id>"})})
+    links = LinkSet(
+        {
+            "self": UrlFor("workitem_detail", {"workitem_id": "<id>"}),
+            "related": UrlFor("workitem_related", {"workitem_id": "<id>"}),
+            "close": UrlFor("workitem_close", {"workitem_id": "<id>"}),
+            "merge": UrlFor("workitem_merge", {"workitem_id": "<id>"}),
+        }
+    )
 
 
 class WorkItemShortSchema(WorkItemSummarySchema):
