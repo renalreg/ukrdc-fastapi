@@ -21,6 +21,10 @@ This rewrite of the UKRDC API is currently in development, and is not yet being 
 
 ## Developer notes
 
+### Local CORS
+
+On some oeprating systems and environments, it may be difficult to properly set a CORS policy for local development. In these cases, add `ALLOWED_ORIGINS=["*"]` to your `.env` file.
+
 ### VSCode config for auto-formatting
 
 ```json
