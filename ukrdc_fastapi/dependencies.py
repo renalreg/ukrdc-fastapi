@@ -25,7 +25,9 @@ def get_ukrdc3() -> Generator[Session, None, None]:
     except OperationalError as e:
         raise HTTPException(
             500,
-            detail=UKRDC3_FRIENDLY_ERROR_CODES.get(e.code, "UKRDC3 Operational Error"),
+            detail=UKRDC3_FRIENDLY_ERROR_CODES.get(
+                e.code or "unknown", "UKRDC3 Operational Error"
+            ),
         ) from e
     finally:
         session.close()
@@ -43,7 +45,9 @@ def get_jtrace() -> Generator[Session, None, None]:
     except OperationalError as e:
         raise HTTPException(
             500,
-            detail=JTRACE_FRIENDLY_ERROR_CODES.get(e.code, "JTRACE Operational Error"),
+            detail=JTRACE_FRIENDLY_ERROR_CODES.get(
+                e.code or "unknown", "JTRACE Operational Error"
+            ),
         ) from e
     finally:
         session.close()
@@ -62,7 +66,7 @@ def get_errorsdb() -> Generator[Session, None, None]:
         raise HTTPException(
             500,
             detail=ERRORS_FRIENDLY_ERROR_CODES.get(
-                e.code, "ERRORSDB Operational Error"
+                e.code or "unknown", "ERRORSDB Operational Error"
             ),
         ) from e
     finally:
