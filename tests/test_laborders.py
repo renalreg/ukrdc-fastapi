@@ -4,12 +4,12 @@ from ukrdc_sqla.ukrdc import LabOrder, PatientNumber, PatientRecord, ResultItem
 
 
 def test_laborders_list(client):
-    response = client.get("/laborders")
+    response = client.get("/api/laborders")
     assert response.status_code == 200
     assert response.json()["items"] == [
         {
             "id": "LABORDER1",
-            "links": {"self": "/laborders/LABORDER1"},
+            "links": {"self": "/api/laborders/LABORDER1"},
             "enteredAtDescription": None,
             "enteredAt": None,
             "specimenCollectedTime": "2020-03-16T00:00:00",
@@ -47,16 +47,16 @@ def test_laborders_list_filtered_ni(ukrdc3_session, client):
     ukrdc3_session.commit()
 
     # Check we have multiple laborders when unfiltered
-    response_unfiltered = client.get("/laborders")
+    response_unfiltered = client.get("/api/laborders")
     assert len(response_unfiltered.json()["items"]) == 2
 
     # Filter by NI
-    response = client.get("/laborders?ni=111111111")
+    response = client.get("/api/laborders?ni=111111111")
     assert response.status_code == 200
     assert response.json()["items"] == [
         {
             "id": "LABORDER_TEST1_1",
-            "links": {"self": "/laborders/LABORDER_TEST1_1"},
+            "links": {"self": "/api/laborders/LABORDER_TEST1_1"},
             "enteredAtDescription": None,
             "enteredAt": None,
             "specimenCollectedTime": "2020-03-16T00:00:00",
@@ -65,18 +65,18 @@ def test_laborders_list_filtered_ni(ukrdc3_session, client):
 
 
 def test_laborder(client):
-    response = client.get("/laborders/LABORDER1")
+    response = client.get("/api/laborders/LABORDER1")
     assert response.status_code == 200
     assert response.json() == {
         "id": "LABORDER1",
-        "links": {"self": "/laborders/LABORDER1"},
+        "links": {"self": "/api/laborders/LABORDER1"},
         "enteredAtDescription": None,
         "enteredAt": None,
         "specimenCollectedTime": "2020-03-16T00:00:00",
         "resultItems": [
             {
                 "id": "RESULTITEM1",
-                "links": {"self": "/resultitems/RESULTITEM1"},
+                "links": {"self": "/api/resultitems/RESULTITEM1"},
                 "orderId": "LABORDER1",
                 "serviceId": "SERVICE_ID",
                 "serviceIdDescription": "SERVICE_ID_DESCRIPTION",
@@ -88,7 +88,7 @@ def test_laborder(client):
 
 
 def test_laborder_not_found(client):
-    response = client.get("/laborders/MISSING")
+    response = client.get("/api/laborders/MISSING")
     assert response.status_code == 404
 
 
@@ -117,15 +117,15 @@ def test_laborder_delete(client, ukrdc3_session):
     # Make sure the laborder was created
     assert ukrdc3_session.query(LabOrder).get("LABORDER_TEMP")
     assert ukrdc3_session.query(ResultItem).get("RESULTITEM_TEMP")
-    response = client.get("/laborders/LABORDER_TEMP")
+    response = client.get("/api/laborders/LABORDER_TEMP")
     assert response.status_code == 200
 
     # Delete the lab order
-    response = client.delete("/laborders/LABORDER_TEMP")
+    response = client.delete("/api/laborders/LABORDER_TEMP")
     assert response.status_code == 204
 
     # Make sure the lab order was deleted
-    response = client.get("/laborders/LABORDER_TEMP")
+    response = client.get("/api/laborders/LABORDER_TEMP")
     assert response.status_code == 404
     assert not ukrdc3_session.query(LabOrder).get("LABORDER_TEMP")
     assert not ukrdc3_session.query(ResultItem).get("RESULTITEM_TEMP")

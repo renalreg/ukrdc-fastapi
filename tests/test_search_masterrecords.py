@@ -28,7 +28,7 @@ def test_search_all(jtrace_session, client):
     for i in test_range:
         # NHS number is master record `nationalid`
         nhs_number = f"{i}".zfill(9)[::-1]
-        url = f"/empi/search/masterrecords?search={nhs_number}"
+        url = f"/api/empi/search/masterrecords?search={nhs_number}"
 
         response = client.get(url)
         assert response.status_code == 200
@@ -48,7 +48,7 @@ def test_search_nhsno(jtrace_session, client):
     for i in test_range:
         # NHS number is master record `nationalid`
         nhs_number = f"{i}".zfill(9)[::-1]
-        url = f"/empi/search/masterrecords?nhs_number={nhs_number}"
+        url = f"/api/empi/search/masterrecords?nhs_number={nhs_number}"
 
         response = client.get(url)
         assert response.status_code == 200
@@ -66,7 +66,7 @@ def test_search_multiple_nhsno(jtrace_session, client):
         _commit_extra_patients(jtrace_session, i, number_type="NHS")
 
     # Add extra test items
-    path = "/empi/search/masterrecords?"
+    path = "/api/empi/search/masterrecords?"
     for i in search_range:
         # NHS number is master record `nationalid`
         nhs_number = f"{i}".zfill(9)[::-1]
@@ -91,7 +91,7 @@ def test_search_implicit_dob(jtrace_session, client):
     for i in test_range:
         # NHS number is master record `nationalid`
         dob = f"1950-01-{str(i % 28).zfill(2)}"
-        url = f"/empi/search/masterrecords?search={dob}"
+        url = f"/api/empi/search/masterrecords?search={dob}"
 
         response = client.get(url)
         assert response.status_code == 200

@@ -7,26 +7,26 @@ from ukrdc_fastapi.schemas.empi import WorkItemSchema
 
 
 def test_workitems_list(client):
-    response = client.get("/empi/workitems")
+    response = client.get("/api/empi/workitems")
     assert response.status_code == 200
     returned_ids = {item["id"] for item in response.json()["items"]}
     assert returned_ids == {1, 2, 3}
 
 
 def test_workitems_list_ukrdcid_filter_single(client):
-    response = client.get("/empi/workitems?ukrdcid=999999999")
+    response = client.get("/api/empi/workitems?ukrdcid=999999999")
     assert response.status_code == 200
     returned_ids = {item["id"] for item in response.json()["items"]}
     assert returned_ids == {1, 2}
 
 
 def test_workitems_list_ukrdcid_filter_multiple(client):
-    response = client.get("/empi/workitems?ukrdcid=999999999&ukrdcid=999999911")
+    response = client.get("/api/empi/workitems?ukrdcid=999999999&ukrdcid=999999911")
     assert response.status_code == 200
     assert response.json()["items"] == [
         {
             "id": 1,
-            "links": {"self": "/empi/workitems/1"},
+            "links": {"self": "/api/empi/workitems/1"},
             "personId": 3,
             "masterId": 1,
             "type": 9,
@@ -39,7 +39,7 @@ def test_workitems_list_ukrdcid_filter_multiple(client):
         },
         {
             "id": 2,
-            "links": {"self": "/empi/workitems/2"},
+            "links": {"self": "/api/empi/workitems/2"},
             "personId": 4,
             "masterId": 1,
             "type": 9,
@@ -52,7 +52,7 @@ def test_workitems_list_ukrdcid_filter_multiple(client):
         },
         {
             "id": 3,
-            "links": {"self": "/empi/workitems/3"},
+            "links": {"self": "/api/empi/workitems/3"},
             "personId": 4,
             "masterId": 2,
             "type": 9,
@@ -67,14 +67,14 @@ def test_workitems_list_ukrdcid_filter_multiple(client):
 
 
 def test_workitem_detail(client):
-    response = client.get("/empi/workitems/1")
+    response = client.get("/api/empi/workitems/1")
     assert response.status_code == 200
     wi = WorkItemSchema(**response.json())
     assert wi.id == 1
 
 
 def test_workitem_detail_not_found(client):
-    response = client.get("/empi/workitems/9999")
+    response = client.get("/api/empi/workitems/9999")
     assert response.status_code == 404
 
 
@@ -82,7 +82,7 @@ def test_workitem_detail_not_found(client):
 def test_workitem_close(client, workitem_id, mirth_session):
     with mirth_session:
         response = client.post(
-            f"/empi/workitems/{workitem_id}/close",
+            f"/api/empi/workitems/{workitem_id}/close",
             json={},
         )
     message = response.json().get("message")
@@ -95,7 +95,7 @@ def test_workitem_close(client, workitem_id, mirth_session):
 def test_workitem_close_not_found(client, mirth_session):
     with mirth_session:
         response = client.post(
-            f"/empi/workitems/9999/close",
+            f"/api/empi/workitems/9999/close",
             json={},
         )
     assert response.status_code == 404
@@ -142,7 +142,7 @@ def test_workitem_merge(client, jtrace_session, mirth_session):
     jtrace_session.commit()
 
     with mirth_session:
-        response = client.post(f"/empi/workitems/4/merge", json={})
+        response = client.post(f"/api/empi/workitems/4/merge", json={})
     assert response.json().get("status") == "success"
     message = response.json().get("message")
 
@@ -154,7 +154,7 @@ def test_workitem_merge(client, jtrace_session, mirth_session):
 def test_workitem_merge_nothing_to_merge(client, mirth_session):
 
     with mirth_session:
-        response = client.post(f"/empi/workitems/1/merge", json={})
+        response = client.post(f"/api/empi/workitems/1/merge", json={})
 
     # Expect a 400 error since only 1 master record is associated
     # with this work item, so nothing to merge
@@ -163,7 +163,7 @@ def test_workitem_merge_nothing_to_merge(client, mirth_session):
 
 def test_workitem_merge_not_found(client, mirth_session):
     with mirth_session:
-        response = client.post(f"/empi/workitems/9999/merge", json={})
+        response = client.post(f"/api/empi/workitems/9999/merge", json={})
     assert response.status_code == 404
 
 
@@ -173,7 +173,7 @@ def test_workitem_merge_not_found(client, mirth_session):
 def test_workitem_unlink(client, master_record, person_id, comment, mirth_session):
     with mirth_session:
         response = client.post(
-            f"/empi/workitems/unlink",
+            f"/api/empi/workitems/unlink",
             json={
                 "master_record": master_record,
                 "person_id": person_id,

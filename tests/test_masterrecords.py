@@ -10,35 +10,35 @@ from ukrdc_fastapi.schemas.empi import (
 
 
 def test_masterrecords_list(client):
-    response = client.get("/empi/masterrecords")
+    response = client.get("/api/empi/masterrecords")
     assert response.status_code == 200
     returned_ids = {item["id"] for item in response.json()["items"]}
     assert returned_ids == {1, 2}
 
 
 def test_masterrecords_list_ukrdcid_filter_single(client):
-    response = client.get("/empi/masterrecords?ni=999999999")
+    response = client.get("/api/empi/masterrecords?ni=999999999")
     assert response.status_code == 200
     returned_ids = {item["id"] for item in response.json()["items"]}
     assert returned_ids == {1}
 
 
 def test_masterrecords_list_ukrdcid_filter_multiple(client):
-    response = client.get("/empi/masterrecords?ni=999999999&ni=999999911")
+    response = client.get("/api/empi/masterrecords?ni=999999999&ni=999999911")
     assert response.status_code == 200
     returned_ids = {item["id"] for item in response.json()["items"]}
     assert returned_ids == {1, 2}
 
 
 def test_masterrecord_detail(client):
-    response = client.get("/empi/masterrecords/1")
+    response = client.get("/api/empi/masterrecords/1")
     assert response.status_code == 200
     mr = MasterRecordSchema(**response.json())
     assert mr.id == 1
 
 
 def test_masterrecord_detail_not_found(client):
-    response = client.get("/empi/masterrecords/9999")
+    response = client.get("/api/empi/masterrecords/9999")
     assert response.status_code == 404
 
 
@@ -69,7 +69,7 @@ def test_masterrecord_related(client, jtrace_session):
     jtrace_session.add(link_record_3)
     jtrace_session.commit()
 
-    response = client.get("/empi/masterrecords/1/related")
+    response = client.get("/api/empi/masterrecords/1/related")
     assert response.status_code == 200
 
     # Check MR3 is identified as related to MR1
@@ -79,7 +79,7 @@ def test_masterrecord_related(client, jtrace_session):
 
 
 def test_masterrecord_workitems(client):
-    response = client.get("/empi/masterrecords/1/workitems")
+    response = client.get("/api/empi/masterrecords/1/workitems")
     assert response.status_code == 200
 
     witems = [WorkItemShortSchema(**item) for item in response.json()]
@@ -88,7 +88,7 @@ def test_masterrecord_workitems(client):
 
 
 def test_masterrecord_persons(client):
-    response = client.get("/empi/masterrecords/1/persons")
+    response = client.get("/api/empi/masterrecords/1/persons")
     assert response.status_code == 200
 
     persons = [PersonSchema(**item) for item in response.json()]

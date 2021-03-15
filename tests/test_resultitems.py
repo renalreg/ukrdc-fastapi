@@ -46,24 +46,24 @@ def _commit_extra_resultitem(session):
 
 def _commit_extra_resultitem_and_check(session, client):
     # Check we have no unexpected items
-    response_unfiltered = client.get("/resultitems")
+    response_unfiltered = client.get("/api/resultitems")
     assert len(response_unfiltered.json()["items"]) == 1
 
     # Add an extra test item
     _commit_extra_resultitem(session)
 
     # Check we have multiple laborders when unfiltered
-    response_unfiltered = client.get("/resultitems")
+    response_unfiltered = client.get("/api/resultitems")
     assert len(response_unfiltered.json()["items"]) == 2
 
 
 def test_resultitems_list(client):
-    response = client.get("/resultitems")
+    response = client.get("/api/resultitems")
     assert response.status_code == 200
     assert response.json()["items"] == [
         {
             "id": "RESULTITEM1",
-            "links": {"self": "/resultitems/RESULTITEM1"},
+            "links": {"self": "/api/resultitems/RESULTITEM1"},
             "orderId": "LABORDER1",
             "serviceId": "SERVICE_ID",
             "serviceIdDescription": "SERVICE_ID_DESCRIPTION",
@@ -78,12 +78,12 @@ def test_resultitems_list_filtered_ni(ukrdc3_session, client):
     _commit_extra_resultitem_and_check(ukrdc3_session, client)
 
     # Filter by NI
-    response = client.get("/resultitems?ni=111111111")
+    response = client.get("/api/resultitems?ni=111111111")
     assert response.status_code == 200
     assert response.json()["items"] == [
         {
             "id": "RESULTITEM_TEST2_1",
-            "links": {"self": "/resultitems/RESULTITEM_TEST2_1"},
+            "links": {"self": "/api/resultitems/RESULTITEM_TEST2_1"},
             "orderId": "LABORDER_TEST2_1",
             "serviceId": "SERVICE_ID_TEST2_1",
             "serviceIdDescription": "SERVICE_ID_DESCRIPTION_TEST2_1",
@@ -98,12 +98,12 @@ def test_resultitems_list_filtered_serviceId(ukrdc3_session, client):
     _commit_extra_resultitem_and_check(ukrdc3_session, client)
 
     # Filter by NI
-    response = client.get("/resultitems?service_id=SERVICE_ID_TEST2_1")
+    response = client.get("/api/resultitems?service_id=SERVICE_ID_TEST2_1")
     assert response.status_code == 200
     assert response.json()["items"] == [
         {
             "id": "RESULTITEM_TEST2_1",
-            "links": {"self": "/resultitems/RESULTITEM_TEST2_1"},
+            "links": {"self": "/api/resultitems/RESULTITEM_TEST2_1"},
             "orderId": "LABORDER_TEST2_1",
             "serviceId": "SERVICE_ID_TEST2_1",
             "serviceIdDescription": "SERVICE_ID_DESCRIPTION_TEST2_1",
@@ -118,16 +118,18 @@ def test_resultitems_list_filtered_serviceId_delete(ukrdc3_session, client):
     _commit_extra_resultitem_and_check(ukrdc3_session, client)
 
     # Filter by NI
-    response = client.delete("/resultitems/", json={"service_id": "SERVICE_ID_TEST2_1"})
+    response = client.delete(
+        "/api/resultitems/", json={"service_id": "SERVICE_ID_TEST2_1"}
+    )
     assert response.status_code == 204
 
     # Check the resultitem was deleted
-    response = client.get("/resultitems")
+    response = client.get("/api/resultitems")
     assert response.status_code == 200
     assert response.json()["items"] == [
         {
             "id": "RESULTITEM1",
-            "links": {"self": "/resultitems/RESULTITEM1"},
+            "links": {"self": "/api/resultitems/RESULTITEM1"},
             "orderId": "LABORDER1",
             "serviceId": "SERVICE_ID",
             "serviceIdDescription": "SERVICE_ID_DESCRIPTION",
@@ -136,12 +138,12 @@ def test_resultitems_list_filtered_serviceId_delete(ukrdc3_session, client):
         }
     ]
     # Check the orphaned laborder was deleted
-    response = client.get("/laborders")
+    response = client.get("/api/laborders")
     assert response.status_code == 200
     assert response.json()["items"] == [
         {
             "id": "LABORDER1",
-            "links": {"self": "/laborders/LABORDER1"},
+            "links": {"self": "/api/laborders/LABORDER1"},
             "enteredAtDescription": None,
             "enteredAt": None,
             "specimenCollectedTime": "2020-03-16T00:00:00",
@@ -150,11 +152,11 @@ def test_resultitems_list_filtered_serviceId_delete(ukrdc3_session, client):
 
 
 def test_resultitem_detail(client):
-    response = client.get("/resultitems/RESULTITEM1")
+    response = client.get("/api/resultitems/RESULTITEM1")
     assert response.status_code == 200
     assert response.json() == {
         "id": "RESULTITEM1",
-        "links": {"self": "/resultitems/RESULTITEM1"},
+        "links": {"self": "/api/resultitems/RESULTITEM1"},
         "orderId": "LABORDER1",
         "serviceId": "SERVICE_ID",
         "serviceIdDescription": "SERVICE_ID_DESCRIPTION",
@@ -164,15 +166,15 @@ def test_resultitem_detail(client):
 
 
 def test_resultitem_delete(client):
-    response = client.delete("/resultitems/RESULTITEM1")
+    response = client.delete("/api/resultitems/RESULTITEM1")
     assert response.status_code == 204
 
     # Check the resultitem was deleted
-    response = client.get("/resultitems")
+    response = client.get("/api/resultitems")
     assert response.status_code == 200
     assert response.json()["items"] == []
 
     # Check the orphaned laborder was deleted
-    response = client.get("/laborders")
+    response = client.get("/api/laborders")
     assert response.status_code == 200
     assert response.json()["items"] == []

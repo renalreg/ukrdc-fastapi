@@ -1,11 +1,12 @@
 from datetime import datetime
 
 from ukrdc_sqla.empi import LinkRecord, MasterRecord, Person
+
 from ukrdc_fastapi.schemas.empi import LinkRecordSchema
 
 
 def test_linkrecords_list(client):
-    response = client.get("/empi/linkrecords")
+    response = client.get("/api/empi/linkrecords")
     assert response.status_code == 200
 
     returned_ids = {item["id"] for item in response.json()["items"]}
@@ -59,7 +60,7 @@ def test_linkrecords_complex_chain(client, jtrace_session):
 
     # Test the complex chain
 
-    response = client.get("/empi/linkrecords?ni=101")
+    response = client.get("/api/empi/linkrecords?ni=101")
     assert response.status_code == 200
     # Get a list of all returned LinkRecord IDs
     returned_linkrecord_ids = [item.get("id") for item in response.json()["items"]]
@@ -68,7 +69,7 @@ def test_linkrecords_complex_chain(client, jtrace_session):
 
     # Test the simple chain
 
-    response = client.get("/empi/linkrecords?ni=201")
+    response = client.get("/api/empi/linkrecords?ni=201")
     assert response.status_code == 200
     # Get a list of all returned LinkRecord IDs
     returned_linkrecord_ids = [item.get("id") for item in response.json()["items"]]
