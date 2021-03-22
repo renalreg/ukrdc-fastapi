@@ -143,6 +143,7 @@ def search_masterrecords(
         {
             record.id
             for record in (jtrace.query(MasterRecord).get(id_) for id_ in search_list)
+            if record
         }
     )
 
