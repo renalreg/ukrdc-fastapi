@@ -120,6 +120,7 @@ def search_masterrecords(
     dob: Optional[List[str]] = QueryParam(None),
     pidx: Optional[List[str]] = QueryParam(None),
     search: Optional[List[str]] = QueryParam(None),
+    number_type: Optional[List[str]] = QueryParam(None),
     jtrace: Session = Depends(get_jtrace),
 ):
     """Search the EMPI for a particular master record"""
@@ -131,9 +132,19 @@ def search_masterrecords(
     full_name_list: List[str] = full_name or []
     pidx_list: List[str] = pidx or []
 
+    number_type_list: List[str] = number_type or []
+
     search_list: List[str] = search or []
     date_list: List[datetime.date]
     search_list, date_list = _pop_dates((search or []) + (dob or []))
+
+    # Check if the search query matches a MasterRecord ID
+    match_sets.append(
+        {
+            record.id
+            for record in (jtrace.query(MasterRecord).get(id_) for id_ in search_list)
+        }
+    )
 
     if nhs_number or search_list:
         match_sets.append(
@@ -176,5 +187,10 @@ def search_masterrecords(
     matched_records: Query = jtrace.query(MasterRecord).filter(
         MasterRecord.id.in_(matched_ids)
     )
+
+    if number_type_list:
+        matched_records = matched_records.filter(
+            MasterRecord.nationalid_type.in_(number_type_list)
+        )
 
     return paginate(matched_records)
