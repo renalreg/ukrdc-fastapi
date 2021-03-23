@@ -1,12 +1,10 @@
-import re
 from datetime import datetime
 
-import httpx
+import fakeredis
 import pytest
 from fastapi.testclient import TestClient
 from fastapi_auth0 import Auth0User, auth0_rule_namespace
 from mirth_client import MirthAPI
-from pytest_httpx import HTTPXMock, to_response
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
@@ -34,7 +32,7 @@ from ukrdc_sqla.ukrdc import (
 )
 
 from ukrdc_fastapi.auth import auth
-from ukrdc_fastapi.dependencies import get_jtrace, get_mirth, get_ukrdc3
+from ukrdc_fastapi.dependencies import get_jtrace, get_mirth, get_redis, get_ukrdc3
 
 
 def populate_ukrdc3_session(session):
@@ -457,12 +455,21 @@ def jtrace_session(jtrace_sessionmaker):
 
 
 @pytest.fixture(scope="function")
-def app(jtrace_session, ukrdc3_session):
+def redis_session():
+    """Create a fresh in-memory Redis database session"""
+    return fakeredis.FakeStrictRedis(decode_responses=True)
+
+
+@pytest.fixture(scope="function")
+def app(jtrace_session, ukrdc3_session, redis_session):
     from ukrdc_fastapi.main import app
 
     async def _get_mirth():
         async with MirthAPI("mock://mirth.url") as api:
             yield api
+
+    def _get_redis():
+        return redis_session
 
     def _get_ukrdc3():
         return ukrdc3_session
@@ -482,6 +489,7 @@ def app(jtrace_session, ukrdc3_session):
 
     # Override FastAPI dependencies to point to function-scoped sessions
     app.dependency_overrides[get_mirth] = _get_mirth
+    app.dependency_overrides[get_redis] = _get_redis
     app.dependency_overrides[get_ukrdc3] = _get_ukrdc3
     app.dependency_overrides[get_jtrace] = _get_jtrace
     app.dependency_overrides[auth.get_user] = _get_user
