@@ -14,12 +14,12 @@ fastapi-auth0 = "fastapi-auth0"
 fastapi-hypermodel = "^0.2.1" 
 fastapi-pagination = {extras = ["sqlalchemy"], version = "^0.5.3"} 
 httpx = "^0.17.1" 
-mirth-client = {git = "https://github.com/renalreg/python-mirth-client", rev = "main"} 
 psycopg2-binary = "^2.8.6" # Needed for postgres
 pydantic = {extras = ["dotenv"], version = "^1.7.3"} 
 python = "^3.8" 
 ukrdc-sqla = "^0.1.0" 
 uvicorn = "^0.13.3" 
+mirth-client = "^0.2.0"
 
 [tool.poetry.dev-dependencies]
 bandit = "^1.7.0"
