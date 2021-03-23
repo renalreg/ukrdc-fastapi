@@ -2,15 +2,23 @@ from typing import List, Optional, Set
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Security
 from fastapi_auth0 import Auth0User
+from httpx import Response
+from mirth_client import Channel, MirthAPI
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import MasterRecord, WorkItem
 
 from ukrdc_fastapi.auth import auth
+from ukrdc_fastapi.config import settings
 from ukrdc_fastapi.dependencies import get_jtrace, get_mirth
-from ukrdc_fastapi.mirth import MirthConnection, MirthMessageResponseSchema
 from ukrdc_fastapi.schemas.empi import WorkItemSchema, WorkItemShortSchema
 from ukrdc_fastapi.utils import filters
+from ukrdc_fastapi.utils.mirth import (
+    MirthMessageResponseSchema,
+    build_close_workitem_message,
+    build_merge_message,
+    build_unlink_message,
+)
 from ukrdc_fastapi.utils.paginate import Page, paginate
 
 router = APIRouter()
@@ -76,26 +84,39 @@ def workitem_related(
 
 
 @router.post("/{workitem_id}/close", response_model=MirthMessageResponseSchema)
-def workitem_close(
+async def workitem_close(
     workitem_id: int,
     args: CloseWorkItemRequestSchema,
     jtrace: Session = Depends(get_jtrace),
     user: Auth0User = Security(auth.get_user),
-    mirth: MirthConnection = Depends(get_mirth),
+    mirth: MirthAPI = Depends(get_mirth),
 ):
     """Update and close a particular work item"""
     workitem = jtrace.query(WorkItem).get(workitem_id)
     if not workitem:
         raise HTTPException(404, detail="Work item not found")
 
-    return mirth.empi.close_workitem(workitem.id, args.comment or "", user.email)
+    channel = Channel(mirth, settings.mirth_channel_map.get("WorkItemUpdate"))
+    if not channel:
+        raise HTTPException(500, detail="ID for WorkItemUpdate channel not found")
+
+    message: str = build_close_workitem_message(
+        workitem.id, args.comment or "", user.email
+    )
+
+    response: Response = await channel.post_message(message)
+
+    if response.status_code != 204:
+        raise HTTPException(500, detail=response.text)
+
+    return MirthMessageResponseSchema(status="success", message=message)
 
 
 @router.post("/{workitem_id}/merge", response_model=MirthMessageResponseSchema)
-def workitem_merge(
+async def workitem_merge(
     workitem_id: int,
     jtrace: Session = Depends(get_jtrace),
-    mirth: MirthConnection = Depends(get_mirth),
+    mirth: MirthAPI = Depends(get_mirth),
 ):
     """Merge a particular work item"""
     workitem = jtrace.query(WorkItem).get(workitem_id)
@@ -129,19 +150,41 @@ def workitem_merge(
             detail=f"Got {len(master_with_ukrdc)} master record(s) with different UKRDC IDs. Expected 2.",
         )
 
-    return mirth.empi.merge(
+    channel = Channel(mirth, settings.mirth_channel_map.get("Merge Patient"))
+    if not channel:
+        raise HTTPException(500, detail="ID for Merge Patient channel not found")
+
+    message: str = build_merge_message(
         superceding=master_with_ukrdc[0].id, superceeded=master_with_ukrdc[1].id
     )
 
+    response: Response = await channel.post_message(message)
+
+    if response.status_code != 204:
+        raise HTTPException(500, detail=response.text)
+
+    return MirthMessageResponseSchema(status="success", message=message)
+
 
 @router.post("/unlink", response_model=MirthMessageResponseSchema)
-def workitems_unlink(
+async def workitems_unlink(
     args: UnlinkWorkItemRequestSchema,
     user: Auth0User = Security(auth.get_user),
-    mirth: MirthConnection = Depends(get_mirth),
+    mirth: MirthAPI = Depends(get_mirth),
 ):
     """Unlink the master record and person record in a particular work item"""
 
-    return mirth.empi.unlink(
+    channel = Channel(mirth, settings.mirth_channel_map.get("Unlink"))
+    if not channel:
+        raise HTTPException(500, detail="ID for Unlink channel not found")
+
+    message: str = build_unlink_message(
         args.master_record, args.person_id, user.email, args.comment
     )
+
+    response: Response = await channel.post_message(message)
+
+    if response.status_code != 204:
+        raise HTTPException(500, detail=response.text)
+
+    return MirthMessageResponseSchema(status="success", message=message)

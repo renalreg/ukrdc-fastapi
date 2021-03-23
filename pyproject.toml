@@ -13,12 +13,13 @@ fastapi = "^0.63.0"
 fastapi-auth0 = "fastapi-auth0" 
 fastapi-hypermodel = "^0.2.1" 
 fastapi-pagination = {extras = ["sqlalchemy"], version = "^0.5.3"} 
+httpx = "^0.17.1" 
 psycopg2-binary = "^2.8.6" # Needed for postgres
 pydantic = {extras = ["dotenv"], version = "^1.7.3"} 
 python = "^3.8" 
-requests = "^2.25.1" 
 ukrdc-sqla = "^0.1.0" 
 uvicorn = "^0.13.3" 
+mirth-client = "^0.2.0"
 
 [tool.poetry.dev-dependencies]
 bandit = "^1.7.0"
@@ -26,12 +27,12 @@ black = "^20.8b1"
 isort = "^5.7.0"
 mypy = "^0.800"
 pylint = "^2.6.0"
-pytest = "^5.2"
+pytest = "^6.0"
 pytest-cov = "^2.11.1"
 requests = "^2.25.1"
-requests-mock = "^1.8.0"
 sqlalchemy-stubs = "*"
 tox = "^3.21.4"
+pytest-httpx = "^0.11.0"
 
 [build-system]
 build-backend = "poetry.core.masonry.api"
