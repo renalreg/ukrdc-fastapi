@@ -1,4 +1,4 @@
-from ukrdc_sqla.ukrdc import Patient
+import re
 
 from ukrdc_fastapi.schemas.patientrecord import (
     PatientRecordSchema,
@@ -178,45 +178,53 @@ def test_record_surveys_missing(client):
 # Record export-data
 
 
-def test_record_export_data(client, mirth_session):
-    with mirth_session:
-        response = client.post(
-            "/api/patientrecords/PYTEST01:PV:00000000A/export-pv", json={}
-        )
-        assert response.json() == {
-            "message": "<result><pid>PYTEST01:PV:00000000A</pid><tests>FULL</tests><documents>FULL</documents></result>",
-            "status": "success",
-        }
+def test_record_export_data(client, httpx_mock):
+    httpx_mock.add_response(
+        status_code=204, url=re.compile(r"mock:\/\/mirth.url\/channels\/.*\/messages")
+    )
+    response = client.post(
+        "/api/patientrecords/PYTEST01:PV:00000000A/export-pv", json={}
+    )
+    assert response.json() == {
+        "message": "<result><pid>PYTEST01:PV:00000000A</pid><tests>FULL</tests><documents>FULL</documents></result>",
+        "status": "success",
+    }
 
 
-def test_record_export_tests(client, mirth_session):
-    with mirth_session:
-        response = client.post(
-            "/api/patientrecords/PYTEST01:PV:00000000A/export-pv-tests", json={}
-        )
-        assert response.json() == {
-            "message": "<result><pid>PYTEST01:PV:00000000A</pid><tests>FULL</tests></result>",
-            "status": "success",
-        }
+def test_record_export_tests(client, httpx_mock):
+    httpx_mock.add_response(
+        status_code=204, url=re.compile(r"mock:\/\/mirth.url\/channels\/.*\/messages")
+    )
+    response = client.post(
+        "/api/patientrecords/PYTEST01:PV:00000000A/export-pv-tests", json={}
+    )
+    assert response.json() == {
+        "status": "success",
+        "message": "<result><pid>PYTEST01:PV:00000000A</pid><tests>FULL</tests></result>",
+    }
 
 
-def test_record_export_docs(client, mirth_session):
-    with mirth_session:
-        response = client.post(
-            "/api/patientrecords/PYTEST01:PV:00000000A/export-pv-docs", json={}
-        )
-        assert response.json() == {
-            "message": "<result><pid>PYTEST01:PV:00000000A</pid><documents>FULL</documents></result>",
-            "status": "success",
-        }
+def test_record_export_docs(client, httpx_mock):
+    httpx_mock.add_response(
+        status_code=204, url=re.compile(r"mock:\/\/mirth.url\/channels\/.*\/messages")
+    )
+    response = client.post(
+        "/api/patientrecords/PYTEST01:PV:00000000A/export-pv-docs", json={}
+    )
+    assert response.json() == {
+        "message": "<result><pid>PYTEST01:PV:00000000A</pid><documents>FULL</documents></result>",
+        "status": "success",
+    }
 
 
-def test_record_export_radar(client, mirth_session):
-    with mirth_session:
-        response = client.post(
-            "/api/patientrecords/PYTEST01:PV:00000000A/export-radar", json={}
-        )
-        assert response.json() == {
-            "message": "<result><pid>PYTEST01:PV:00000000A</pid></result>",
-            "status": "success",
-        }
+def test_record_export_radar(client, httpx_mock):
+    httpx_mock.add_response(
+        status_code=204, url=re.compile(r"mock:\/\/mirth.url\/channels\/.*\/messages")
+    )
+    response = client.post(
+        "/api/patientrecords/PYTEST01:PV:00000000A/export-radar", json={}
+    )
+    assert response.json() == {
+        "message": "<result><pid>PYTEST01:PV:00000000A</pid></result>",
+        "status": "success",
+    }

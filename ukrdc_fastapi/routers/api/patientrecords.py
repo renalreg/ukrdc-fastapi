@@ -1,11 +1,14 @@
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
+from httpx import Response
+from mirth_client import Channel
+from mirth_client.mirth import MirthAPI
 from sqlalchemy.orm import Query, Session
 from ukrdc_sqla.ukrdc import LabOrder, Medication, Observation, PatientRecord, Survey
 
+from ukrdc_fastapi.config import settings
 from ukrdc_fastapi.dependencies import get_mirth, get_ukrdc3
-from ukrdc_fastapi.mirth import MirthConnection, MirthMessageResponseSchema
 from ukrdc_fastapi.schemas.laborder import LabOrderShortSchema
 from ukrdc_fastapi.schemas.medication import MedicationSchema
 from ukrdc_fastapi.schemas.observation import ObservationSchema
@@ -15,24 +18,16 @@ from ukrdc_fastapi.schemas.patientrecord import (
 )
 from ukrdc_fastapi.schemas.survey import SurveySchema
 from ukrdc_fastapi.utils import filters
+from ukrdc_fastapi.utils.mirth import (
+    MirthMessageResponseSchema,
+    build_export_all_message,
+    build_export_docs_message,
+    build_export_radar_message,
+    build_export_tests_message,
+)
 from ukrdc_fastapi.utils.paginate import Page, paginate
 
 router = APIRouter()
-
-
-# Mirth export message templates
-EXPORT_TEMPLATES = {
-    "FULL_PV_TESTS_EXTRACT_TEMPLATE": (
-        "<result><pid>{pid}</pid><tests>FULL</tests></result>"
-    ),
-    "FULL_PV_DOCUMENTS_EXTRACT_TEMPLATE": (
-        "<result><pid>{pid}</pid><documents>FULL</documents></result>"
-    ),
-    "FULL_PV_EXTRACT_TEMPLATE": (
-        "<result><pid>{pid}</pid><tests>FULL</tests><documents>FULL</documents></result>"
-    ),
-    "RADAR_EXTRACT_TEMPLATE": "<result><pid>{pid}</pid></result>",
-}
 
 
 @router.get("/", response_model=Page[PatientRecordShortSchema])
@@ -88,36 +83,80 @@ def patient_surveys(pid: str, ukrdc3: Session = Depends(get_ukrdc3)):
 
 
 @router.post("/{pid}/export-pv", response_model=MirthMessageResponseSchema)
-def patient_export_pv(
+async def patient_export_pv(
     pid: str,
-    mirth: MirthConnection = Depends(get_mirth),
+    mirth: MirthAPI = Depends(get_mirth),
 ):
     """Export a specific patient's data to PV"""
-    return mirth.pv.export_all(pid)
+    channel = Channel(mirth, settings.mirth_channel_map.get("PV Outbound"))
+    if not channel:
+        raise HTTPException(500, detail="ID for PV Outbound channel not found")
+
+    message: str = build_export_all_message(pid)
+
+    response: Response = await channel.post_message(message)
+
+    if response.status_code != 204:
+        raise HTTPException(500, detail=response.text)
+
+    return MirthMessageResponseSchema(status="success", message=message)
 
 
 @router.post("/{pid}/export-pv-tests", response_model=MirthMessageResponseSchema)
-def patient_export_pv_tests(
+async def patient_export_pv_tests(
     pid: str,
-    mirth: MirthConnection = Depends(get_mirth),
+    mirth: MirthAPI = Depends(get_mirth),
 ):
     """Export a specific patient's test data to PV"""
-    return mirth.pv.export_tests(pid)
+    channel = Channel(mirth, settings.mirth_channel_map.get("PV Outbound"))
+    if not channel:
+        raise HTTPException(500, detail="ID for PV Outbound channel not found")
+
+    message: str = build_export_tests_message(pid)
+
+    response: Response = await channel.post_message(message)
+
+    if response.status_code != 204:
+        raise HTTPException(500, detail=response.text)
+
+    return MirthMessageResponseSchema(status="success", message=message)
 
 
 @router.post("/{pid}/export-pv-docs", response_model=MirthMessageResponseSchema)
-def patient_export_pv_docs(
+async def patient_export_pv_docs(
     pid: str,
-    mirth: MirthConnection = Depends(get_mirth),
+    mirth: MirthAPI = Depends(get_mirth),
 ):
     """Export a specific patient's documents data to PV"""
-    return mirth.pv.export_docs(pid)
+    channel = Channel(mirth, settings.mirth_channel_map.get("PV Outbound"))
+    if not channel:
+        raise HTTPException(500, detail="ID for PV Outbound channel not found")
+
+    message: str = build_export_docs_message(pid)
+
+    response: Response = await channel.post_message(message)
+
+    if response.status_code != 204:
+        raise HTTPException(500, detail=response.text)
+
+    return MirthMessageResponseSchema(status="success", message=message)
 
 
 @router.post("/{pid}/export-radar", response_model=MirthMessageResponseSchema)
-def patient_export_radar(
+async def patient_export_radar(
     pid: str,
-    mirth: MirthConnection = Depends(get_mirth),
+    mirth: MirthAPI = Depends(get_mirth),
 ):
     """Export a specific patient's data to RaDaR"""
-    return mirth.pv.export_radar(pid)
+    channel = Channel(mirth, settings.mirth_channel_map.get("RADAR Outbound"))
+    if not channel:
+        raise HTTPException(500, detail="ID for RADAR Outbound channel not found")
+
+    message: str = build_export_radar_message(pid)
+
+    response: Response = await channel.post_message(message)
+
+    if response.status_code != 204:
+        raise HTTPException(500, detail=response.text)
+
+    return MirthMessageResponseSchema(status="success", message=message)

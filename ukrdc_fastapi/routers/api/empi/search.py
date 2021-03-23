@@ -44,6 +44,14 @@ def _pop_dates(search_items: List[str]) -> Tuple[List[str], List[datetime.date]]
     return (strings, dates)
 
 
+def _is_int(val):
+    try:
+        int(val)
+    except ValueError:
+        return False
+    return True
+
+
 @router.get("/person", response_model=Page[PersonSchema])
 def search_person(
     nhs_number: Optional[List[str]] = QueryParam(None),
@@ -142,7 +150,11 @@ def search_masterrecords(
     match_sets.append(
         {
             record.id
-            for record in (jtrace.query(MasterRecord).get(id_) for id_ in search_list)
+            for record in (
+                jtrace.query(MasterRecord).get(id_)
+                for id_ in search_list
+                if _is_int(id_)
+            )
             if record
         }
     )
