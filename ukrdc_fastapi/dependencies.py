@@ -1,5 +1,6 @@
 from typing import AsyncGenerator, Generator
 
+import redis
 from fastapi import HTTPException
 from mirth_client import MirthAPI
 from mirth_client.exceptions import MirthLoginError
@@ -52,6 +53,20 @@ def get_ukrdc3() -> Generator[Session, None, None]:
         ) from e
     finally:
         session.close()
+
+
+def get_redis() -> redis.Redis:
+    """Return a new Redis database session
+
+    Returns:
+        redis.Redis: Redis database session
+    """
+    return redis.Redis(
+        host=settings.redis_host,
+        port=settings.redis_port,
+        db=settings.redis_db,
+        decode_responses=True,
+    )
 
 
 def get_jtrace() -> Generator[Session, None, None]:

@@ -30,6 +30,10 @@ class Settings(BaseSettings):
         "RADAR Outbound": "72179b3a-e051-460e-9400-269fb0fe42ed",
     }
 
+    redis_host: str = "localhost"
+    redis_port: int = 6379
+    redis_db: int = 0
+
     ukrdc_host: str = "localhost"
     ukrdc_port: int = 5432
     ukrdc_user: str = "ukrdc"
