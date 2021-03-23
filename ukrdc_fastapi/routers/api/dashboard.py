@@ -85,7 +85,7 @@ def dashboard(
             "last_updated",
         )
         dash["workitems"] = open_workitems_stats
-        redis.hmset("dashboard:workitems", open_workitems_stats)
+        redis.hmset("dashboard:workitems", open_workitems_stats)  # type: ignore
         # Remove cached statistics after 15 minutes. Next request will re-query
         redis.expire("dashboard:workitems", 900)
 
@@ -98,7 +98,7 @@ def dashboard(
             "creation_date",
         )
         dash["ukrdcrecords"] = ukrdc_masterrecords_stats
-        redis.hmset("dashboard:ukrdcrecords", ukrdc_masterrecords_stats)
+        redis.hmset("dashboard:ukrdcrecords", ukrdc_masterrecords_stats)  # type: ignore
         # Remove cached statistics after 15 minutes. Next request will re-query
         redis.expire("dashboard:ukrdcrecords", 900)
 
