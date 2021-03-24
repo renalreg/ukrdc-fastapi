@@ -21,6 +21,10 @@ app = FastAPI(
     openapi_url=f"{settings.api_base.rstrip('/')}/openapi.json",
     docs_url=f"{settings.api_base.rstrip('/')}/docs",
     redoc_url=f"{settings.api_base.rstrip('/')}/redoc",
+    swagger_ui_init_oauth={
+        "usePkceWithAuthorizationCodeGrant": True,
+        "clientId": settings.swagger_client_id,
+    },
 )
 
 app.add_middleware(

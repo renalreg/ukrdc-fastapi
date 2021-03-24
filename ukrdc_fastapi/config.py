@@ -12,6 +12,8 @@ class Settings(BaseSettings):
 
     secret_key: str = "****"
 
+    swagger_client_id: str = ""
+
     mirth_url: str = "http://localhost:9004"
     mirth_user: str = "webapi"
     mirth_pass: str = "****"
