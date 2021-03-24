@@ -46,7 +46,8 @@ class UKRDCRecordsDashSchema(_DayPrevTotalSchema):
 
 
 class DashboardSchema(BaseModel):
-    message: Optional[str]
+    messages: List[str]
+    warnings: List[str]
     user: UserSchema
     workitems: WorkItemsDashSchema
     ukrdcrecords: UKRDCRecordsDashSchema
@@ -80,7 +81,8 @@ def dashboard(
 ):
     """Retreive basic statistics about recent records"""
     dash = {
-        "message": settings.motd,
+        "messages": settings.motd,
+        "warnings": settings.wotd,
         "user": {"email": user.email, "permissions": user.permissions},
         "workitems": None,
         "ukrdcrecords": None,
