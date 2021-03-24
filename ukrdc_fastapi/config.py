@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 from pydantic import BaseSettings
 
@@ -7,8 +7,10 @@ class Settings(BaseSettings):
     # Used to correct linking when behind a reverse proxy
     api_base: str = "/api"
 
-    # Message to display on user dashboards
-    motd: Optional[str] = None
+    # Messages to display on user dashboards
+    motd: List[str] = []
+    # Warnings to display on user dashboards
+    wotd: List[str] = []
 
     secret_key: str = "****"
 
