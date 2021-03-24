@@ -23,6 +23,7 @@ router = APIRouter()
 
 class ChannelDashStatisticsSchema(ChannelStatistics):
     name: Optional[str]
+    updated: Optional[datetime.datetime]
 
 
 class UserSchema(BaseModel):
@@ -72,6 +73,7 @@ def _total_day_prev(query: Query, table: EMPIBase, datefield: str) -> Dict[str, 
 
 @router.get("/", response_model=DashboardSchema)
 def dashboard(
+    refresh: bool = False,
     user: Auth0User = Security(auth.get_user),
     jtrace: Session = Depends(get_jtrace),
     redis: Redis = Depends(get_redis),
@@ -84,7 +86,7 @@ def dashboard(
         "ukrdcrecords": None,
     }
     # Workitem stats
-    if redis.exists("dashboard:workitems"):
+    if redis.exists("dashboard:workitems") and not refresh:
         dash["workitems"] = redis.hgetall("dashboard:workitems")
     else:
         open_workitems_stats: Dict[str, int] = _total_day_prev(
@@ -97,7 +99,7 @@ def dashboard(
         # Remove cached statistics after 15 minutes. Next request will re-query
         redis.expire("dashboard:workitems", 900)
 
-    if redis.exists("dashboard:ukrdcrecords"):
+    if redis.exists("dashboard:ukrdcrecords") and not refresh:
         dash["ukrdcrecords"] = redis.hgetall("dashboard:ukrdcrecords")
     else:
         ukrdc_masterrecords_stats: Dict[str, int] = _total_day_prev(
@@ -114,22 +116,41 @@ def dashboard(
 
 
 @router.get("/mirth", response_model=List[ChannelDashStatisticsSchema])
-async def mirth_dashboard(mirth: MirthAPI = Depends(get_mirth)):
+async def mirth_dashboard(
+    refresh: bool = False,
+    mirth: MirthAPI = Depends(get_mirth),
+    redis: Redis = Depends(get_redis),
+):
     """Retreive basic statistics about Mirth channels"""
 
+    dash = []
+    coros = []
+
+    for channel_id in settings.mirth_channel_map.values():
+        if redis.exists(f"dashboard:mirth:{channel_id}") and not refresh:
+            dash.append(redis.hgetall(f"dashboard:mirth:{channel_id}"))
+        else:
+            coros.append(Channel(mirth, channel_id).get_statistics())
+
     # Await array of request coroutines
-    results = await asyncio.gather(
-        *[
-            Channel(mirth, channel_id).get_statistics()
-            for channel_id in settings.mirth_channel_map.values()
-        ]
-    )
+    results: List[ChannelStatistics] = await asyncio.gather(*coros)
+
+    for result in results:
+        result_dict = {
+            "updated": datetime.datetime.now().timestamp(),
+            "name": settings.inverse_mirth_channel_map.get(str(result.channel_id)),
+            "serverId": str(result.server_id),
+            "channelId": str(result.channel_id),
+            "received": result.received,
+            "sent": result.sent,
+            "error": result.error,
+            "filtered": result.filtered,
+            "queued": result.queued,
+        }
+        dash.append(result_dict)
+        redis.hset(f"dashboard:mirth:{result.channel_id}", mapping=result_dict)  # type: ignore
+        # Remove cached statistics after 15 minutes. Next request will re-query
+        redis.expire(f"dashboard:mirth:{result.channel_id}", 900)
 
     # Insert channel names and return
-    return [
-        ChannelDashStatisticsSchema(
-            **result.dict(by_alias=True),
-            name=settings.inverse_mirth_channel_map.get(str(result.channel_id))
-        )
-        for result in results
-    ]
+    return [ChannelDashStatisticsSchema(**item) for item in dash]
