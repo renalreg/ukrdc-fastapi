@@ -9,7 +9,7 @@ from ukrdc_sqla.ukrdc import LabOrder, Medication, Observation, PatientRecord, S
 
 from ukrdc_fastapi.config import settings
 from ukrdc_fastapi.dependencies import get_mirth, get_ukrdc3
-from ukrdc_fastapi.schemas.laborder import LabOrderShortSchema
+from ukrdc_fastapi.schemas.laborder import LabOrderSchema, LabOrderShortSchema
 from ukrdc_fastapi.schemas.medication import MedicationSchema
 from ukrdc_fastapi.schemas.observation import ObservationSchema
 from ukrdc_fastapi.schemas.patientrecord import (
@@ -51,7 +51,7 @@ def patient_record(pid: str, ukrdc3: Session = Depends(get_ukrdc3)):
     return record
 
 
-@router.get("/{pid}/laborders", response_model=List[LabOrderShortSchema])
+@router.get("/{pid}/laborders", response_model=List[LabOrderSchema])
 def patient_laborders(pid: str, ukrdc3: Session = Depends(get_ukrdc3)):
     """Retreive a specific patient's lab orders"""
     orders = ukrdc3.query(LabOrder).filter(LabOrder.pid == pid)
