@@ -1,6 +1,8 @@
 import datetime
 from typing import Optional
 
+from fastapi_hypermodel import LinkSet, UrlFor
+
 from .base import OrmModel
 
 
@@ -22,3 +24,11 @@ class MessageSchema(OrmModel):
     facility: Optional[str]
     error: Optional[str]
     status: Optional[str]
+    links = LinkSet(
+        {
+            "self": UrlFor(
+                "mirth_channel_message",
+                {"channel_id": "<channel_id>", "message_id": "<message_id>"},
+            ),
+        }
+    )

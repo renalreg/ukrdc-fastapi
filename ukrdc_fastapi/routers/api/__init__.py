@@ -3,7 +3,7 @@ from starlette.responses import RedirectResponse
 
 from ukrdc_fastapi.config import settings
 
-from . import dashboard, empi, errors, laborders, patientrecords, resultitems
+from . import dashboard, empi, errors, laborders, mirth, patientrecords, resultitems
 
 router = APIRouter()
 
@@ -43,4 +43,9 @@ router.include_router(
     resultitems.router,
     prefix="/resultitems",
     tags=["Result Items"],
+)
+router.include_router(
+    mirth.router,
+    prefix="/mirth",
+    tags=["Mirth"],
 )
