@@ -19,6 +19,7 @@ def error_messages(
     facility: Optional[str] = None,
     fromdays: Optional[int] = None,
     untildays: Optional[int] = None,
+    status: Optional[str] = None,
     errorsdb: Session = Depends(get_errorsdb),
 ):
     """Retreive a list of error messages, optionally filtered by NI, facility, or date"""
@@ -46,5 +47,9 @@ def error_messages(
     # Optionally filter by NI
     if ni:
         messages = messages.filter(Message.ni == ni)
+
+    # Optionally filter by message status
+    if status:
+        messages = messages.filter(Message.msg_status == status)
 
     return paginate(messages)
