@@ -15,7 +15,7 @@ class MessageSchema(OrmModel):
     id: str
     message_id: int
     channel_id: str
-    recieved: Optional[datetime.datetime]
+    received: Optional[datetime.datetime]
     msg_status: str
     ni: Optional[str]
     filename: Optional[str]
