@@ -38,8 +38,6 @@ async def mirth_channel(channel_id: str, mirth: MirthAPI = Depends(get_mirth)):
 async def mirth_channel_messages(
     channel_id: str, page: int = 0, size: int = 20, mirth: MirthAPI = Depends(get_mirth)
 ):
-    offset = page * size
-    print(offset)
     messages = await Channel(mirth, channel_id).get_messages(
         include_content=False, limit=size, offset=page * size
     )
