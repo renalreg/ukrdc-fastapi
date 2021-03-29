@@ -26,13 +26,13 @@ async def mirth_channels(mirth: MirthAPI = Depends(get_mirth)):
     return await mirth.get_channels()
 
 
-@router.get("/channel/{channel_id}", response_model=MirthChannelModel)
+@router.get("/channels/{channel_id}", response_model=MirthChannelModel)
 async def mirth_channel(channel_id: str, mirth: MirthAPI = Depends(get_mirth)):
     return await Channel(mirth, channel_id).get()
 
 
 @router.get(
-    "/channel/{channel_id}/messages",
+    "/channels/{channel_id}/messages",
     response_model=MessagePage,
 )
 async def mirth_channel_messages(
@@ -46,7 +46,7 @@ async def mirth_channel_messages(
 
 
 @router.get(
-    "/channel/{channel_id}/messages/{message_id}",
+    "/channels/{channel_id}/messages/{message_id}",
     response_model=MirthChannelMessageModel,
 )
 async def mirth_channel_message(
