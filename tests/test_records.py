@@ -47,11 +47,22 @@ def test_record_laborders(client):
     assert response.status_code == 200
     assert response.json() == [
         {
-            "enteredAt": None,
-            "enteredAtDescription": None,
             "id": "LABORDER1",
-            "links": {"self": "/api/laborders/LABORDER1"},
+            "enteredAtDescription": None,
+            "enteredAt": None,
             "specimenCollectedTime": "2020-03-16T00:00:00",
+            "links": {"self": "/api/laborders/LABORDER1"},
+            "resultItems": [
+                {
+                    "id": "RESULTITEM1",
+                    "orderId": "LABORDER1",
+                    "serviceId": "SERVICE_ID",
+                    "serviceIdDescription": "SERVICE_ID_DESCRIPTION",
+                    "value": "VALUE",
+                    "valueUnits": "VALUE_UNITS",
+                    "links": {"self": "/api/resultitems/RESULTITEM1"},
+                }
+            ],
         }
     ]
 
