@@ -54,7 +54,7 @@ use_parentheses = true
 
 [tool.pylint.'MESSAGES CONTROL']
 # unsubscriptable-object is disabled until proper Python 3.9 support is fixed in PyLint
-disable = "unsubscriptable-object, fixme, missing-module-docstring, missing-class-docstring, too-few-public-methods, too-many-arguments, line-too-long, too-many-locals"
+disable = "unsubscriptable-object, fixme, missing-module-docstring, missing-class-docstring, too-few-public-methods, too-many-arguments, line-too-long, too-many-locals, too-many-ancestors"
 max-line-length = 88
 
 [tool.pylint.'TYPECHECK']
