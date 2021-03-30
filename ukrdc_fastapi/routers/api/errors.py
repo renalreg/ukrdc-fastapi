@@ -52,4 +52,7 @@ def error_messages(
     if status:
         messages = messages.filter(Message.msg_status == status)
 
+    # Sort
+    messages = messages.order_by(Message.received.desc())
+
     return paginate(messages)
