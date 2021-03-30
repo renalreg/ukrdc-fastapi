@@ -1,4 +1,4 @@
-from typing import List, Optional, Set
+from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Security
 from fastapi_auth0 import Auth0User
@@ -36,7 +36,7 @@ class CloseWorkItemRequestSchema(BaseModel):
 
 @router.get("/", response_model=Page[WorkItemShortSchema])
 def workitems_list(
-    ukrdcid: Optional[List[str]] = Query(None),
+    ukrdcid: Optional[list[str]] = Query(None),
     jtrace: Session = Depends(get_jtrace),
 ):
     """Retreive a list of open work items from the EMPI"""
@@ -64,7 +64,7 @@ def workitem_detail(
     return workitem
 
 
-@router.get("/{workitem_id}/related", response_model=List[WorkItemSchema])
+@router.get("/{workitem_id}/related", response_model=list[WorkItemSchema])
 def workitem_related(
     workitem_id: int,
     jtrace: Session = Depends(get_jtrace),
@@ -124,7 +124,7 @@ async def workitem_merge(
         raise HTTPException(404, detail="Work item not found")
 
     # Get a set of related link record (id, person_id, master_id) tuples
-    related_person_master_links: Set[
+    related_person_master_links: set[
         filters.PersonMasterLink
     ] = filters.find_related_link_records(
         jtrace, workitem.master_id, person_id=workitem.person_id

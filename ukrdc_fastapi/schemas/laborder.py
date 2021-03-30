@@ -1,5 +1,5 @@
 import datetime
-from typing import List, Optional
+from typing import Optional
 
 from fastapi_hypermodel import LinkSet, UrlFor
 
@@ -27,4 +27,4 @@ class ResultItemSchema(OrmModel):
 
 
 class LabOrderSchema(LabOrderShortSchema):
-    result_items: List[ResultItemSchema]
+    result_items: list[ResultItemSchema]

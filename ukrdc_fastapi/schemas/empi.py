@@ -1,5 +1,5 @@
 import datetime
-from typing import List, Optional
+from typing import Optional
 
 from fastapi_hypermodel import LinkSet, UrlFor
 from pydantic import Json
@@ -50,7 +50,7 @@ class PersonSchema(OrmModel):
     date_of_death: Optional[datetime.date]
     givenname: Optional[str]
     surname: Optional[str]
-    xref_entries: List[PidXRefSchema]
+    xref_entries: list[PidXRefSchema]
 
     links = LinkSet(
         {

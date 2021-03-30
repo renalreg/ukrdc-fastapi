@@ -1,5 +1,3 @@
-from typing import List
-
 from fastapi import APIRouter, Depends
 from mirth_client import Channel, MirthAPI
 
@@ -18,10 +16,10 @@ class MirthPage(OrmModel):
 
 
 class MessagePage(MirthPage):
-    items: List[MirthChannelMessageModel]
+    items: list[MirthChannelMessageModel]
 
 
-@router.get("/channels", response_model=List[MirthChannelModel])
+@router.get("/channels", response_model=list[MirthChannelModel])
 async def mirth_channels(mirth: MirthAPI = Depends(get_mirth)):
     return await mirth.get_channels()
 

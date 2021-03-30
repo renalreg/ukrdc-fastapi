@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Query as OrmQuery
@@ -17,7 +17,7 @@ router = APIRouter()
 
 @router.get("/", response_model=Page[MasterRecordSchema])
 def master_records(
-    ni: Optional[List[str]] = Query(None), jtrace: Session = Depends(get_jtrace)
+    ni: Optional[list[str]] = Query(None), jtrace: Session = Depends(get_jtrace)
 ):
     """Retreive a list of master records from the EMPI"""
     records: OrmQuery = jtrace.query(MasterRecord)
@@ -36,7 +36,7 @@ def master_record_detail(record_id: str, jtrace: Session = Depends(get_jtrace)):
     return record
 
 
-@router.get("/{record_id}/related", response_model=List[MasterRecordSchema])
+@router.get("/{record_id}/related", response_model=list[MasterRecordSchema])
 def master_record_related(record_id: str, jtrace: Session = Depends(get_jtrace)):
     """Retreive a list of other master records related to a particular master record"""
     record: MasterRecord = jtrace.query(MasterRecord).get(record_id)
@@ -54,7 +54,7 @@ def master_record_related(record_id: str, jtrace: Session = Depends(get_jtrace))
     return other_records.all()
 
 
-@router.get("/{record_id}/workitems", response_model=List[WorkItemSchema])
+@router.get("/{record_id}/workitems", response_model=list[WorkItemSchema])
 def master_record_workitems(record_id: str, jtrace: Session = Depends(get_jtrace)):
     """Retreive a list of work items related to a particular master record."""
     record: MasterRecord = jtrace.query(MasterRecord).get(record_id)
@@ -69,7 +69,7 @@ def master_record_workitems(record_id: str, jtrace: Session = Depends(get_jtrace
     return related_workitems.all()
 
 
-@router.get("/{record_id}/persons", response_model=List[PersonSchema])
+@router.get("/{record_id}/persons", response_model=list[PersonSchema])
 def master_record_persons(record_id: str, jtrace: Session = Depends(get_jtrace)):
     """Retreive a list of person records related to a particular master record."""
     record: MasterRecord = jtrace.query(MasterRecord).get(record_id)
@@ -86,7 +86,7 @@ def master_record_persons(record_id: str, jtrace: Session = Depends(get_jtrace))
 
 
 @router.get(
-    "/{record_id}/patientrecords", response_model=List[PatientRecordShortSchema]
+    "/{record_id}/patientrecords", response_model=list[PatientRecordShortSchema]
 )
 def master_record_patientrecords(
     record_id: str,

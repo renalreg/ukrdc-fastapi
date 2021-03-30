@@ -1,5 +1,4 @@
 import datetime
-from typing import List
 
 from .base import OrmModel
 
@@ -23,9 +22,9 @@ class SurveyLevelSchema(OrmModel):
 
 
 class SurveySchema(OrmModel):
-    questions: List[SurveyQuestionSchema]
-    scores: List[SurveyScoreSchema]
-    levels: List[SurveyLevelSchema]
+    questions: list[SurveyQuestionSchema]
+    scores: list[SurveyScoreSchema]
+    levels: list[SurveyLevelSchema]
 
     id: str
     pid: str

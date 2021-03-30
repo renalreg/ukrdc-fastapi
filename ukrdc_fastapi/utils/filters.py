@@ -1,5 +1,5 @@
 from collections import namedtuple
-from typing import Iterable, List, Optional, Set, Tuple
+from typing import Iterable, Optional
 
 from sqlalchemy.orm import Query, Session
 from ukrdc_sqla.empi import LinkRecord, MasterRecord, Person, WorkItem
@@ -9,11 +9,11 @@ PersonMasterLink = namedtuple("PersonMasterLink", ("id", "person_id", "master_id
 
 
 def _find_related_ids(
-    jtrace: Session, seen_master_ids: Set[int], seen_person_ids: Set[int]
+    jtrace: Session, seen_master_ids: set[int], seen_person_ids: set[int]
 ):
     found_new: bool = True
     while found_new:
-        links: List[LinkRecord] = (
+        links: list[LinkRecord] = (
             jtrace.query(LinkRecord)
             .filter(
                 (LinkRecord.master_id.in_(seen_master_ids))
@@ -22,8 +22,8 @@ def _find_related_ids(
             .all()
         )
 
-        master_ids: Set[int] = {item.master_id for item in links}
-        person_ids: Set[int] = {item.person_id for item in links}
+        master_ids: set[int] = {item.master_id for item in links}
+        person_ids: set[int] = {item.person_id for item in links}
         if seen_master_ids.issuperset(master_ids) and seen_person_ids.issuperset(
             person_ids
         ):
@@ -34,36 +34,36 @@ def _find_related_ids(
 
 
 def find_ids_related_to_person(
-    localid: List[str], jtrace: Session, localid_type: Optional[str] = None
-) -> Tuple[Set[int], Set[int]]:
+    localid: list[str], jtrace: Session, localid_type: Optional[str] = None
+) -> tuple[set[int], set[int]]:
     """Find all person IDs and master record IDs related to a given person localid"""
     person_filters = [Person.localid.in_(localid)]
     if localid_type:
         person_filters.append(Person.localid_type.is_(localid_type))
-    records: List[Tuple[int]] = jtrace.query(Person.id).filter(*person_filters).all()
-    flat_ids: List[int] = [personid for personid, in records]
+    records: list[tuple[int]] = jtrace.query(Person.id).filter(*person_filters).all()
+    flat_ids: list[int] = [personid for personid, in records]
 
     return _find_related_ids(jtrace, set(), set(flat_ids))
 
 
 def find_ids_related_to_masterrecord(
-    nationalid: List[str], jtrace: Session, nationalid_type: Optional[str] = None
-) -> Tuple[Set[int], Set[int]]:
+    nationalid: list[str], jtrace: Session, nationalid_type: Optional[str] = None
+) -> tuple[set[int], set[int]]:
     """Find all person IDs and master record IDs related to a given master record nationalid"""
     master_record_filters = [MasterRecord.nationalid.in_(nationalid)]
     if nationalid_type:
         master_record_filters.append(MasterRecord.nationalid_type.is_(nationalid_type))
-    records: List[Tuple[int]] = (
+    records: list[tuple[int]] = (
         jtrace.query(MasterRecord.id).filter(*master_record_filters).all()
     )
-    flat_ids: List[int] = [masterid for masterid, in records]
+    flat_ids: list[int] = [masterid for masterid, in records]
 
     return _find_related_ids(jtrace, set(flat_ids), set())
 
 
 def find_related_link_records(
     session: Session, master_id: str, person_id: Optional[str] = None
-) -> Set[PersonMasterLink]:
+) -> set[PersonMasterLink]:
     """
     Return a list of person <-> masterrecord LinkRecord IDs
     This function is non-trivial since linked records can
@@ -74,8 +74,8 @@ def find_related_link_records(
     This function basically follows the complete chain.
     """
 
-    linkrecord_ids: Set[PersonMasterLink] = set()
-    new_entries: Set[Tuple[str, str]] = set()
+    linkrecord_ids: set[PersonMasterLink] = set()
+    new_entries: set[tuple[str, str]] = set()
     entries: Query
 
     # If no explicit person_id is give, we'll derive one
@@ -120,7 +120,7 @@ def find_related_link_records(
     return linkrecord_ids
 
 
-def get_pids_from_ni(session: Session, ni: str) -> List[str]:
+def get_pids_from_ni(session: Session, ni: str) -> list[str]:
     """Get a list of PIDs associated with a particular NI
 
     Args:
@@ -128,7 +128,7 @@ def get_pids_from_ni(session: Session, ni: str) -> List[str]:
         ni (str): NI number
 
     Returns:
-        List[str]: List of PIDs
+        list[str]: list of PIDs
     """
     pids = session.query(PatientNumber.pid).filter(
         PatientNumber.patientid == ni, PatientNumber.numbertype == "NI"
@@ -169,7 +169,7 @@ def patientrecords_by_ni(session: Session, query: Query, patientid: str) -> Quer
         .filter(PatientRecord.pid.in_(pids))
         .distinct()
     )
-    ukrdcids: List[str] = [ukrdcid for (ukrdcid,) in ukrdcid_query.all()]
+    ukrdcids: list[str] = [ukrdcid for (ukrdcid,) in ukrdcid_query.all()]
 
     # Find all the records with ukrdc ids
     return query.filter(PatientRecord.ukrdcid.in_(ukrdcids))
@@ -195,9 +195,9 @@ def linkrecords_by_ni(session: Session, query: Query, nationalid: str) -> Query:
     master_records: Query = session.query(MasterRecord).filter(
         MasterRecord.nationalid == nationalid
     )
-    master_ids: List[str] = [record.id for record in master_records.all()]
+    master_ids: list[str] = [record.id for record in master_records.all()]
 
-    link_record_ids: Set[int] = set()
+    link_record_ids: set[int] = set()
     for master_id in master_ids:
         link_record_ids |= {
             pml.id for pml in find_related_link_records(session, master_id)
@@ -206,20 +206,20 @@ def linkrecords_by_ni(session: Session, query: Query, nationalid: str) -> Query:
     return query.filter(LinkRecord.id.in_(link_record_ids))
 
 
-def workitems_by_ukrdcids(session: Session, query: Query, ukrdcids: List[str]) -> Query:
+def workitems_by_ukrdcids(session: Session, query: Query, ukrdcids: list[str]) -> Query:
     """Filter a query of WorkItem objects by list of UKRDC IDs
 
     Args:
         session (Session): JTrace Session
         query (Query): Current session query to filter
-        ukrdcids (List[str]): List of UKRDC IDs to filter by
+        ukrdcids (list[str]): list of UKRDC IDs to filter by
 
     Returns:
         Query: A new query containing filtered results
     """
     # Fetch a list of master/person IDs related to each UKRDCID
-    seen_master_ids: Set[int]
-    seen_person_ids: Set[int]
+    seen_master_ids: set[int]
+    seen_person_ids: set[int]
     seen_master_ids, seen_person_ids = find_ids_related_to_masterrecord(
         ukrdcids, session, nationalid_type="UKRDC"
     )
@@ -259,5 +259,5 @@ def resultitems_by_ni(session: Session, query: Query, ni: str) -> Query:
     """
     pids: Iterable[str] = get_pids_from_ni(session, ni)
     order_ids_query: Query = session.query(LabOrder.id).filter(LabOrder.pid.in_(pids))
-    order_ids: List[str] = [id_tuple[0] for id_tuple in order_ids_query.all()]
+    order_ids: list[str] = [id_tuple[0] for id_tuple in order_ids_query.all()]
     return query.filter(ResultItem.order_id.in_(order_ids)).distinct()

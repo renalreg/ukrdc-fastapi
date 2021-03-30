@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from httpx import Response
@@ -51,31 +51,31 @@ def patient_record(pid: str, ukrdc3: Session = Depends(get_ukrdc3)):
     return record
 
 
-@router.get("/{pid}/laborders", response_model=List[LabOrderSchema])
+@router.get("/{pid}/laborders", response_model=list[LabOrderSchema])
 def patient_laborders(pid: str, ukrdc3: Session = Depends(get_ukrdc3)):
     """Retreive a specific patient's lab orders"""
     orders = ukrdc3.query(LabOrder).filter(LabOrder.pid == pid)
-    items: List[LabOrder] = orders.order_by(
+    items: list[LabOrder] = orders.order_by(
         LabOrder.specimen_collected_time.desc()
     ).all()
     return items
 
 
-@router.get("/{pid}/observations", response_model=List[ObservationSchema])
+@router.get("/{pid}/observations", response_model=list[ObservationSchema])
 def patient_observations(pid: str, ukrdc3: Session = Depends(get_ukrdc3)):
     """Retreive a specific patient's lab orders"""
     observations = ukrdc3.query(Observation).filter(Observation.pid == pid)
     return observations.order_by(Observation.observation_time.desc()).all()
 
 
-@router.get("/{pid}/medications", response_model=List[MedicationSchema])
+@router.get("/{pid}/medications", response_model=list[MedicationSchema])
 def patient_medications(pid: str, ukrdc3: Session = Depends(get_ukrdc3)):
     """Retreive a specific patient's medications"""
     medications = ukrdc3.query(Medication).filter(Medication.pid == pid)
     return medications.order_by(Medication.from_time).all()
 
 
-@router.get("/{pid}/surveys", response_model=List[SurveySchema])
+@router.get("/{pid}/surveys", response_model=list[SurveySchema])
 def patient_surveys(pid: str, ukrdc3: Session = Depends(get_ukrdc3)):
     """Retreive a specific patient's surveys"""
     surveys = ukrdc3.query(Survey).filter(Survey.pid == pid)

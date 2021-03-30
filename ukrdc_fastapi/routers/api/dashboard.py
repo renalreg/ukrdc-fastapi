@@ -1,6 +1,6 @@
 import asyncio
 import datetime
-from typing import Dict, List, Optional
+from typing import Optional
 
 from fastapi import APIRouter, Depends, Security
 from fastapi_auth0 import Auth0User
@@ -27,7 +27,7 @@ class ChannelDashStatisticsSchema(ChannelStatistics):
 
 
 class UserSchema(BaseModel):
-    permissions: Optional[List[str]]
+    permissions: Optional[list[str]]
     email: Optional[str]
 
 
@@ -46,14 +46,14 @@ class UKRDCRecordsDashSchema(_DayPrevTotalSchema):
 
 
 class DashboardSchema(BaseModel):
-    messages: List[str]
-    warnings: List[str]
+    messages: list[str]
+    warnings: list[str]
     user: UserSchema
     workitems: WorkItemsDashSchema
     ukrdcrecords: UKRDCRecordsDashSchema
 
 
-def _total_day_prev(query: Query, table: EMPIBase, datefield: str) -> Dict[str, int]:
+def _total_day_prev(query: Query, table: EMPIBase, datefield: str) -> dict[str, int]:
     total_workitems = query.count()
     day_workitems = query.filter(
         getattr(table, datefield)
@@ -91,7 +91,7 @@ def dashboard(
     if redis.exists("dashboard:workitems") and not refresh:
         dash["workitems"] = redis.hgetall("dashboard:workitems")
     else:
-        open_workitems_stats: Dict[str, int] = _total_day_prev(
+        open_workitems_stats: dict[str, int] = _total_day_prev(
             jtrace.query(WorkItem).filter(WorkItem.status == 1),
             WorkItem,
             "last_updated",
@@ -104,7 +104,7 @@ def dashboard(
     if redis.exists("dashboard:ukrdcrecords") and not refresh:
         dash["ukrdcrecords"] = redis.hgetall("dashboard:ukrdcrecords")
     else:
-        ukrdc_masterrecords_stats: Dict[str, int] = _total_day_prev(
+        ukrdc_masterrecords_stats: dict[str, int] = _total_day_prev(
             jtrace.query(MasterRecord).filter(MasterRecord.nationalid_type == "UKRDC"),
             MasterRecord,
             "creation_date",
@@ -117,7 +117,7 @@ def dashboard(
     return dash
 
 
-@router.get("/mirth", response_model=List[ChannelDashStatisticsSchema])
+@router.get("/mirth", response_model=list[ChannelDashStatisticsSchema])
 async def mirth_dashboard(
     refresh: bool = False,
     mirth: MirthAPI = Depends(get_mirth),
@@ -135,7 +135,7 @@ async def mirth_dashboard(
             coros.append(Channel(mirth, channel_id).get_statistics())
 
     # Await array of request coroutines
-    results: List[ChannelStatistics] = await asyncio.gather(*coros)
+    results: list[ChannelStatistics] = await asyncio.gather(*coros)
 
     for result in results:
         result_dict = {

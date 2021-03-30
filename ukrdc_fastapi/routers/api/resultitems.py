@@ -1,5 +1,5 @@
 import logging
-from typing import List, Optional
+from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
@@ -62,8 +62,8 @@ def resultitems_delete(
 
     # We now have a query of all the results we wish to remove
 
-    deletes: List[PVDelete] = []
-    deleted_order_ids: List[str] = []
+    deletes: list[PVDelete] = []
+    deleted_order_ids: list[str] = []
 
     # Delete all items in the query
     for item in items:

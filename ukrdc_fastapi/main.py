@@ -1,5 +1,4 @@
 import logging
-from typing import Dict, List
 
 from fastapi import Depends, FastAPI, Security
 from fastapi.middleware.cors import CORSMiddleware
@@ -62,8 +61,8 @@ async def startup_event():
         if login_response.status != "SUCCESS":
             raise RuntimeError("Unable to authenticate with Mirth")
         # Check each channel we use
-        available_channels: List[Channel] = await mirth_api.get_channels()
-        available_channel_map: Dict[str, Channel] = {
+        available_channels: list[Channel] = await mirth_api.get_channels()
+        available_channel_map: dict[str, Channel] = {
             channel.id: channel for channel in available_channels
         }
         logging.debug("Available channels:")

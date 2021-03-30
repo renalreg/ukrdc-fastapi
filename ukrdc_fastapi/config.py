@@ -1,5 +1,3 @@
-from typing import Dict, List
-
 from pydantic import BaseSettings
 
 
@@ -8,9 +6,9 @@ class Settings(BaseSettings):
     api_base: str = "/api"
 
     # Messages to display on user dashboards
-    motd: List[str] = []
+    motd: list[str] = []
     # Warnings to display on user dashboards
-    wotd: List[str] = []
+    wotd: list[str] = []
 
     secret_key: str = "****"
 
@@ -22,7 +20,7 @@ class Settings(BaseSettings):
     mirth_verify_ssl: bool = True
 
     # Commonly used mirth channels, so we can quickly access by name
-    mirth_channel_map: Dict[str, str] = {
+    mirth_channel_map: dict[str, str] = {
         "WorkItemUpdate": "ddc63fed-6684-4436-835c-85116a14da97",
         "Unlink": "3c8b493e-bf6b-405c-86c7-a29882a70cf9",
         "Merge Patient": "bcb9afca-e53a-427f-8415-741a296faf46",
@@ -59,7 +57,7 @@ class Settings(BaseSettings):
     errors_name: str = "errorsdb"
     errors_driver: str = "postgresql+psycopg2"
 
-    allowed_origins: List[str] = []
+    allowed_origins: list[str] = []
 
     @property
     def inverse_mirth_channel_map(self):

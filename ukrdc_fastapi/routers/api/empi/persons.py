@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Query as OrmQuery
@@ -15,7 +15,7 @@ router = APIRouter()
 
 @router.get("/", response_model=Page[PersonSchema])
 def persons(
-    clpid: Optional[List[str]] = Query(None), jtrace: Session = Depends(get_jtrace)
+    clpid: Optional[list[str]] = Query(None), jtrace: Session = Depends(get_jtrace)
 ):
     """Retreive a list of person records from the EMPI"""
     people: OrmQuery = jtrace.query(Person)
@@ -33,7 +33,7 @@ def person_detail(person_id: str, jtrace: Session = Depends(get_jtrace)):
     return person
 
 
-@router.get("/{person_id}/masterrecords", response_model=List[MasterRecordSchema])
+@router.get("/{person_id}/masterrecords", response_model=list[MasterRecordSchema])
 def person_masterrecords(person_id: str, jtrace: Session = Depends(get_jtrace)):
     """Retreive a particular person record from the EMPI"""
     person = jtrace.query(Person).get(person_id)

@@ -4,7 +4,7 @@ Will be removed as a submodule if/when the submodule gets published to PyPI
 """
 
 from enum import Enum
-from typing import Callable, Dict, Optional, Union
+from typing import Callable, Optional, Union
 
 MIN_CHI_NO = 101010000
 MAX_CHI_NO = 3112999999
@@ -38,7 +38,7 @@ def _nhs_validator(value: str):
     return _number_validator(value, MIN_NHS_NO)
 
 
-ORGS_NUMBER_VALIDATORS: Dict[OrganizationType, Callable] = {
+ORGS_NUMBER_VALIDATORS: dict[OrganizationType, Callable] = {
     OrganizationType.NHS: _nhs_validator,
     OrganizationType.CHI: _chi_validator,
     OrganizationType.HSC: _hsc_validator,
