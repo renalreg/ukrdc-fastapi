@@ -19,7 +19,7 @@ psycopg2-binary = "^2.8.6" # Needed for postgres
 pydantic = {extras = ["dotenv"], version = "^1.7.3"} 
 python = "^3.8" 
 redis = "^3.5.3" 
-ukrdc-sqla = "^0.1.0" 
+ukrdc-sqla = "^1.0.0" 
 uvicorn = "^0.13.3" 
 
 [tool.poetry.dev-dependencies]
