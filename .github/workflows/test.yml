@@ -9,9 +9,6 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python: [3.8, 3.9]
 
     steps:
       - uses: actions/checkout@v1
@@ -19,7 +16,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v1
         with:
-          python-version: ${{ matrix.python }}
+          python-version: 3.9
 
       - name: Install and configure Poetry
         uses: snok/install-poetry@v1.1.1
@@ -42,5 +39,5 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
           file: ./coverage.xml
           flags: unittests
-          name: codecov-umbrella-${{ matrix.python }}
+          name: codecov-umbrella-3.9
           fail_ci_if_error: false
