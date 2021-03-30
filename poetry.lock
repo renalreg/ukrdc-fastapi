@@ -219,10 +219,10 @@ typing-extensions = ">=3.7.4,<4.0.0"
 
 [package.extras]
 gino = ["gino[starlette] (>=1.0.1,<2.0.0)", "SQLAlchemy (>=1.3.20,<2.0.0)", "sqlalchemy-stubs (>=0.4,<0.5)"]
-all = ["gino[starlette] (>=1.0.1,<2.0.0)", "SQLAlchemy (>=1.3.20,<2.0.0)", "sqlalchemy-stubs (>=0.4,<0.5)", "databases[mysql,sqlite,postgresql] (>=0.4.0,<0.5.0)", "orm (>=0.1.5,<0.2.0)", "tortoise-orm[aiomysql,asyncpg,aiosqlite] (>=0.16.18,<0.17.0)"]
+all = ["gino[starlette] (>=1.0.1,<2.0.0)", "SQLAlchemy (>=1.3.20,<2.0.0)", "sqlalchemy-stubs (>=0.4,<0.5)", "databases[sqlite,mysql,postgresql] (>=0.4.0,<0.5.0)", "orm (>=0.1.5,<0.2.0)", "tortoise-orm[aiomysql,asyncpg,aiosqlite] (>=0.16.18,<0.17.0)"]
 sqlalchemy = ["SQLAlchemy (>=1.3.20,<2.0.0)", "sqlalchemy-stubs (>=0.4,<0.5)"]
-databases = ["databases[mysql,sqlite,postgresql] (>=0.4.0,<0.5.0)"]
-orm = ["databases[mysql,sqlite,postgresql] (>=0.4.0,<0.5.0)", "orm (>=0.1.5,<0.2.0)"]
+databases = ["databases[sqlite,mysql,postgresql] (>=0.4.0,<0.5.0)"]
+orm = ["databases[sqlite,mysql,postgresql] (>=0.4.0,<0.5.0)", "orm (>=0.1.5,<0.2.0)"]
 tortoise = ["tortoise-orm[aiomysql,asyncpg,aiosqlite] (>=0.16.18,<0.17.0)"]
 
 [[package]]
@@ -792,7 +792,7 @@ python-versions = "*"
 
 [[package]]
 name = "ukrdc-sqla"
-version = "0.1.0"
+version = "1.0.0"
 description = "SQLAlchemy models for the UKRDC"
 category = "main"
 optional = false
@@ -866,7 +866,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "af074b25e1d754d0c23a32e5c3da719b0a7923a297775bf2f6ca551794601b54"
+content-hash = "7e71bddf5542fad682c41aacc3d131b5e6a88a8dcc1a523a94f9cfb01f5db00a"
 
 [metadata.files]
 appdirs = [
@@ -1455,8 +1455,8 @@ typing-extensions = [
     {file = "typing_extensions-3.7.4.3.tar.gz", hash = "sha256:99d4073b617d30288f569d3f13d2bd7548c3a7e4c8de87db09a9d29bb3a4a60c"},
 ]
 ukrdc-sqla = [
-    {file = "ukrdc-sqla-0.1.0.tar.gz", hash = "sha256:b82bf99a5071ac8f882bb1583a662ee048d6061b7698c5d1a1fdd0eb6a348739"},
-    {file = "ukrdc_sqla-0.1.0-py3-none-any.whl", hash = "sha256:60d88353823d32ffa3f207458829fb6c727460fefc19d07a6ce4bdaeb114e6c8"},
+    {file = "ukrdc-sqla-1.0.0.tar.gz", hash = "sha256:3e89d51e39cb9e554afc1f5b01ff4154e433d35e4bc154d20c6fc932c4fd776e"},
+    {file = "ukrdc_sqla-1.0.0-py3-none-any.whl", hash = "sha256:d63a2de80016d9b00d07ad560aa4145b2fd2515a75ce90c87902e032e2c1ce0a"},
 ]
 urllib3 = [
     {file = "urllib3-1.26.4-py2.py3-none-any.whl", hash = "sha256:2f4da4594db7e1e110a944bb1b551fdf4e6c136ad42e4234131391e21eb5b0df"},
