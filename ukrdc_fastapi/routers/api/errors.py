@@ -9,6 +9,7 @@ from ukrdc_sqla.errorsdb import Message
 
 from ukrdc_fastapi.dependencies import get_errorsdb
 from ukrdc_fastapi.schemas.errors import MessageSchema
+from ukrdc_fastapi.utils import parse_date
 
 router = APIRouter()
 
@@ -17,8 +18,8 @@ router = APIRouter()
 def error_messages(
     ni: Optional[str] = None,
     facility: Optional[str] = None,
-    fromdays: Optional[int] = None,
-    untildays: Optional[int] = None,
+    since: Optional[str] = None,
+    until: Optional[str] = None,
     status: Optional[str] = None,
     errorsdb: Session = Depends(get_errorsdb),
 ):
@@ -26,19 +27,18 @@ def error_messages(
     messages = errorsdb.query(Message)
 
     # Default to showing last 7 days
-    if not fromdays:
-        fromdays = 7
-    from_datetime: datetime.datetime = datetime.datetime.utcnow() - datetime.timedelta(
-        days=fromdays
-    )
-    messages = messages.filter(Message.received > from_datetime)
+    since_datetime: datetime.datetime = parse_date(
+        since
+    ) or datetime.datetime.utcnow() - datetime.timedelta(days=7)
+    messages = messages.filter(Message.received >= since_datetime)
 
     # Optionally filter out messages newer than `untildays`
-    if untildays:
-        until_datetime: datetime.datetime = (
-            datetime.datetime.utcnow() - datetime.timedelta(days=untildays)
-        )
-        messages = messages.filter(Message.received <= until_datetime)
+    until_datetime: datetime.datetime = parse_date(until) or (
+        datetime.datetime.utcnow()
+    )
+    messages = messages.filter(
+        Message.received <= until_datetime + datetime.timedelta(days=1)
+    )
 
     # Optionally filter by facility
     if facility:

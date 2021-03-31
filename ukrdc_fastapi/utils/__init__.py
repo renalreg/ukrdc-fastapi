@@ -1,3 +1,4 @@
+import datetime
 from typing import Optional
 
 
@@ -25,3 +26,14 @@ def build_db_uri(
     if driver == "sqlite":
         return f"{driver}:///{name}"
     return f"{driver}://{user}:{password}@{host}:{port}/{name}"
+
+
+def parse_date(date_string: Optional[str]) -> Optional[datetime.datetime]:
+    if not date_string:
+        return None
+    for fmt in ("%Y-%m-%d", "%d.%m.%Y", "%d/%m/%Y"):
+        try:
+            return datetime.datetime.strptime(date_string, fmt).date()
+        except ValueError:
+            pass
+    return None

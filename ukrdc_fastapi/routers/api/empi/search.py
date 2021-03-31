@@ -8,6 +8,7 @@ from ukrdc_sqla.empi import MasterRecord, Person
 
 from ukrdc_fastapi.dependencies import get_jtrace
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema, PersonSchema
+from ukrdc_fastapi.utils import parse_date
 from ukrdc_fastapi.utils.paginate import Page, paginate
 from ukrdc_fastapi.utils.search.masterrecords import (
     masterrecord_ids_from_dob,
@@ -33,14 +34,11 @@ def _pop_dates(search_items: list[str]) -> tuple[list[str], list[datetime.date]]
     dates: list[datetime.date] = []
     strings: list[str] = []
     for item in search_items:
-        for fmt in ("%Y-%m-%d", "%d.%m.%Y", "%d/%m/%Y"):
-            try:
-                date = datetime.datetime.strptime(item, fmt).date()
-                dates.append(date)
-                break
-            except ValueError:
-                pass
-        strings.append(item)
+        parsed_date: Optional[datetime.datetime] = parse_date(item)
+        if parsed_date:
+            dates.append(parsed_date)
+        else:
+            strings.append(item)
     return (strings, dates)
 
 
