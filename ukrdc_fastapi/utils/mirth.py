@@ -63,7 +63,7 @@ def build_unlink_message(
     ud_element.text = str(description or "")
 
     ub_element = SubElement(root, "updatedBy")
-    ub_element.text = str(user)
+    ub_element.text = str(user)[:20]
 
     return tostring(root, encoding="unicode")
 
