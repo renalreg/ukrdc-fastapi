@@ -97,6 +97,6 @@ def masterrecord_ids_from_pidxref_no(session: Session, pid_nos: Iterable[str]):
     matched_ids = set()
 
     for person in matched_persons:
-        matched_ids |= find_ids_related_to_person(person.localid, session)[0]
+        matched_ids |= find_ids_related_to_person([person.localid], session)[0]
 
     return matched_ids
