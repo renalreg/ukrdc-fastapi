@@ -204,13 +204,42 @@ async def workitem_merge(
     return MirthMessageResponseSchema(status="success", message=message)
 
 
+@router.post("/{workitem_id}/unlink", response_model=MirthMessageResponseSchema)
+async def workitems_unlink(
+    workitem_id: int,
+    user: Auth0User = Security(auth.get_user),
+    jtrace: Session = Depends(get_jtrace),
+    mirth: MirthAPI = Depends(get_mirth),
+):
+    """Unlink the master record and person record in a particular work item"""
+
+    workitem = jtrace.query(WorkItem).get(workitem_id)
+    if not workitem:
+        raise HTTPException(404, detail="Work item not found")
+
+    channel = Channel(mirth, settings.mirth_channel_map.get("Unlink"))
+    if not channel:
+        raise HTTPException(500, detail="ID for Unlink channel not found")
+
+    message: str = build_unlink_message(
+        workitem.master_id, workitem.person_id, user.email
+    )
+
+    response: Response = await channel.post_message(message)
+
+    if response.status_code != 204:
+        raise HTTPException(500, detail=response.text)
+
+    return MirthMessageResponseSchema(status="success", message=message)
+
+
 @router.post("/unlink", response_model=MirthMessageResponseSchema)
 async def workitems_unlink(
     args: UnlinkWorkItemRequestSchema,
     user: Auth0User = Security(auth.get_user),
     mirth: MirthAPI = Depends(get_mirth),
 ):
-    """Unlink the master record and person record in a particular work item"""
+    """Unlink any master record and person record"""
 
     channel = Channel(mirth, settings.mirth_channel_map.get("Unlink"))
     if not channel:
