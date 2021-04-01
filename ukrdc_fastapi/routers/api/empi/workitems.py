@@ -6,7 +6,7 @@ from httpx import Response
 from mirth_client import Channel, MirthAPI
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
-from ukrdc_sqla.empi import MasterRecord, WorkItem
+from ukrdc_sqla.empi import Base, MasterRecord, WorkItem
 
 from ukrdc_fastapi.auth import auth
 from ukrdc_fastapi.config import settings
@@ -18,6 +18,7 @@ from ukrdc_fastapi.utils.mirth import (
     build_close_workitem_message,
     build_merge_message,
     build_unlink_message,
+    build_update_workitem_message,
 )
 from ukrdc_fastapi.utils.paginate import Page, paginate
 
@@ -32,6 +33,11 @@ class UnlinkWorkItemRequestSchema(BaseModel):
 
 class CloseWorkItemRequestSchema(BaseModel):
     comment: Optional[str]
+
+
+class UpdateWorkItemRequestSchema(BaseModel):
+    status: Optional[int] = None
+    comment: Optional[str] = None
 
 
 @router.get("/", response_model=Page[WorkItemShortSchema])
@@ -62,6 +68,38 @@ def workitem_detail(
         raise HTTPException(404, detail="Work item not found")
 
     return workitem
+
+
+@router.put("/{workitem_id}", response_model=MirthMessageResponseSchema)
+async def workitem_update(
+    workitem_id: int,
+    args: UpdateWorkItemRequestSchema,
+    user: Auth0User = Security(auth.get_user),
+    jtrace: Session = Depends(get_jtrace),
+    mirth: MirthAPI = Depends(get_mirth),
+):
+    """Update a particular work item in the EMPI"""
+    workitem = jtrace.query(WorkItem).get(workitem_id)
+    if not workitem:
+        raise HTTPException(404, detail="Work item not found")
+
+    channel = Channel(mirth, settings.mirth_channel_map.get("WorkItemUpdate"))
+    if not channel:
+        raise HTTPException(500, detail="ID for WorkItemUpdate channel not found")
+
+    message: str = build_update_workitem_message(
+        workitem.id,
+        args.status or workitem.status,
+        args.comment or workitem.description,
+        user.email,
+    )
+
+    response: Response = await channel.post_message(message)
+
+    if response.status_code != 204:
+        raise HTTPException(500, detail=response.text)
+
+    return MirthMessageResponseSchema(status="success", message=message)
 
 
 @router.get("/{workitem_id}/related", response_model=list[WorkItemSchema])
