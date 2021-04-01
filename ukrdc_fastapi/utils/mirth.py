@@ -91,10 +91,10 @@ def build_update_workitem_message(
     st_element.text = str(status)
 
     ud_element = SubElement(root, "updateDescription")
-    ud_element.text = str(description or "")
+    ud_element.text = str(description or "")[:100]
 
     ub_element = SubElement(root, "updatedBy")
-    ub_element.text = str(user)
+    ub_element.text = str(user)[:20]
 
     return tostring(root, encoding="unicode")
 
