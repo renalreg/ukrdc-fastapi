@@ -31,7 +31,7 @@ from ukrdc_sqla.ukrdc import (
     Survey,
 )
 
-from ukrdc_fastapi.auth import auth
+from ukrdc_fastapi import auth
 from ukrdc_fastapi.dependencies import get_jtrace, get_mirth, get_redis, get_ukrdc3
 
 
@@ -481,7 +481,7 @@ def app(jtrace_session, ukrdc3_session, redis_session):
         usr = Auth0User(
             **{
                 "sub": "TEST_ID",
-                "permissions": [],
+                "permissions": auth.Scopes.all(),
                 f"{auth0_rule_namespace}/email": "TEST@UKRDC_FASTAPI",
             }
         )
@@ -492,7 +492,7 @@ def app(jtrace_session, ukrdc3_session, redis_session):
     app.dependency_overrides[get_redis] = _get_redis
     app.dependency_overrides[get_ukrdc3] = _get_ukrdc3
     app.dependency_overrides[get_jtrace] = _get_jtrace
-    app.dependency_overrides[auth.get_user] = _get_user
+    app.dependency_overrides[auth.auth.get_user] = _get_user
 
     return app
 
