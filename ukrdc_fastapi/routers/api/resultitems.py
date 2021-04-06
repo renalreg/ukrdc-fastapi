@@ -6,6 +6,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Query, Session
 from ukrdc_sqla.ukrdc import LabOrder, PVDelete, ResultItem
 
+from ukrdc_fastapi.auth import Auth0User, Scopes, Security, auth
 from ukrdc_fastapi.dependencies import get_ukrdc3
 from ukrdc_fastapi.schemas.laborder import ResultItemSchema
 from ukrdc_fastapi.utils import filters
@@ -24,6 +25,7 @@ def resultitems(
     ni: Optional[str] = None,
     service_id: Optional[str] = None,
     ukrdc3: Session = Depends(get_ukrdc3),
+    _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_PATIENTRECORDS]),
 ):
     """Retreive a list of lab results, optionally filtered by NI or service ID"""
     items: Query = ukrdc3.query(ResultItem)
@@ -39,7 +41,9 @@ def resultitems(
 
 @router.delete("/", status_code=204)
 def resultitems_delete(
-    args: DeleteResultItemsRequestSchema, ukrdc3: Session = Depends(get_ukrdc3)
+    args: DeleteResultItemsRequestSchema,
+    ukrdc3: Session = Depends(get_ukrdc3),
+    _: Auth0User = Security(auth.get_user, scopes=[Scopes.WRITE_PATIENTRECORDS]),
 ):
     """
     Delete all result items matching the given NI and/or service_id.
@@ -102,7 +106,11 @@ def resultitems_delete(
 
 
 @router.get("/{resultitem_id}", response_model=ResultItemSchema)
-def resultitem_detail(resultitem_id: str, ukrdc3: Session = Depends(get_ukrdc3)):
+def resultitem_detail(
+    resultitem_id: str,
+    ukrdc3: Session = Depends(get_ukrdc3),
+    _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_PATIENTRECORDS]),
+):
     """Retreive a particular lab result"""
     item = ukrdc3.query(ResultItem).get(resultitem_id)
     if not item:
@@ -111,7 +119,11 @@ def resultitem_detail(resultitem_id: str, ukrdc3: Session = Depends(get_ukrdc3))
 
 
 @router.delete("/{resultitem_id}", status_code=204)
-def resultitem_delete(resultitem_id: str, ukrdc3: Session = Depends(get_ukrdc3)):
+def resultitem_delete(
+    resultitem_id: str,
+    ukrdc3: Session = Depends(get_ukrdc3),
+    _: Auth0User = Security(auth.get_user, scopes=[Scopes.WRITE_PATIENTRECORDS]),
+):
     """Mark a particular lab result for deletion"""
     resultitem: ResultItem = ukrdc3.query(ResultItem).get(resultitem_id)
     if not resultitem:

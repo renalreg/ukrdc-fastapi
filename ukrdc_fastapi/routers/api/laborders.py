@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from ukrdc_sqla.ukrdc import LabOrder, PVDelete
 
+from ukrdc_fastapi.auth import Auth0User, Scopes, Security, auth
 from ukrdc_fastapi.dependencies import get_ukrdc3
 from ukrdc_fastapi.schemas.laborder import LabOrderSchema, LabOrderShortSchema
 from ukrdc_fastapi.utils import filters
@@ -14,7 +15,11 @@ router = APIRouter()
 
 
 @router.get("/", response_model=Page[LabOrderShortSchema])
-def laborders(ni: Optional[str] = None, ukrdc3: Session = Depends(get_ukrdc3)):
+def laborders(
+    ni: Optional[str] = None,
+    ukrdc3: Session = Depends(get_ukrdc3),
+    _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_PATIENTRECORDS]),
+):
     """Retreive a list of all lab orders"""
     orders = ukrdc3.query(LabOrder)
     # Optionally filter by NI
@@ -26,7 +31,11 @@ def laborders(ni: Optional[str] = None, ukrdc3: Session = Depends(get_ukrdc3)):
 
 
 @router.get("/{order_id}", response_model=LabOrderSchema)
-def laborder_get(order_id: str, ukrdc3: Session = Depends(get_ukrdc3)):
+def laborder_get(
+    order_id: str,
+    ukrdc3: Session = Depends(get_ukrdc3),
+    _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_PATIENTRECORDS]),
+):
     """Retreive a particular lab order"""
     order = ukrdc3.query(LabOrder).get(order_id)
     if not order:
@@ -35,7 +44,11 @@ def laborder_get(order_id: str, ukrdc3: Session = Depends(get_ukrdc3)):
 
 
 @router.delete("/{order_id}", status_code=204)
-def laborder_delete(order_id: str, ukrdc3: Session = Depends(get_ukrdc3)):
+def laborder_delete(
+    order_id: str,
+    ukrdc3: Session = Depends(get_ukrdc3),
+    _: Auth0User = Security(auth.get_user, scopes=[Scopes.WRITE_PATIENTRECORDS]),
+):
     """Mark a particular lab order for deletion"""
     order: LabOrder = ukrdc3.query(LabOrder).get(order_id)
     pid = order.pid

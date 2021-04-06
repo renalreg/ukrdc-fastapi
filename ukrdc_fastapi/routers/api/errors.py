@@ -7,6 +7,7 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy.orm import Session
 from ukrdc_sqla.errorsdb import Message
 
+from ukrdc_fastapi.auth import Auth0User, Scopes, Security, auth
 from ukrdc_fastapi.dependencies import get_errorsdb
 from ukrdc_fastapi.schemas.errors import MessageSchema
 from ukrdc_fastapi.utils import parse_date
@@ -22,6 +23,7 @@ def error_messages(
     until: Optional[str] = None,
     status: Optional[str] = None,
     errorsdb: Session = Depends(get_errorsdb),
+    _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_MIRTH]),
 ):
     """Retreive a list of error messages, optionally filtered by NI, facility, or date"""
     messages = errorsdb.query(Message)

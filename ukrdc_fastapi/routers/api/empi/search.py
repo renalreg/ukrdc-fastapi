@@ -6,6 +6,7 @@ from fastapi import Query as QueryParam
 from sqlalchemy.orm import Query, Session
 from ukrdc_sqla.empi import MasterRecord, Person
 
+from ukrdc_fastapi.auth import Auth0User, Scopes, Security, auth
 from ukrdc_fastapi.dependencies import get_jtrace
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema, PersonSchema
 from ukrdc_fastapi.utils import parse_date
@@ -60,6 +61,7 @@ def search_person(
     pidx: Optional[list[str]] = QueryParam(None),
     search: Optional[list[str]] = QueryParam(None),
     jtrace: Session = Depends(get_jtrace),
+    _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_EMPI]),
 ):
     """Search the EMPI for a particular person record"""
     match_sets: list[set[str]] = []
@@ -128,6 +130,7 @@ def search_masterrecords(
     search: Optional[list[str]] = QueryParam(None),
     number_type: Optional[list[str]] = QueryParam(None),
     jtrace: Session = Depends(get_jtrace),
+    _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_EMPI]),
 ):
     """Search the EMPI for a particular master record"""
     match_sets: list[set[str]] = []

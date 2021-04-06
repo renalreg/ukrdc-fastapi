@@ -5,6 +5,7 @@ from sqlalchemy.orm import Query as OrmQuery
 from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import MasterRecord, Person
 
+from ukrdc_fastapi.auth import Auth0User, Scopes, Security, auth
 from ukrdc_fastapi.dependencies import get_jtrace
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema, PersonSchema
 from ukrdc_fastapi.utils.filters import find_ids_related_to_person
@@ -15,7 +16,9 @@ router = APIRouter()
 
 @router.get("/", response_model=Page[PersonSchema])
 def persons(
-    clpid: Optional[list[str]] = Query(None), jtrace: Session = Depends(get_jtrace)
+    clpid: Optional[list[str]] = Query(None),
+    jtrace: Session = Depends(get_jtrace),
+    _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_EMPI]),
 ):
     """Retreive a list of person records from the EMPI"""
     people: OrmQuery = jtrace.query(Person)
@@ -25,7 +28,11 @@ def persons(
 
 
 @router.get("/{person_id}", response_model=PersonSchema)
-def person_detail(person_id: str, jtrace: Session = Depends(get_jtrace)):
+def person_detail(
+    person_id: str,
+    jtrace: Session = Depends(get_jtrace),
+    _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_EMPI]),
+):
     """Retreive a particular person record from the EMPI"""
     person = jtrace.query(Person).get(person_id)
     if not person:
@@ -34,7 +41,11 @@ def person_detail(person_id: str, jtrace: Session = Depends(get_jtrace)):
 
 
 @router.get("/{person_id}/masterrecords", response_model=list[MasterRecordSchema])
-def person_masterrecords(person_id: str, jtrace: Session = Depends(get_jtrace)):
+def person_masterrecords(
+    person_id: str,
+    jtrace: Session = Depends(get_jtrace),
+    _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_EMPI]),
+):
     """Retreive a particular person record from the EMPI"""
     person = jtrace.query(Person).get(person_id)
     if not person:

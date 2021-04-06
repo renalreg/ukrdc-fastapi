@@ -2,8 +2,7 @@ import asyncio
 import datetime
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Security
-from fastapi_auth0 import Auth0User
+from fastapi import APIRouter, Depends
 from fastapi_hypermodel import HyperModel, UrlFor
 from mirth_client import MirthAPI
 from mirth_client.channels import Channel
@@ -14,7 +13,7 @@ from sqlalchemy.orm import Query, Session
 from ukrdc_sqla.empi import Base as EMPIBase
 from ukrdc_sqla.empi import MasterRecord, WorkItem
 
-from ukrdc_fastapi.auth import auth
+from ukrdc_fastapi.auth import Auth0User, Scopes, Security, auth
 from ukrdc_fastapi.config import settings
 from ukrdc_fastapi.dependencies import get_jtrace, get_mirth, get_redis
 
@@ -75,9 +74,9 @@ def _total_day_prev(query: Query, table: EMPIBase, datefield: str) -> dict[str, 
 @router.get("/", response_model=DashboardSchema)
 def dashboard(
     refresh: bool = False,
-    user: Auth0User = Security(auth.get_user),
     jtrace: Session = Depends(get_jtrace),
     redis: Redis = Depends(get_redis),
+    user: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_EMPI]),
 ):
     """Retreive basic statistics about recent records"""
     dash = {
@@ -122,6 +121,7 @@ async def mirth_dashboard(
     refresh: bool = False,
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
+    _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_MIRTH]),
 ):
     """Retreive basic statistics about Mirth channels"""
 

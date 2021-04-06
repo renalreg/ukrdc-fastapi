@@ -6,9 +6,9 @@ from httpx import Response
 from mirth_client import Channel, MirthAPI
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
-from ukrdc_sqla.empi import Base, MasterRecord, WorkItem
+from ukrdc_sqla.empi import MasterRecord, WorkItem
 
-from ukrdc_fastapi.auth import auth
+from ukrdc_fastapi.auth import Auth0User, Scopes, Security, auth
 from ukrdc_fastapi.config import settings
 from ukrdc_fastapi.dependencies import get_jtrace, get_mirth
 from ukrdc_fastapi.schemas.empi import WorkItemSchema, WorkItemShortSchema
@@ -44,6 +44,7 @@ class UpdateWorkItemRequestSchema(BaseModel):
 def workitems_list(
     ukrdcid: Optional[list[str]] = Query(None),
     jtrace: Session = Depends(get_jtrace),
+    _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_EMPI]),
 ):
     """Retreive a list of open work items from the EMPI"""
     # Get a query of open workitems
@@ -61,6 +62,7 @@ def workitems_list(
 def workitem_detail(
     workitem_id: int,
     jtrace: Session = Depends(get_jtrace),
+    _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_EMPI]),
 ):
     """Retreive a particular work item from the EMPI"""
     workitem = jtrace.query(WorkItem).get(workitem_id)
@@ -77,6 +79,9 @@ async def workitem_update(
     user: Auth0User = Security(auth.get_user),
     jtrace: Session = Depends(get_jtrace),
     mirth: MirthAPI = Depends(get_mirth),
+    _: Auth0User = Security(
+        auth.get_user, scopes=[Scopes.READ_EMPI, Scopes.WRITE_EMPI]
+    ),
 ):
     """Update a particular work item in the EMPI"""
     workitem = jtrace.query(WorkItem).get(workitem_id)
@@ -106,6 +111,7 @@ async def workitem_update(
 def workitem_related(
     workitem_id: int,
     jtrace: Session = Depends(get_jtrace),
+    _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_EMPI]),
 ):
     """Retreive a list of other work items related to a particular work item"""
     workitem = jtrace.query(WorkItem).get(workitem_id)
@@ -128,6 +134,9 @@ async def workitem_close(
     jtrace: Session = Depends(get_jtrace),
     user: Auth0User = Security(auth.get_user),
     mirth: MirthAPI = Depends(get_mirth),
+    _: Auth0User = Security(
+        auth.get_user, scopes=[Scopes.READ_EMPI, Scopes.WRITE_EMPI]
+    ),
 ):
     """Update and close a particular work item"""
     workitem = jtrace.query(WorkItem).get(workitem_id)
@@ -155,6 +164,9 @@ async def workitem_merge(
     workitem_id: int,
     jtrace: Session = Depends(get_jtrace),
     mirth: MirthAPI = Depends(get_mirth),
+    _: Auth0User = Security(
+        auth.get_user, scopes=[Scopes.READ_EMPI, Scopes.WRITE_EMPI]
+    ),
 ):
     """Merge a particular work item"""
     workitem = jtrace.query(WorkItem).get(workitem_id)
@@ -210,6 +222,9 @@ async def workitems_unlink(
     user: Auth0User = Security(auth.get_user),
     jtrace: Session = Depends(get_jtrace),
     mirth: MirthAPI = Depends(get_mirth),
+    _: Auth0User = Security(
+        auth.get_user, scopes=[Scopes.READ_EMPI, Scopes.WRITE_EMPI]
+    ),
 ):
     """Unlink the master record and person record in a particular work item"""
 
@@ -238,6 +253,9 @@ async def workitems_unlink(
     args: UnlinkWorkItemRequestSchema,
     user: Auth0User = Security(auth.get_user),
     mirth: MirthAPI = Depends(get_mirth),
+    _: Auth0User = Security(
+        auth.get_user, scopes=[Scopes.READ_EMPI, Scopes.WRITE_EMPI]
+    ),
 ):
     """Unlink any master record and person record"""
 
