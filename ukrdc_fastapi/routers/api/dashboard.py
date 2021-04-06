@@ -25,11 +25,6 @@ class ChannelDashStatisticsSchema(ChannelStatistics):
     updated: Optional[datetime.datetime]
 
 
-class UserSchema(BaseModel):
-    permissions: Optional[list[str]]
-    email: Optional[str]
-
-
 class _DayPrevTotalSchema(HyperModel):
     total: int
     day: int
@@ -47,9 +42,8 @@ class UKRDCRecordsDashSchema(_DayPrevTotalSchema):
 class DashboardSchema(BaseModel):
     messages: list[str]
     warnings: list[str]
-    user: UserSchema
-    workitems: WorkItemsDashSchema
-    ukrdcrecords: UKRDCRecordsDashSchema
+    workitems: Optional[WorkItemsDashSchema] = None
+    ukrdcrecords: Optional[UKRDCRecordsDashSchema] = None
 
 
 def _total_day_prev(query: Query, table: EMPIBase, datefield: str) -> dict[str, int]:
@@ -76,42 +70,42 @@ def dashboard(
     refresh: bool = False,
     jtrace: Session = Depends(get_jtrace),
     redis: Redis = Depends(get_redis),
-    user: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_EMPI]),
+    user: Auth0User = Security(auth.get_user),
 ):
     """Retreive basic statistics about recent records"""
     dash = {
         "messages": settings.motd,
         "warnings": settings.wotd,
-        "user": {"email": user.email, "permissions": user.permissions},
-        "workitems": None,
-        "ukrdcrecords": None,
     }
-    # Workitem stats
-    if redis.exists("dashboard:workitems") and not refresh:
-        dash["workitems"] = redis.hgetall("dashboard:workitems")
-    else:
-        open_workitems_stats: dict[str, int] = _total_day_prev(
-            jtrace.query(WorkItem).filter(WorkItem.status == 1),
-            WorkItem,
-            "last_updated",
-        )
-        dash["workitems"] = open_workitems_stats
-        redis.hset("dashboard:workitems", mapping=open_workitems_stats)  # type: ignore
-        # Remove cached statistics after 15 minutes. Next request will re-query
-        redis.expire("dashboard:workitems", 900)
+    if Scopes.READ_EMPI in user.permissions:
+        # Workitem stats
+        if redis.exists("dashboard:workitems") and not refresh:
+            dash["workitems"] = redis.hgetall("dashboard:workitems")
+        else:
+            open_workitems_stats: dict[str, int] = _total_day_prev(
+                jtrace.query(WorkItem).filter(WorkItem.status == 1),
+                WorkItem,
+                "last_updated",
+            )
+            dash["workitems"] = open_workitems_stats
+            redis.hset("dashboard:workitems", mapping=open_workitems_stats)  # type: ignore
+            # Remove cached statistics after 15 minutes. Next request will re-query
+            redis.expire("dashboard:workitems", 900)
 
-    if redis.exists("dashboard:ukrdcrecords") and not refresh:
-        dash["ukrdcrecords"] = redis.hgetall("dashboard:ukrdcrecords")
-    else:
-        ukrdc_masterrecords_stats: dict[str, int] = _total_day_prev(
-            jtrace.query(MasterRecord).filter(MasterRecord.nationalid_type == "UKRDC"),
-            MasterRecord,
-            "creation_date",
-        )
-        dash["ukrdcrecords"] = ukrdc_masterrecords_stats
-        redis.hset("dashboard:ukrdcrecords", mapping=ukrdc_masterrecords_stats)  # type: ignore
-        # Remove cached statistics after 15 minutes. Next request will re-query
-        redis.expire("dashboard:ukrdcrecords", 900)
+        if redis.exists("dashboard:ukrdcrecords") and not refresh:
+            dash["ukrdcrecords"] = redis.hgetall("dashboard:ukrdcrecords")
+        else:
+            ukrdc_masterrecords_stats: dict[str, int] = _total_day_prev(
+                jtrace.query(MasterRecord).filter(
+                    MasterRecord.nationalid_type == "UKRDC"
+                ),
+                MasterRecord,
+                "creation_date",
+            )
+            dash["ukrdcrecords"] = ukrdc_masterrecords_stats
+            redis.hset("dashboard:ukrdcrecords", mapping=ukrdc_masterrecords_stats)  # type: ignore
+            # Remove cached statistics after 15 minutes. Next request will re-query
+            redis.expire("dashboard:ukrdcrecords", 900)
 
     return dash
 

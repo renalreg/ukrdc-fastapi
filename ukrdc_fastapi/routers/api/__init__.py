@@ -1,9 +1,16 @@
 from fastapi import APIRouter
 from starlette.responses import RedirectResponse
 
-from ukrdc_fastapi.config import settings
-
-from . import dashboard, empi, errors, laborders, mirth, patientrecords, resultitems
+from . import (
+    dashboard,
+    empi,
+    errors,
+    laborders,
+    mirth,
+    patientrecords,
+    resultitems,
+    user,
+)
 
 router = APIRouter()
 
@@ -18,6 +25,11 @@ router.include_router(
     dashboard.router,
     prefix="/dash",
     tags=["Summary Dashboard"],
+)
+router.include_router(
+    user.router,
+    prefix="/user",
+    tags=["User Info"],
 )
 router.include_router(
     empi.router,
