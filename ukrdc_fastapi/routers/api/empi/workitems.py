@@ -45,7 +45,7 @@ class UpdateWorkItemRequestSchema(BaseModel):
 def workitems_list(
     since: Optional[str] = None,
     until: Optional[str] = None,
-    status: int = 1,
+    status: Optional[list[int]] = Query([1]),
     ukrdcid: Optional[list[str]] = Query(None),
     jtrace: Session = Depends(get_jtrace),
     _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_WORKITEMS]),
@@ -68,7 +68,7 @@ def workitems_list(
             )
 
     # Get a query of open workitems
-    workitems = workitems.filter(WorkItem.status == status)
+    workitems = workitems.filter(WorkItem.status.in_(status))
 
     # If a list of UKRDCIDs is found in the query, filter by UKRDCIDs
     if ukrdcid:
