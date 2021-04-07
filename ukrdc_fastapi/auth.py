@@ -23,6 +23,7 @@ class Scopes:
 
     @classmethod
     def all(cls, as_string: bool = False):
+        """Return an array of all possible scopes"""
         arr: list[str] = [
             cls.READ_PATIENTRECORDS,
             cls.READ_EMPI,

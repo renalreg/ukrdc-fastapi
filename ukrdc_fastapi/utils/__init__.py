@@ -29,6 +29,14 @@ def build_db_uri(
 
 
 def parse_date(date_string: Optional[str]) -> Optional[datetime.datetime]:
+    """Convert a fuzzy date string into a datetime object
+
+    Args:
+        date_string (Optional[str]): Formatted date string
+
+    Returns:
+        Optional[datetime.datetime]: Datetime object if parsing was successful
+    """
     if not date_string:
         return None
     for fmt in ("%Y-%m-%d", "%d.%m.%Y", "%d/%m/%Y"):
