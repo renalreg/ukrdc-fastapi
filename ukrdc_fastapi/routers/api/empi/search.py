@@ -37,7 +37,7 @@ def _pop_dates(search_items: list[str]) -> tuple[list[str], list[datetime.date]]
     for item in search_items:
         parsed_date: Optional[datetime.datetime] = parse_date(item)
         if parsed_date:
-            dates.append(parsed_date)
+            dates.append(parsed_date.date())
         else:
             strings.append(item)
     return (strings, dates)

@@ -33,7 +33,7 @@ def parse_date(date_string: Optional[str]) -> Optional[datetime.datetime]:
         return None
     for fmt in ("%Y-%m-%d", "%d.%m.%Y", "%d/%m/%Y"):
         try:
-            return datetime.datetime.strptime(date_string, fmt).date()
+            return datetime.datetime.strptime(date_string, fmt)
         except ValueError:
             pass
     return None
