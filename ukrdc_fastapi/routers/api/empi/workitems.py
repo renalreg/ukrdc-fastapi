@@ -1,3 +1,4 @@
+import datetime
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Security
@@ -12,7 +13,7 @@ from ukrdc_fastapi.auth import Auth0User, Scopes, Security, auth
 from ukrdc_fastapi.config import settings
 from ukrdc_fastapi.dependencies import get_jtrace, get_mirth
 from ukrdc_fastapi.schemas.empi import WorkItemSchema, WorkItemShortSchema
-from ukrdc_fastapi.utils import filters
+from ukrdc_fastapi.utils import filters, parse_date
 from ukrdc_fastapi.utils.mirth import (
     MirthMessageResponseSchema,
     build_close_workitem_message,
@@ -42,20 +43,39 @@ class UpdateWorkItemRequestSchema(BaseModel):
 
 @router.get("/", response_model=Page[WorkItemShortSchema])
 def workitems_list(
+    since: Optional[str] = None,
+    until: Optional[str] = None,
+    status: int = 1,
     ukrdcid: Optional[list[str]] = Query(None),
     jtrace: Session = Depends(get_jtrace),
     _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_WORKITEMS]),
 ):
     """Retreive a list of open work items from the EMPI"""
+    workitems = jtrace.query(WorkItem)
+
+    # Optionally filter Workitems updated since
+    if since:
+        since_datetime: Optional[datetime.datetime] = parse_date(since)
+        if since_datetime:
+            workitems = workitems.filter(WorkItem.last_updated >= since_datetime)
+
+    # Optionally filter Workitems updated before
+    if until:
+        until_datetime: Optional[datetime.datetime] = parse_date(until)
+        if until_datetime:
+            workitems = workitems.filter(
+                WorkItem.last_updated <= until_datetime + datetime.timedelta(days=1)
+            )
+
     # Get a query of open workitems
-    query = jtrace.query(WorkItem).filter(WorkItem.status == 1)
+    workitems = workitems.filter(WorkItem.status == status)
 
     # If a list of UKRDCIDs is found in the query, filter by UKRDCIDs
     if ukrdcid:
-        query = filters.workitems_by_ukrdcids(jtrace, query, ukrdcid)
+        workitems = filters.workitems_by_ukrdcids(jtrace, workitems, ukrdcid)
 
     # Sort, paginate, and return
-    return paginate(query.order_by(WorkItem.id))
+    return paginate(workitems.order_by(WorkItem.last_updated.desc()))
 
 
 @router.get("/{workitem_id}", response_model=WorkItemSchema)
