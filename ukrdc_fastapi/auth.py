@@ -27,9 +27,11 @@ class Scopes:
             cls.READ_PATIENTRECORDS,
             cls.READ_EMPI,
             cls.READ_MIRTH,
+            cls.READ_WORKITEMS,
             cls.WRITE_PATIENTRECORDS,
             cls.WRITE_EMPI,
             cls.WRITE_MIRTH,
+            cls.WRITE_WORKITEMS,
         ]
         if not as_string:
             return arr
