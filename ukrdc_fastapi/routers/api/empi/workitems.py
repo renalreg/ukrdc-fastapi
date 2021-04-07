@@ -217,7 +217,7 @@ async def workitem_merge(
 
 
 @router.post("/{workitem_id}/unlink", response_model=MirthMessageResponseSchema)
-async def workitems_unlink(
+async def workitem_unlink(
     workitem_id: int,
     user: Auth0User = Security(auth.get_user),
     jtrace: Session = Depends(get_jtrace),
