@@ -73,27 +73,27 @@ def dashboard(
     user: Auth0User = Security(auth.get_user),
 ):
     """Retreive basic statistics about recent records"""
-    dash = {
-        "messages": settings.motd,
-        "warnings": settings.wotd,
-    }
+    dash = DashboardSchema(messages=settings.motd, warnings=settings.wotd)
+
     if Scopes.READ_EMPI in user.permissions:
         # Workitem stats
         if redis.exists("dashboard:workitems") and not refresh:
-            dash["workitems"] = redis.hgetall("dashboard:workitems")
+            dash.workitems = WorkItemsDashSchema(**redis.hgetall("dashboard:workitems"))
         else:
             open_workitems_stats: dict[str, int] = _total_day_prev(
                 jtrace.query(WorkItem).filter(WorkItem.status == 1),
                 WorkItem,
                 "last_updated",
             )
-            dash["workitems"] = open_workitems_stats
+            dash.workitems = WorkItemsDashSchema(**open_workitems_stats)
             redis.hset("dashboard:workitems", mapping=open_workitems_stats)  # type: ignore
             # Remove cached statistics after 15 minutes. Next request will re-query
             redis.expire("dashboard:workitems", 900)
 
         if redis.exists("dashboard:ukrdcrecords") and not refresh:
-            dash["ukrdcrecords"] = redis.hgetall("dashboard:ukrdcrecords")
+            dash.ukrdcrecords = UKRDCRecordsDashSchema(
+                **redis.hgetall("dashboard:ukrdcrecords")
+            )
         else:
             ukrdc_masterrecords_stats: dict[str, int] = _total_day_prev(
                 jtrace.query(MasterRecord).filter(
@@ -102,7 +102,7 @@ def dashboard(
                 MasterRecord,
                 "creation_date",
             )
-            dash["ukrdcrecords"] = ukrdc_masterrecords_stats
+            dash.ukrdcrecords = UKRDCRecordsDashSchema(**ukrdc_masterrecords_stats)
             redis.hset("dashboard:ukrdcrecords", mapping=ukrdc_masterrecords_stats)  # type: ignore
             # Remove cached statistics after 15 minutes. Next request will re-query
             redis.expire("dashboard:ukrdcrecords", 900)
