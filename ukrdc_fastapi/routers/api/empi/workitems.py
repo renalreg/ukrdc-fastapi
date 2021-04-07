@@ -44,7 +44,7 @@ class UpdateWorkItemRequestSchema(BaseModel):
 def workitems_list(
     ukrdcid: Optional[list[str]] = Query(None),
     jtrace: Session = Depends(get_jtrace),
-    _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_EMPI]),
+    _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_WORKITEMS]),
 ):
     """Retreive a list of open work items from the EMPI"""
     # Get a query of open workitems
@@ -62,7 +62,7 @@ def workitems_list(
 def workitem_detail(
     workitem_id: int,
     jtrace: Session = Depends(get_jtrace),
-    _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_EMPI]),
+    _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_WORKITEMS]),
 ):
     """Retreive a particular work item from the EMPI"""
     workitem = jtrace.query(WorkItem).get(workitem_id)
@@ -80,7 +80,7 @@ async def workitem_update(
     jtrace: Session = Depends(get_jtrace),
     mirth: MirthAPI = Depends(get_mirth),
     _: Auth0User = Security(
-        auth.get_user, scopes=[Scopes.READ_EMPI, Scopes.WRITE_EMPI]
+        auth.get_user, scopes=[Scopes.READ_WORKITEMS, Scopes.WRITE_WORKITEMS]
     ),
 ):
     """Update a particular work item in the EMPI"""
@@ -111,7 +111,7 @@ async def workitem_update(
 def workitem_related(
     workitem_id: int,
     jtrace: Session = Depends(get_jtrace),
-    _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_EMPI]),
+    _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_WORKITEMS]),
 ):
     """Retreive a list of other work items related to a particular work item"""
     workitem = jtrace.query(WorkItem).get(workitem_id)
@@ -135,7 +135,7 @@ async def workitem_close(
     user: Auth0User = Security(auth.get_user),
     mirth: MirthAPI = Depends(get_mirth),
     _: Auth0User = Security(
-        auth.get_user, scopes=[Scopes.READ_EMPI, Scopes.WRITE_EMPI]
+        auth.get_user, scopes=[Scopes.READ_WORKITEMS, Scopes.WRITE_WORKITEMS]
     ),
 ):
     """Update and close a particular work item"""
@@ -165,7 +165,7 @@ async def workitem_merge(
     jtrace: Session = Depends(get_jtrace),
     mirth: MirthAPI = Depends(get_mirth),
     _: Auth0User = Security(
-        auth.get_user, scopes=[Scopes.READ_EMPI, Scopes.WRITE_EMPI]
+        auth.get_user, scopes=[Scopes.READ_WORKITEMS, Scopes.WRITE_WORKITEMS]
     ),
 ):
     """Merge a particular work item"""
@@ -223,7 +223,7 @@ async def workitem_unlink(
     jtrace: Session = Depends(get_jtrace),
     mirth: MirthAPI = Depends(get_mirth),
     _: Auth0User = Security(
-        auth.get_user, scopes=[Scopes.READ_EMPI, Scopes.WRITE_EMPI]
+        auth.get_user, scopes=[Scopes.READ_WORKITEMS, Scopes.WRITE_WORKITEMS]
     ),
 ):
     """Unlink the master record and person record in a particular work item"""
@@ -254,7 +254,7 @@ async def workitems_unlink(
     user: Auth0User = Security(auth.get_user),
     mirth: MirthAPI = Depends(get_mirth),
     _: Auth0User = Security(
-        auth.get_user, scopes=[Scopes.READ_EMPI, Scopes.WRITE_EMPI]
+        auth.get_user, scopes=[Scopes.READ_WORKITEMS, Scopes.WRITE_WORKITEMS]
     ),
 ):
     """Unlink any master record and person record"""

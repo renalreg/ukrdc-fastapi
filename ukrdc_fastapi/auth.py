@@ -16,6 +16,8 @@ class Scopes:
     WRITE_PATIENTRECORDS = "write:patientrecords"
     READ_EMPI = "read:empi"
     WRITE_EMPI = "write:empi"
+    READ_WORKITEMS = "read:workitems"
+    WRITE_WORKITEMS = "write:workitems"
     READ_MIRTH = "read:mirth"
     WRITE_MIRTH = "write:mirth"
 

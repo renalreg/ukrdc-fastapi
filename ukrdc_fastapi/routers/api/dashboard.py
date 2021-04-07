@@ -75,7 +75,7 @@ def dashboard(
     """Retreive basic statistics about recent records"""
     dash = DashboardSchema(messages=settings.motd, warnings=settings.wotd)
 
-    if Scopes.READ_EMPI in user.permissions:
+    if Scopes.READ_WORKITEMS in user.permissions:
         # Workitem stats
         if redis.exists("dashboard:workitems") and not refresh:
             dash.workitems = WorkItemsDashSchema(**redis.hgetall("dashboard:workitems"))
