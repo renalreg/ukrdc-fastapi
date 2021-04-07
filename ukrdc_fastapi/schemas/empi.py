@@ -90,9 +90,9 @@ class WorkItemShortSchema(WorkItemSummarySchema):
     last_updated: datetime.datetime
     updated_by: Optional[str]
     update_description: Optional[str]
-    attributes: Optional[Json]
 
 
 class WorkItemSchema(WorkItemShortSchema):
     person: Optional[PersonSchema]
     master_record: Optional[MasterRecordSchema]
+    attributes: Optional[Json]
