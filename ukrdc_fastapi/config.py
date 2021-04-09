@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import BaseSettings
 
 
@@ -13,6 +15,8 @@ class Settings(BaseSettings):
     secret_key: str = "****"
 
     swagger_client_id: str = ""
+
+    sentry_dsn: Optional[str] = None
 
     mirth_url: str = "http://localhost:9004"
     mirth_user: str = "webapi"

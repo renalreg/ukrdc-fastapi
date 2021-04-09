@@ -1,5 +1,6 @@
 import logging
 
+import sentry_sdk
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_hypermodel import HyperModel
@@ -7,10 +8,22 @@ from fastapi_pagination import add_pagination
 from mirth_client import MirthAPI
 from mirth_client.channels import Channel
 from mirth_client.models import LoginResponse
+from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
+from sentry_sdk.integrations.redis import RedisIntegration
+from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
 from ukrdc_fastapi.auth import Scopes, auth
 from ukrdc_fastapi.config import settings
 from ukrdc_fastapi.routers import api
+
+if settings.sentry_dsn:
+    sentry_sdk.init(
+        dsn=settings.sentry_dsn,
+        integrations=[RedisIntegration(), SqlalchemyIntegration()],
+        traces_sample_rate=1.0,
+    )
+else:
+    logging.warning("No Sentry DSN found. Error reporting disabled.")
 
 app = FastAPI(
     title="UKRDC API v2",
@@ -34,6 +47,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+if settings.sentry_dsn:
+    app.add_middleware(SentryAsgiMiddleware)
+
 
 HyperModel.init_app(app)
 
