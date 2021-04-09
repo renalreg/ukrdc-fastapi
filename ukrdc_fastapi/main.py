@@ -17,13 +17,14 @@ from ukrdc_fastapi.config import settings
 from ukrdc_fastapi.routers import api
 
 if settings.sentry_dsn:
+    logging.warning("Sentry reporting is enabled")
     sentry_sdk.init(
         dsn=settings.sentry_dsn,
         integrations=[RedisIntegration(), SqlalchemyIntegration()],
         traces_sample_rate=1.0,
     )
 else:
-    logging.warning("No Sentry DSN found. Error reporting disabled.")
+    logging.warning("No Sentry DSN found. Sentry reporting disabled.")
 
 app = FastAPI(
     title="UKRDC API v2",
