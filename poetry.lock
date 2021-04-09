@@ -192,7 +192,7 @@ requests = "*"
 
 [[package]]
 name = "fastapi-hypermodel"
-version = "0.2.3"
+version = "0.2.4"
 description = "A FastAPI + Pydantic extension for simplifying hypermedia-driven API development."
 category = "main"
 optional = false
@@ -219,12 +219,12 @@ typing-extensions = ">=3.7.4,<4.0.0"
 
 [package.extras]
 gino = ["gino[starlette] (>=1.0.1,<2.0.0)", "SQLAlchemy (>=1.3.20,<2.0.0)", "sqlalchemy-stubs (>=0.4,<0.5)"]
-all = ["gino[starlette] (>=1.0.1,<2.0.0)", "SQLAlchemy (>=1.3.20,<2.0.0)", "sqlalchemy-stubs (>=0.4,<0.5)", "databases[mysql,sqlite,postgresql] (>=0.4.0,<0.5.0)", "orm (>=0.1.5,<0.2.0)", "tortoise-orm[aiomysql,asyncpg,aiosqlite] (>=0.16.18,<0.17.0)", "asyncpg (==0.22.0)", "ormar (>=0.9.8,<0.10.0)"]
+all = ["gino[starlette] (>=1.0.1,<2.0.0)", "SQLAlchemy (>=1.3.20,<2.0.0)", "sqlalchemy-stubs (>=0.4,<0.5)", "databases[postgresql,mysql,sqlite] (>=0.4.0,<0.5.0)", "orm (>=0.1.5,<0.2.0)", "tortoise-orm[aiosqlite,aiomysql,asyncpg] (>=0.16.18,<0.17.0)", "asyncpg (==0.22.0)", "ormar (>=0.9.8,<0.10.0)"]
 sqlalchemy = ["SQLAlchemy (>=1.3.20,<2.0.0)", "sqlalchemy-stubs (>=0.4,<0.5)"]
 asyncpg = ["SQLAlchemy (>=1.3.20,<2.0.0)", "asyncpg (==0.22.0)"]
-databases = ["databases[mysql,sqlite,postgresql] (>=0.4.0,<0.5.0)"]
-orm = ["databases[mysql,sqlite,postgresql] (>=0.4.0,<0.5.0)", "orm (>=0.1.5,<0.2.0)"]
-tortoise = ["tortoise-orm[aiomysql,asyncpg,aiosqlite] (>=0.16.18,<0.17.0)"]
+databases = ["databases[postgresql,mysql,sqlite] (>=0.4.0,<0.5.0)"]
+orm = ["databases[postgresql,mysql,sqlite] (>=0.4.0,<0.5.0)", "orm (>=0.1.5,<0.2.0)"]
+tortoise = ["tortoise-orm[aiosqlite,aiomysql,asyncpg] (>=0.16.18,<0.17.0)"]
 ormar = ["ormar (>=0.9.8,<0.10.0)"]
 
 [[package]]
@@ -896,7 +896,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9" 
-content-hash = "eaeb4f61b734561eb26851b9b1abf84c9f604cfaee75c20979041cf113800ea1"
+content-hash = "18884565e024e259511f9e124dd2faad5527425b5c3a69c95f8528f3777ef1e7"
 
 [metadata.files]
 appdirs = [
@@ -1013,8 +1013,8 @@ fastapi-auth0 = [
     {file = "fastapi_auth0-0.1.6-py3-none-any.whl", hash = "sha256:55a462568c59eed5d11fb18e33816f085b8c109d06a30303d11720c7d2fb6c81"},
 ]
 fastapi-hypermodel = [
-    {file = "fastapi-hypermodel-0.2.3.tar.gz", hash = "sha256:bc75728cdc20ba55317fe80dc646d336b0c63eec4247f604f4bba2341807ddb9"},
-    {file = "fastapi_hypermodel-0.2.3-py3-none-any.whl", hash = "sha256:bbd8a9591af3a35225a0217bb02f4a07bc29e405105bbc25e9c82a7ddefcf405"},
+    {file = "fastapi-hypermodel-0.2.4.tar.gz", hash = "sha256:4ec3f06d794aed5dc6ef9278121c55a2f6aa3e939be8ca37a4b64e82d1dd1996"},
+    {file = "fastapi_hypermodel-0.2.4-py3-none-any.whl", hash = "sha256:595586e2bf2ce65d7de96da74c647e896f0198b1519a68ef806220b262f33557"},
 ]
 fastapi-pagination = [
     {file = "fastapi-pagination-0.7.0.tar.gz", hash = "sha256:dd850d9c10b18f22dd7e16fde647cb62560bcd4daada6cd879c32c14f6d70580"},
