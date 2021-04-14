@@ -43,12 +43,11 @@ def _pop_dates(search_items: list[str]) -> tuple[list[str], list[datetime.date]]
     return (strings, dates)
 
 
-def _is_int(val):
+def _is_postgres_int4(val):
     try:
-        int(val)
+        return -2147483648 <= int(val) <= 2147483647
     except ValueError:
         return False
-    return True
 
 
 @router.get("/person", response_model=Page[PersonSchema])
@@ -154,7 +153,7 @@ def search_masterrecords(
             for record in (
                 jtrace.query(MasterRecord).get(id_)
                 for id_ in search_list
-                if _is_int(id_)
+                if _is_postgres_int4(id_)
             )
             if record
         }
