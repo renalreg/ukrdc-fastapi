@@ -51,7 +51,7 @@ def test_record_laborders(client):
             "enteredAtDescription": None,
             "enteredAt": None,
             "specimenCollectedTime": "2020-03-16T00:00:00",
-            "links": {"self": "/api/laborders/LABORDER1"},
+            "links": {"self": "/api/laborders/LABORDER1/"},
             "resultItems": [
                 {
                     "id": "RESULTITEM1",
@@ -60,7 +60,7 @@ def test_record_laborders(client):
                     "serviceIdDescription": "SERVICE_ID_DESCRIPTION",
                     "value": "VALUE",
                     "valueUnits": "VALUE_UNITS",
-                    "links": {"self": "/api/resultitems/RESULTITEM1"},
+                    "links": {"self": "/api/resultitems/RESULTITEM1/"},
                 }
             ],
         }
@@ -194,7 +194,7 @@ def test_record_export_data(client, httpx_mock):
         status_code=204, url=re.compile(r"mock:\/\/mirth.url\/channels\/.*\/messages")
     )
     response = client.post(
-        "/api/patientrecords/PYTEST01:PV:00000000A/export-pv", json={}
+        "/api/patientrecords/PYTEST01:PV:00000000A/export-pv/", json={}
     )
     assert response.json() == {
         "message": "<result><pid>PYTEST01:PV:00000000A</pid><tests>FULL</tests><documents>FULL</documents></result>",
@@ -207,7 +207,7 @@ def test_record_export_tests(client, httpx_mock):
         status_code=204, url=re.compile(r"mock:\/\/mirth.url\/channels\/.*\/messages")
     )
     response = client.post(
-        "/api/patientrecords/PYTEST01:PV:00000000A/export-pv-tests", json={}
+        "/api/patientrecords/PYTEST01:PV:00000000A/export-pv-tests/", json={}
     )
     assert response.json() == {
         "status": "success",
@@ -220,7 +220,7 @@ def test_record_export_docs(client, httpx_mock):
         status_code=204, url=re.compile(r"mock:\/\/mirth.url\/channels\/.*\/messages")
     )
     response = client.post(
-        "/api/patientrecords/PYTEST01:PV:00000000A/export-pv-docs", json={}
+        "/api/patientrecords/PYTEST01:PV:00000000A/export-pv-docs/", json={}
     )
     assert response.json() == {
         "message": "<result><pid>PYTEST01:PV:00000000A</pid><documents>FULL</documents></result>",
@@ -233,7 +233,7 @@ def test_record_export_radar(client, httpx_mock):
         status_code=204, url=re.compile(r"mock:\/\/mirth.url\/channels\/.*\/messages")
     )
     response = client.post(
-        "/api/patientrecords/PYTEST01:PV:00000000A/export-radar", json={}
+        "/api/patientrecords/PYTEST01:PV:00000000A/export-radar/", json={}
     )
     assert response.json() == {
         "message": "<result><pid>PYTEST01:PV:00000000A</pid></result>",

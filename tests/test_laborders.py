@@ -9,7 +9,7 @@ def test_laborders_list(client):
     assert response.json()["items"] == [
         {
             "id": "LABORDER1",
-            "links": {"self": "/api/laborders/LABORDER1"},
+            "links": {"self": "/api/laborders/LABORDER1/"},
             "enteredAtDescription": None,
             "enteredAt": None,
             "specimenCollectedTime": "2020-03-16T00:00:00",
@@ -56,7 +56,7 @@ def test_laborders_list_filtered_ni(ukrdc3_session, client):
     assert response.json()["items"] == [
         {
             "id": "LABORDER_TEST1_1",
-            "links": {"self": "/api/laborders/LABORDER_TEST1_1"},
+            "links": {"self": "/api/laborders/LABORDER_TEST1_1/"},
             "enteredAtDescription": None,
             "enteredAt": None,
             "specimenCollectedTime": "2020-03-16T00:00:00",
@@ -69,14 +69,14 @@ def test_laborder(client):
     assert response.status_code == 200
     assert response.json() == {
         "id": "LABORDER1",
-        "links": {"self": "/api/laborders/LABORDER1"},
+        "links": {"self": "/api/laborders/LABORDER1/"},
         "enteredAtDescription": None,
         "enteredAt": None,
         "specimenCollectedTime": "2020-03-16T00:00:00",
         "resultItems": [
             {
                 "id": "RESULTITEM1",
-                "links": {"self": "/api/resultitems/RESULTITEM1"},
+                "links": {"self": "/api/resultitems/RESULTITEM1/"},
                 "orderId": "LABORDER1",
                 "serviceId": "SERVICE_ID",
                 "serviceIdDescription": "SERVICE_ID_DESCRIPTION",
@@ -121,11 +121,11 @@ def test_laborder_delete(client, ukrdc3_session):
     assert response.status_code == 200
 
     # Delete the lab order
-    response = client.delete("/api/laborders/LABORDER_TEMP")
+    response = client.delete("/api/laborders/LABORDER_TEMP/")
     assert response.status_code == 204
 
     # Make sure the lab order was deleted
-    response = client.get("/api/laborders/LABORDER_TEMP")
+    response = client.get("/api/laborders/LABORDER_TEMP/")
     assert response.status_code == 404
     assert not ukrdc3_session.query(LabOrder).get("LABORDER_TEMP")
     assert not ukrdc3_session.query(ResultItem).get("RESULTITEM_TEMP")

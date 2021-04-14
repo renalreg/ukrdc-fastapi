@@ -47,7 +47,7 @@ def test_workitem_close(client, workitem_id, httpx_mock):
         status_code=204, url=re.compile("mock:\/\/mirth.url\/channels\/.*\/messages")
     )
     response = client.post(
-        f"/api/empi/workitems/{workitem_id}/close",
+        f"/api/empi/workitems/{workitem_id}/close/",
         json={},
     )
     message = response.json().get("message")
@@ -59,7 +59,7 @@ def test_workitem_close(client, workitem_id, httpx_mock):
 
 def test_workitem_close_not_found(client):
     response = client.post(
-        f"/api/empi/workitems/9999/close",
+        f"/api/empi/workitems/9999/close/",
         json={},
     )
     assert response.status_code == 404
@@ -107,7 +107,7 @@ def test_workitem_merge(client, jtrace_session, httpx_mock):
     jtrace_session.add(work_item_4)
     jtrace_session.commit()
 
-    response = client.post(f"/api/empi/workitems/4/merge", json={})
+    response = client.post(f"/api/empi/workitems/4/merge/", json={})
     assert response.json().get("status") == "success"
     message = response.json().get("message")
 
@@ -117,7 +117,7 @@ def test_workitem_merge(client, jtrace_session, httpx_mock):
 
 
 def test_workitem_merge_nothing_to_merge(client):
-    response = client.post(f"/api/empi/workitems/1/merge", json={})
+    response = client.post(f"/api/empi/workitems/1/merge/", json={})
 
     # Expect a 400 error since only 1 master record is associated
     # with this work item, so nothing to merge
@@ -125,7 +125,7 @@ def test_workitem_merge_nothing_to_merge(client):
 
 
 def test_workitem_merge_not_found(client):
-    response = client.post(f"/api/empi/workitems/9999/merge", json={})
+    response = client.post(f"/api/empi/workitems/9999/merge/", json={})
     assert response.status_code == 404
 
 
@@ -137,7 +137,7 @@ def test_workitem_unlink(client, master_record, person_id, comment, httpx_mock):
         status_code=204, url=re.compile(r"mock:\/\/mirth.url\/channels\/.*\/messages")
     )
     response = client.post(
-        f"/api/empi/workitems/unlink",
+        f"/api/empi/workitems/unlink/",
         json={
             "master_record": master_record,
             "person_id": person_id,

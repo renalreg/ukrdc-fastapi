@@ -63,7 +63,7 @@ def test_resultitems_list(client):
     assert response.json()["items"] == [
         {
             "id": "RESULTITEM1",
-            "links": {"self": "/api/resultitems/RESULTITEM1"},
+            "links": {"self": "/api/resultitems/RESULTITEM1/"},
             "orderId": "LABORDER1",
             "serviceId": "SERVICE_ID",
             "serviceIdDescription": "SERVICE_ID_DESCRIPTION",
@@ -83,7 +83,7 @@ def test_resultitems_list_filtered_ni(ukrdc3_session, client):
     assert response.json()["items"] == [
         {
             "id": "RESULTITEM_TEST2_1",
-            "links": {"self": "/api/resultitems/RESULTITEM_TEST2_1"},
+            "links": {"self": "/api/resultitems/RESULTITEM_TEST2_1/"},
             "orderId": "LABORDER_TEST2_1",
             "serviceId": "SERVICE_ID_TEST2_1",
             "serviceIdDescription": "SERVICE_ID_DESCRIPTION_TEST2_1",
@@ -103,7 +103,7 @@ def test_resultitems_list_filtered_serviceId(ukrdc3_session, client):
     assert response.json()["items"] == [
         {
             "id": "RESULTITEM_TEST2_1",
-            "links": {"self": "/api/resultitems/RESULTITEM_TEST2_1"},
+            "links": {"self": "/api/resultitems/RESULTITEM_TEST2_1/"},
             "orderId": "LABORDER_TEST2_1",
             "serviceId": "SERVICE_ID_TEST2_1",
             "serviceIdDescription": "SERVICE_ID_DESCRIPTION_TEST2_1",
@@ -129,7 +129,7 @@ def test_resultitems_list_filtered_serviceId_delete(ukrdc3_session, client):
     assert response.json()["items"] == [
         {
             "id": "RESULTITEM1",
-            "links": {"self": "/api/resultitems/RESULTITEM1"},
+            "links": {"self": "/api/resultitems/RESULTITEM1/"},
             "orderId": "LABORDER1",
             "serviceId": "SERVICE_ID",
             "serviceIdDescription": "SERVICE_ID_DESCRIPTION",
@@ -143,7 +143,7 @@ def test_resultitems_list_filtered_serviceId_delete(ukrdc3_session, client):
     assert response.json()["items"] == [
         {
             "id": "LABORDER1",
-            "links": {"self": "/api/laborders/LABORDER1"},
+            "links": {"self": "/api/laborders/LABORDER1/"},
             "enteredAtDescription": None,
             "enteredAt": None,
             "specimenCollectedTime": "2020-03-16T00:00:00",
@@ -156,7 +156,7 @@ def test_resultitem_detail(client):
     assert response.status_code == 200
     assert response.json() == {
         "id": "RESULTITEM1",
-        "links": {"self": "/api/resultitems/RESULTITEM1"},
+        "links": {"self": "/api/resultitems/RESULTITEM1/"},
         "orderId": "LABORDER1",
         "serviceId": "SERVICE_ID",
         "serviceIdDescription": "SERVICE_ID_DESCRIPTION",
@@ -166,15 +166,15 @@ def test_resultitem_detail(client):
 
 
 def test_resultitem_delete(client):
-    response = client.delete("/api/resultitems/RESULTITEM1")
+    response = client.delete("/api/resultitems/RESULTITEM1/")
     assert response.status_code == 204
 
     # Check the resultitem was deleted
-    response = client.get("/api/resultitems")
+    response = client.get("/api/resultitems/")
     assert response.status_code == 200
     assert response.json()["items"] == []
 
     # Check the orphaned laborder was deleted
-    response = client.get("/api/laborders")
+    response = client.get("/api/laborders/")
     assert response.status_code == 200
     assert response.json()["items"] == []
