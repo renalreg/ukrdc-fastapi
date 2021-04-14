@@ -110,7 +110,7 @@ def dashboard(
     return dash
 
 
-@router.get("/mirth", response_model=list[ChannelDashStatisticsSchema])
+@router.get("/mirth/", response_model=list[ChannelDashStatisticsSchema])
 async def mirth_dashboard(
     refresh: bool = False,
     mirth: MirthAPI = Depends(get_mirth),

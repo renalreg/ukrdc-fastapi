@@ -20,7 +20,7 @@ class MessagePage(MirthPage):
     items: list[MirthChannelMessageModel]
 
 
-@router.get("/channels", response_model=list[MirthChannelModel])
+@router.get("/channels/", response_model=list[MirthChannelModel])
 async def mirth_channels(
     mirth: MirthAPI = Depends(get_mirth),
     _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_MIRTH]),
@@ -28,7 +28,7 @@ async def mirth_channels(
     return await mirth.get_channels()
 
 
-@router.get("/channels/{channel_id}", response_model=MirthChannelModel)
+@router.get("/channels/{channel_id}/", response_model=MirthChannelModel)
 async def mirth_channel(
     channel_id: str,
     mirth: MirthAPI = Depends(get_mirth),
@@ -38,7 +38,7 @@ async def mirth_channel(
 
 
 @router.get(
-    "/channels/{channel_id}/messages",
+    "/channels/{channel_id}/messages/",
     response_model=MessagePage,
 )
 async def mirth_channel_messages(
@@ -56,7 +56,7 @@ async def mirth_channel_messages(
 
 
 @router.get(
-    "/channels/{channel_id}/messages/{message_id}",
+    "/channels/{channel_id}/messages/{message_id}/",
     response_model=MirthChannelMessageModel,
 )
 async def mirth_channel_message(

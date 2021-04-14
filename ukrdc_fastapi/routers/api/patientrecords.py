@@ -47,7 +47,7 @@ def patient_records(
     return paginate(records)
 
 
-@router.get("/{pid}", response_model=PatientRecordSchema)
+@router.get("/{pid}/", response_model=PatientRecordSchema)
 def patient_record(
     pid: str,
     ukrdc3: Session = Depends(get_ukrdc3),
@@ -60,7 +60,7 @@ def patient_record(
     return record
 
 
-@router.get("/{pid}/laborders", response_model=list[LabOrderSchema])
+@router.get("/{pid}/laborders/", response_model=list[LabOrderSchema])
 def patient_laborders(
     pid: str,
     ukrdc3: Session = Depends(get_ukrdc3),
@@ -74,7 +74,7 @@ def patient_laborders(
     return items
 
 
-@router.get("/{pid}/observations", response_model=list[ObservationSchema])
+@router.get("/{pid}/observations/", response_model=list[ObservationSchema])
 def patient_observations(
     pid: str,
     ukrdc3: Session = Depends(get_ukrdc3),
@@ -85,7 +85,7 @@ def patient_observations(
     return observations.order_by(Observation.observation_time.desc()).all()
 
 
-@router.get("/{pid}/medications", response_model=list[MedicationSchema])
+@router.get("/{pid}/medications/", response_model=list[MedicationSchema])
 def patient_medications(
     pid: str,
     ukrdc3: Session = Depends(get_ukrdc3),
@@ -96,7 +96,7 @@ def patient_medications(
     return medications.order_by(Medication.from_time).all()
 
 
-@router.get("/{pid}/surveys", response_model=list[SurveySchema])
+@router.get("/{pid}/surveys/", response_model=list[SurveySchema])
 def patient_surveys(
     pid: str,
     ukrdc3: Session = Depends(get_ukrdc3),
@@ -107,7 +107,7 @@ def patient_surveys(
     return surveys.order_by(Survey.surveytime).all()
 
 
-@router.post("/{pid}/export-pv", response_model=MirthMessageResponseSchema)
+@router.post("/{pid}/export-pv/", response_model=MirthMessageResponseSchema)
 async def patient_export_pv(
     pid: str,
     mirth: MirthAPI = Depends(get_mirth),
@@ -130,7 +130,7 @@ async def patient_export_pv(
     return MirthMessageResponseSchema(status="success", message=message)
 
 
-@router.post("/{pid}/export-pv-tests", response_model=MirthMessageResponseSchema)
+@router.post("/{pid}/export-pv-tests/", response_model=MirthMessageResponseSchema)
 async def patient_export_pv_tests(
     pid: str,
     mirth: MirthAPI = Depends(get_mirth),
@@ -153,7 +153,7 @@ async def patient_export_pv_tests(
     return MirthMessageResponseSchema(status="success", message=message)
 
 
-@router.post("/{pid}/export-pv-docs", response_model=MirthMessageResponseSchema)
+@router.post("/{pid}/export-pv-docs/", response_model=MirthMessageResponseSchema)
 async def patient_export_pv_docs(
     pid: str,
     mirth: MirthAPI = Depends(get_mirth),
@@ -176,7 +176,7 @@ async def patient_export_pv_docs(
     return MirthMessageResponseSchema(status="success", message=message)
 
 
-@router.post("/{pid}/export-radar", response_model=MirthMessageResponseSchema)
+@router.post("/{pid}/export-radar/", response_model=MirthMessageResponseSchema)
 async def patient_export_radar(
     pid: str,
     mirth: MirthAPI = Depends(get_mirth),

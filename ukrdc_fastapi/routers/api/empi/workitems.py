@@ -78,7 +78,7 @@ def workitems_list(
     return paginate(workitems.order_by(WorkItem.last_updated.desc()))
 
 
-@router.get("/{workitem_id}", response_model=WorkItemSchema)
+@router.get("/{workitem_id}/", response_model=WorkItemSchema)
 def workitem_detail(
     workitem_id: int,
     jtrace: Session = Depends(get_jtrace),
@@ -92,7 +92,7 @@ def workitem_detail(
     return workitem
 
 
-@router.put("/{workitem_id}", response_model=MirthMessageResponseSchema)
+@router.put("/{workitem_id}/", response_model=MirthMessageResponseSchema)
 async def workitem_update(
     workitem_id: int,
     args: UpdateWorkItemRequestSchema,
@@ -127,7 +127,7 @@ async def workitem_update(
     return MirthMessageResponseSchema(status="success", message=message)
 
 
-@router.get("/{workitem_id}/related", response_model=list[WorkItemSchema])
+@router.get("/{workitem_id}/related/", response_model=list[WorkItemSchema])
 def workitem_related(
     workitem_id: int,
     jtrace: Session = Depends(get_jtrace),
@@ -147,7 +147,7 @@ def workitem_related(
     return other_workitems.all()
 
 
-@router.post("/{workitem_id}/close", response_model=MirthMessageResponseSchema)
+@router.post("/{workitem_id}/close/", response_model=MirthMessageResponseSchema)
 async def workitem_close(
     workitem_id: int,
     args: CloseWorkItemRequestSchema,
@@ -179,7 +179,7 @@ async def workitem_close(
     return MirthMessageResponseSchema(status="success", message=message)
 
 
-@router.post("/{workitem_id}/merge", response_model=MirthMessageResponseSchema)
+@router.post("/{workitem_id}/merge/", response_model=MirthMessageResponseSchema)
 async def workitem_merge(
     workitem_id: int,
     jtrace: Session = Depends(get_jtrace),
@@ -236,7 +236,7 @@ async def workitem_merge(
     return MirthMessageResponseSchema(status="success", message=message)
 
 
-@router.post("/{workitem_id}/unlink", response_model=MirthMessageResponseSchema)
+@router.post("/{workitem_id}/unlink/", response_model=MirthMessageResponseSchema)
 async def workitem_unlink(
     workitem_id: int,
     user: Auth0User = Security(auth.get_user),
@@ -268,7 +268,7 @@ async def workitem_unlink(
     return MirthMessageResponseSchema(status="success", message=message)
 
 
-@router.post("/unlink", response_model=MirthMessageResponseSchema)
+@router.post("/unlink/", response_model=MirthMessageResponseSchema)
 async def workitems_unlink(
     args: UnlinkWorkItemRequestSchema,
     user: Auth0User = Security(auth.get_user),

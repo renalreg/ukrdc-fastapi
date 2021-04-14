@@ -29,7 +29,7 @@ def master_records(
     return paginate(records)
 
 
-@router.get("/{record_id}", response_model=MasterRecordSchema)
+@router.get("/{record_id}/", response_model=MasterRecordSchema)
 def master_record_detail(
     record_id: str,
     jtrace: Session = Depends(get_jtrace),
@@ -43,7 +43,7 @@ def master_record_detail(
     return record
 
 
-@router.get("/{record_id}/related", response_model=list[MasterRecordSchema])
+@router.get("/{record_id}/related/", response_model=list[MasterRecordSchema])
 def master_record_related(
     record_id: str,
     jtrace: Session = Depends(get_jtrace),
@@ -65,7 +65,7 @@ def master_record_related(
     return other_records.all()
 
 
-@router.get("/{record_id}/workitems", response_model=list[WorkItemSchema])
+@router.get("/{record_id}/workitems/", response_model=list[WorkItemSchema])
 def master_record_workitems(
     record_id: str,
     jtrace: Session = Depends(get_jtrace),
@@ -84,7 +84,7 @@ def master_record_workitems(
     return related_workitems.all()
 
 
-@router.get("/{record_id}/persons", response_model=list[PersonSchema])
+@router.get("/{record_id}/persons/", response_model=list[PersonSchema])
 def master_record_persons(
     record_id: str,
     jtrace: Session = Depends(get_jtrace),
@@ -105,7 +105,7 @@ def master_record_persons(
 
 
 @router.get(
-    "/{record_id}/patientrecords", response_model=list[PatientRecordShortSchema]
+    "/{record_id}/patientrecords/", response_model=list[PatientRecordShortSchema]
 )
 def master_record_patientrecords(
     record_id: str,

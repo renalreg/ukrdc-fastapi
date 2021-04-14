@@ -30,7 +30,7 @@ def laborders(
     return paginate(orders)
 
 
-@router.get("/{order_id}", response_model=LabOrderSchema)
+@router.get("/{order_id}/", response_model=LabOrderSchema)
 def laborder_get(
     order_id: str,
     ukrdc3: Session = Depends(get_ukrdc3),
@@ -43,7 +43,7 @@ def laborder_get(
     return order
 
 
-@router.delete("/{order_id}", status_code=204)
+@router.delete("/{order_id}/", status_code=204)
 def laborder_delete(
     order_id: str,
     ukrdc3: Session = Depends(get_ukrdc3),

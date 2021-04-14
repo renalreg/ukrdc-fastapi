@@ -50,7 +50,7 @@ def _is_postgres_int4(val):
         return False
 
 
-@router.get("/person", response_model=Page[PersonSchema])
+@router.get("/person/", response_model=Page[PersonSchema])
 def search_person(
     nhs_number: Optional[list[str]] = QueryParam(None),
     mrn_number: Optional[list[str]] = QueryParam(None),
@@ -118,7 +118,7 @@ def search_person(
     return paginate(matched_persons)
 
 
-@router.get("/masterrecords", response_model=Page[MasterRecordSchema])
+@router.get("/masterrecords/", response_model=Page[MasterRecordSchema])
 def search_masterrecords(
     nhs_number: Optional[list[str]] = QueryParam(None),
     mrn_number: Optional[list[str]] = QueryParam(None),

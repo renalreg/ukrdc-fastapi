@@ -27,7 +27,7 @@ def persons(
     return paginate(people)
 
 
-@router.get("/{person_id}", response_model=PersonSchema)
+@router.get("/{person_id}/", response_model=PersonSchema)
 def person_detail(
     person_id: str,
     jtrace: Session = Depends(get_jtrace),
@@ -40,7 +40,7 @@ def person_detail(
     return person
 
 
-@router.get("/{person_id}/masterrecords", response_model=list[MasterRecordSchema])
+@router.get("/{person_id}/masterrecords/", response_model=list[MasterRecordSchema])
 def person_masterrecords(
     person_id: str,
     jtrace: Session = Depends(get_jtrace),

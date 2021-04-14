@@ -105,7 +105,7 @@ def resultitems_delete(
     ukrdc3.commit()
 
 
-@router.get("/{resultitem_id}", response_model=ResultItemSchema)
+@router.get("/{resultitem_id}/", response_model=ResultItemSchema)
 def resultitem_detail(
     resultitem_id: str,
     ukrdc3: Session = Depends(get_ukrdc3),
@@ -118,7 +118,7 @@ def resultitem_detail(
     return item
 
 
-@router.delete("/{resultitem_id}", status_code=204)
+@router.delete("/{resultitem_id}/", status_code=204)
 def resultitem_delete(
     resultitem_id: str,
     ukrdc3: Session = Depends(get_ukrdc3),
