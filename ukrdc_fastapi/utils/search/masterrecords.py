@@ -31,7 +31,7 @@ def masterrecord_ids_from_mrn_no(session: Session, mrn_nos: Iterable[str]):
     matched_persons = session.query(Person).join(PidXRef).filter(or_(*conditions)).all()
 
     matched_ids: set = find_ids_related_to_person(
-        {person.localid for person in matched_persons}, session
+        [person.localid for person in matched_persons], session
     )[0]
 
     return matched_ids
