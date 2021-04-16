@@ -18,7 +18,7 @@ from ukrdc_fastapi.routers import api
 
 if settings.sentry_dsn:
     logging.warning("Sentry reporting is enabled")
-    sentry_sdk.init(
+    sentry_sdk.init(  # pylint: disable=abstract-class-instantiated
         dsn=settings.sentry_dsn,
         integrations=[RedisIntegration(), SqlalchemyIntegration()],
         traces_sample_rate=1.0,

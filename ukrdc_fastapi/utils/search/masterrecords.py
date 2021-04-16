@@ -10,7 +10,7 @@ from ukrdc_fastapi.utils.filters import find_ids_related_to_person
 
 
 def masterrecord_ids_from_nhs_no(session: Session, nhs_nos: Iterable[str]):
-    """Finds Ids from NHS number."""
+    """Finds IDs from NHS number."""
     conditions = [MasterRecord.nationalid.ilike(nhs_no.strip()) for nhs_no in nhs_nos]
     matched_ids = {
         record.id
@@ -26,7 +26,18 @@ def masterrecord_ids_from_nhs_no(session: Session, nhs_nos: Iterable[str]):
 
 
 def masterrecord_ids_from_mrn_no(session: Session, mrn_nos: Iterable[str]):
-    """Finds Ids from MRN number"""
+    """
+    Finds IDs from MRN number.
+
+    Naievely we would just match Person.localid, however the EMPI has
+    an extra step to work around MRNs (local IDs) changing.
+    We actually want to look up the MRN in our PidXRef table, then
+    work backwards to find the Person/MasterRecord associated with it.
+
+    The actual MRN will be in PidXRef.localid. The associated PidXRef.pid
+    will match to a corresponding Person.localid, and from there we can
+    obtain the associated MasterRecords.
+    """
     conditions = [PidXRef.localid.like(mrn_no) for mrn_no in mrn_nos]
     matched_persons = session.query(Person).join(PidXRef).filter(or_(*conditions)).all()
 
@@ -38,7 +49,9 @@ def masterrecord_ids_from_mrn_no(session: Session, mrn_nos: Iterable[str]):
 
 
 def masterrecord_ids_from_ukrdc_no(session: Session, ukrdc_nos: Iterable[str]):
-    """Finds Ids from UKRDC number
+    """
+    Finds Ids from UKRDC number
+
     Note: We use the pattern {nhs_no}_ since our nationalid field seems
     to have trailing spaces. This has a side-effect of allowing partial matching.
     """
@@ -90,8 +103,12 @@ def masterrecord_ids_from_dob(
 
 def masterrecord_ids_from_pidxref_no(session: Session, pid_nos: Iterable[str]):
     """Finds Ids from pidxref"""
+    # We're searching for PidXRef entries, so we only care about Person.localid
+    # if it's a CLPID (i.e. the ID type corresponding to a PidXRef lookup)
+    query = session.query(Person).filter(Person.localid_type == "CLPID")
+
     conditions = [Person.localid.like(pid_no) for pid_no in pid_nos]
-    matched_persons = session.query(Person).filter(or_(*conditions)).all()
+    matched_persons = query.filter(or_(*conditions)).all()
 
     matched_ids = set()
 
