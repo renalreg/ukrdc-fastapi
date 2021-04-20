@@ -158,11 +158,17 @@ def test_record_surveys(client):
                     "id": "QUESTION1",
                     "questiontypecode": "TYPECODE1",
                     "response": "RESPONSE1",
+                    "questionGroup": None,
+                    "questionType": None,
+                    "responseText": None,
                 },
                 {
                     "id": "QUESTION2",
                     "questiontypecode": "TYPECODE2",
                     "response": "RESPONSE2",
+                    "questionGroup": None,
+                    "questionType": None,
+                    "responseText": None,
                 },
             ],
             "scores": [
