@@ -104,7 +104,7 @@ def patient_surveys(
 ):
     """Retreive a specific patient's surveys"""
     surveys = ukrdc3.query(Survey).filter(Survey.pid == pid)
-    return surveys.order_by(Survey.surveytime).all()
+    return surveys.order_by(Survey.surveytime.desc()).all()
 
 
 @router.post("/{pid}/export-pv/", response_model=MirthMessageResponseSchema)
