@@ -57,5 +57,5 @@ class SurveySchema(OrmModel):
     pid: str
     surveytime: datetime.datetime
     surveytypecode: str
-    enteredbycode: str
-    enteredatcode: str
+    enteredbycode: Optional[str]
+    enteredatcode: Optional[str]
