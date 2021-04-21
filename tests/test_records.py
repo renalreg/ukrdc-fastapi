@@ -195,10 +195,7 @@ def test_record_surveys_missing(client):
 # Record export-data
 
 
-def test_record_export_data(client, httpx_mock):
-    httpx_mock.add_response(
-        status_code=204, url=re.compile(r"mock:\/\/mirth.url\/channels\/.*\/messages")
-    )
+def test_record_export_data(client, httpx_session):
     response = client.post(
         "/api/patientrecords/PYTEST01:PV:00000000A/export-pv/", json={}
     )
@@ -208,10 +205,7 @@ def test_record_export_data(client, httpx_mock):
     }
 
 
-def test_record_export_tests(client, httpx_mock):
-    httpx_mock.add_response(
-        status_code=204, url=re.compile(r"mock:\/\/mirth.url\/channels\/.*\/messages")
-    )
+def test_record_export_tests(client, httpx_session):
     response = client.post(
         "/api/patientrecords/PYTEST01:PV:00000000A/export-pv-tests/", json={}
     )
@@ -221,10 +215,7 @@ def test_record_export_tests(client, httpx_mock):
     }
 
 
-def test_record_export_docs(client, httpx_mock):
-    httpx_mock.add_response(
-        status_code=204, url=re.compile(r"mock:\/\/mirth.url\/channels\/.*\/messages")
-    )
+def test_record_export_docs(client, httpx_session):
     response = client.post(
         "/api/patientrecords/PYTEST01:PV:00000000A/export-pv-docs/", json={}
     )
@@ -234,10 +225,7 @@ def test_record_export_docs(client, httpx_mock):
     }
 
 
-def test_record_export_radar(client, httpx_mock):
-    httpx_mock.add_response(
-        status_code=204, url=re.compile(r"mock:\/\/mirth.url\/channels\/.*\/messages")
-    )
+def test_record_export_radar(client, httpx_session):
     response = client.post(
         "/api/patientrecords/PYTEST01:PV:00000000A/export-radar/", json={}
     )

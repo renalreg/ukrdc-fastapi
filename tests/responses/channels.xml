@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<list>
+    <channel>
+        <id>bcb9afca-e53a-427f-8415-741a296faf46</id>
+        <name>Merge Patient</name>
+        <description>Channel description</description>
+        <revision>1</revision>
+    </channel>
+    <channel>
+        <id>57f40021-e05e-4308-98ef-8509c2f9d766</id>
+        <name>PV Outbound</name>
+        <description>Channel description</description>
+        <revision>18</revision>
+    </channel>
+    <channel>
+        <id>72179b3a-e051-460e-9400-269fb0fe42ed</id>
+        <name>RADAR Outbound</name>
+        <description>Channel description</description>
+        <revision>35</revision>
+    </channel>
+    <channel>
+        <id>3c8b493e-bf6b-405c-86c7-a29882a70cf9</id>
+        <name>Unlink</name>
+        <description>Channel description</description>
+        <revision>19</revision>
+    </channel>
+    <channel>
+        <id>ddc63fed-6684-4436-835c-85116a14da97</id>
+        <name>WorkItemUpdate</name>
+        <description>Channel description</description>
+        <revision>3</revision>
+    </channel>
+</list>

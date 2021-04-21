@@ -6,20 +6,22 @@ from fastapi_auth0 import Auth0User
 from httpx import Response
 from mirth_client import Channel, MirthAPI
 from pydantic import BaseModel, Field
+from redis import Redis
 from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import MasterRecord, WorkItem
 
 from ukrdc_fastapi.auth import Auth0User, Scopes, Security, auth
 from ukrdc_fastapi.config import settings
-from ukrdc_fastapi.dependencies import get_jtrace, get_mirth
+from ukrdc_fastapi.dependencies import get_jtrace, get_mirth, get_redis
 from ukrdc_fastapi.schemas.empi import WorkItemSchema, WorkItemShortSchema
-from ukrdc_fastapi.utils import filters, parse_date
+from ukrdc_fastapi.utils import filters, mirth, parse_date
 from ukrdc_fastapi.utils.mirth import (
     MirthMessageResponseSchema,
     build_close_workitem_message,
     build_merge_message,
     build_unlink_message,
     build_update_workitem_message,
+    get_channel_from_name,
 )
 from ukrdc_fastapi.utils.paginate import Page, paginate
 
@@ -99,16 +101,19 @@ async def workitem_update(
     user: Auth0User = Security(auth.get_user),
     jtrace: Session = Depends(get_jtrace),
     mirth: MirthAPI = Depends(get_mirth),
+    redis: Redis = Depends(get_redis),
     _: Auth0User = Security(
         auth.get_user, scopes=[Scopes.READ_WORKITEMS, Scopes.WRITE_WORKITEMS]
     ),
 ):
     """Update a particular work item in the EMPI"""
+    print("Updating workitem")
     workitem = jtrace.query(WorkItem).get(workitem_id)
     if not workitem:
         raise HTTPException(404, detail="Work item not found")
 
-    channel = Channel(mirth, settings.mirth_channel_map.get("WorkItemUpdate"))
+    channel = await get_channel_from_name("WorkItemUpdate", mirth, redis)
+
     if not channel:
         raise HTTPException(500, detail="ID for WorkItemUpdate channel not found")
 
@@ -154,6 +159,7 @@ async def workitem_close(
     jtrace: Session = Depends(get_jtrace),
     user: Auth0User = Security(auth.get_user),
     mirth: MirthAPI = Depends(get_mirth),
+    redis: Redis = Depends(get_redis),
     _: Auth0User = Security(
         auth.get_user, scopes=[Scopes.READ_WORKITEMS, Scopes.WRITE_WORKITEMS]
     ),
@@ -163,7 +169,7 @@ async def workitem_close(
     if not workitem:
         raise HTTPException(404, detail="Work item not found")
 
-    channel = Channel(mirth, settings.mirth_channel_map.get("WorkItemUpdate"))
+    channel = await get_channel_from_name("WorkItemUpdate", mirth, redis)
     if not channel:
         raise HTTPException(500, detail="ID for WorkItemUpdate channel not found")
 
@@ -184,6 +190,7 @@ async def workitem_merge(
     workitem_id: int,
     jtrace: Session = Depends(get_jtrace),
     mirth: MirthAPI = Depends(get_mirth),
+    redis: Redis = Depends(get_redis),
     _: Auth0User = Security(
         auth.get_user, scopes=[Scopes.READ_WORKITEMS, Scopes.WRITE_WORKITEMS]
     ),
@@ -220,7 +227,7 @@ async def workitem_merge(
             detail=f"Got {len(master_with_ukrdc)} master record(s) with different UKRDC IDs. Expected 2.",
         )
 
-    channel = Channel(mirth, settings.mirth_channel_map.get("Merge Patient"))
+    channel = await get_channel_from_name("Merge Patient", mirth, redis)
     if not channel:
         raise HTTPException(500, detail="ID for Merge Patient channel not found")
 
@@ -242,6 +249,7 @@ async def workitem_unlink(
     user: Auth0User = Security(auth.get_user),
     jtrace: Session = Depends(get_jtrace),
     mirth: MirthAPI = Depends(get_mirth),
+    redis: Redis = Depends(get_redis),
     _: Auth0User = Security(
         auth.get_user, scopes=[Scopes.READ_WORKITEMS, Scopes.WRITE_WORKITEMS]
     ),
@@ -252,7 +260,7 @@ async def workitem_unlink(
     if not workitem:
         raise HTTPException(404, detail="Work item not found")
 
-    channel = Channel(mirth, settings.mirth_channel_map.get("Unlink"))
+    channel = await get_channel_from_name("Unlink", mirth, redis)
     if not channel:
         raise HTTPException(500, detail="ID for Unlink channel not found")
 
@@ -273,13 +281,14 @@ async def workitems_unlink(
     args: UnlinkWorkItemRequestSchema,
     user: Auth0User = Security(auth.get_user),
     mirth: MirthAPI = Depends(get_mirth),
+    redis: Redis = Depends(get_redis),
     _: Auth0User = Security(
         auth.get_user, scopes=[Scopes.READ_WORKITEMS, Scopes.WRITE_WORKITEMS]
     ),
 ):
     """Unlink any master record and person record"""
 
-    channel = Channel(mirth, settings.mirth_channel_map.get("Unlink"))
+    channel = await get_channel_from_name("Unlink", mirth, redis)
     if not channel:
         raise HTTPException(500, detail="ID for Unlink channel not found")
 

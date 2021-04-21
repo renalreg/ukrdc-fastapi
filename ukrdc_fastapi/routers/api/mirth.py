@@ -1,10 +1,13 @@
 from fastapi import APIRouter, Depends
 from mirth_client import Channel, MirthAPI
+from mirth_client.models import ChannelModel
+from redis import Redis
 
 from ukrdc_fastapi.auth import Auth0User, Scopes, Security, auth
-from ukrdc_fastapi.dependencies import get_mirth
+from ukrdc_fastapi.dependencies import get_mirth, get_redis
 from ukrdc_fastapi.schemas.base import OrmModel
 from ukrdc_fastapi.schemas.mirth import MirthChannelMessageModel, MirthChannelModel
+from ukrdc_fastapi.utils.mirth import get_cached_channel_map
 
 router = APIRouter()
 
@@ -23,9 +26,12 @@ class MessagePage(MirthPage):
 @router.get("/channels/", response_model=list[MirthChannelModel])
 async def mirth_channels(
     mirth: MirthAPI = Depends(get_mirth),
+    redis: Redis = Depends(get_redis),
     _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_MIRTH]),
 ):
-    return await mirth.get_channels()
+    channel_map: dict[str, ChannelModel] = await get_cached_channel_map(mirth, redis)
+    channel_list: list[ChannelModel] = list(channel_map.values())
+    return channel_list
 
 
 @router.get("/channels/{channel_id}/", response_model=MirthChannelModel)

@@ -42,10 +42,7 @@ def test_workitem_detail_not_found(client):
 
 
 @pytest.mark.parametrize("workitem_id", [1, 2, 3])
-def test_workitem_close(client, workitem_id, httpx_mock):
-    httpx_mock.add_response(
-        status_code=204, url=re.compile("mock:\/\/mirth.url\/channels\/.*\/messages")
-    )
+def test_workitem_close(client, workitem_id, httpx_session):
     response = client.post(
         f"/api/empi/workitems/{workitem_id}/close/",
         json={},
@@ -65,10 +62,7 @@ def test_workitem_close_not_found(client):
     assert response.status_code == 404
 
 
-def test_workitem_merge(client, jtrace_session, httpx_mock):
-    httpx_mock.add_response(
-        status_code=204, url=re.compile("mock:\/\/mirth.url\/channels\/.*\/messages")
-    )
+def test_workitem_merge(client, jtrace_session, httpx_session):
     # Create a new master record
     master_record_3 = MasterRecord(
         id=3,
@@ -132,10 +126,7 @@ def test_workitem_merge_not_found(client):
 @pytest.mark.parametrize("master_record", [1, 2])
 @pytest.mark.parametrize("person_id", [1, 2, 3, 4])
 @pytest.mark.parametrize("comment", [None, "", "COMMENT"])
-def test_workitem_unlink(client, master_record, person_id, comment, httpx_mock):
-    httpx_mock.add_response(
-        status_code=204, url=re.compile(r"mock:\/\/mirth.url\/channels\/.*\/messages")
-    )
+def test_workitem_unlink(client, master_record, person_id, comment, httpx_session):
     response = client.post(
         f"/api/empi/workitems/unlink/",
         json={

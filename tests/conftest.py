@@ -1,10 +1,13 @@
+import re
 from datetime import datetime
+from pathlib import Path
 
 import fakeredis
 import pytest
 from fastapi.testclient import TestClient
 from fastapi_auth0 import Auth0User, auth0_rule_namespace
 from mirth_client import MirthAPI
+from pytest_httpx import HTTPXMock
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
@@ -500,3 +503,18 @@ def app(jtrace_session, ukrdc3_session, redis_session):
 @pytest.fixture(scope="function")
 def client(app):
     return TestClient(app)
+
+
+@pytest.fixture(scope="function")
+def httpx_session(httpx_mock: HTTPXMock):
+    # Load a minimal channel response to mock a Mirth server
+    responses_path = Path(__file__).resolve().parent.joinpath("responses")
+    with open(responses_path.joinpath("channels.xml"), "r") as f:
+        channels_response: str = f.read()
+
+    httpx_mock.add_response(
+        status_code=204, url=re.compile(r"mock:\/\/mirth.url\/channels\/.*\/messages")
+    )
+    httpx_mock.add_response(
+        url=re.compile(r"mock:\/\/mirth.url\/channels"), data=channels_response
+    )

@@ -6,7 +6,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi_hypermodel import HyperModel
 from fastapi_pagination import add_pagination
 from mirth_client import MirthAPI
-from mirth_client.channels import Channel
 from mirth_client.models import LoginResponse
 from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
 from sentry_sdk.integrations.redis import RedisIntegration
@@ -78,17 +77,6 @@ async def startup_event():
         logging.debug(login_response)
         if login_response.status != "SUCCESS":
             raise RuntimeError("Unable to authenticate with Mirth")
-        # Check each channel we use
-        available_channels: list[Channel] = await mirth_api.get_channels()
-        available_channel_map: dict[str, Channel] = {
-            channel.id: channel for channel in available_channels
-        }
-        logging.debug("Available channels:")
-        for channel in available_channels:
-            logging.debug("%s: %s", channel.name, channel.id)
-        for id_ in settings.mirth_channel_map.values():
-            if id_ not in available_channel_map:
-                raise RuntimeError(f"Channel {id_} not found in Mirth instance")
 
 
 # Add pagination parameters automatically to API views that need it

@@ -16,6 +16,7 @@ from ukrdc_sqla.empi import MasterRecord, WorkItem
 from ukrdc_fastapi.auth import Auth0User, Scopes, Security, auth
 from ukrdc_fastapi.config import settings
 from ukrdc_fastapi.dependencies import get_jtrace, get_mirth, get_redis
+from ukrdc_fastapi.utils.mirth import get_cached_channel_map
 
 router = APIRouter()
 
@@ -122,7 +123,10 @@ async def mirth_dashboard(
     dash = []
     coros = []
 
-    for channel_id in settings.mirth_channel_map.values():
+    ############## REMOVE REFRESH
+    channel_map = await get_cached_channel_map(mirth, redis, refresh=True)
+
+    for channel_id in channel_map.keys():
         if redis.exists(f"dashboard:mirth:{channel_id}") and not refresh:
             dash.append(redis.hgetall(f"dashboard:mirth:{channel_id}"))
         else:
@@ -134,7 +138,7 @@ async def mirth_dashboard(
     for result in results:
         result_dict = {
             "updated": datetime.datetime.now().timestamp(),
-            "name": settings.inverse_mirth_channel_map.get(str(result.channel_id)),
+            "name": channel_map.get(str(result.channel_id), {}).get("name"),
             "serverId": str(result.server_id),
             "channelId": str(result.channel_id),
             "received": result.received,

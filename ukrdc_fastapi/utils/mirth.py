@@ -3,7 +3,10 @@ from typing import Optional
 # Override Bandit warnings, since we use this to generate XML, not parse
 from xml.etree.ElementTree import Element, SubElement, tostring  # nosec
 
+from mirth_client import Channel, MirthAPI
+from mirth_client.models import ChannelModel
 from pydantic import BaseModel
+from redis import Redis
 
 
 class MirthMessageResponseSchema(BaseModel):
@@ -11,6 +14,61 @@ class MirthMessageResponseSchema(BaseModel):
 
     status: str
     message: str
+
+
+async def get_cached_channel_map(
+    mirth: MirthAPI, redis: Redis, refresh: bool = False, by_name: bool = False
+) -> dict[str, ChannelModel]:
+    """Fetch a mapping of channel IDs -> ChannelModel objects.
+    To reduce load on the Mirth server, channel mappings will
+    be cached to Redis, and reloaded only when required.
+
+    Args:
+        mirth (MirthAPI): Mirth API instance
+        redis (Redis): Redis instance for map caching
+        refresh (bool, optional): Force full refresh of mapping. Defaults to False.
+        by_name (bool, optional): Use channel name as the returned keys. Defaults to False.
+
+    Returns:
+        dict[str, ChannelModel]: Mapping of channel ID or name to ChannelModel objects
+    """
+    if (not redis.exists("mirth:channels")) or refresh:
+        channels: list[ChannelModel] = await mirth.get_channels()
+        redis.hset(  # type: ignore
+            "mirth:channels",
+            mapping={channel.id: channel.json() for channel in channels},
+        )
+    channel_map_json: dict[str, str] = redis.hgetall("mirth:channels")
+    channel_map: dict[str, ChannelModel] = {
+        id_: ChannelModel.parse_raw(channel)
+        for id_, channel in channel_map_json.items()
+    }
+    if not by_name:
+        return channel_map
+    return {channel.name: channel for channel in channel_map.values()}
+
+
+async def get_channel_from_name(
+    name: str, mirth: MirthAPI, redis: Redis
+) -> Optional[Channel]:
+    """Find a Mirth channel by channel name, and return an interactive
+    Channel object if a match is found.
+
+    Args:
+        name (str): Channel name string
+        mirth (MirthAPI): Mirth API instance
+        redis (Redis): Redis instance for map caching
+
+    Returns:
+        Optional[Channel]: Interactive Channel object, if a match is found.
+    """
+    name_map: dict[str, ChannelModel] = await get_cached_channel_map(
+        mirth, redis, by_name=True
+    )
+    if name not in name_map:
+        return None
+
+    return Channel(mirth, name_map[name].id)
 
 
 def build_merge_message(superceding: str, superceeded: str) -> str:
