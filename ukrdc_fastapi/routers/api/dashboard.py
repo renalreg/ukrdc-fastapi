@@ -138,7 +138,7 @@ async def mirth_dashboard(
     for result in results:
         result_dict = {
             "updated": datetime.datetime.now().timestamp(),
-            "name": channel_map.get(str(result.channel_id), {}).get("name"),
+            "name": channel_map[str(result.channel_id)].name,
             "serverId": str(result.server_id),
             "channelId": str(result.channel_id),
             "received": result.received,
