@@ -33,7 +33,7 @@ async def get_cached_channel_map(
         dict[str, ChannelModel]: Mapping of channel ID or name to ChannelModel objects
     """
     if (not redis.exists("mirth:channels")) or refresh:
-        channels: list[ChannelModel] = await mirth.get_channels()
+        channels: list[ChannelModel] = await mirth.channel_info()
         redis.hset(  # type: ignore
             "mirth:channels",
             mapping={channel.id: channel.json() for channel in channels},
@@ -68,7 +68,7 @@ async def get_channel_from_name(
     if name not in name_map:
         return None
 
-    return Channel(mirth, name_map[name].id)
+    return mirth.channel(name_map[name].id)
 
 
 def build_merge_message(superceding: str, superceeded: str) -> str:

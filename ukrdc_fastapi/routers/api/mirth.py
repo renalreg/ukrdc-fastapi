@@ -40,7 +40,7 @@ async def mirth_channel(
     mirth: MirthAPI = Depends(get_mirth),
     _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_MIRTH]),
 ):
-    return await Channel(mirth, channel_id).get()
+    return await mirth.channel(channel_id).get()
 
 
 @router.get(
@@ -54,7 +54,7 @@ async def mirth_channel_messages(
     mirth: MirthAPI = Depends(get_mirth),
     _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_MIRTH]),
 ):
-    messages = await Channel(mirth, channel_id).get_messages(
+    messages = await mirth.channel(channel_id).get_messages(
         include_content=False, limit=size, offset=page * size
     )
 
@@ -71,6 +71,4 @@ async def mirth_channel_message(
     mirth: MirthAPI = Depends(get_mirth),
     _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_MIRTH]),
 ):
-    return await Channel(mirth, channel_id).get_message(
-        message_id, include_content=True
-    )
+    return await mirth.channel(channel_id).get_message(message_id, include_content=True)

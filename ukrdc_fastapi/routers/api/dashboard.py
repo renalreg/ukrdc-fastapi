@@ -130,7 +130,7 @@ async def mirth_dashboard(
         if redis.exists(f"dashboard:mirth:{channel_id}") and not refresh:
             dash.append(redis.hgetall(f"dashboard:mirth:{channel_id}"))
         else:
-            coros.append(Channel(mirth, channel_id).get_statistics())
+            coros.append(mirth.channel(channel_id).get_statistics())
 
     # Await array of request coroutines
     results: list[ChannelStatistics] = await asyncio.gather(*coros)
