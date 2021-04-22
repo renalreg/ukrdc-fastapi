@@ -14,7 +14,7 @@ fastapi-auth0 = "^0.1.6"
 fastapi-hypermodel = "^0.2.4" 
 fastapi-pagination = {extras = ["sqlalchemy"], version = "^0.7.0"} 
 httpx = "^0.17.1" 
-mirth-client = "^0.3.1" 
+mirth-client = "^0.4.1" 
 psycopg2-binary = "^2.8.6" # Needed for postgres
 pydantic = {extras = ["dotenv"], version = "^1.7.3"} 
 python = "^3.9" 
