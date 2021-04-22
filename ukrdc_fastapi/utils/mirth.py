@@ -1,12 +1,16 @@
+import asyncio
 from typing import Optional
+from uuid import UUID
 
 # Override Bandit warnings, since we use this to generate XML, not parse
 from xml.etree.ElementTree import Element, SubElement, tostring  # nosec
 
 from mirth_client import Channel, MirthAPI
-from mirth_client.models import ChannelModel
+from mirth_client.models import ChannelGroup, ChannelModel, ChannelStatistics
 from pydantic import BaseModel
 from redis import Redis
+
+from ukrdc_fastapi.schemas.base import OrmModel
 
 
 class MirthMessageResponseSchema(BaseModel):
@@ -16,9 +20,200 @@ class MirthMessageResponseSchema(BaseModel):
     message: str
 
 
+class ChannelStatisticsSimplifiedModel(OrmModel):
+    received: int
+    sent: int
+    error: int
+    filtered: int
+    queued: int
+
+
+class ChannelFullModel(OrmModel):
+    id: UUID
+    name: str
+    description: Optional[str]
+    revision: str
+
+    statistics: Optional[ChannelStatisticsSimplifiedModel]
+
+
+class ChannelGroupModel(OrmModel):
+    id: UUID
+    name: str
+    description: Optional[str]
+    revision: str
+
+    channels: list[ChannelFullModel]
+
+
+async def get_cached_channels(mirth: MirthAPI, redis: Redis) -> list[ChannelModel]:
+    """Get a cached (if available) list of Mirth channel info
+
+    Args:
+        mirth (MirthAPI): API instance
+        redis (Redis): Redis cache instance
+
+    Returns:
+        list[ChannelModel]: List of channel infos
+    """
+    redis_key: str = "mirth:channel_info"
+    channel_info: list[ChannelModel]
+
+    if not redis.exists(redis_key):
+        channel_info = await mirth.channel_info()
+        redis.hset(  # type: ignore
+            redis_key,
+            mapping={
+                str(channel.id): channel.json(by_alias=True) for channel in channel_info
+            },
+        )
+    else:
+        channel_info_json: dict[str, str] = redis.hgetall(redis_key)
+
+        channel_info = [
+            ChannelModel.parse_raw(channel) for channel in channel_info_json.values()
+        ]
+
+    return channel_info
+
+
+async def get_cached_groups(mirth: MirthAPI, redis: Redis) -> list[ChannelGroup]:
+    """Get a cached (if available) list of Mirth channel groups
+
+    Args:
+        mirth (MirthAPI): API instance
+        redis (Redis): Redis cache instance
+
+    Returns:
+        list[ChannelGroup]: List of channel groups
+    """
+    redis_key: str = "mirth:groups"
+    groups: list[ChannelGroup]
+
+    if not redis.exists(redis_key):
+        groups = await mirth.groups()
+        redis.hset(  # type: ignore
+            redis_key,
+            mapping={str(group.id): group.json(by_alias=True) for group in groups},
+        )
+
+    else:
+        groups_json: dict[str, str] = redis.hgetall(redis_key)
+
+        groups = [ChannelGroup.parse_raw(group) for group in groups_json.values()]
+
+    return groups
+
+
+async def get_cached_statistics(
+    mirth: MirthAPI, redis: Redis
+) -> list[ChannelStatistics]:
+    """Get a cached (if available) list of Mirth channel statistics
+
+    Args:
+        mirth (MirthAPI): API instance
+        redis (Redis): Redis cache instance
+
+    Returns:
+        list[ChannelStatistics]: List of channel statistics
+    """
+    redis_key: str = "mirth:statistics"
+    statistics: list[ChannelStatistics]
+
+    if not redis.exists(redis_key):
+        statistics = await mirth.statistics()
+        redis.hset(  # type: ignore
+            redis_key,
+            mapping={
+                str(stat.channel_id): stat.json(by_alias=True) for stat in statistics
+            },
+        )
+
+    else:
+        statistics_json: dict[str, str] = redis.hgetall(redis_key)
+
+        statistics = [
+            ChannelStatistics.parse_raw(stat) for stat in statistics_json.values()
+        ]
+
+    return statistics
+
+
+async def get_cached_channels_with_statistics(
+    mirth: MirthAPI, redis: Redis
+) -> list[ChannelFullModel]:
+    """Get a cached (if available) list of Mirth channel info, including statistics
+
+    Args:
+        mirth (MirthAPI): API instance
+        redis (Redis): Redis cache instance
+
+    Returns:
+        list[ChannelFullModel]: List of channel infos including statistics
+    """
+    channels, statistics = await asyncio.gather(
+        get_cached_channels(mirth, redis),
+        get_cached_statistics(mirth, redis),
+    )
+    statistics_map: dict[str, ChannelStatistics] = {
+        stats.channel_id: stats for stats in statistics
+    }
+
+    return [
+        ChannelFullModel(
+            id=channel.id,
+            name=channel.name,
+            description=channel.description,
+            revision=channel.revision,
+            statistics=statistics_map.get(channel.id),
+        )
+        for channel in channels
+    ]
+
+
+async def get_cached_all(mirth: MirthAPI, redis: Redis) -> list[ChannelGroupModel]:
+    """Get a cached (if available) list of Mirth channel groups,
+    including full channel info with statistics
+
+    Args:
+        mirth (MirthAPI): API instance
+        redis (Redis): Redis cache instance
+
+    Returns:
+        list[ChannelGroupModel]: List of channel groups
+    """
+    channels: list[ChannelFullModel]
+    groups: list[ChannelGroup]
+    channels, groups = await asyncio.gather(
+        get_cached_channels_with_statistics(mirth, redis),
+        get_cached_groups(mirth, redis),
+    )
+
+    channel_with_statistics_map: dict[UUID, ChannelFullModel] = {
+        channel.id: channel for channel in channels
+    }
+
+    groups_with_statistics: list[ChannelGroupModel] = [
+        ChannelGroupModel(
+            id=group.id,
+            name=group.name,
+            description=group.description,
+            revision=group.revision,
+            channels=[
+                channel_with_statistics_map.get(channel.id)
+                for channel in group.channels
+                if channel.id in channel_with_statistics_map
+            ],
+        )
+        for group in groups
+    ]
+
+    return groups_with_statistics
+
+
 async def get_cached_channel_map(
-    mirth: MirthAPI, redis: Redis, refresh: bool = False, by_name: bool = False
-) -> dict[str, ChannelModel]:
+    mirth: MirthAPI, redis: Redis, by_name: bool = False
+) -> dict[str, ChannelFullModel]:
     """Fetch a mapping of channel IDs -> ChannelModel objects.
     To reduce load on the Mirth server, channel mappings will
     be cached to Redis, and reloaded only when required.
@@ -26,22 +221,15 @@ async def get_cached_channel_map(
     Args:
         mirth (MirthAPI): Mirth API instance
         redis (Redis): Redis instance for map caching
-        refresh (bool, optional): Force full refresh of mapping. Defaults to False.
         by_name (bool, optional): Use channel name as the returned keys. Defaults to False.
 
     Returns:
-        dict[str, ChannelModel]: Mapping of channel ID or name to ChannelModel objects
+        dict[str, ChannelFullModel]: Mapping of channel ID or name to ChannelFullModel objects
     """
-    if (not redis.exists("mirth:channels")) or refresh:
-        channels: list[ChannelModel] = await mirth.channel_info()
-        redis.hset(  # type: ignore
-            "mirth:channels",
-            mapping={channel.id: channel.json() for channel in channels},
-        )
-    channel_map_json: dict[str, str] = redis.hgetall("mirth:channels")
+    channels: list[ChannelModel] = await get_cached_channels(mirth, redis)
+
     channel_map: dict[str, ChannelModel] = {
-        id_: ChannelModel.parse_raw(channel)
-        for id_, channel in channel_map_json.items()
+        str(channel.id): channel for channel in channels
     }
     if not by_name:
         return channel_map

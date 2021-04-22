@@ -1,13 +1,19 @@
-from fastapi import APIRouter, Depends
-from mirth_client import Channel, MirthAPI
-from mirth_client.models import ChannelModel
+from typing import Optional
+
+from fastapi import APIRouter, Depends, HTTPException
+from mirth_client import MirthAPI
 from redis import Redis
 
 from ukrdc_fastapi.auth import Auth0User, Scopes, Security, auth
 from ukrdc_fastapi.dependencies import get_mirth, get_redis
 from ukrdc_fastapi.schemas.base import OrmModel
-from ukrdc_fastapi.schemas.mirth import MirthChannelMessageModel, MirthChannelModel
-from ukrdc_fastapi.utils.mirth import get_cached_channel_map
+from ukrdc_fastapi.schemas.mirth import MirthChannelMessageModel
+from ukrdc_fastapi.utils.mirth import (
+    ChannelFullModel,
+    ChannelGroupModel,
+    get_cached_all,
+    get_cached_channels_with_statistics,
+)
 
 router = APIRouter()
 
@@ -23,24 +29,39 @@ class MessagePage(MirthPage):
     items: list[MirthChannelMessageModel]
 
 
-@router.get("/channels/", response_model=list[MirthChannelModel])
+@router.get("/channels/", response_model=list[ChannelFullModel])
 async def mirth_channels(
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
     _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_MIRTH]),
 ):
-    channel_map: dict[str, ChannelModel] = await get_cached_channel_map(mirth, redis)
-    channel_list: list[ChannelModel] = list(channel_map.values())
-    return channel_list
+    return await get_cached_channels_with_statistics(mirth, redis)
 
 
-@router.get("/channels/{channel_id}/", response_model=MirthChannelModel)
+@router.get("/groups/")
+async def mirth_groups(
+    mirth: MirthAPI = Depends(get_mirth),
+    redis: Redis = Depends(get_redis),
+    _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_MIRTH]),
+) -> list[ChannelGroupModel]:
+    return await get_cached_all(mirth, redis)
+
+
+@router.get("/channels/{channel_id}/", response_model=ChannelFullModel)
 async def mirth_channel(
     channel_id: str,
     mirth: MirthAPI = Depends(get_mirth),
+    redis: Redis = Depends(get_redis),
     _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_MIRTH]),
 ):
-    return await mirth.channel(channel_id).get()
+    channels = await get_cached_channels_with_statistics(mirth, redis)
+    channel_map = {str(channel.id): channel for channel in channels}
+
+    channel: Optional[ChannelFullModel] = channel_map.get(channel_id)
+    if not channel:
+        raise HTTPException(404, detail="Work item not found")
+
+    return channel
 
 
 @router.get(

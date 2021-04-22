@@ -1,11 +1,8 @@
-import asyncio
 import datetime
 from typing import Optional
 
 from fastapi import APIRouter, Depends
 from fastapi_hypermodel import HyperModel, UrlFor
-from mirth_client import MirthAPI
-from mirth_client.channels import Channel
 from mirth_client.models import ChannelStatistics
 from pydantic import BaseModel
 from redis import Redis
@@ -15,8 +12,7 @@ from ukrdc_sqla.empi import MasterRecord, WorkItem
 
 from ukrdc_fastapi.auth import Auth0User, Scopes, Security, auth
 from ukrdc_fastapi.config import settings
-from ukrdc_fastapi.dependencies import get_jtrace, get_mirth, get_redis
-from ukrdc_fastapi.utils.mirth import get_cached_channel_map
+from ukrdc_fastapi.dependencies import get_jtrace, get_redis
 
 router = APIRouter()
 
@@ -109,48 +105,3 @@ def dashboard(
             redis.expire("dashboard:ukrdcrecords", 900)
 
     return dash
-
-
-@router.get("/mirth/", response_model=list[ChannelDashStatisticsSchema])
-async def mirth_dashboard(
-    refresh: bool = False,
-    mirth: MirthAPI = Depends(get_mirth),
-    redis: Redis = Depends(get_redis),
-    _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_MIRTH]),
-):
-    """Retreive basic statistics about Mirth channels"""
-
-    dash = []
-    coros = []
-
-    ############## REMOVE REFRESH
-    channel_map = await get_cached_channel_map(mirth, redis, refresh=True)
-
-    for channel_id in channel_map.keys():
-        if redis.exists(f"dashboard:mirth:{channel_id}") and not refresh:
-            dash.append(redis.hgetall(f"dashboard:mirth:{channel_id}"))
-        else:
-            coros.append(mirth.channel(channel_id).get_statistics())
-
-    # Await array of request coroutines
-    results: list[ChannelStatistics] = await asyncio.gather(*coros)
-
-    for result in results:
-        result_dict = {
-            "updated": datetime.datetime.now().timestamp(),
-            "name": channel_map[str(result.channel_id)].name,
-            "serverId": str(result.server_id),
-            "channelId": str(result.channel_id),
-            "received": result.received,
-            "sent": result.sent,
-            "error": result.error,
-            "filtered": result.filtered,
-            "queued": result.queued,
-        }
-        dash.append(result_dict)
-        redis.hset(f"dashboard:mirth:{result.channel_id}", mapping=result_dict)  # type: ignore
-        # Remove cached statistics after 15 minutes. Next request will re-query
-        redis.expire(f"dashboard:mirth:{result.channel_id}", 900)
-
-    # Insert channel names and return
-    return [ChannelDashStatisticsSchema(**item) for item in dash]
