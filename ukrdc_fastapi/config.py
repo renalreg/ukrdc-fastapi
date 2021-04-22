@@ -12,6 +12,11 @@ class Settings(BaseSettings):
     # Warnings to display on user dashboards
     wotd: list[str] = []
 
+    # Redis cache expiry
+    cache_channel_seconds: int = 86400
+    cache_groups_seconds: int = 86400
+    cache_statistics_seconds: int = 900
+
     secret_key: str = "****"
 
     swagger_client_id: str = ""

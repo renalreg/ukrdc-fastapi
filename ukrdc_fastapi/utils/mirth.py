@@ -10,6 +10,7 @@ from mirth_client.models import ChannelGroup, ChannelModel, ChannelStatistics
 from pydantic import BaseModel
 from redis import Redis
 
+from ukrdc_fastapi.config import settings
 from ukrdc_fastapi.schemas.base import OrmModel
 
 
@@ -67,6 +68,7 @@ async def get_cached_channels(mirth: MirthAPI, redis: Redis) -> list[ChannelMode
                 str(channel.id): channel.json(by_alias=True) for channel in channel_info
             },
         )
+        redis.expire(redis_key, settings.cache_channel_seconds)
     else:
         channel_info_json: dict[str, str] = redis.hgetall(redis_key)
 
@@ -96,7 +98,7 @@ async def get_cached_groups(mirth: MirthAPI, redis: Redis) -> list[ChannelGroup]
             redis_key,
             mapping={str(group.id): group.json(by_alias=True) for group in groups},
         )
-
+        redis.expire(redis_key, settings.cache_groups_seconds)
     else:
         groups_json: dict[str, str] = redis.hgetall(redis_key)
 
@@ -128,7 +130,7 @@ async def get_cached_statistics(
                 str(stat.channel_id): stat.json(by_alias=True) for stat in statistics
             },
         )
-
+        redis.expire(redis_key, settings.cache_statistics_seconds)
     else:
         statistics_json: dict[str, str] = redis.hgetall(redis_key)
 
