@@ -219,11 +219,11 @@ typing-extensions = ">=3.7.4,<4.0.0"
 
 [package.extras]
 gino = ["gino[starlette] (>=1.0.1,<2.0.0)", "SQLAlchemy (>=1.3.20,<2.0.0)", "sqlalchemy-stubs (>=0.4,<0.5)"]
-all = ["gino[starlette] (>=1.0.1,<2.0.0)", "SQLAlchemy (>=1.3.20,<2.0.0)", "sqlalchemy-stubs (>=0.4,<0.5)", "databases[sqlite,mysql,postgresql] (>=0.4.0,<0.5.0)", "orm (>=0.1.5,<0.2.0)", "tortoise-orm[aiosqlite,aiomysql,asyncpg] (>=0.16.18,<0.17.0)", "asyncpg (==0.22.0)", "ormar (>=0.9.8,<0.10.0)"]
+all = ["gino[starlette] (>=1.0.1,<2.0.0)", "SQLAlchemy (>=1.3.20,<2.0.0)", "sqlalchemy-stubs (>=0.4,<0.5)", "databases[postgresql,mysql,sqlite] (>=0.4.0,<0.5.0)", "orm (>=0.1.5,<0.2.0)", "tortoise-orm[aiosqlite,aiomysql,asyncpg] (>=0.16.18,<0.17.0)", "asyncpg (==0.22.0)", "ormar (>=0.9.8,<0.10.0)"]
 sqlalchemy = ["SQLAlchemy (>=1.3.20,<2.0.0)", "sqlalchemy-stubs (>=0.4,<0.5)"]
 asyncpg = ["SQLAlchemy (>=1.3.20,<2.0.0)", "asyncpg (==0.22.0)"]
-databases = ["databases[sqlite,mysql,postgresql] (>=0.4.0,<0.5.0)"]
-orm = ["databases[sqlite,mysql,postgresql] (>=0.4.0,<0.5.0)", "orm (>=0.1.5,<0.2.0)"]
+databases = ["databases[postgresql,mysql,sqlite] (>=0.4.0,<0.5.0)"]
+orm = ["databases[postgresql,mysql,sqlite] (>=0.4.0,<0.5.0)", "orm (>=0.1.5,<0.2.0)"]
 tortoise = ["tortoise-orm[aiosqlite,aiomysql,asyncpg] (>=0.16.18,<0.17.0)"]
 ormar = ["ormar (>=0.9.8,<0.10.0)"]
 
@@ -357,7 +357,7 @@ python-versions = "*"
 
 [[package]]
 name = "mirth-client"
-version = "0.4.1"
+version = "0.4.2"
 description = "Basic Python interface for Mirth Connect"
 category = "main"
 optional = false
@@ -910,7 +910,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9" 
-content-hash = "958d8fbe61e0f2595c5b9e904d2c240d6098e4037bff5a542eaa7bf68c60144a"
+content-hash = "626edb4b9ffe3ac18571e6f9284f2aa23467a91ec2280dbd8451443482d09f68"
 
 [metadata.files]
 appdirs = [
@@ -1144,8 +1144,8 @@ mccabe = [
     {file = "mccabe-0.6.1.tar.gz", hash = "sha256:dd8d182285a0fe56bace7f45b5e7d1a6ebcbf524e8f3bd87eb0f125271b8831f"},
 ]
 mirth-client = [
-    {file = "mirth-client-0.4.1.tar.gz", hash = "sha256:3259ed886cfaa706040e85649f2376f8f1f4cd98d80f79197328e7f2fbd48bc0"},
-    {file = "mirth_client-0.4.1-py3-none-any.whl", hash = "sha256:9f16d77c7edbf873f83d1eaefc16f312e233ddb3db35975f8337c7513378fc23"},
+    {file = "mirth-client-0.4.2.tar.gz", hash = "sha256:90e1af8c7cd11bc86ebdbc9c8a4894e483d84ca1044306facfa21f1837c70e7d"},
+    {file = "mirth_client-0.4.2-py3-none-any.whl", hash = "sha256:a98ada2f6d4ba8cb420b33d8f7f783a82812dc6f8dd45433bf497c5fc756fb2f"},
 ]
 mypy = [
     {file = "mypy-0.812-cp35-cp35m-macosx_10_9_x86_64.whl", hash = "sha256:a26f8ec704e5a7423c8824d425086705e381b4f1dfdef6e3a1edab7ba174ec49"},
