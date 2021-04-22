@@ -2,7 +2,7 @@ import datetime
 from typing import Optional
 
 from fastapi_hypermodel import LinkSet, UrlFor
-from pydantic import Json
+from pydantic import Json, validator
 
 from .base import OrmModel
 
@@ -92,7 +92,33 @@ class WorkItemShortSchema(WorkItemSummarySchema):
     update_description: Optional[str]
 
 
+WORKITEM_ATTRIBUTE_MAP: dict[str, str] = {
+    "SE": "sendingExtract",
+    "SF": "sendingFacility",
+    "MRN": "localid",
+    "DOB": "dateOfBirth",
+    "DOD": "dateOfDeath",
+    "Gender": "gender",
+    "name": "givenName",
+    "surname": "surname",
+}
+
+
 class WorkItemSchema(WorkItemShortSchema):
     person: Optional[PersonSchema]
     master_record: Optional[MasterRecordSchema]
     attributes: Optional[Json]
+
+    @validator("attributes")
+    def normalise_attributes(
+        cls, value
+    ):  # pylint: disable=no-self-argument,no-self-use
+        """
+        Convert attributes JSON keys into MasterRecord property keys
+        """
+        if not isinstance(value, dict):
+            return value
+        return {
+            WORKITEM_ATTRIBUTE_MAP.get(key, key): attribute
+            for key, attribute in value.items()
+        }
