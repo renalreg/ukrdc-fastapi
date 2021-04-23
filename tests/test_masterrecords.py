@@ -7,6 +7,7 @@ from ukrdc_fastapi.schemas.empi import (
     PersonSchema,
     WorkItemShortSchema,
 )
+from ukrdc_fastapi.schemas.patientrecord import PatientRecordShortSchema
 
 
 def test_masterrecords_list(client):
@@ -94,3 +95,12 @@ def test_masterrecord_persons(client):
     persons = [PersonSchema(**item) for item in response.json()]
     returned_ids = {item.id for item in persons}
     assert returned_ids == {1, 2}
+
+
+def test_masterrecord_patientrecords(client):
+    response = client.get("/api/empi/masterrecords/1/patientrecords")
+    assert response.status_code == 200
+
+    records = [PatientRecordShortSchema(**item) for item in response.json()]
+    assert len(records) == 1
+    assert records[0].pid == "PYTEST01:PV:00000000A"

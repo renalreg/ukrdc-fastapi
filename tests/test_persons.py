@@ -13,14 +13,16 @@ def test_persons_list(client):
 
 
 def test_persons_list_clpid_filter_single(client):
-    response = client.get("/api/empi/persons?clpid=123456789")
+    response = client.get("/api/empi/persons?clpid=PYTEST01:PV:00000000A")
     assert response.status_code == 200
     returned_ids = {item["id"] for item in response.json()["items"]}
     assert returned_ids == {1}
 
 
 def test_persons_list_ukrdcid_filter_multiple(client):
-    response = client.get("/api/empi/persons?clpid=123456789&clpid=987654321")
+    response = client.get(
+        "/api/empi/persons?clpid=PYTEST01:PV:00000000A&clpid=987654321"
+    )
     assert response.status_code == 200
     returned_ids = {item["id"] for item in response.json()["items"]}
     assert returned_ids == {1, 2}

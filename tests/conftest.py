@@ -309,7 +309,7 @@ def populate_jtrace_session(session):
     person_1 = Person(
         id=1,
         originator="UKRDC",
-        localid="123456789",
+        localid="PYTEST01:PV:00000000A",
         localid_type="CLPID",
         date_of_birth=datetime(1950, 1, 1),
         gender="9",
