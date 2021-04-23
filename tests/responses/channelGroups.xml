@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<list>
+    <channelGroup version="3.5.2">
+        <id>2854be09-cd9d-420d-ba9c-5e1d677b40fc</id>
+        <name>Outbound-Group</name>
+        <revision>2</revision>
+        <lastModified>
+            <time>1603258753294</time>
+            <timezone>Europe/London</timezone>
+        </lastModified>
+        <description>Channels that send data to external destinations</description>
+        <channels>
+            <channel version="3.5.2">
+                <id>72179b3a-e051-460e-9400-269fb0fe42ed</id>
+                <revision>0</revision>
+            </channel>
+            <channel version="3.5.2">
+                <id>57f40021-e05e-4308-98ef-8509c2f9d766</id>
+                <revision>0</revision>
+            </channel>
+        </channels>
+    </channelGroup>
+</list>

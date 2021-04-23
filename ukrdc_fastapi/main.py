@@ -1,6 +1,5 @@
 import logging
 
-import sentry_sdk
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_hypermodel import HyperModel
@@ -8,23 +7,13 @@ from fastapi_pagination import add_pagination
 from httpx import ConnectError
 from mirth_client import MirthAPI
 from mirth_client.models import LoginResponse
-from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
-from sentry_sdk.integrations.redis import RedisIntegration
-from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
-from ukrdc_fastapi.auth import Scopes, auth
 from ukrdc_fastapi.config import settings
+from ukrdc_fastapi.dependencies.auth import Scopes, auth
+from ukrdc_fastapi.dependencies.sentry import add_sentry
 from ukrdc_fastapi.routers import api
 
-if settings.sentry_dsn:
-    logging.warning("Sentry reporting is enabled")
-    sentry_sdk.init(  # pylint: disable=abstract-class-instantiated
-        dsn=settings.sentry_dsn,
-        integrations=[RedisIntegration(), SqlalchemyIntegration()],
-        traces_sample_rate=1.0,
-    )
-else:
-    logging.warning("No Sentry DSN found. Sentry reporting disabled.")
+# Create app
 
 app = FastAPI(
     title="UKRDC API v2",
@@ -41,6 +30,16 @@ app = FastAPI(
     },
 )
 
+
+# Add routes
+
+app.include_router(
+    api.router,
+    prefix=settings.api_base,
+)
+
+# Add middlewares
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.allowed_origins,
@@ -49,17 +48,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-if settings.sentry_dsn:
-    app.add_middleware(SentryAsgiMiddleware)
-
-
+add_sentry(app)
+add_pagination(app)
 HyperModel.init_app(app)
 
-
-app.include_router(
-    api.router,
-    prefix=settings.api_base,
-)
+# Run startup checks
 
 
 class StartupError(RuntimeError):
@@ -90,8 +83,7 @@ async def check_connections():
             ) from e
 
 
-# Add pagination parameters automatically to API views that need it
-add_pagination(app)
+# Run app
 
 if __name__ == "__main__":
     import uvicorn

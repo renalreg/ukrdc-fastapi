@@ -1,8 +1,8 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from .config import settings
-from .utils import build_db_uri
+from ukrdc_fastapi.config import settings
+from ukrdc_fastapi.utils import build_db_uri
 
 Ukrdc3Session = sessionmaker(
     autocommit=False,

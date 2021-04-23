@@ -8,9 +8,9 @@ from redis import Redis
 from sqlalchemy.orm import Query, Session
 from ukrdc_sqla.ukrdc import LabOrder, Medication, Observation, PatientRecord, Survey
 
-from ukrdc_fastapi.auth import Auth0User, Scopes, Security, auth
 from ukrdc_fastapi.config import settings
 from ukrdc_fastapi.dependencies import get_mirth, get_redis, get_ukrdc3
+from ukrdc_fastapi.dependencies.auth import Auth0User, Scopes, Security, auth
 from ukrdc_fastapi.schemas.laborder import LabOrderSchema, LabOrderShortSchema
 from ukrdc_fastapi.schemas.medication import MedicationSchema
 from ukrdc_fastapi.schemas.observation import ObservationSchema

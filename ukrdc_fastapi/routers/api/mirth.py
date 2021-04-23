@@ -4,8 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from mirth_client import MirthAPI
 from redis import Redis
 
-from ukrdc_fastapi.auth import Auth0User, Scopes, Security, auth
 from ukrdc_fastapi.dependencies import get_mirth, get_redis
+from ukrdc_fastapi.dependencies.auth import Auth0User, Scopes, Security, auth
 from ukrdc_fastapi.schemas.base import OrmModel
 from ukrdc_fastapi.schemas.mirth import MirthChannelMessageModel
 from ukrdc_fastapi.utils.mirth import (

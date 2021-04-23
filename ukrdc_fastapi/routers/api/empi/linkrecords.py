@@ -4,8 +4,8 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import LinkRecord
 
-from ukrdc_fastapi.auth import Auth0User, Scopes, Security, auth
 from ukrdc_fastapi.dependencies import get_jtrace
+from ukrdc_fastapi.dependencies.auth import Auth0User, Scopes, Security, auth
 from ukrdc_fastapi.schemas.empi import LinkRecordSchema
 from ukrdc_fastapi.utils import filters
 from ukrdc_fastapi.utils.paginate import Page, paginate

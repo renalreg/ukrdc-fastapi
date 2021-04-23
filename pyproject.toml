@@ -72,4 +72,14 @@ good-names = "ni,i,e,logger"
 ignore-imports = "yes"
 
 [tool.coverage.run]
-omit = ["*/dependencies.py"]
+# Both dependencies and main contain a lot of production-specific code, such as
+# real DB connections and Sentry reporting. We can't run these lines in our unit
+# tests so we exclude them from coverage reports.
+omit = ["ukrdc_fastapi/dependencies/*", "ukrdc_fastapi/main.py"]
+
+[tool.pytest.ini_options]
+addopts = "--cov=ukrdc_fastapi"
+minversion = "6.0"
+testpaths = [
+  "tests",
+]

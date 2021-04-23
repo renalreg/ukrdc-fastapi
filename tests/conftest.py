@@ -34,8 +34,13 @@ from ukrdc_sqla.ukrdc import (
     Survey,
 )
 
-from ukrdc_fastapi import auth
-from ukrdc_fastapi.dependencies import get_jtrace, get_mirth, get_redis, get_ukrdc3
+from ukrdc_fastapi.dependencies import (
+    auth,
+    get_jtrace,
+    get_mirth,
+    get_redis,
+    get_ukrdc3,
+)
 
 
 def populate_ukrdc3_session(session):
@@ -507,14 +512,34 @@ def client(app):
 
 @pytest.fixture(scope="function")
 def httpx_session(httpx_mock: HTTPXMock):
+
+    # Override reset since we don't care if not all mocked routes are called
+    def reset_override(*args):
+        pass
+
+    httpx_mock.reset = reset_override
+
     # Load a minimal channel response to mock a Mirth server
     responses_path = Path(__file__).resolve().parent.joinpath("responses")
     with open(responses_path.joinpath("channels.xml"), "r") as f:
         channels_response: str = f.read()
+    with open(responses_path.joinpath("channelStatistics.xml"), "r") as f:
+        channel_statistics_response: str = f.read()
+    with open(responses_path.joinpath("channelGroups.xml"), "r") as f:
+        channel_groups_response: str = f.read()
+
+    httpx_mock.add_response(
+        url=re.compile(r"mock:\/\/mirth.url\/channels"), data=channels_response
+    )
+    httpx_mock.add_response(
+        url=re.compile(r"mock:\/\/mirth.url\/channels\/statistics"),
+        data=channel_statistics_response,
+    )
+    httpx_mock.add_response(
+        url=re.compile(r"mock:\/\/mirth.url\/channelgroups"),
+        data=channel_groups_response,
+    )
 
     httpx_mock.add_response(
         status_code=204, url=re.compile(r"mock:\/\/mirth.url\/channels\/.*\/messages")
-    )
-    httpx_mock.add_response(
-        url=re.compile(r"mock:\/\/mirth.url\/channels"), data=channels_response
     )

@@ -3,7 +3,7 @@ from typing import Optional
 from fastapi import APIRouter
 from pydantic import BaseModel
 
-from ukrdc_fastapi.auth import Auth0User, Security, auth
+from ukrdc_fastapi.dependencies.auth import Auth0User, Security, auth
 
 router = APIRouter()
 

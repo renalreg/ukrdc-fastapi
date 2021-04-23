@@ -6,8 +6,8 @@ from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import MasterRecord, Person, WorkItem
 from ukrdc_sqla.ukrdc import PatientRecord
 
-from ukrdc_fastapi.auth import Auth0User, Scopes, Security, auth
 from ukrdc_fastapi.dependencies import get_jtrace, get_ukrdc3
+from ukrdc_fastapi.dependencies.auth import Auth0User, Scopes, Security, auth
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema, PersonSchema, WorkItemSchema
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordShortSchema
 from ukrdc_fastapi.utils.filters import find_ids_related_to_masterrecord

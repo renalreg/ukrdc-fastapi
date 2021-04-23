@@ -8,8 +8,8 @@ from stdnum.gb import nhs
 from stdnum.util import isdigits
 from ukrdc_sqla.empi import MasterRecord
 
-from ukrdc_fastapi.auth import Auth0User, Scopes, Security, auth
 from ukrdc_fastapi.dependencies import get_jtrace
+from ukrdc_fastapi.dependencies.auth import Auth0User, Scopes, Security, auth
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema
 from ukrdc_fastapi.utils import parse_date
 from ukrdc_fastapi.utils.paginate import Page, paginate

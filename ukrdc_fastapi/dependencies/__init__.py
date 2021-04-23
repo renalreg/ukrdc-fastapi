@@ -7,7 +7,8 @@ from mirth_client.exceptions import MirthLoginError
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 
-from .config import settings
+from ukrdc_fastapi.config import settings
+
 from .database import ErrorsSession, JtraceSession, Ukrdc3Session
 
 JTRACE_FRIENDLY_ERROR_CODES = {"e3q8": "Error connecting to JTRACE database."}
@@ -107,8 +108,3 @@ def get_errorsdb() -> Generator[Session, None, None]:
         ) from e
     finally:
         session.close()
-
-
-# def get_mirth() -> MirthConnection:
-#    """Returns a new Mirth API connection"""
-#    return MirthConnection(settings.mirth_url)

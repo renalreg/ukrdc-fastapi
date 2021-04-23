@@ -6,8 +6,8 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Query, Session
 from ukrdc_sqla.ukrdc import LabOrder, PVDelete, ResultItem
 
-from ukrdc_fastapi.auth import Auth0User, Scopes, Security, auth
 from ukrdc_fastapi.dependencies import get_ukrdc3
+from ukrdc_fastapi.dependencies.auth import Auth0User, Scopes, Security, auth
 from ukrdc_fastapi.schemas.laborder import ResultItemSchema
 from ukrdc_fastapi.utils import filters
 from ukrdc_fastapi.utils.paginate import Page, paginate
