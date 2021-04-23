@@ -29,6 +29,20 @@ def test_workitems_list_ukrdcid_filter_multiple(client):
     assert returned_ids == {1, 2, 3}
 
 
+def test_workitems_list_filter_since(client):
+    response = client.get("/api/empi/workitems?since=2021-01-01")
+    assert response.status_code == 200
+    returned_ids = {item["id"] for item in response.json()["items"]}
+    assert returned_ids == {2, 3}
+
+
+def test_workitems_list_filter_until(client):
+    response = client.get("/api/empi/workitems?until=2020-12-01")
+    assert response.status_code == 200
+    returned_ids = {item["id"] for item in response.json()["items"]}
+    assert returned_ids == {1}
+
+
 def test_workitem_detail(client):
     response = client.get("/api/empi/workitems/1")
     assert response.status_code == 200
@@ -38,6 +52,19 @@ def test_workitem_detail(client):
 
 def test_workitem_detail_not_found(client):
     response = client.get("/api/empi/workitems/9999")
+    assert response.status_code == 404
+
+
+def test_workitem_related(client):
+    response = client.get("/api/empi/workitems/1/related")
+    assert response.status_code == 200
+
+    returned_ids = {item["id"] for item in response.json()}
+    assert returned_ids == {2}
+
+
+def test_workitem_related_not_found(client):
+    response = client.get("/api/empi/workitems/9999/related")
     assert response.status_code == 404
 
 
@@ -123,10 +150,24 @@ def test_workitem_merge_not_found(client):
     assert response.status_code == 404
 
 
+def test_workitem_unlink(client, httpx_session):
+    response = client.post(
+        "/api/empi/workitems/1/unlink/",
+    )
+
+    assert response.json().get("status") == "success"
+    message = response.json().get("message")
+
+    assert f"<masterRecord>1</masterRecord>" in message
+    assert f"<personId>3</personId>" in message
+    assert "<updatedBy>TEST@UKRDC_FASTAPI</updatedBy>" in message
+    assert f"<updateDescription />" in message
+
+
 @pytest.mark.parametrize("master_record", [1, 2])
 @pytest.mark.parametrize("person_id", [1, 2, 3, 4])
 @pytest.mark.parametrize("comment", [None, "", "COMMENT"])
-def test_workitem_unlink(client, master_record, person_id, comment, httpx_session):
+def test_workitems_unlink(client, master_record, person_id, comment, httpx_session):
     response = client.post(
         f"/api/empi/workitems/unlink/",
         json={
@@ -146,3 +187,17 @@ def test_workitem_unlink(client, master_record, person_id, comment, httpx_sessio
         assert f"<updateDescription>{comment}</updateDescription>" in message
     else:
         assert f"<updateDescription />" in message
+
+
+def test_workitem_update(client, httpx_session):
+    response = client.put(
+        "/api/empi/workitems/1/", json={"status": 3, "comment": "UPDATE COMMENT"}
+    )
+
+    assert response.json().get("status") == "success"
+    message = response.json().get("message")
+
+    assert "<workitem>1</workitem>" in message
+    assert "<status>3</status>" in message
+    assert "<updateDescription>UPDATE COMMENT</updateDescription>" in message
+    assert "<updatedBy>TEST@UKRDC_FASTAPI</updatedBy>" in message
