@@ -1,7 +1,9 @@
-from datetime import datetime
+from datetime import date, datetime
 
 from stdnum.gb import nhs
 from ukrdc_sqla.empi import MasterRecord
+
+from ukrdc_fastapi.routers.api.empi.search import _pop_dates
 
 TEST_NUMBERS = [
     "9434765870",
@@ -29,6 +31,15 @@ def _commit_extra_patients(session, number_type="NHS"):
         )
         session.add(master_record)
         session.commit()
+
+
+def test_pop_dates():
+    input_: list[str] = ["foo", "bar", "2020-01-01", "1/1/2021", "1.1.2022"]
+    expected_out = (
+        ["foo", "bar"],
+        [date(2020, 1, 1), date(2021, 1, 1), date(2022, 1, 1)],
+    )
+    assert _pop_dates(input_) == expected_out
 
 
 def test_search_all(jtrace_session, client):
