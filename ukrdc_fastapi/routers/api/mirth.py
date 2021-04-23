@@ -59,7 +59,7 @@ async def mirth_channel(
 
     channel: Optional[ChannelFullModel] = channel_map.get(channel_id)
     if not channel:
-        raise HTTPException(404, detail="Work item not found")
+        raise HTTPException(404, detail="Channel not found")  # pragma: no cover
 
     return channel
 

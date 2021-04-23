@@ -115,7 +115,9 @@ async def workitem_update(
     channel = await get_channel_from_name("WorkItemUpdate", mirth, redis)
 
     if not channel:
-        raise HTTPException(500, detail="ID for WorkItemUpdate channel not found")
+        raise HTTPException(
+            500, detail="ID for WorkItemUpdate channel not found"
+        )  # pragma: no cover
 
     message: str = build_update_workitem_message(
         workitem.id,
@@ -171,7 +173,9 @@ async def workitem_close(
 
     channel = await get_channel_from_name("WorkItemUpdate", mirth, redis)
     if not channel:
-        raise HTTPException(500, detail="ID for WorkItemUpdate channel not found")
+        raise HTTPException(
+            500, detail="ID for WorkItemUpdate channel not found"
+        )  # pragma: no cover
 
     message: str = build_close_workitem_message(
         workitem.id, args.comment or "", user.email
@@ -229,7 +233,9 @@ async def workitem_merge(
 
     channel = await get_channel_from_name("Merge Patient", mirth, redis)
     if not channel:
-        raise HTTPException(500, detail="ID for Merge Patient channel not found")
+        raise HTTPException(
+            500, detail="ID for Merge Patient channel not found"
+        )  # pragma: no cover
 
     message: str = build_merge_message(
         superceding=master_with_ukrdc[0].id, superceeded=master_with_ukrdc[1].id
@@ -262,7 +268,9 @@ async def workitem_unlink(
 
     channel = await get_channel_from_name("Unlink", mirth, redis)
     if not channel:
-        raise HTTPException(500, detail="ID for Unlink channel not found")
+        raise HTTPException(
+            500, detail="ID for Unlink channel not found"
+        )  # pragma: no cover
 
     message: str = build_unlink_message(
         workitem.master_id, workitem.person_id, user.email
@@ -290,7 +298,9 @@ async def workitems_unlink(
 
     channel = await get_channel_from_name("Unlink", mirth, redis)
     if not channel:
-        raise HTTPException(500, detail="ID for Unlink channel not found")
+        raise HTTPException(
+            500, detail="ID for Unlink channel not found"
+        )  # pragma: no cover
 
     message: str = build_unlink_message(
         args.master_record, args.person_id, user.email, args.comment
