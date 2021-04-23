@@ -1,7 +1,9 @@
 from fastapi import Security
-from fastapi_auth0 import Auth0, Auth0User
+from fastapi_auth0 import Auth0
+from fastapi_auth0 import Auth0User as User
+from fastapi_auth0 import auth0_rule_namespace
 
-__all__ = ["Security", "Auth0User", "auth", "Scopes"]
+__all__ = ["Security", "User", "auth", "Scopes", "auth0_rule_namespace"]
 
 auth = Auth0(
     domain="renalreg.eu.auth0.com", api_audience="https://app.ukrdc.org/api", scopes={}

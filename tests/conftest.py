@@ -5,7 +5,6 @@ from pathlib import Path
 import fakeredis
 import pytest
 from fastapi.testclient import TestClient
-from fastapi_auth0 import Auth0User, auth0_rule_namespace
 from mirth_client import MirthAPI
 from pytest_httpx import HTTPXMock
 from sqlalchemy import create_engine
@@ -41,6 +40,7 @@ from ukrdc_fastapi.dependencies import (
     get_redis,
     get_ukrdc3,
 )
+from ukrdc_fastapi.dependencies.auth import User, auth0_rule_namespace
 
 
 def populate_ukrdc3_session(session):
@@ -486,7 +486,7 @@ def app(jtrace_session, ukrdc3_session, redis_session):
         return jtrace_session
 
     def _get_user():
-        usr = Auth0User(
+        usr = User(
             **{
                 "sub": "TEST_ID",
                 "permissions": auth.Scopes.all(),

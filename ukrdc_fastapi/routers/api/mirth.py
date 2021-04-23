@@ -5,7 +5,7 @@ from mirth_client import MirthAPI
 from redis import Redis
 
 from ukrdc_fastapi.dependencies import get_mirth, get_redis
-from ukrdc_fastapi.dependencies.auth import Auth0User, Scopes, Security, auth
+from ukrdc_fastapi.dependencies.auth import Scopes, Security, User, auth
 from ukrdc_fastapi.schemas.base import OrmModel
 from ukrdc_fastapi.schemas.mirth import MirthChannelMessageModel
 from ukrdc_fastapi.utils.mirth import (
@@ -33,7 +33,7 @@ class MessagePage(MirthPage):
 async def mirth_channels(
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
-    _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_MIRTH]),
+    _: User = Security(auth.get_user, scopes=[Scopes.READ_MIRTH]),
 ):
     return await get_cached_channels_with_statistics(mirth, redis)
 
@@ -42,7 +42,7 @@ async def mirth_channels(
 async def mirth_groups(
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
-    _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_MIRTH]),
+    _: User = Security(auth.get_user, scopes=[Scopes.READ_MIRTH]),
 ) -> list[ChannelGroupModel]:
     return await get_cached_all(mirth, redis)
 
@@ -52,7 +52,7 @@ async def mirth_channel(
     channel_id: str,
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
-    _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_MIRTH]),
+    _: User = Security(auth.get_user, scopes=[Scopes.READ_MIRTH]),
 ):
     channels = await get_cached_channels_with_statistics(mirth, redis)
     channel_map = {str(channel.id): channel for channel in channels}
@@ -73,7 +73,7 @@ async def mirth_channel_messages(
     page: int = 0,
     size: int = 20,
     mirth: MirthAPI = Depends(get_mirth),
-    _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_MIRTH]),
+    _: User = Security(auth.get_user, scopes=[Scopes.READ_MIRTH]),
 ):
     messages = await mirth.channel(channel_id).get_messages(
         include_content=False, limit=size, offset=page * size
@@ -90,6 +90,6 @@ async def mirth_channel_message(
     channel_id: str,
     message_id: int,
     mirth: MirthAPI = Depends(get_mirth),
-    _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_MIRTH]),
+    _: User = Security(auth.get_user, scopes=[Scopes.READ_MIRTH]),
 ):
     return await mirth.channel(channel_id).get_message(message_id, include_content=True)

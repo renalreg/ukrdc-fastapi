@@ -10,7 +10,7 @@ from ukrdc_sqla.ukrdc import LabOrder, Medication, Observation, PatientRecord, S
 
 from ukrdc_fastapi.config import settings
 from ukrdc_fastapi.dependencies import get_mirth, get_redis, get_ukrdc3
-from ukrdc_fastapi.dependencies.auth import Auth0User, Scopes, Security, auth
+from ukrdc_fastapi.dependencies.auth import Scopes, Security, User, auth
 from ukrdc_fastapi.schemas.laborder import LabOrderSchema, LabOrderShortSchema
 from ukrdc_fastapi.schemas.medication import MedicationSchema
 from ukrdc_fastapi.schemas.observation import ObservationSchema
@@ -37,7 +37,7 @@ router = APIRouter()
 def patient_records(
     ni: Optional[str] = None,
     ukrdc3: Session = Depends(get_ukrdc3),
-    _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_PATIENTRECORDS]),
+    _: User = Security(auth.get_user, scopes=[Scopes.READ_PATIENTRECORDS]),
 ):
     """Retrieve a list of patient records"""
     records: Query = ukrdc3.query(PatientRecord)
@@ -53,7 +53,7 @@ def patient_records(
 def patient_record(
     pid: str,
     ukrdc3: Session = Depends(get_ukrdc3),
-    _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_PATIENTRECORDS]),
+    _: User = Security(auth.get_user, scopes=[Scopes.READ_PATIENTRECORDS]),
 ):
     """Retreive a specific patient record"""
     record = ukrdc3.query(PatientRecord).filter(PatientRecord.pid == pid).first()
@@ -66,7 +66,7 @@ def patient_record(
 def patient_laborders(
     pid: str,
     ukrdc3: Session = Depends(get_ukrdc3),
-    _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_PATIENTRECORDS]),
+    _: User = Security(auth.get_user, scopes=[Scopes.READ_PATIENTRECORDS]),
 ):
     """Retreive a specific patient's lab orders"""
     orders = ukrdc3.query(LabOrder).filter(LabOrder.pid == pid)
@@ -80,7 +80,7 @@ def patient_laborders(
 def patient_observations(
     pid: str,
     ukrdc3: Session = Depends(get_ukrdc3),
-    _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_PATIENTRECORDS]),
+    _: User = Security(auth.get_user, scopes=[Scopes.READ_PATIENTRECORDS]),
 ):
     """Retreive a specific patient's lab orders"""
     observations = ukrdc3.query(Observation).filter(Observation.pid == pid)
@@ -91,7 +91,7 @@ def patient_observations(
 def patient_medications(
     pid: str,
     ukrdc3: Session = Depends(get_ukrdc3),
-    _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_PATIENTRECORDS]),
+    _: User = Security(auth.get_user, scopes=[Scopes.READ_PATIENTRECORDS]),
 ):
     """Retreive a specific patient's medications"""
     medications = ukrdc3.query(Medication).filter(Medication.pid == pid)
@@ -102,7 +102,7 @@ def patient_medications(
 def patient_surveys(
     pid: str,
     ukrdc3: Session = Depends(get_ukrdc3),
-    _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_PATIENTRECORDS]),
+    _: User = Security(auth.get_user, scopes=[Scopes.READ_PATIENTRECORDS]),
 ):
     """Retreive a specific patient's surveys"""
     surveys = ukrdc3.query(Survey).filter(Survey.pid == pid)
@@ -114,7 +114,7 @@ async def patient_export_pv(
     pid: str,
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
-    _: Auth0User = Security(
+    _: User = Security(
         auth.get_user, scopes=[Scopes.READ_PATIENTRECORDS, Scopes.WRITE_MIRTH]
     ),
 ):
@@ -140,7 +140,7 @@ async def patient_export_pv_tests(
     pid: str,
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
-    _: Auth0User = Security(
+    _: User = Security(
         auth.get_user, scopes=[Scopes.READ_PATIENTRECORDS, Scopes.WRITE_MIRTH]
     ),
 ):
@@ -166,7 +166,7 @@ async def patient_export_pv_docs(
     pid: str,
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
-    _: Auth0User = Security(
+    _: User = Security(
         auth.get_user, scopes=[Scopes.READ_PATIENTRECORDS, Scopes.WRITE_MIRTH]
     ),
 ):
@@ -192,7 +192,7 @@ async def patient_export_radar(
     pid: str,
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
-    _: Auth0User = Security(
+    _: User = Security(
         auth.get_user, scopes=[Scopes.READ_PATIENTRECORDS, Scopes.WRITE_MIRTH]
     ),
 ):

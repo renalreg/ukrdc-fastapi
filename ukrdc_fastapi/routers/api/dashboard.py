@@ -12,7 +12,7 @@ from ukrdc_sqla.empi import MasterRecord, WorkItem
 
 from ukrdc_fastapi.config import settings
 from ukrdc_fastapi.dependencies import get_jtrace, get_redis
-from ukrdc_fastapi.dependencies.auth import Auth0User, Scopes, Security, auth
+from ukrdc_fastapi.dependencies.auth import Scopes, Security, User, auth
 
 router = APIRouter()
 
@@ -67,7 +67,7 @@ def dashboard(
     refresh: bool = False,
     jtrace: Session = Depends(get_jtrace),
     redis: Redis = Depends(get_redis),
-    user: Auth0User = Security(auth.get_user),
+    user: User = Security(auth.get_user),
 ):
     """Retreive basic statistics about recent records"""
     dash = DashboardSchema(messages=settings.motd, warnings=settings.wotd)

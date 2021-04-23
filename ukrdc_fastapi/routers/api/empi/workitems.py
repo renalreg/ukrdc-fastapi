@@ -2,7 +2,6 @@ import datetime
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Security
-from fastapi_auth0 import Auth0User
 from httpx import Response
 from mirth_client import Channel, MirthAPI
 from pydantic import BaseModel, Field
@@ -12,7 +11,7 @@ from ukrdc_sqla.empi import MasterRecord, WorkItem
 
 from ukrdc_fastapi.config import settings
 from ukrdc_fastapi.dependencies import get_jtrace, get_mirth, get_redis
-from ukrdc_fastapi.dependencies.auth import Auth0User, Scopes, Security, auth
+from ukrdc_fastapi.dependencies.auth import Scopes, Security, User, auth
 from ukrdc_fastapi.schemas.empi import WorkItemSchema, WorkItemShortSchema
 from ukrdc_fastapi.utils import filters, mirth, parse_date
 from ukrdc_fastapi.utils.mirth import (
@@ -50,7 +49,7 @@ def workitems_list(
     status: Optional[list[int]] = Query([1]),
     ukrdcid: Optional[list[str]] = Query(None),
     jtrace: Session = Depends(get_jtrace),
-    _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_WORKITEMS]),
+    _: User = Security(auth.get_user, scopes=[Scopes.READ_WORKITEMS]),
 ):
     """Retreive a list of open work items from the EMPI"""
     workitems = jtrace.query(WorkItem)
@@ -84,7 +83,7 @@ def workitems_list(
 def workitem_detail(
     workitem_id: int,
     jtrace: Session = Depends(get_jtrace),
-    _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_WORKITEMS]),
+    _: User = Security(auth.get_user, scopes=[Scopes.READ_WORKITEMS]),
 ):
     """Retreive a particular work item from the EMPI"""
     workitem = jtrace.query(WorkItem).get(workitem_id)
@@ -98,11 +97,11 @@ def workitem_detail(
 async def workitem_update(
     workitem_id: int,
     args: UpdateWorkItemRequestSchema,
-    user: Auth0User = Security(auth.get_user),
+    user: User = Security(auth.get_user),
     jtrace: Session = Depends(get_jtrace),
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
-    _: Auth0User = Security(
+    _: User = Security(
         auth.get_user, scopes=[Scopes.READ_WORKITEMS, Scopes.WRITE_WORKITEMS]
     ),
 ):
@@ -138,7 +137,7 @@ async def workitem_update(
 def workitem_related(
     workitem_id: int,
     jtrace: Session = Depends(get_jtrace),
-    _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_WORKITEMS]),
+    _: User = Security(auth.get_user, scopes=[Scopes.READ_WORKITEMS]),
 ):
     """Retreive a list of other work items related to a particular work item"""
     workitem = jtrace.query(WorkItem).get(workitem_id)
@@ -159,10 +158,10 @@ async def workitem_close(
     workitem_id: int,
     args: CloseWorkItemRequestSchema,
     jtrace: Session = Depends(get_jtrace),
-    user: Auth0User = Security(auth.get_user),
+    user: User = Security(auth.get_user),
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
-    _: Auth0User = Security(
+    _: User = Security(
         auth.get_user, scopes=[Scopes.READ_WORKITEMS, Scopes.WRITE_WORKITEMS]
     ),
 ):
@@ -195,7 +194,7 @@ async def workitem_merge(
     jtrace: Session = Depends(get_jtrace),
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
-    _: Auth0User = Security(
+    _: User = Security(
         auth.get_user, scopes=[Scopes.READ_WORKITEMS, Scopes.WRITE_WORKITEMS]
     ),
 ):
@@ -252,11 +251,11 @@ async def workitem_merge(
 @router.post("/{workitem_id}/unlink/", response_model=MirthMessageResponseSchema)
 async def workitem_unlink(
     workitem_id: int,
-    user: Auth0User = Security(auth.get_user),
+    user: User = Security(auth.get_user),
     jtrace: Session = Depends(get_jtrace),
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
-    _: Auth0User = Security(
+    _: User = Security(
         auth.get_user, scopes=[Scopes.READ_WORKITEMS, Scopes.WRITE_WORKITEMS]
     ),
 ):
@@ -287,10 +286,10 @@ async def workitem_unlink(
 @router.post("/unlink/", response_model=MirthMessageResponseSchema)
 async def workitems_unlink(
     args: UnlinkWorkItemRequestSchema,
-    user: Auth0User = Security(auth.get_user),
+    user: User = Security(auth.get_user),
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
-    _: Auth0User = Security(
+    _: User = Security(
         auth.get_user, scopes=[Scopes.READ_WORKITEMS, Scopes.WRITE_WORKITEMS]
     ),
 ):

@@ -7,7 +7,7 @@ from sqlalchemy.orm import Query, Session
 from ukrdc_sqla.ukrdc import LabOrder, PVDelete, ResultItem
 
 from ukrdc_fastapi.dependencies import get_ukrdc3
-from ukrdc_fastapi.dependencies.auth import Auth0User, Scopes, Security, auth
+from ukrdc_fastapi.dependencies.auth import Scopes, Security, User, auth
 from ukrdc_fastapi.schemas.laborder import ResultItemSchema
 from ukrdc_fastapi.utils import filters
 from ukrdc_fastapi.utils.paginate import Page, paginate
@@ -25,7 +25,7 @@ def resultitems(
     ni: Optional[str] = None,
     service_id: Optional[str] = None,
     ukrdc3: Session = Depends(get_ukrdc3),
-    _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_PATIENTRECORDS]),
+    _: User = Security(auth.get_user, scopes=[Scopes.READ_PATIENTRECORDS]),
 ):
     """Retreive a list of lab results, optionally filtered by NI or service ID"""
     items: Query = ukrdc3.query(ResultItem)
@@ -43,7 +43,7 @@ def resultitems(
 def resultitems_delete(
     args: DeleteResultItemsRequestSchema,
     ukrdc3: Session = Depends(get_ukrdc3),
-    _: Auth0User = Security(auth.get_user, scopes=[Scopes.WRITE_PATIENTRECORDS]),
+    _: User = Security(auth.get_user, scopes=[Scopes.WRITE_PATIENTRECORDS]),
 ):
     """
     Delete all result items matching the given NI and/or service_id.
@@ -109,7 +109,7 @@ def resultitems_delete(
 def resultitem_detail(
     resultitem_id: str,
     ukrdc3: Session = Depends(get_ukrdc3),
-    _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_PATIENTRECORDS]),
+    _: User = Security(auth.get_user, scopes=[Scopes.READ_PATIENTRECORDS]),
 ):
     """Retreive a particular lab result"""
     item = ukrdc3.query(ResultItem).get(resultitem_id)
@@ -122,7 +122,7 @@ def resultitem_detail(
 def resultitem_delete(
     resultitem_id: str,
     ukrdc3: Session = Depends(get_ukrdc3),
-    _: Auth0User = Security(auth.get_user, scopes=[Scopes.WRITE_PATIENTRECORDS]),
+    _: User = Security(auth.get_user, scopes=[Scopes.WRITE_PATIENTRECORDS]),
 ):
     """Mark a particular lab result for deletion"""
     resultitem: ResultItem = ukrdc3.query(ResultItem).get(resultitem_id)

@@ -3,7 +3,7 @@ from typing import Optional
 from fastapi import APIRouter
 from pydantic import BaseModel
 
-from ukrdc_fastapi.dependencies.auth import Auth0User, Security, auth
+from ukrdc_fastapi.dependencies.auth import Security, User, auth
 
 router = APIRouter()
 
@@ -15,7 +15,7 @@ class UserSchema(BaseModel):
 
 @router.get("/", response_model=UserSchema)
 def userinfo(
-    user: Auth0User = Security(auth.get_user),
+    user: User = Security(auth.get_user),
 ):
     """Retreive basic user info"""
     return {"email": user.email, "permissions": user.permissions}

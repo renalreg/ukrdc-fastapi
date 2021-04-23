@@ -9,7 +9,7 @@ from stdnum.util import isdigits
 from ukrdc_sqla.empi import MasterRecord
 
 from ukrdc_fastapi.dependencies import get_jtrace
-from ukrdc_fastapi.dependencies.auth import Auth0User, Scopes, Security, auth
+from ukrdc_fastapi.dependencies.auth import Scopes, Security, User, auth
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema
 from ukrdc_fastapi.utils import parse_date
 from ukrdc_fastapi.utils.paginate import Page, paginate
@@ -124,7 +124,7 @@ def search_masterrecords(
     search: list[str] = QueryParam([]),
     number_type: list[str] = QueryParam([]),
     jtrace: Session = Depends(get_jtrace),
-    _: Auth0User = Security(auth.get_user, scopes=[Scopes.READ_EMPI]),
+    _: User = Security(auth.get_user, scopes=[Scopes.READ_EMPI]),
 ):
     """Search the EMPI for a particular master record"""
     match_sets: list[set[str]] = []
