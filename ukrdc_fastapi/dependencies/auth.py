@@ -1,3 +1,5 @@
+from ukrdc_fastapi.config import settings
+
 from .okta import OktaAccessToken, OktaAuth
 from .okta import OktaUserModel as User
 
@@ -8,14 +10,10 @@ class UKRDCAccessToken(OktaAccessToken):
     ukrdc: list[str]
 
 
-# TODO: Migrate args to dotenv
 auth = OktaAuth(
-    "https://dev-58161221.okta.com/oauth2/ausn7fa9zfh1DC2La5d6",
-    "api://ukrdc",
-    [
-        "0oan75eooLX2DcdQK5d6",  # Swagger client ID
-        "0oan98slw3m4mnhxq5d6",  # Nuxt client ID
-    ],
+    settings.oauth_issuer,
+    settings.oauth_audience,
+    [settings.app_client_id, settings.swagger_client_id],
     token_model=UKRDCAccessToken,
     permission_key="ukrdc",
 )
