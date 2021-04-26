@@ -1,12 +1,12 @@
 import logging
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Security
 from sqlalchemy.orm import Session
 from ukrdc_sqla.ukrdc import LabOrder, PVDelete
 
 from ukrdc_fastapi.dependencies import get_ukrdc3
-from ukrdc_fastapi.dependencies.auth import Scopes, Security, User, auth
+from ukrdc_fastapi.dependencies.auth import Permissions, auth
 from ukrdc_fastapi.schemas.laborder import LabOrderSchema, LabOrderShortSchema
 from ukrdc_fastapi.utils import filters
 from ukrdc_fastapi.utils.paginate import Page, paginate
@@ -14,11 +14,14 @@ from ukrdc_fastapi.utils.paginate import Page, paginate
 router = APIRouter()
 
 
-@router.get("/", response_model=Page[LabOrderShortSchema])
+@router.get(
+    "/",
+    response_model=Page[LabOrderShortSchema],
+    dependencies=[Security(auth.permission(Permissions.READ_PATIENTRECORDS))],
+)
 def laborders(
     ni: Optional[str] = None,
     ukrdc3: Session = Depends(get_ukrdc3),
-    _: User = Security(auth.get_user, scopes=[Scopes.READ_PATIENTRECORDS]),
 ):
     """Retreive a list of all lab orders"""
     orders = ukrdc3.query(LabOrder)
@@ -30,11 +33,14 @@ def laborders(
     return paginate(orders)
 
 
-@router.get("/{order_id}/", response_model=LabOrderSchema)
+@router.get(
+    "/{order_id}/",
+    response_model=LabOrderSchema,
+    dependencies=[Security(auth.permission(Permissions.READ_PATIENTRECORDS))],
+)
 def laborder_get(
     order_id: str,
     ukrdc3: Session = Depends(get_ukrdc3),
-    _: User = Security(auth.get_user, scopes=[Scopes.READ_PATIENTRECORDS]),
 ):
     """Retreive a particular lab order"""
     order = ukrdc3.query(LabOrder).get(order_id)
@@ -43,11 +49,14 @@ def laborder_get(
     return order
 
 
-@router.delete("/{order_id}/", status_code=204)
+@router.delete(
+    "/{order_id}/",
+    status_code=204,
+    dependencies=[Security(auth.permission(Permissions.WRITE_PATIENTRECORDS))],
+)
 def laborder_delete(
     order_id: str,
     ukrdc3: Session = Depends(get_ukrdc3),
-    _: User = Security(auth.get_user, scopes=[Scopes.WRITE_PATIENTRECORDS]),
 ):
     """Mark a particular lab order for deletion"""
     order: LabOrder = ukrdc3.query(LabOrder).get(order_id)

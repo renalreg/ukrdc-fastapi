@@ -9,24 +9,26 @@ from mirth_client import MirthAPI
 from mirth_client.models import LoginResponse
 
 from ukrdc_fastapi.config import settings
-from ukrdc_fastapi.dependencies.auth import Scopes, auth
+from ukrdc_fastapi.dependencies.auth import auth
 from ukrdc_fastapi.dependencies.sentry import add_sentry
 from ukrdc_fastapi.routers import api
 
 # Create app
 
+
 app = FastAPI(
     title="UKRDC API v2",
     description="Early test version of an updated, simpler UKRDC API",
     version="0.0.0",
-    dependencies=[Depends(auth.implicit_scheme)],
+    dependencies=[Depends(auth.oidc_scheme)],
     openapi_url=f"{settings.api_base.rstrip('/')}/openapi.json",
     docs_url=f"{settings.api_base.rstrip('/')}/docs",
     redoc_url=f"{settings.api_base.rstrip('/')}/redoc",
     swagger_ui_init_oauth={
         "usePkceWithAuthorizationCodeGrant": True,
         "clientId": settings.swagger_client_id,
-        "scopes": Scopes.all(as_string=True),
+        "additionalQueryStringParams": {"nonce": "132456"},
+        "scopes": ["openid", "profile", "email", "offline_access"],
     },
 )
 

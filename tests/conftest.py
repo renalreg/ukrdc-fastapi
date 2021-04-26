@@ -4,6 +4,7 @@ from pathlib import Path
 
 import fakeredis
 import pytest
+from fastapi.security import HTTPBearer
 from fastapi.testclient import TestClient
 from mirth_client import MirthAPI
 from pytest_httpx import HTTPXMock
@@ -40,7 +41,41 @@ from ukrdc_fastapi.dependencies import (
     get_redis,
     get_ukrdc3,
 )
-from ukrdc_fastapi.dependencies.auth import User, auth0_rule_namespace
+from ukrdc_fastapi.dependencies.auth import User
+
+# FastAPI dependency override gets confused by some of our auth stuff,
+# so we'll do a dirty patch for testing
+
+
+class FakeAuth:
+    def __init__(self, *_) -> None:
+        pass
+
+    def oidc_scheme(self):
+        return
+
+    def get_user(self):
+        return User(
+            id="TEST_ID",
+            email="TEST@UKRDC_FASTAPI",
+            permissions=auth.Permissions.all(),
+            scopes=["openid", "profile", "email", "offline_access"],
+        )
+
+    def scope(self, *_):
+        def scope_dependency():
+            return
+
+        return scope_dependency
+
+    def permission(self, *_):
+        def permission_dependency():
+            return
+
+        return permission_dependency
+
+
+auth.auth = FakeAuth()
 
 
 def populate_ukrdc3_session(session):
@@ -485,22 +520,11 @@ def app(jtrace_session, ukrdc3_session, redis_session):
     def _get_jtrace():
         return jtrace_session
 
-    def _get_user():
-        usr = User(
-            **{
-                "sub": "TEST_ID",
-                "permissions": auth.Scopes.all(),
-                f"{auth0_rule_namespace}/email": "TEST@UKRDC_FASTAPI",
-            }
-        )
-        return usr
-
     # Override FastAPI dependencies to point to function-scoped sessions
     app.dependency_overrides[get_mirth] = _get_mirth
     app.dependency_overrides[get_redis] = _get_redis
     app.dependency_overrides[get_ukrdc3] = _get_ukrdc3
     app.dependency_overrides[get_jtrace] = _get_jtrace
-    app.dependency_overrides[auth.auth.get_user] = _get_user
 
     return app
 

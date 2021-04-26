@@ -1,5 +1,6 @@
 def test_dashboard(client, redis_session):
     response = client.get("/api/dash")
+    print(response.text)
     assert response.status_code == 200
     assert redis_session.exists("dashboard:workitems")
     assert redis_session.exists("dashboard:ukrdcrecords")

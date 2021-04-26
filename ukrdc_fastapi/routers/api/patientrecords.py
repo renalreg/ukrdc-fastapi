@@ -1,17 +1,15 @@
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Security
 from httpx import Response
-from mirth_client import Channel
 from mirth_client.mirth import MirthAPI
 from redis import Redis
 from sqlalchemy.orm import Query, Session
 from ukrdc_sqla.ukrdc import LabOrder, Medication, Observation, PatientRecord, Survey
 
-from ukrdc_fastapi.config import settings
 from ukrdc_fastapi.dependencies import get_mirth, get_redis, get_ukrdc3
-from ukrdc_fastapi.dependencies.auth import Scopes, Security, User, auth
-from ukrdc_fastapi.schemas.laborder import LabOrderSchema, LabOrderShortSchema
+from ukrdc_fastapi.dependencies.auth import Permissions, auth
+from ukrdc_fastapi.schemas.laborder import LabOrderSchema
 from ukrdc_fastapi.schemas.medication import MedicationSchema
 from ukrdc_fastapi.schemas.observation import ObservationSchema
 from ukrdc_fastapi.schemas.patientrecord import (
@@ -33,12 +31,12 @@ from ukrdc_fastapi.utils.paginate import Page, paginate
 router = APIRouter()
 
 
-@router.get("/", response_model=Page[PatientRecordShortSchema])
-def patient_records(
-    ni: Optional[str] = None,
-    ukrdc3: Session = Depends(get_ukrdc3),
-    _: User = Security(auth.get_user, scopes=[Scopes.READ_PATIENTRECORDS]),
-):
+@router.get(
+    "/",
+    response_model=Page[PatientRecordShortSchema],
+    dependencies=[Security(auth.permission(Permissions.READ_PATIENTRECORDS))],
+)
+def patient_records(ni: Optional[str] = None, ukrdc3: Session = Depends(get_ukrdc3)):
     """Retrieve a list of patient records"""
     records: Query = ukrdc3.query(PatientRecord)
     if ni:
@@ -49,12 +47,12 @@ def patient_records(
     return paginate(records)
 
 
-@router.get("/{pid}/", response_model=PatientRecordSchema)
-def patient_record(
-    pid: str,
-    ukrdc3: Session = Depends(get_ukrdc3),
-    _: User = Security(auth.get_user, scopes=[Scopes.READ_PATIENTRECORDS]),
-):
+@router.get(
+    "/{pid}/",
+    response_model=PatientRecordSchema,
+    dependencies=[Security(auth.permission(Permissions.READ_PATIENTRECORDS))],
+)
+def patient_record(pid: str, ukrdc3: Session = Depends(get_ukrdc3)):
     """Retreive a specific patient record"""
     record = ukrdc3.query(PatientRecord).filter(PatientRecord.pid == pid).first()
     if not record:
@@ -62,12 +60,12 @@ def patient_record(
     return record
 
 
-@router.get("/{pid}/laborders/", response_model=list[LabOrderSchema])
-def patient_laborders(
-    pid: str,
-    ukrdc3: Session = Depends(get_ukrdc3),
-    _: User = Security(auth.get_user, scopes=[Scopes.READ_PATIENTRECORDS]),
-):
+@router.get(
+    "/{pid}/laborders/",
+    response_model=list[LabOrderSchema],
+    dependencies=[Security(auth.permission(Permissions.READ_PATIENTRECORDS))],
+)
+def patient_laborders(pid: str, ukrdc3: Session = Depends(get_ukrdc3)):
     """Retreive a specific patient's lab orders"""
     orders = ukrdc3.query(LabOrder).filter(LabOrder.pid == pid)
     items: list[LabOrder] = orders.order_by(
@@ -76,47 +74,50 @@ def patient_laborders(
     return items
 
 
-@router.get("/{pid}/observations/", response_model=list[ObservationSchema])
-def patient_observations(
-    pid: str,
-    ukrdc3: Session = Depends(get_ukrdc3),
-    _: User = Security(auth.get_user, scopes=[Scopes.READ_PATIENTRECORDS]),
-):
+@router.get(
+    "/{pid}/observations/",
+    response_model=list[ObservationSchema],
+    dependencies=[Security(auth.permission(Permissions.READ_PATIENTRECORDS))],
+)
+def patient_observations(pid: str, ukrdc3: Session = Depends(get_ukrdc3)):
     """Retreive a specific patient's lab orders"""
     observations = ukrdc3.query(Observation).filter(Observation.pid == pid)
     return observations.order_by(Observation.observation_time.desc()).all()
 
 
-@router.get("/{pid}/medications/", response_model=list[MedicationSchema])
-def patient_medications(
-    pid: str,
-    ukrdc3: Session = Depends(get_ukrdc3),
-    _: User = Security(auth.get_user, scopes=[Scopes.READ_PATIENTRECORDS]),
-):
+@router.get(
+    "/{pid}/medications/",
+    response_model=list[MedicationSchema],
+    dependencies=[Security(auth.permission(Permissions.READ_PATIENTRECORDS))],
+)
+def patient_medications(pid: str, ukrdc3: Session = Depends(get_ukrdc3)):
     """Retreive a specific patient's medications"""
     medications = ukrdc3.query(Medication).filter(Medication.pid == pid)
     return medications.order_by(Medication.from_time).all()
 
 
-@router.get("/{pid}/surveys/", response_model=list[SurveySchema])
-def patient_surveys(
-    pid: str,
-    ukrdc3: Session = Depends(get_ukrdc3),
-    _: User = Security(auth.get_user, scopes=[Scopes.READ_PATIENTRECORDS]),
-):
+@router.get(
+    "/{pid}/surveys/",
+    response_model=list[SurveySchema],
+    dependencies=[Security(auth.permission(Permissions.READ_PATIENTRECORDS))],
+)
+def patient_surveys(pid: str, ukrdc3: Session = Depends(get_ukrdc3)):
     """Retreive a specific patient's surveys"""
     surveys = ukrdc3.query(Survey).filter(Survey.pid == pid)
     return surveys.order_by(Survey.surveytime.desc()).all()
 
 
-@router.post("/{pid}/export-pv/", response_model=MirthMessageResponseSchema)
+@router.post(
+    "/{pid}/export-pv/",
+    response_model=MirthMessageResponseSchema,
+    dependencies=[
+        Security(
+            auth.permission([Permissions.READ_PATIENTRECORDS, Permissions.WRITE_MIRTH])
+        )
+    ],
+)
 async def patient_export_pv(
-    pid: str,
-    mirth: MirthAPI = Depends(get_mirth),
-    redis: Redis = Depends(get_redis),
-    _: User = Security(
-        auth.get_user, scopes=[Scopes.READ_PATIENTRECORDS, Scopes.WRITE_MIRTH]
-    ),
+    pid: str, mirth: MirthAPI = Depends(get_mirth), redis: Redis = Depends(get_redis)
 ):
     """Export a specific patient's data to PV"""
     channel = await get_channel_from_name("PV Outbound", mirth, redis)
@@ -135,14 +136,17 @@ async def patient_export_pv(
     return MirthMessageResponseSchema(status="success", message=message)
 
 
-@router.post("/{pid}/export-pv-tests/", response_model=MirthMessageResponseSchema)
+@router.post(
+    "/{pid}/export-pv-tests/",
+    response_model=MirthMessageResponseSchema,
+    dependencies=[
+        Security(
+            auth.permission([Permissions.READ_PATIENTRECORDS, Permissions.WRITE_MIRTH])
+        )
+    ],
+)
 async def patient_export_pv_tests(
-    pid: str,
-    mirth: MirthAPI = Depends(get_mirth),
-    redis: Redis = Depends(get_redis),
-    _: User = Security(
-        auth.get_user, scopes=[Scopes.READ_PATIENTRECORDS, Scopes.WRITE_MIRTH]
-    ),
+    pid: str, mirth: MirthAPI = Depends(get_mirth), redis: Redis = Depends(get_redis)
 ):
     """Export a specific patient's test data to PV"""
     channel = await get_channel_from_name("PV Outbound", mirth, redis)
@@ -161,14 +165,17 @@ async def patient_export_pv_tests(
     return MirthMessageResponseSchema(status="success", message=message)
 
 
-@router.post("/{pid}/export-pv-docs/", response_model=MirthMessageResponseSchema)
+@router.post(
+    "/{pid}/export-pv-docs/",
+    response_model=MirthMessageResponseSchema,
+    dependencies=[
+        Security(
+            auth.permission([Permissions.READ_PATIENTRECORDS, Permissions.WRITE_MIRTH])
+        )
+    ],
+)
 async def patient_export_pv_docs(
-    pid: str,
-    mirth: MirthAPI = Depends(get_mirth),
-    redis: Redis = Depends(get_redis),
-    _: User = Security(
-        auth.get_user, scopes=[Scopes.READ_PATIENTRECORDS, Scopes.WRITE_MIRTH]
-    ),
+    pid: str, mirth: MirthAPI = Depends(get_mirth), redis: Redis = Depends(get_redis)
 ):
     """Export a specific patient's documents data to PV"""
     channel = await get_channel_from_name("PV Outbound", mirth, redis)
@@ -187,14 +194,17 @@ async def patient_export_pv_docs(
     return MirthMessageResponseSchema(status="success", message=message)
 
 
-@router.post("/{pid}/export-radar/", response_model=MirthMessageResponseSchema)
+@router.post(
+    "/{pid}/export-radar/",
+    response_model=MirthMessageResponseSchema,
+    dependencies=[
+        Security(
+            auth.permission([Permissions.READ_PATIENTRECORDS, Permissions.WRITE_MIRTH])
+        )
+    ],
+)
 async def patient_export_radar(
-    pid: str,
-    mirth: MirthAPI = Depends(get_mirth),
-    redis: Redis = Depends(get_redis),
-    _: User = Security(
-        auth.get_user, scopes=[Scopes.READ_PATIENTRECORDS, Scopes.WRITE_MIRTH]
-    ),
+    pid: str, mirth: MirthAPI = Depends(get_mirth), redis: Redis = Depends(get_redis)
 ):
     """Export a specific patient's data to RaDaR"""
     channel = await get_channel_from_name("RADAR Outbound", mirth, redis)

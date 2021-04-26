@@ -3,13 +3,14 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends
 from fastapi import Query as QueryParam
+from fastapi import Security
 from sqlalchemy.orm import Query, Session
 from stdnum.gb import nhs
 from stdnum.util import isdigits
 from ukrdc_sqla.empi import MasterRecord
 
 from ukrdc_fastapi.dependencies import get_jtrace
-from ukrdc_fastapi.dependencies.auth import Scopes, Security, User, auth
+from ukrdc_fastapi.dependencies.auth import Permissions, auth
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema
 from ukrdc_fastapi.utils import parse_date
 from ukrdc_fastapi.utils.paginate import Page, paginate
@@ -113,7 +114,15 @@ def _pop_dates(search_items: list[str]) -> tuple[list[str], list[datetime.date]]
     return (strings, dates)
 
 
-@router.get("/masterrecords/", response_model=Page[MasterRecordSchema])
+@router.get(
+    "/masterrecords/",
+    response_model=Page[MasterRecordSchema],
+    dependencies=[
+        Security(
+            auth.permission([Permissions.READ_EMPI, Permissions.READ_PATIENTRECORDS])
+        )
+    ],
+)
 def search_masterrecords(
     nhs_number: list[str] = QueryParam([]),
     mrn_number: list[str] = QueryParam([]),
@@ -124,7 +133,6 @@ def search_masterrecords(
     search: list[str] = QueryParam([]),
     number_type: list[str] = QueryParam([]),
     jtrace: Session = Depends(get_jtrace),
-    _: User = Security(auth.get_user, scopes=[Scopes.READ_EMPI]),
 ):
     """Search the EMPI for a particular master record"""
     match_sets: list[set[str]] = []

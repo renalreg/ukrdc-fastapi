@@ -1,13 +1,13 @@
 import logging
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Security
 from pydantic import BaseModel
 from sqlalchemy.orm import Query, Session
 from ukrdc_sqla.ukrdc import LabOrder, PVDelete, ResultItem
 
 from ukrdc_fastapi.dependencies import get_ukrdc3
-from ukrdc_fastapi.dependencies.auth import Scopes, Security, User, auth
+from ukrdc_fastapi.dependencies.auth import Permissions, auth
 from ukrdc_fastapi.schemas.laborder import ResultItemSchema
 from ukrdc_fastapi.utils import filters
 from ukrdc_fastapi.utils.paginate import Page, paginate
@@ -20,12 +20,15 @@ class DeleteResultItemsRequestSchema(BaseModel):
     service_id: Optional[str]
 
 
-@router.get("/", response_model=Page[ResultItemSchema])
+@router.get(
+    "/",
+    response_model=Page[ResultItemSchema],
+    dependencies=[Security(auth.permission(Permissions.READ_PATIENTRECORDS))],
+)
 def resultitems(
     ni: Optional[str] = None,
     service_id: Optional[str] = None,
     ukrdc3: Session = Depends(get_ukrdc3),
-    _: User = Security(auth.get_user, scopes=[Scopes.READ_PATIENTRECORDS]),
 ):
     """Retreive a list of lab results, optionally filtered by NI or service ID"""
     items: Query = ukrdc3.query(ResultItem)
@@ -39,11 +42,13 @@ def resultitems(
     return paginate(items)
 
 
-@router.delete("/", status_code=204)
+@router.delete(
+    "/",
+    status_code=204,
+    dependencies=[Security(auth.permission(Permissions.WRITE_PATIENTRECORDS))],
+)
 def resultitems_delete(
-    args: DeleteResultItemsRequestSchema,
-    ukrdc3: Session = Depends(get_ukrdc3),
-    _: User = Security(auth.get_user, scopes=[Scopes.WRITE_PATIENTRECORDS]),
+    args: DeleteResultItemsRequestSchema, ukrdc3: Session = Depends(get_ukrdc3)
 ):
     """
     Delete all result items matching the given NI and/or service_id.
@@ -105,12 +110,12 @@ def resultitems_delete(
     ukrdc3.commit()
 
 
-@router.get("/{resultitem_id}/", response_model=ResultItemSchema)
-def resultitem_detail(
-    resultitem_id: str,
-    ukrdc3: Session = Depends(get_ukrdc3),
-    _: User = Security(auth.get_user, scopes=[Scopes.READ_PATIENTRECORDS]),
-):
+@router.get(
+    "/{resultitem_id}/",
+    response_model=ResultItemSchema,
+    dependencies=[Security(auth.permission(Permissions.READ_PATIENTRECORDS))],
+)
+def resultitem_detail(resultitem_id: str, ukrdc3: Session = Depends(get_ukrdc3)):
     """Retreive a particular lab result"""
     item = ukrdc3.query(ResultItem).get(resultitem_id)
     if not item:
@@ -118,12 +123,12 @@ def resultitem_detail(
     return item
 
 
-@router.delete("/{resultitem_id}/", status_code=204)
-def resultitem_delete(
-    resultitem_id: str,
-    ukrdc3: Session = Depends(get_ukrdc3),
-    _: User = Security(auth.get_user, scopes=[Scopes.WRITE_PATIENTRECORDS]),
-):
+@router.delete(
+    "/{resultitem_id}/",
+    status_code=204,
+    dependencies=[Security(auth.permission(Permissions.WRITE_PATIENTRECORDS))],
+)
+def resultitem_delete(resultitem_id: str, ukrdc3: Session = Depends(get_ukrdc3)):
     """Mark a particular lab result for deletion"""
     resultitem: ResultItem = ukrdc3.query(ResultItem).get(resultitem_id)
     if not resultitem:

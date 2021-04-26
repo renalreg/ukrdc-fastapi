@@ -1,13 +1,13 @@
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Security
 from sqlalchemy.orm import Query as OrmQuery
 from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import MasterRecord, Person, WorkItem
 from ukrdc_sqla.ukrdc import PatientRecord
 
 from ukrdc_fastapi.dependencies import get_jtrace, get_ukrdc3
-from ukrdc_fastapi.dependencies.auth import Scopes, Security, User, auth
+from ukrdc_fastapi.dependencies.auth import Permissions, auth
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema, PersonSchema, WorkItemSchema
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordShortSchema
 from ukrdc_fastapi.utils.filters import find_ids_related_to_masterrecord
@@ -16,11 +16,14 @@ from ukrdc_fastapi.utils.paginate import Page, paginate
 router = APIRouter()
 
 
-@router.get("/", response_model=Page[MasterRecordSchema])
+@router.get(
+    "/",
+    response_model=Page[MasterRecordSchema],
+    dependencies=[Security(auth.permission(Permissions.READ_EMPI))],
+)
 def master_records(
     ni: Optional[list[str]] = Query(None),
     jtrace: Session = Depends(get_jtrace),
-    _: User = Security(auth.get_user, scopes=[Scopes.READ_EMPI]),
 ):
     """Retreive a list of master records from the EMPI"""
     records: OrmQuery = jtrace.query(MasterRecord)
@@ -29,12 +32,12 @@ def master_records(
     return paginate(records)
 
 
-@router.get("/{record_id}/", response_model=MasterRecordSchema)
-def master_record_detail(
-    record_id: str,
-    jtrace: Session = Depends(get_jtrace),
-    _: User = Security(auth.get_user, scopes=[Scopes.READ_EMPI]),
-):
+@router.get(
+    "/{record_id}/",
+    response_model=MasterRecordSchema,
+    dependencies=[Security(auth.permission(Permissions.READ_EMPI))],
+)
+def master_record_detail(record_id: str, jtrace: Session = Depends(get_jtrace)):
     """Retreive a particular master record from the EMPI"""
     record: MasterRecord = jtrace.query(MasterRecord).get(record_id)
     if not record:
@@ -43,12 +46,12 @@ def master_record_detail(
     return record
 
 
-@router.get("/{record_id}/related/", response_model=list[MasterRecordSchema])
-def master_record_related(
-    record_id: str,
-    jtrace: Session = Depends(get_jtrace),
-    _: User = Security(auth.get_user, scopes=[Scopes.READ_EMPI]),
-):
+@router.get(
+    "/{record_id}/related/",
+    response_model=list[MasterRecordSchema],
+    dependencies=[Security(auth.permission(Permissions.READ_EMPI))],
+)
+def master_record_related(record_id: str, jtrace: Session = Depends(get_jtrace)):
     """Retreive a list of other master records related to a particular master record"""
     record: MasterRecord = jtrace.query(MasterRecord).get(record_id)
     if not record:
@@ -65,12 +68,12 @@ def master_record_related(
     return other_records.all()
 
 
-@router.get("/{record_id}/workitems/", response_model=list[WorkItemSchema])
-def master_record_workitems(
-    record_id: str,
-    jtrace: Session = Depends(get_jtrace),
-    _: User = Security(auth.get_user, scopes=[Scopes.READ_EMPI]),
-):
+@router.get(
+    "/{record_id}/workitems/",
+    response_model=list[WorkItemSchema],
+    dependencies=[Security(auth.permission(Permissions.READ_EMPI))],
+)
+def master_record_workitems(record_id: str, jtrace: Session = Depends(get_jtrace)):
     """Retreive a list of work items related to a particular master record."""
     record: MasterRecord = jtrace.query(MasterRecord).get(record_id)
     if not record:
@@ -84,12 +87,12 @@ def master_record_workitems(
     return related_workitems.all()
 
 
-@router.get("/{record_id}/persons/", response_model=list[PersonSchema])
-def master_record_persons(
-    record_id: str,
-    jtrace: Session = Depends(get_jtrace),
-    _: User = Security(auth.get_user, scopes=[Scopes.READ_EMPI]),
-):
+@router.get(
+    "/{record_id}/persons/",
+    response_model=list[PersonSchema],
+    dependencies=[Security(auth.permission(Permissions.READ_EMPI))],
+)
+def master_record_persons(record_id: str, jtrace: Session = Depends(get_jtrace)):
     """Retreive a list of person records related to a particular master record."""
     record: MasterRecord = jtrace.query(MasterRecord).get(record_id)
     if not record:
@@ -105,15 +108,18 @@ def master_record_persons(
 
 
 @router.get(
-    "/{record_id}/patientrecords/", response_model=list[PatientRecordShortSchema]
+    "/{record_id}/patientrecords/",
+    response_model=list[PatientRecordShortSchema],
+    dependencies=[
+        Security(
+            auth.permission([Permissions.READ_EMPI, Permissions.READ_PATIENTRECORDS])
+        )
+    ],
 )
 def master_record_patientrecords(
     record_id: str,
     jtrace: Session = Depends(get_jtrace),
     ukrdc3: Session = Depends(get_ukrdc3),
-    _: User = Security(
-        auth.get_user, scopes=[Scopes.READ_EMPI, Scopes.READ_PATIENTRECORDS]
-    ),
 ):
     """Retreive a list of patient records related to a particular master record."""
     record: MasterRecord = jtrace.query(MasterRecord).get(record_id)
