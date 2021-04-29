@@ -1,27 +1,36 @@
-from fastapi import Security
-from fastapi_auth0 import Auth0
-from fastapi_auth0 import Auth0User as User
-from fastapi_auth0 import auth0_rule_namespace
+from ukrdc_fastapi.config import settings
 
-__all__ = ["Security", "User", "auth", "Scopes", "auth0_rule_namespace"]
+from .okta import OktaAccessToken, OktaAuth
+from .okta import OktaUserModel as User
 
-auth = Auth0(
-    domain="renalreg.eu.auth0.com", api_audience="https://app.ukrdc.org/api", scopes={}
+__all__ = ["OktaAccessToken", "OktaAuth", "User", "auth", "Permissions"]
+
+
+class UKRDCAccessToken(OktaAccessToken):
+    ukrdc: list[str]
+
+
+auth = OktaAuth(
+    settings.oauth_issuer,
+    settings.oauth_audience,
+    [settings.app_client_id, settings.swagger_client_id],
+    token_model=UKRDCAccessToken,
+    permission_key="ukrdc",
 )
 
 
-class Scopes:
-    """Convenience constants and functions for managing API scopes.
-    The user scopes/permissions are managed via Auth0"""
+class Permissions:
+    """Convenience constants and functions for managing API permissions.
+    The user permissions are managed as groups in Okta"""
 
-    READ_PATIENTRECORDS = "read:patientrecords"
-    WRITE_PATIENTRECORDS = "write:patientrecords"
-    READ_EMPI = "read:empi"
-    WRITE_EMPI = "write:empi"
-    READ_WORKITEMS = "read:workitems"
-    WRITE_WORKITEMS = "write:workitems"
-    READ_MIRTH = "read:mirth"
-    WRITE_MIRTH = "write:mirth"
+    READ_PATIENTRECORDS = "ukrdc:records:read"
+    WRITE_PATIENTRECORDS = "ukrdc:records:write"
+    READ_EMPI = "ukrdc:empi:read"
+    WRITE_EMPI = "ukrdc:empi:write"
+    READ_WORKITEMS = "ukrdc:workitems:read"
+    WRITE_WORKITEMS = "ukrdc:workitems:write"
+    READ_MIRTH = "ukrdc:mirth:read"
+    WRITE_MIRTH = "ukrdc:mirth:write"
 
     @classmethod
     def all(cls, as_string: bool = False):

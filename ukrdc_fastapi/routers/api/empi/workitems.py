@@ -3,17 +3,16 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Security
 from httpx import Response
-from mirth_client import Channel, MirthAPI
+from mirth_client import MirthAPI
 from pydantic import BaseModel, Field
 from redis import Redis
 from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import MasterRecord, WorkItem
 
-from ukrdc_fastapi.config import settings
 from ukrdc_fastapi.dependencies import get_jtrace, get_mirth, get_redis
-from ukrdc_fastapi.dependencies.auth import Scopes, Security, User, auth
+from ukrdc_fastapi.dependencies.auth import Permissions, User, auth
 from ukrdc_fastapi.schemas.empi import WorkItemSchema, WorkItemShortSchema
-from ukrdc_fastapi.utils import filters, mirth, parse_date
+from ukrdc_fastapi.utils import filters, parse_date
 from ukrdc_fastapi.utils.mirth import (
     MirthMessageResponseSchema,
     build_close_workitem_message,
@@ -42,14 +41,17 @@ class UpdateWorkItemRequestSchema(BaseModel):
     comment: Optional[str] = None
 
 
-@router.get("/", response_model=Page[WorkItemShortSchema])
+@router.get(
+    "/",
+    response_model=Page[WorkItemShortSchema],
+    dependencies=[Security(auth.permission(Permissions.READ_WORKITEMS))],
+)
 def workitems_list(
     since: Optional[str] = None,
     until: Optional[str] = None,
     status: Optional[list[int]] = Query([1]),
     ukrdcid: Optional[list[str]] = Query(None),
     jtrace: Session = Depends(get_jtrace),
-    _: User = Security(auth.get_user, scopes=[Scopes.READ_WORKITEMS]),
 ):
     """Retreive a list of open work items from the EMPI"""
     workitems = jtrace.query(WorkItem)
@@ -79,12 +81,12 @@ def workitems_list(
     return paginate(workitems.order_by(WorkItem.last_updated.desc()))
 
 
-@router.get("/{workitem_id}/", response_model=WorkItemSchema)
-def workitem_detail(
-    workitem_id: int,
-    jtrace: Session = Depends(get_jtrace),
-    _: User = Security(auth.get_user, scopes=[Scopes.READ_WORKITEMS]),
-):
+@router.get(
+    "/{workitem_id}/",
+    response_model=WorkItemSchema,
+    dependencies=[Security(auth.permission(Permissions.READ_WORKITEMS))],
+)
+def workitem_detail(workitem_id: int, jtrace: Session = Depends(get_jtrace)):
     """Retreive a particular work item from the EMPI"""
     workitem = jtrace.query(WorkItem).get(workitem_id)
     if not workitem:
@@ -93,7 +95,15 @@ def workitem_detail(
     return workitem
 
 
-@router.put("/{workitem_id}/", response_model=MirthMessageResponseSchema)
+@router.put(
+    "/{workitem_id}/",
+    response_model=MirthMessageResponseSchema,
+    dependencies=[
+        Security(
+            auth.permission([Permissions.READ_WORKITEMS, Permissions.WRITE_WORKITEMS])
+        )
+    ],
+)
 async def workitem_update(
     workitem_id: int,
     args: UpdateWorkItemRequestSchema,
@@ -101,12 +111,8 @@ async def workitem_update(
     jtrace: Session = Depends(get_jtrace),
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
-    _: User = Security(
-        auth.get_user, scopes=[Scopes.READ_WORKITEMS, Scopes.WRITE_WORKITEMS]
-    ),
 ):
     """Update a particular work item in the EMPI"""
-    print("Updating workitem")
     workitem = jtrace.query(WorkItem).get(workitem_id)
     if not workitem:
         raise HTTPException(404, detail="Work item not found")
@@ -133,12 +139,12 @@ async def workitem_update(
     return MirthMessageResponseSchema(status="success", message=message)
 
 
-@router.get("/{workitem_id}/related/", response_model=list[WorkItemSchema])
-def workitem_related(
-    workitem_id: int,
-    jtrace: Session = Depends(get_jtrace),
-    _: User = Security(auth.get_user, scopes=[Scopes.READ_WORKITEMS]),
-):
+@router.get(
+    "/{workitem_id}/related/",
+    response_model=list[WorkItemSchema],
+    dependencies=[Security(auth.permission(Permissions.READ_WORKITEMS))],
+)
+def workitem_related(workitem_id: int, jtrace: Session = Depends(get_jtrace)):
     """Retreive a list of other work items related to a particular work item"""
     workitem = jtrace.query(WorkItem).get(workitem_id)
     if not workitem:
@@ -153,7 +159,15 @@ def workitem_related(
     return other_workitems.all()
 
 
-@router.post("/{workitem_id}/close/", response_model=MirthMessageResponseSchema)
+@router.post(
+    "/{workitem_id}/close/",
+    response_model=MirthMessageResponseSchema,
+    dependencies=[
+        Security(
+            auth.permission([Permissions.READ_WORKITEMS, Permissions.WRITE_WORKITEMS])
+        )
+    ],
+)
 async def workitem_close(
     workitem_id: int,
     args: CloseWorkItemRequestSchema,
@@ -161,9 +175,6 @@ async def workitem_close(
     user: User = Security(auth.get_user),
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
-    _: User = Security(
-        auth.get_user, scopes=[Scopes.READ_WORKITEMS, Scopes.WRITE_WORKITEMS]
-    ),
 ):
     """Update and close a particular work item"""
     workitem = jtrace.query(WorkItem).get(workitem_id)
@@ -188,15 +199,20 @@ async def workitem_close(
     return MirthMessageResponseSchema(status="success", message=message)
 
 
-@router.post("/{workitem_id}/merge/", response_model=MirthMessageResponseSchema)
+@router.post(
+    "/{workitem_id}/merge/",
+    response_model=MirthMessageResponseSchema,
+    dependencies=[
+        Security(
+            auth.permission([Permissions.READ_WORKITEMS, Permissions.WRITE_WORKITEMS])
+        )
+    ],
+)
 async def workitem_merge(
     workitem_id: int,
     jtrace: Session = Depends(get_jtrace),
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
-    _: User = Security(
-        auth.get_user, scopes=[Scopes.READ_WORKITEMS, Scopes.WRITE_WORKITEMS]
-    ),
 ):
     """Merge a particular work item"""
     workitem = jtrace.query(WorkItem).get(workitem_id)
@@ -248,16 +264,21 @@ async def workitem_merge(
     return MirthMessageResponseSchema(status="success", message=message)
 
 
-@router.post("/{workitem_id}/unlink/", response_model=MirthMessageResponseSchema)
+@router.post(
+    "/{workitem_id}/unlink/",
+    response_model=MirthMessageResponseSchema,
+    dependencies=[
+        Security(
+            auth.permission([Permissions.READ_WORKITEMS, Permissions.WRITE_WORKITEMS])
+        )
+    ],
+)
 async def workitem_unlink(
     workitem_id: int,
     user: User = Security(auth.get_user),
     jtrace: Session = Depends(get_jtrace),
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
-    _: User = Security(
-        auth.get_user, scopes=[Scopes.READ_WORKITEMS, Scopes.WRITE_WORKITEMS]
-    ),
 ):
     """Unlink the master record and person record in a particular work item"""
 
@@ -283,15 +304,20 @@ async def workitem_unlink(
     return MirthMessageResponseSchema(status="success", message=message)
 
 
-@router.post("/unlink/", response_model=MirthMessageResponseSchema)
+@router.post(
+    "/unlink/",
+    response_model=MirthMessageResponseSchema,
+    dependencies=[
+        Security(
+            auth.permission([Permissions.READ_WORKITEMS, Permissions.WRITE_WORKITEMS])
+        )
+    ],
+)
 async def workitems_unlink(
     args: UnlinkWorkItemRequestSchema,
     user: User = Security(auth.get_user),
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
-    _: User = Security(
-        auth.get_user, scopes=[Scopes.READ_WORKITEMS, Scopes.WRITE_WORKITEMS]
-    ),
 ):
     """Unlink any master record and person record"""
 

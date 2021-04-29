@@ -29,6 +29,10 @@ class PatientRecordShortSchema(OrmModel):
             "observations": UrlFor("patient_observations", {"pid": "<pid>"}),
             "medications": UrlFor("patient_medications", {"pid": "<pid>"}),
             "surveys": UrlFor("patient_surveys", {"pid": "<pid>"}),
+            "exportPV": UrlFor("patient_export_pv", {"pid": "<pid>"}),
+            "exportPVTests": UrlFor("patient_export_pv_tests", {"pid": "<pid>"}),
+            "exportPVDocs": UrlFor("patient_export_pv_docs", {"pid": "<pid>"}),
+            "exportRADAR": UrlFor("patient_export_radar", {"pid": "<pid>"}),
         }
     )
 

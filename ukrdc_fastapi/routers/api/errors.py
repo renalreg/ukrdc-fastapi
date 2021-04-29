@@ -1,21 +1,25 @@
 import datetime
 from typing import Optional
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Security
 from fastapi_pagination import Page
 from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy.orm import Session
 from ukrdc_sqla.errorsdb import Message
 
 from ukrdc_fastapi.dependencies import get_errorsdb
-from ukrdc_fastapi.dependencies.auth import Scopes, Security, User, auth
+from ukrdc_fastapi.dependencies.auth import Permissions, auth
 from ukrdc_fastapi.schemas.errors import MessageSchema
 from ukrdc_fastapi.utils import parse_date
 
 router = APIRouter()
 
 
-@router.get("/", response_model=Page[MessageSchema])
+@router.get(
+    "/",
+    response_model=Page[MessageSchema],
+    dependencies=[Security(auth.permission(Permissions.READ_MIRTH))],
+)
 def error_messages(
     ni: Optional[str] = None,
     facility: Optional[str] = None,
@@ -23,7 +27,6 @@ def error_messages(
     until: Optional[str] = None,
     status: Optional[str] = None,
     errorsdb: Session = Depends(get_errorsdb),
-    _: User = Security(auth.get_user, scopes=[Scopes.READ_MIRTH]),
 ):
     """Retreive a list of error messages, optionally filtered by NI, facility, or date"""
     messages = errorsdb.query(Message)
