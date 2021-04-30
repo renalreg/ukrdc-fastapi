@@ -6,6 +6,7 @@ from httpx import Response
 from mirth_client import MirthAPI
 from pydantic import BaseModel, Field
 from redis import Redis
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import MasterRecord, WorkItem
 
@@ -151,7 +152,10 @@ def workitem_related(workitem_id: int, jtrace: Session = Depends(get_jtrace)):
         raise HTTPException(404, detail="Work item not found")
 
     other_workitems = jtrace.query(WorkItem).filter(
-        WorkItem.master_id == workitem.master_id,
+        or_(
+            WorkItem.master_id == workitem.master_id,
+            WorkItem.person_id == workitem.person_id,
+        ),
         WorkItem.id != workitem.id,
         WorkItem.status == 1,
     )
