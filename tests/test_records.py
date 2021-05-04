@@ -78,7 +78,7 @@ def test_record_laborders_missing(client):
 def test_record_observations(client):
     response = client.get("/api/patientrecords/PYTEST01:PV:00000000A/observations")
     assert response.status_code == 200
-    assert response.json() == [
+    assert response.json()["items"] == [
         {
             "enteredAt": None,
             "enteredAtDescription": None,
@@ -111,7 +111,7 @@ def test_record_observations(client):
 
 def test_record_observations_missing(client):
     response = client.get("/api/patientrecords/MISSING_PID/observations")
-    assert response.json() == []
+    assert response.json()["items"] == []
 
 
 # Record medications

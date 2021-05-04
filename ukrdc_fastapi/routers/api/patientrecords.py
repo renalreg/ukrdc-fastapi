@@ -1,9 +1,12 @@
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Security
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi import Query as QueryParam
+from fastapi import Security
 from httpx import Response
 from mirth_client.mirth import MirthAPI
 from redis import Redis
+from sqlalchemy import distinct
 from sqlalchemy.orm import Query, Session
 from ukrdc_sqla.ukrdc import LabOrder, Medication, Observation, PatientRecord, Survey
 
@@ -76,13 +79,35 @@ def patient_laborders(pid: str, ukrdc3: Session = Depends(get_ukrdc3)):
 
 @router.get(
     "/{pid}/observations/",
-    response_model=list[ObservationSchema],
+    response_model=Page[ObservationSchema],
     dependencies=[Security(auth.permission(Permissions.READ_PATIENTRECORDS))],
 )
-def patient_observations(pid: str, ukrdc3: Session = Depends(get_ukrdc3)):
+def patient_observations(
+    pid: str,
+    code: Optional[list[str]] = QueryParam([]),
+    ukrdc3: Session = Depends(get_ukrdc3),
+):
     """Retreive a specific patient's lab orders"""
     observations = ukrdc3.query(Observation).filter(Observation.pid == pid)
-    return observations.order_by(Observation.observation_time.desc()).all()
+    if code:
+        observations = observations.filter(Observation.observation_code.in_(code))
+    observations = observations.order_by(Observation.observation_time.desc())
+    return paginate(observations)
+
+
+@router.get(
+    "/{pid}/observations/codes",
+    response_model=list[str],
+    dependencies=[Security(auth.permission(Permissions.READ_PATIENTRECORDS))],
+)
+def patient_observations_codes(pid: str, ukrdc3: Session = Depends(get_ukrdc3)):
+    """Retreive a list of observation codes available for a specific patient"""
+    codes = (
+        ukrdc3.query(Observation.observation_code, Observation.pid)
+        .filter(Observation.pid == pid)
+        .distinct(Observation.observation_code)
+    )
+    return [item.observation_code for item in codes.all()]
 
 
 @router.get(
