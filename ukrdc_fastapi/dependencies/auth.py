@@ -1,3 +1,5 @@
+from pydantic import Field
+
 from ukrdc_fastapi.config import settings
 
 from .okta import OktaAccessToken, OktaAuth
@@ -7,7 +9,7 @@ __all__ = ["OktaAccessToken", "OktaAuth", "User", "auth", "Permissions"]
 
 
 class UKRDCAccessToken(OktaAccessToken):
-    ukrdc: list[str]
+    permission: list[str] = Field([], alias=settings.user_permission_key)
 
 
 auth = OktaAuth(
@@ -15,7 +17,6 @@ auth = OktaAuth(
     settings.oauth_audience,
     [settings.app_client_id, settings.swagger_client_id],
     token_model=UKRDCAccessToken,
-    permission_key=settings.user_permission_key,
 )
 
 
