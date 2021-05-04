@@ -15,7 +15,7 @@ auth = OktaAuth(
     settings.oauth_audience,
     [settings.app_client_id, settings.swagger_client_id],
     token_model=UKRDCAccessToken,
-    permission_key="ukrdc",
+    permission_key=settings.user_permission_key,
 )
 
 
