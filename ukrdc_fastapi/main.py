@@ -69,7 +69,7 @@ async def check_connections():
     logging.info("Checking connection to Mirth API...")
     mirth_api: MirthAPI
     async with MirthAPI(
-        settings.mirth_url, verify_ssl=settings.mirth_verify_ssl
+        settings.mirth_url, verify_ssl=settings.mirth_verify_ssl, timeout=None
     ) as mirth_api:
         try:
             # Check we can log in to Mirth

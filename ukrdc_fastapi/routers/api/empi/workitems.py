@@ -1,5 +1,5 @@
 import datetime
-from typing import Optional
+from typing import Optional, Union
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Security
 from httpx import Response
@@ -48,8 +48,8 @@ class UpdateWorkItemRequestSchema(BaseModel):
     dependencies=[Security(auth.permission(Permissions.READ_WORKITEMS))],
 )
 def workitems_list(
-    since: Optional[str] = None,
-    until: Optional[str] = None,
+    since: Optional[datetime.datetime] = None,
+    until: Optional[datetime.datetime] = None,
     status: Optional[list[int]] = Query([1]),
     ukrdcid: Optional[list[str]] = Query(None),
     jtrace: Session = Depends(get_jtrace),
@@ -59,17 +59,11 @@ def workitems_list(
 
     # Optionally filter Workitems updated since
     if since:
-        since_datetime: Optional[datetime.datetime] = parse_date(since)
-        if since_datetime:
-            workitems = workitems.filter(WorkItem.last_updated >= since_datetime)
+        workitems = workitems.filter(WorkItem.last_updated >= since)
 
     # Optionally filter Workitems updated before
     if until:
-        until_datetime: Optional[datetime.datetime] = parse_date(until)
-        if until_datetime:
-            workitems = workitems.filter(
-                WorkItem.last_updated <= until_datetime + datetime.timedelta(days=1)
-            )
+        workitems = workitems.filter(WorkItem.last_updated <= until)
 
     # Get a query of open workitems
     workitems = workitems.filter(WorkItem.status.in_(status))

@@ -2,6 +2,8 @@ from datetime import datetime
 
 from ukrdc_sqla.ukrdc import LabOrder, PatientNumber, PatientRecord, ResultItem
 
+from ukrdc_fastapi.schemas.laborder import LabOrderSchema
+
 
 def test_laborders_list(client):
     response = client.get("/api/laborders")
@@ -67,24 +69,9 @@ def test_laborders_list_filtered_ni(ukrdc3_session, client):
 def test_laborder(client):
     response = client.get("/api/laborders/LABORDER1")
     assert response.status_code == 200
-    assert response.json() == {
-        "id": "LABORDER1",
-        "links": {"self": "/api/laborders/LABORDER1/"},
-        "enteredAtDescription": None,
-        "enteredAt": None,
-        "specimenCollectedTime": "2020-03-16T00:00:00",
-        "resultItems": [
-            {
-                "id": "RESULTITEM1",
-                "links": {"self": "/api/resultitems/RESULTITEM1/"},
-                "orderId": "LABORDER1",
-                "serviceId": "SERVICE_ID",
-                "serviceIdDescription": "SERVICE_ID_DESCRIPTION",
-                "value": "VALUE",
-                "valueUnits": "VALUE_UNITS",
-            }
-        ],
-    }
+    order = LabOrderSchema(**response.json())
+    assert order
+    assert order.id == "LABORDER1"
 
 
 def test_laborder_not_found(client):

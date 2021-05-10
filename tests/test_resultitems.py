@@ -2,6 +2,8 @@ from datetime import datetime
 
 from ukrdc_sqla.ukrdc import LabOrder, PatientNumber, PatientRecord, ResultItem
 
+from ukrdc_fastapi.schemas.laborder import LabOrderShortSchema, ResultItemSchema
+
 
 def _commit_extra_resultitem(session):
     patient_record = PatientRecord(
@@ -60,17 +62,9 @@ def _commit_extra_resultitem_and_check(session, client):
 def test_resultitems_list(client):
     response = client.get("/api/resultitems")
     assert response.status_code == 200
-    assert response.json()["items"] == [
-        {
-            "id": "RESULTITEM1",
-            "links": {"self": "/api/resultitems/RESULTITEM1/"},
-            "orderId": "LABORDER1",
-            "serviceId": "SERVICE_ID",
-            "serviceIdDescription": "SERVICE_ID_DESCRIPTION",
-            "value": "VALUE",
-            "valueUnits": "VALUE_UNITS",
-        }
-    ]
+    items = [ResultItemSchema(**item) for item in response.json()["items"]]
+    assert len(items) == 1
+    assert items[0].id == "RESULTITEM1"
 
 
 def test_resultitems_list_filtered_ni(ukrdc3_session, client):
@@ -80,17 +74,9 @@ def test_resultitems_list_filtered_ni(ukrdc3_session, client):
     # Filter by NI
     response = client.get("/api/resultitems?ni=111111111")
     assert response.status_code == 200
-    assert response.json()["items"] == [
-        {
-            "id": "RESULTITEM_TEST2_1",
-            "links": {"self": "/api/resultitems/RESULTITEM_TEST2_1/"},
-            "orderId": "LABORDER_TEST2_1",
-            "serviceId": "SERVICE_ID_TEST2_1",
-            "serviceIdDescription": "SERVICE_ID_DESCRIPTION_TEST2_1",
-            "value": "VALUE_TEST2_1",
-            "valueUnits": "VALUE_UNITS_TEST2_1",
-        },
-    ]
+    items = [ResultItemSchema(**item) for item in response.json()["items"]]
+    assert len(items) == 1
+    assert items[0].id == "RESULTITEM_TEST2_1"
 
 
 def test_resultitems_list_filtered_serviceId(ukrdc3_session, client):
@@ -100,17 +86,9 @@ def test_resultitems_list_filtered_serviceId(ukrdc3_session, client):
     # Filter by NI
     response = client.get("/api/resultitems?service_id=SERVICE_ID_TEST2_1")
     assert response.status_code == 200
-    assert response.json()["items"] == [
-        {
-            "id": "RESULTITEM_TEST2_1",
-            "links": {"self": "/api/resultitems/RESULTITEM_TEST2_1/"},
-            "orderId": "LABORDER_TEST2_1",
-            "serviceId": "SERVICE_ID_TEST2_1",
-            "serviceIdDescription": "SERVICE_ID_DESCRIPTION_TEST2_1",
-            "value": "VALUE_TEST2_1",
-            "valueUnits": "VALUE_UNITS_TEST2_1",
-        },
-    ]
+    items = [ResultItemSchema(**item) for item in response.json()["items"]]
+    assert len(items) == 1
+    assert items[0].id == "RESULTITEM_TEST2_1"
 
 
 def test_resultitems_list_filtered_serviceId_delete(ukrdc3_session, client):
@@ -126,43 +104,23 @@ def test_resultitems_list_filtered_serviceId_delete(ukrdc3_session, client):
     # Check the resultitem was deleted
     response = client.get("/api/resultitems")
     assert response.status_code == 200
-    assert response.json()["items"] == [
-        {
-            "id": "RESULTITEM1",
-            "links": {"self": "/api/resultitems/RESULTITEM1/"},
-            "orderId": "LABORDER1",
-            "serviceId": "SERVICE_ID",
-            "serviceIdDescription": "SERVICE_ID_DESCRIPTION",
-            "value": "VALUE",
-            "valueUnits": "VALUE_UNITS",
-        }
-    ]
+    items = [ResultItemSchema(**item) for item in response.json()["items"]]
+    assert len(items) == 1
+    assert items[0].id == "RESULTITEM1"
+
     # Check the orphaned laborder was deleted
     response = client.get("/api/laborders")
     assert response.status_code == 200
-    assert response.json()["items"] == [
-        {
-            "id": "LABORDER1",
-            "links": {"self": "/api/laborders/LABORDER1/"},
-            "enteredAtDescription": None,
-            "enteredAt": None,
-            "specimenCollectedTime": "2020-03-16T00:00:00",
-        }
-    ]
+    orders = [LabOrderShortSchema(**item) for item in response.json()["items"]]
+    assert len(orders) == 1
+    assert orders[0].id == "LABORDER1"
 
 
 def test_resultitem_detail(client):
     response = client.get("/api/resultitems/RESULTITEM1")
     assert response.status_code == 200
-    assert response.json() == {
-        "id": "RESULTITEM1",
-        "links": {"self": "/api/resultitems/RESULTITEM1/"},
-        "orderId": "LABORDER1",
-        "serviceId": "SERVICE_ID",
-        "serviceIdDescription": "SERVICE_ID_DESCRIPTION",
-        "value": "VALUE",
-        "valueUnits": "VALUE_UNITS",
-    }
+    item = ResultItemSchema(**response.json())
+    assert item.id == "RESULTITEM1"
 
 
 def test_resultitem_delete(client):

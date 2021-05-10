@@ -22,8 +22,21 @@ class ResultItemSchema(OrmModel):
     service_id_description: str
     value: str
     value_units: Optional[str]
+    result_type: Optional[str]
+    observation_time: datetime.datetime
 
-    links = LinkSet({"self": UrlFor("resultitem_detail", {"resultitem_id": "<id>"})})
+    links = LinkSet(
+        {
+            "self": UrlFor("resultitem_detail", {"resultitem_id": "<id>"}),
+            "laborder": UrlFor("laborder_get", {"order_id": "<order_id>"}),
+        }
+    )
+
+
+class ResultItemServiceSchema(OrmModel):
+    id: str
+    description: str
+    standard: str
 
 
 class LabOrderSchema(LabOrderShortSchema):

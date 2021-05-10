@@ -1,3 +1,4 @@
+import datetime
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -6,13 +7,23 @@ from fastapi import Security
 from httpx import Response
 from mirth_client.mirth import MirthAPI
 from redis import Redis
-from sqlalchemy import distinct
 from sqlalchemy.orm import Query, Session
-from ukrdc_sqla.ukrdc import LabOrder, Medication, Observation, PatientRecord, Survey
+from ukrdc_sqla.ukrdc import (
+    LabOrder,
+    Medication,
+    Observation,
+    PatientRecord,
+    ResultItem,
+    Survey,
+)
 
 from ukrdc_fastapi.dependencies import get_mirth, get_redis, get_ukrdc3
 from ukrdc_fastapi.dependencies.auth import Permissions, auth
-from ukrdc_fastapi.schemas.laborder import LabOrderSchema
+from ukrdc_fastapi.schemas.laborder import (
+    LabOrderSchema,
+    ResultItemSchema,
+    ResultItemServiceSchema,
+)
 from ukrdc_fastapi.schemas.medication import MedicationSchema
 from ukrdc_fastapi.schemas.observation import ObservationSchema
 from ukrdc_fastapi.schemas.patientrecord import (
@@ -20,7 +31,7 @@ from ukrdc_fastapi.schemas.patientrecord import (
     PatientRecordShortSchema,
 )
 from ukrdc_fastapi.schemas.survey import SurveySchema
-from ukrdc_fastapi.utils import filters
+from ukrdc_fastapi.utils import filters, parse_date
 from ukrdc_fastapi.utils.mirth import (
     MirthMessageResponseSchema,
     build_export_all_message,
@@ -75,6 +86,60 @@ def patient_laborders(pid: str, ukrdc3: Session = Depends(get_ukrdc3)):
         LabOrder.specimen_collected_time.desc()
     ).all()
     return items
+
+
+@router.get(
+    "/{pid}/resultitems/",
+    response_model=Page[ResultItemSchema],
+    dependencies=[Security(auth.permission(Permissions.READ_PATIENTRECORDS))],
+)
+def patient_resultitems(
+    pid: str,
+    service: Optional[list[str]] = QueryParam([]),
+    since: Optional[datetime.datetime] = None,
+    until: Optional[datetime.datetime] = None,
+    ukrdc3: Session = Depends(get_ukrdc3),
+):
+    """Retreive a specific patient's lab orders"""
+    query = (
+        ukrdc3.query(ResultItem).join(LabOrder.result_items).filter(LabOrder.pid == pid)
+    )
+    if service:
+        query = query.filter(ResultItem.service_id.in_(service))
+
+    # Optionally filter Workitems updated since
+    if since:
+        query = query.filter(ResultItem.observation_time >= since)
+
+    # Optionally filter Workitems updated before
+    if until:
+        query = query.filter(ResultItem.observation_time <= until)
+
+    items = query.order_by(ResultItem.entered_on.desc())
+    return paginate(items)
+
+
+@router.get(
+    "/{pid}/resultitems/services",
+    response_model=list[ResultItemServiceSchema],
+    dependencies=[Security(auth.permission(Permissions.READ_PATIENTRECORDS))],
+)
+def patient_resultitems_services(pid: str, ukrdc3: Session = Depends(get_ukrdc3)):
+    """Retreive a list of resultitem services available for a specific patient"""
+    services = (
+        ukrdc3.query(ResultItem)
+        .join(LabOrder.result_items)
+        .filter(LabOrder.pid == pid)
+        .distinct(ResultItem.service_id)
+    )
+    return [
+        ResultItemServiceSchema(
+            id=item.service_id,
+            description=item.service_id_description,
+            standard=item.service_id_std,
+        )
+        for item in services.all()
+    ]
 
 
 @router.get(

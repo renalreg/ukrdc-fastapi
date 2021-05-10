@@ -1,5 +1,6 @@
 import re
 
+from ukrdc_fastapi.schemas.laborder import LabOrderSchema
 from ukrdc_fastapi.schemas.patientrecord import (
     PatientRecordSchema,
     PatientRecordShortSchema,
@@ -45,26 +46,9 @@ def test_records_missing_ni(client):
 def test_record_laborders(client):
     response = client.get("/api/patientrecords/PYTEST01:PV:00000000A/laborders")
     assert response.status_code == 200
-    assert response.json() == [
-        {
-            "id": "LABORDER1",
-            "enteredAtDescription": None,
-            "enteredAt": None,
-            "specimenCollectedTime": "2020-03-16T00:00:00",
-            "links": {"self": "/api/laborders/LABORDER1/"},
-            "resultItems": [
-                {
-                    "id": "RESULTITEM1",
-                    "orderId": "LABORDER1",
-                    "serviceId": "SERVICE_ID",
-                    "serviceIdDescription": "SERVICE_ID_DESCRIPTION",
-                    "value": "VALUE",
-                    "valueUnits": "VALUE_UNITS",
-                    "links": {"self": "/api/resultitems/RESULTITEM1/"},
-                }
-            ],
-        }
-    ]
+    orders = [LabOrderSchema(**item) for item in response.json()]
+    assert len(orders) == 1
+    assert orders[0].id == "LABORDER1"
 
 
 def test_record_laborders_missing(client):

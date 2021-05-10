@@ -23,8 +23,8 @@ router = APIRouter()
 def error_messages(
     ni: Optional[str] = None,
     facility: Optional[str] = None,
-    since: Optional[str] = None,
-    until: Optional[str] = None,
+    since: Optional[datetime.datetime] = None,
+    until: Optional[datetime.datetime] = None,
     status: Optional[str] = None,
     errorsdb: Session = Depends(get_errorsdb),
 ):
@@ -32,18 +32,14 @@ def error_messages(
     messages = errorsdb.query(Message)
 
     # Default to showing last 7 days
-    since_datetime: datetime.datetime = parse_date(
-        since
-    ) or datetime.datetime.utcnow() - datetime.timedelta(days=7)
+    since_datetime: datetime.datetime = (
+        since or datetime.datetime.utcnow() - datetime.timedelta(days=7)
+    )
     messages = messages.filter(Message.received >= since_datetime)
 
     # Optionally filter out messages newer than `untildays`
-    until_datetime: datetime.datetime = parse_date(until) or (
-        datetime.datetime.utcnow()
-    )
-    messages = messages.filter(
-        Message.received <= until_datetime + datetime.timedelta(days=1)
-    )
+    if until:
+        messages = messages.filter(Message.received <= until)
 
     # Optionally filter by facility
     if facility:
