@@ -5,12 +5,11 @@ from fastapi import APIRouter, Depends, Security
 from fastapi_pagination import Page
 from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy.orm import Session
-from ukrdc_sqla.errorsdb import Message
+from ukrdc_sqla.errorsdb import Facility, Message
 
 from ukrdc_fastapi.dependencies import get_errorsdb
 from ukrdc_fastapi.dependencies.auth import Permissions, auth
 from ukrdc_fastapi.schemas.errors import MessageSchema
-from ukrdc_fastapi.utils import parse_date
 
 router = APIRouter()
 
@@ -57,3 +56,16 @@ def error_messages(
     messages = messages.order_by(Message.received.desc())
 
     return paginate(messages)
+
+
+@router.get(
+    "/facilities",
+    response_model=list[str],
+    dependencies=[Security(auth.permission(Permissions.READ_MIRTH))],
+)
+def error_facilities(
+    errorsdb: Session = Depends(get_errorsdb),
+):
+    # TODO: Filter by permissions
+    facilities = errorsdb.query(Facility).all()
+    return [item.facility for item in facilities if item]
