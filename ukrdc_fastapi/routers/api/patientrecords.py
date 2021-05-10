@@ -31,7 +31,7 @@ from ukrdc_fastapi.schemas.patientrecord import (
     PatientRecordShortSchema,
 )
 from ukrdc_fastapi.schemas.survey import SurveySchema
-from ukrdc_fastapi.utils import filters, parse_date
+from ukrdc_fastapi.utils import filters
 from ukrdc_fastapi.utils.mirth import (
     MirthMessageResponseSchema,
     build_export_all_message,
