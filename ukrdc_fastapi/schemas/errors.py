@@ -27,6 +27,10 @@ class MessageSchema(OrmModel):
     links = LinkSet(
         {
             "self": UrlFor(
+                "error_detail",
+                {"error_id": "<id>"},
+            ),
+            "source": UrlFor(
                 "mirth_channel_message",
                 {"channel_id": "<channel_id>", "message_id": "<message_id>"},
             ),
