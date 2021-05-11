@@ -95,7 +95,7 @@ def patient_laborders(pid: str, ukrdc3: Session = Depends(get_ukrdc3)):
 )
 def patient_resultitems(
     pid: str,
-    service: Optional[list[str]] = QueryParam([]),
+    service_id: Optional[list[str]] = QueryParam([]),
     since: Optional[datetime.datetime] = None,
     until: Optional[datetime.datetime] = None,
     ukrdc3: Session = Depends(get_ukrdc3),
@@ -104,8 +104,8 @@ def patient_resultitems(
     query = (
         ukrdc3.query(ResultItem).join(LabOrder.result_items).filter(LabOrder.pid == pid)
     )
-    if service:
-        query = query.filter(ResultItem.service_id.in_(service))
+    if service_id:
+        query = query.filter(ResultItem.service_id.in_(service_id))
 
     # Optionally filter Workitems updated since
     if since:
