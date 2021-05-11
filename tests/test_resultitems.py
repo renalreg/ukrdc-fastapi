@@ -91,31 +91,6 @@ def test_resultitems_list_filtered_serviceId(ukrdc3_session, client):
     assert items[0].id == "RESULTITEM_TEST2_1"
 
 
-def test_resultitems_list_filtered_serviceId_delete(ukrdc3_session, client):
-    # Add an extra test item
-    _commit_extra_resultitem_and_check(ukrdc3_session, client)
-
-    # Filter by NI
-    response = client.delete(
-        "/api/resultitems/", json={"service_id": "SERVICE_ID_TEST2_1"}
-    )
-    assert response.status_code == 204
-
-    # Check the resultitem was deleted
-    response = client.get("/api/resultitems")
-    assert response.status_code == 200
-    items = [ResultItemSchema(**item) for item in response.json()["items"]]
-    assert len(items) == 1
-    assert items[0].id == "RESULTITEM1"
-
-    # Check the orphaned laborder was deleted
-    response = client.get("/api/laborders")
-    assert response.status_code == 200
-    orders = [LabOrderShortSchema(**item) for item in response.json()["items"]]
-    assert len(orders) == 1
-    assert orders[0].id == "LABORDER1"
-
-
 def test_resultitem_detail(client):
     response = client.get("/api/resultitems/RESULTITEM1")
     assert response.status_code == 200
