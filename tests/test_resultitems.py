@@ -67,18 +67,6 @@ def test_resultitems_list(client):
     assert items[0].id == "RESULTITEM1"
 
 
-def test_resultitems_list_filtered_ni(ukrdc3_session, client):
-    # Add an extra test item
-    _commit_extra_resultitem_and_check(ukrdc3_session, client)
-
-    # Filter by NI
-    response = client.get("/api/resultitems?ni=111111111")
-    assert response.status_code == 200
-    items = [ResultItemSchema(**item) for item in response.json()["items"]]
-    assert len(items) == 1
-    assert items[0].id == "RESULTITEM_TEST2_1"
-
-
 def test_resultitems_list_filtered_serviceId(ukrdc3_session, client):
     # Add an extra test item
     _commit_extra_resultitem_and_check(ukrdc3_session, client)

@@ -1,5 +1,4 @@
 import logging
-from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Security
 from sqlalchemy.orm import Session
@@ -8,7 +7,6 @@ from ukrdc_sqla.ukrdc import LabOrder, PVDelete
 from ukrdc_fastapi.dependencies import get_ukrdc3
 from ukrdc_fastapi.dependencies.auth import Permissions, auth
 from ukrdc_fastapi.schemas.laborder import LabOrderSchema, LabOrderShortSchema
-from ukrdc_fastapi.utils import filters
 from ukrdc_fastapi.utils.paginate import Page, paginate
 
 router = APIRouter()
@@ -20,14 +18,10 @@ router = APIRouter()
     dependencies=[Security(auth.permission(Permissions.READ_PATIENTRECORDS))],
 )
 def laborders(
-    ni: Optional[str] = None,
     ukrdc3: Session = Depends(get_ukrdc3),
 ):
     """Retreive a list of all lab orders"""
     orders = ukrdc3.query(LabOrder)
-    # Optionally filter by NI
-    if ni:
-        orders = filters.laborders_by_ni(ukrdc3, orders, ni)
     # Sort by collected time
     orders = orders.order_by(LabOrder.specimen_collected_time.desc())
     return paginate(orders)

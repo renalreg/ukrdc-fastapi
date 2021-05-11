@@ -1,23 +1,19 @@
+import datetime
 import logging
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Security
-from pydantic import BaseModel
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi import Query as QueryParam
+from fastapi import Security
 from sqlalchemy.orm import Query, Session
-from ukrdc_sqla.ukrdc import LabOrder, PVDelete, ResultItem
+from ukrdc_sqla.ukrdc import LabOrder, ResultItem
 
 from ukrdc_fastapi.dependencies import get_ukrdc3
 from ukrdc_fastapi.dependencies.auth import Permissions, auth
 from ukrdc_fastapi.schemas.laborder import ResultItemSchema
-from ukrdc_fastapi.utils import filters
 from ukrdc_fastapi.utils.paginate import Page, paginate
 
 router = APIRouter()
-
-
-class DeleteResultItemsRequestSchema(BaseModel):
-    ni: Optional[str]
-    service_id: Optional[str]
 
 
 @router.get(
@@ -26,19 +22,26 @@ class DeleteResultItemsRequestSchema(BaseModel):
     dependencies=[Security(auth.permission(Permissions.READ_PATIENTRECORDS))],
 )
 def resultitems(
-    ni: Optional[str] = None,
-    service_id: Optional[str] = None,
+    service_id: Optional[list[str]] = QueryParam([]),
+    since: Optional[datetime.datetime] = None,
+    until: Optional[datetime.datetime] = None,
     ukrdc3: Session = Depends(get_ukrdc3),
 ):
     """Retreive a list of lab results, optionally filtered by NI or service ID"""
-    items: Query = ukrdc3.query(ResultItem)
-    # Optionally filter by service_id
+    query: Query = ukrdc3.query(ResultItem)
+
     if service_id:
-        items = items.filter(ResultItem.service_id == service_id)
-    # Optionally filter by NI
-    if ni:
-        items = filters.resultitems_by_ni(ukrdc3, items, ni)
-    items = items.order_by(ResultItem.service_id_description)
+        query = query.filter(ResultItem.service_id.in_(service_id))
+
+    # Optionally filter Workitems updated since
+    if since:
+        query = query.filter(ResultItem.observation_time >= since)
+
+    # Optionally filter Workitems updated before
+    if until:
+        query = query.filter(ResultItem.observation_time <= until)
+
+    items = query.order_by(ResultItem.entered_on.desc())
     return paginate(items)
 
 
