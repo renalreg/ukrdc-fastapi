@@ -1,12 +1,116 @@
 import datetime
-from typing import Iterable, Union
+from typing import Iterable, Optional, Union
 
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import or_
 from sqlalchemy.sql.functions import concat
+from stdnum.gb import nhs
+from stdnum.util import isdigits
 from ukrdc_sqla.empi import MasterRecord, Person, PidXRef
 
+from ukrdc_fastapi.utils import parse_date
 from ukrdc_fastapi.utils.filters import find_ids_related_to_person
+
+
+class SearchSet:
+    def __init__(self, terms: Optional[list[str]] = None) -> None:
+        # Dates
+        self.dates: list[datetime.date] = []  # DoB, DoD etc
+
+        # String IDs
+        self.nhs_numbers: list[str] = []  # NHS, CHI, or HSC
+        self.mrn_numbers: list[str] = []  # Any unit-specific local ID
+
+        # Integer IDs
+        self.ukrdc_numbers: list[str] = []  # UKRDCID
+        self.pids: list[str] = []  # Internal PIDs
+        self.empi_ids: list[str] = []  # MasterRecord or Person IDs
+
+        # Chars
+        self.names: list[str] = []  # Patient names
+
+        # Assign each term to a list
+        if terms:
+            self.add_terms(terms)
+
+    def add_date(self, item: str):
+        """Add a datetime formatted string to the search query set.
+        If the string cannot be parsed as a datetime, it will be ignored"""
+
+        parsed_date: Optional[datetime.datetime] = parse_date(item)
+        if parsed_date:
+            self.dates.append(parsed_date.date())
+
+    def add_nhs_number(self, item: str):
+        """Add an NHS number string to the search query set.
+        If the string cannot be parsed as an NHS number, it will be ignored"""
+
+        if nhs.is_valid(item):
+            self.nhs_numbers.append(nhs.compact(item))
+
+    def add_mrn_number(self, item: str):
+        """Add an MRN number formatted string to the search query set.
+        If the string cannot be parsed as an MRN number, it will be ignored"""
+
+        if len(item) <= 17:
+            self.mrn_numbers.append(item)
+
+    def add_ukrdc_number(self, item: str):
+        """Add a UKRDC number formatted string to the search query set.
+        If the string cannot be parsed as a UKRDC number, it will be ignored"""
+
+        if isdigits(item) and (100000000 <= int(item) < 1000000000):
+            self.ukrdc_numbers.append(item)
+
+    def add_pid(self, item: str):
+        """Add a patient ID formatted string to the search query set.
+        If the string cannot be parsed as a PID, it will be ignored"""
+
+        if isdigits(item) and (1000000000 <= int(item) <= 10000000000):
+            self.pids.append(item)
+
+    def add_empi_id(self, item: str):
+        """Add an EMPI ID formatted string to the search query set.
+        If the string cannot be parsed as an EMPI ID, it will be ignored"""
+
+        # Extract EMPI IDs (by int4 type)
+        if isdigits(item) and (-2147483648 <= int(item) <= 2147483647):
+            self.empi_ids.append(item)
+
+    def add_name(self, item: str):
+        """Add a name string to the search query set."""
+
+        self.names.append(item)
+
+    def add_terms(self, terms: list[str]):
+        """
+        Add a list of strings to the search query set.
+        Each string will be added to any search query group in which it is valid
+        """
+
+        for item in terms:
+            item = item.strip()
+
+            # Extract dates
+            self.add_date(item)
+
+            # Extract NHS numbers
+            self.add_nhs_number(item)
+
+            # Extract MRN numbers
+            self.add_mrn_number(item)
+
+            # Extract UKRDC IDs (by range)
+            self.add_ukrdc_number(item)
+
+            # Extract PIDs (by range)
+            self.add_pid(item)
+
+            # Extract EMPI IDs (by int4 type)
+            self.add_empi_id(item)
+
+            # Absolutely anything can be a name
+            self.add_name(item)
 
 
 def masterrecord_ids_from_nhs_no(session: Session, nhs_nos: Iterable[str]):
@@ -114,5 +218,79 @@ def masterrecord_ids_from_pidxref_no(session: Session, pid_nos: Iterable[str]):
 
     for person in matched_persons:
         matched_ids |= find_ids_related_to_person([person.localid], session)[0]
+
+    return matched_ids
+
+
+def search_masterrecord_ids(  # pylint: disable=too-many-branches
+    nhs_number: list[str],
+    mrn_number: list[str],
+    ukrdc_number: list[str],
+    full_name: list[str],
+    pidx: list[str],
+    dob: list[str],
+    search: list[str],
+    jtrace: Session,
+):
+    """Search the EMPI for a particular master record"""
+    match_sets: list[set[str]] = []
+
+    searchset = SearchSet()
+
+    for item in nhs_number:
+        searchset.add_nhs_number(item)
+    for item in mrn_number:
+        searchset.add_mrn_number(item)
+    for item in ukrdc_number:
+        searchset.add_ukrdc_number(item)
+    for item in full_name:
+        searchset.add_name(item)
+    for item in pidx:
+        searchset.add_pid(item)
+    for item in dob:
+        searchset.add_date(item)
+
+    searchset.add_terms(search)
+
+    # Check if the search query contains MasterRecord IDs
+    match_sets.append(
+        {
+            record.id
+            for record in (
+                jtrace.query(MasterRecord).get(id_) for id_ in searchset.empi_ids
+            )
+            if record
+        }
+    )
+
+    if searchset.nhs_numbers:
+        match_sets.append(masterrecord_ids_from_nhs_no(jtrace, searchset.nhs_numbers))
+
+    if searchset.mrn_numbers:
+        match_sets.append(masterrecord_ids_from_mrn_no(jtrace, searchset.mrn_numbers))
+
+    if searchset.ukrdc_numbers:
+        match_sets.append(
+            masterrecord_ids_from_ukrdc_no(jtrace, searchset.ukrdc_numbers)
+        )
+
+    if searchset.names:
+        match_sets.append(masterrecord_ids_from_full_name(jtrace, searchset.names))
+
+    if searchset.dates:
+        match_sets.append(masterrecord_ids_from_dob(jtrace, searchset.dates))
+
+    if searchset.pids:
+        match_sets.append(masterrecord_ids_from_pidxref_no(jtrace, searchset.pids))
+
+    non_empty_sets: list[set[str]] = [
+        match_set for match_set in match_sets if match_set
+    ]
+
+    matched_ids: set[str]
+    if non_empty_sets:
+        matched_ids = set.intersection(*non_empty_sets)
+    else:
+        matched_ids = set()
 
     return matched_ids

@@ -3,8 +3,6 @@ from datetime import date, datetime
 from stdnum.gb import nhs
 from ukrdc_sqla.empi import MasterRecord
 
-from ukrdc_fastapi.routers.api.empi.search import _pop_dates
-
 TEST_NUMBERS = [
     "9434765870",
     "9434765889",
@@ -33,22 +31,13 @@ def _commit_extra_patients(session, number_type="NHS"):
         session.commit()
 
 
-def test_pop_dates():
-    input_: list[str] = ["foo", "bar", "2020-01-01", "1/1/2021", "1.1.2022"]
-    expected_out = (
-        ["foo", "bar"],
-        [date(2020, 1, 1), date(2021, 1, 1), date(2022, 1, 1)],
-    )
-    assert _pop_dates(input_) == expected_out
-
-
 def test_search_all(jtrace_session, client):
     # Add extra test items
     _commit_extra_patients(jtrace_session, number_type="NHS")
 
     # Search for each item individually
     for index, number in enumerate(TEST_NUMBERS):
-        url = f"/api/empi/search/masterrecords?search={number}"
+        url = f"/api/empi/search/?search={number}"
 
         response = client.get(url)
         assert response.status_code == 200
@@ -63,7 +52,7 @@ def test_search_nhsno(jtrace_session, client):
 
     # Search for each item individually
     for index, number in enumerate(TEST_NUMBERS):
-        url = f"/api/empi/search/masterrecords?nhs_number={number}"
+        url = f"/api/empi/search/?nhs_number={number}"
 
         response = client.get(url)
         assert response.status_code == 200
@@ -77,7 +66,7 @@ def test_search_multiple_nhsno(jtrace_session, client):
     _commit_extra_patients(jtrace_session, number_type="NHS")
 
     # Add extra test items
-    path = "/api/empi/search/masterrecords?"
+    path = "/api/empi/search/?"
     for number in TEST_NUMBERS[:5]:
         path += f"nhs_number={number}&"
     path = path.rstrip("&")
@@ -97,7 +86,7 @@ def test_search_implicit_dob(jtrace_session, client):
     for index, _ in enumerate(TEST_NUMBERS):
         # NHS number is master record `nationalid`
         dob = f"1950-01-{str((index + 11) % 28).zfill(2)}"
-        url = f"/api/empi/search/masterrecords?search={dob}"
+        url = f"/api/empi/search/?search={dob}"
 
         response = client.get(url)
         assert response.status_code == 200
