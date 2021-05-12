@@ -14,7 +14,7 @@ class ChannelSchema(OrmModel):
 
 
 class MessageSchema(OrmModel):
-    id: str
+    id: int
     message_id: int
     channel_id: str
     received: Optional[datetime.datetime]
