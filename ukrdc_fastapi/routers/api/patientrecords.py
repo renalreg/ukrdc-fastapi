@@ -50,15 +50,9 @@ router = APIRouter()
     response_model=Page[PatientRecordShortSchema],
     dependencies=[Security(auth.permission(Permissions.READ_PATIENTRECORDS))],
 )
-def patient_records(ni: Optional[str] = None, ukrdc3: Session = Depends(get_ukrdc3)):
+def patient_records(ukrdc3: Session = Depends(get_ukrdc3)):
     """Retrieve a list of patient records"""
-    records: Query = ukrdc3.query(PatientRecord)
-    if ni:
-        # Find all the records with ukrdc ids
-        records = filters.patientrecords_by_ni(ukrdc3, records, ni)
-
-    # Return page
-    return paginate(records)
+    return paginate(ukrdc3.query(PatientRecord))
 
 
 @router.get(

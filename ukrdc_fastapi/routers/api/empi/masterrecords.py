@@ -22,14 +22,10 @@ router = APIRouter()
     dependencies=[Security(auth.permission(Permissions.READ_EMPI))],
 )
 def master_records(
-    ni: Optional[list[str]] = Query(None),
     jtrace: Session = Depends(get_jtrace),
 ):
     """Retreive a list of master records from the EMPI"""
-    records: OrmQuery = jtrace.query(MasterRecord)
-    if ni:
-        records = records.filter(MasterRecord.nationalid.in_(ni))
-    return paginate(records)
+    return paginate(jtrace.query(MasterRecord))
 
 
 @router.get(

@@ -2,7 +2,6 @@ import datetime
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Security
-from fastapi_hypermodel import LinkSet, UrlFor
 from fastapi_pagination import Page
 from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy.orm import Session
@@ -49,7 +48,6 @@ def make_extended_error(message: MessageSchema, jtrace: Session):
     dependencies=[Security(auth.permission(Permissions.READ_MIRTH))],
 )
 def error_messages(
-    ni: Optional[str] = None,
     facility: Optional[str] = None,
     since: Optional[datetime.datetime] = None,
     until: Optional[datetime.datetime] = None,
@@ -72,10 +70,6 @@ def error_messages(
     # Optionally filter by facility
     if facility:
         messages = messages.filter(Message.facility == facility)
-
-    # Optionally filter by NI
-    if ni:
-        messages = messages.filter(Message.ni == ni)
 
     # Optionally filter by message status
     if status:

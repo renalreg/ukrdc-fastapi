@@ -17,20 +17,6 @@ def test_masterrecords_list(client):
     assert returned_ids == {1, 2}
 
 
-def test_masterrecords_list_ukrdcid_filter_single(client):
-    response = client.get("/api/empi/masterrecords?ni=999999999")
-    assert response.status_code == 200
-    returned_ids = {item["id"] for item in response.json()["items"]}
-    assert returned_ids == {1}
-
-
-def test_masterrecords_list_ukrdcid_filter_multiple(client):
-    response = client.get("/api/empi/masterrecords?ni=999999999&ni=999999911")
-    assert response.status_code == 200
-    returned_ids = {item["id"] for item in response.json()["items"]}
-    assert returned_ids == {1, 2}
-
-
 def test_masterrecord_detail(client):
     response = client.get("/api/empi/masterrecords/1")
     assert response.status_code == 200
