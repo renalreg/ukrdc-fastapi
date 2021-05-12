@@ -3,7 +3,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Security
 from httpx import Response
 from mirth_client import MirthAPI
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from redis import Redis
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
