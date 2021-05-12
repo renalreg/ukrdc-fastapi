@@ -33,19 +33,15 @@ def test_record_laborders(client):
     assert orders[0].id == "LABORDER1"
 
 
-def test_record_laborders_missing(client):
-    response = client.get("/api/patientrecords/MISSING_PID/laborders")
-    assert response.json() == []
-
-
 # Record result items
 
 
-def test_record_laborders(client):
+def test_record_resultitems(client):
     response = client.get("/api/patientrecords/PYTEST01:PV:00000000A/resultitems")
     assert response.status_code == 200
-    orders = [ResultItemSchema(**item) for item in response.json()["items"]]
-    print(orders)
+    results = [ResultItemSchema(**item) for item in response.json()["items"]]
+    assert len(results) == 1
+    assert results[0].id == "RESULTITEM1"
 
 
 # Record observations
