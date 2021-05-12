@@ -67,10 +67,17 @@ class LinkRecordSchema(OrmModel):
     master_record: MasterRecordSchema
 
 
-class WorkItemSummarySchema(OrmModel):
+class WorkItemShortSchema(OrmModel):
     id: int
-    person_id: int
-    master_id: int
+
+    type: int
+    description: str
+    status: int
+    last_updated: datetime.datetime
+    updated_by: Optional[str]
+
+    person: Optional[PersonSchema]
+    master_record: Optional[MasterRecordSchema]
 
     links = LinkSet(
         {
@@ -81,15 +88,6 @@ class WorkItemSummarySchema(OrmModel):
             "unlink": UrlFor("workitem_unlink", {"workitem_id": "<id>"}),
         }
     )
-
-
-class WorkItemShortSchema(WorkItemSummarySchema):
-    type: int
-    description: str
-    status: int
-    last_updated: datetime.datetime
-    updated_by: Optional[str]
-    update_description: Optional[str]
 
 
 WORKITEM_ATTRIBUTE_MAP: dict[str, str] = {
@@ -105,9 +103,8 @@ WORKITEM_ATTRIBUTE_MAP: dict[str, str] = {
 
 
 class WorkItemSchema(WorkItemShortSchema):
-    person: Optional[PersonSchema]
-    master_record: Optional[MasterRecordSchema]
     attributes: Optional[Json]
+    update_description: Optional[str]
 
     @validator("attributes")
     def normalise_attributes(
