@@ -1,9 +1,8 @@
 from collections import namedtuple
-from typing import Iterable, Optional
+from typing import Optional
 
 from sqlalchemy.orm import Query, Session
 from ukrdc_sqla.empi import LinkRecord, MasterRecord, Person, WorkItem
-from ukrdc_sqla.ukrdc import LabOrder, PatientNumber, PatientRecord, ResultItem
 
 PersonMasterLink = namedtuple("PersonMasterLink", ("id", "person_id", "master_id"))
 
