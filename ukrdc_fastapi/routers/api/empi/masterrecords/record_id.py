@@ -2,24 +2,23 @@ import datetime
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Security
-from fastapi.param_functions import Query
 from sqlalchemy.orm import Query as ORMQuery
 from sqlalchemy.orm import Session
-from ukrdc_sqla.empi import MasterRecord, Person, WorkItem
+from ukrdc_sqla.empi import MasterRecord, WorkItem
 from ukrdc_sqla.errorsdb import Message
 from ukrdc_sqla.ukrdc import PatientRecord
 
 from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_ukrdc3
 from ukrdc_fastapi.dependencies.auth import Permissions, auth
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema, PersonSchema, WorkItemSchema
-from ukrdc_fastapi.schemas.errors import MessageSchema
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordShortSchema
+from ukrdc_fastapi.utils.errors import ErrorSchema, paginate_error_query
 from ukrdc_fastapi.utils.filters.empi import (
     find_persons_related_to_masterrecord,
     find_related_masterrecords,
 )
 from ukrdc_fastapi.utils.filters.errors import filter_error_messages
-from ukrdc_fastapi.utils.paginate import Page, paginate
+from ukrdc_fastapi.utils.paginate import Page
 
 router = APIRouter(prefix="/{record_id}")
 
@@ -58,7 +57,7 @@ def master_record_related(record_id: str, jtrace: Session = Depends(get_jtrace))
 
 @router.get(
     "/errors/",
-    response_model=Page[MessageSchema],
+    response_model=Page[ErrorSchema],
     dependencies=[Security(auth.permission(Permissions.READ_EMPI))],
 )
 def master_record_errors(
@@ -66,13 +65,13 @@ def master_record_errors(
     facility: Optional[str] = None,
     since: Optional[datetime.datetime] = None,
     until: Optional[datetime.datetime] = None,
-    status: Optional[str] = None,
+    status: str = "ERROR",
     jtrace: Session = Depends(get_jtrace),
     errorsdb: Session = Depends(get_errorsdb),
 ):
     """
     Retreive a list of errors related to a particular master record.
-    By default returns message created within the last 7 days.
+    By default returns message created within the last 365 days.
     """
     record: MasterRecord = jtrace.query(MasterRecord).get(record_id)
 
@@ -86,9 +85,11 @@ def master_record_errors(
         Message.ni.in_(related_national_ids)
     )
 
-    messages = filter_error_messages(messages, facility, since, until, status)
+    messages = filter_error_messages(
+        messages, facility, since, until, status, default_since_delta=365
+    )
 
-    return paginate(messages)
+    return paginate_error_query(messages, jtrace)
 
 
 @router.get(

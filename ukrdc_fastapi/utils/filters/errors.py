@@ -7,16 +7,18 @@ from ukrdc_sqla.errorsdb import Message
 
 def filter_error_messages(
     query: Query,
-    facility: Optional[str] = None,
-    since: Optional[datetime.datetime] = None,
-    until: Optional[datetime.datetime] = None,
-    status: Optional[str] = None,
+    facility: Optional[str],
+    since: Optional[datetime.datetime],
+    until: Optional[datetime.datetime],
+    status: str,
+    default_since_delta: int = 365,
 ):
     """Filter an error message query by NI, facility, or date"""
 
     # Default to showing last 7 days
     since_datetime: datetime.datetime = (
-        since or datetime.datetime.utcnow() - datetime.timedelta(days=7)
+        since
+        or datetime.datetime.utcnow() - datetime.timedelta(days=default_since_delta)
     )
     query = query.filter(Message.received >= since_datetime)
 
