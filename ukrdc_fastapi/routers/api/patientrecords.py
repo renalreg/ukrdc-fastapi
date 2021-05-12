@@ -7,7 +7,7 @@ from fastapi import Security
 from httpx import Response
 from mirth_client.mirth import MirthAPI
 from redis import Redis
-from sqlalchemy.orm import Query, Session
+from sqlalchemy.orm import Session
 from ukrdc_sqla.ukrdc import (
     LabOrder,
     Medication,
