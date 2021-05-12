@@ -10,6 +10,7 @@ from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace
 from ukrdc_fastapi.dependencies.auth import Permissions, auth
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema, WorkItemShortSchema
 from ukrdc_fastapi.schemas.errors import MessageSchema
+from ukrdc_fastapi.utils.filters.errors import filter_error_messages
 from ukrdc_fastapi.utils.paginate import Page, paginate
 
 router = APIRouter(tags=["Errors"])
@@ -53,29 +54,13 @@ def error_messages(
     status: Optional[str] = None,
     errorsdb: Session = Depends(get_errorsdb),
 ):
-    """Retreive a list of error messages, optionally filtered by NI, facility, or date"""
+    """
+    Retreive a list of error messages, optionally filtered by NI, facility, or date.
+    By default returns message created within the last 7 days.
+    """
     messages = errorsdb.query(Message)
 
-    # Default to showing last 7 days
-    since_datetime: datetime.datetime = (
-        since or datetime.datetime.utcnow() - datetime.timedelta(days=7)
-    )
-    messages = messages.filter(Message.received >= since_datetime)
-
-    # Optionally filter out messages newer than `untildays`
-    if until:
-        messages = messages.filter(Message.received <= until)
-
-    # Optionally filter by facility
-    if facility:
-        messages = messages.filter(Message.facility == facility)
-
-    # Optionally filter by message status
-    if status:
-        messages = messages.filter(Message.msg_status == status)
-
-    # Sort
-    messages = messages.order_by(Message.received.desc())
+    messages = filter_error_messages(messages, facility, since, until, status)
 
     return paginate(messages)
 

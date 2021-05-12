@@ -1,16 +1,25 @@
+import datetime
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Security
-from sqlalchemy.orm import Query as OrmQuery
+from fastapi.param_functions import Query
+from sqlalchemy.orm import Query as ORMQuery
 from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import MasterRecord, Person, WorkItem
+from ukrdc_sqla.errorsdb import Message
 from ukrdc_sqla.ukrdc import PatientRecord
 
-from ukrdc_fastapi.dependencies import get_jtrace, get_ukrdc3
+from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_ukrdc3
 from ukrdc_fastapi.dependencies.auth import Permissions, auth
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema, PersonSchema, WorkItemSchema
+from ukrdc_fastapi.schemas.errors import MessageSchema
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordShortSchema
-from ukrdc_fastapi.utils.filters import find_ids_related_to_masterrecord
+from ukrdc_fastapi.utils.filters.empi import (
+    find_persons_related_to_masterrecord,
+    find_related_masterrecords,
+)
+from ukrdc_fastapi.utils.filters.errors import filter_error_messages
+from ukrdc_fastapi.utils.paginate import Page, paginate
 
 router = APIRouter(prefix="/{record_id}")
 
@@ -40,15 +49,46 @@ def master_record_related(record_id: str, jtrace: Session = Depends(get_jtrace))
     if not record:
         raise HTTPException(404, detail="Master Record not found")
 
-    related_master_ids, _ = find_ids_related_to_masterrecord(
-        [record.nationalid], jtrace
-    )
-
-    other_records = jtrace.query(MasterRecord).filter(
-        MasterRecord.id.in_(related_master_ids), MasterRecord.id != record_id
+    other_records = find_related_masterrecords(record, jtrace).filter(
+        MasterRecord.id != record_id
     )
 
     return other_records.all()
+
+
+@router.get(
+    "/errors/",
+    response_model=Page[MessageSchema],
+    dependencies=[Security(auth.permission(Permissions.READ_EMPI))],
+)
+def master_record_errors(
+    record_id: str,
+    facility: Optional[str] = None,
+    since: Optional[datetime.datetime] = None,
+    until: Optional[datetime.datetime] = None,
+    status: Optional[str] = None,
+    jtrace: Session = Depends(get_jtrace),
+    errorsdb: Session = Depends(get_errorsdb),
+):
+    """
+    Retreive a list of errors related to a particular master record.
+    By default returns message created within the last 7 days.
+    """
+    record: MasterRecord = jtrace.query(MasterRecord).get(record_id)
+
+    related_master_records = find_related_masterrecords(record, jtrace)
+
+    related_national_ids: list[str] = [
+        record.nationalid for record in related_master_records.all()
+    ]
+
+    messages: ORMQuery = errorsdb.query(Message).filter(
+        Message.ni.in_(related_national_ids)
+    )
+
+    messages = filter_error_messages(messages, facility, since, until, status)
+
+    return paginate(messages)
 
 
 @router.get(
@@ -62,7 +102,7 @@ def master_record_workitems(record_id: str, jtrace: Session = Depends(get_jtrace
     if not record:
         raise HTTPException(404, detail="Master Record not found")
 
-    related_workitems: OrmQuery = jtrace.query(WorkItem).filter(
+    related_workitems: ORMQuery = jtrace.query(WorkItem).filter(
         WorkItem.master_id == record.id,
         WorkItem.status == 1,
     )
@@ -81,12 +121,7 @@ def master_record_persons(record_id: str, jtrace: Session = Depends(get_jtrace))
     if not record:
         raise HTTPException(404, detail="Master Record not found")
 
-    _, related_person_ids = find_ids_related_to_masterrecord(
-        [record.nationalid], jtrace
-    )
-
-    persons: OrmQuery = jtrace.query(Person).filter(Person.id.in_(related_person_ids))
-
+    persons = find_persons_related_to_masterrecord(record, jtrace)
     return persons.all()
 
 
@@ -109,17 +144,13 @@ def master_record_patientrecords(
     if not record:
         raise HTTPException(404, detail="Master Record not found")
 
-    _, related_person_ids = find_ids_related_to_masterrecord(
-        [record.nationalid], jtrace
-    )
+    related_persons = find_persons_related_to_masterrecord(record, jtrace)
 
     related_patient_ids = set()
-    for person_id in related_person_ids:
-        person: Optional[Person] = jtrace.query(Person).get(person_id)
-        if person:
-            related_patient_ids.add(person.localid)
+    for person in related_persons:
+        related_patient_ids.add(person.localid)
 
-    patient_records: OrmQuery = ukrdc3.query(PatientRecord).filter(
+    patient_records: ORMQuery = ukrdc3.query(PatientRecord).filter(
         PatientRecord.pid.in_(related_patient_ids)
     )
 

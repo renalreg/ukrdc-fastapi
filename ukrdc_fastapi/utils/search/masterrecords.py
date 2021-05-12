@@ -9,7 +9,7 @@ from stdnum.util import isdigits
 from ukrdc_sqla.empi import MasterRecord, Person, PidXRef
 
 from ukrdc_fastapi.utils import parse_date
-from ukrdc_fastapi.utils.filters import find_ids_related_to_person
+from ukrdc_fastapi.utils.filters.empi import find_related_ids
 
 
 class SearchSet:
@@ -131,7 +131,7 @@ def masterrecord_ids_from_nhs_no(session: Session, nhs_nos: Iterable[str]):
 
 def masterrecord_ids_from_mrn_no(session: Session, mrn_nos: Iterable[str]):
     """
-    Finds IDs from MRN number.
+    Finds Master Record IDs from MRN number.
 
     Naievely we would just match Person.localid, however the EMPI has
     an extra step to work around MRNs (local IDs) changing.
@@ -145,16 +145,17 @@ def masterrecord_ids_from_mrn_no(session: Session, mrn_nos: Iterable[str]):
     conditions = [PidXRef.localid.like(mrn_no) for mrn_no in mrn_nos]
     matched_persons = session.query(Person).join(PidXRef).filter(or_(*conditions)).all()
 
-    matched_ids: set = find_ids_related_to_person(
-        [person.localid for person in matched_persons], session
-    )[0]
+    # Find all related master record IDs by recursing through link records
+    related_master_ids, _ = find_related_ids(
+        session, set(), {person.localid for person in matched_persons}
+    )
 
-    return matched_ids
+    return related_master_ids
 
 
 def masterrecord_ids_from_ukrdc_no(session: Session, ukrdc_nos: Iterable[str]):
     """
-    Finds Ids from UKRDC number
+    Finds Master Record IDs from UKRDC number
 
     Note: We use the pattern {nhs_no}_ since our nationalid field seems
     to have trailing spaces. This has a side-effect of allowing partial matching.
@@ -214,12 +215,12 @@ def masterrecord_ids_from_pidxref_no(session: Session, pid_nos: Iterable[str]):
     conditions = [Person.localid.like(pid_no) for pid_no in pid_nos]
     matched_persons = query.filter(or_(*conditions)).all()
 
-    matched_ids = set()
+    # Find all related master record IDs by recursing through link records
+    related_master_ids, _ = find_related_ids(
+        session, set(), {person.localid for person in matched_persons}
+    )
 
-    for person in matched_persons:
-        matched_ids |= find_ids_related_to_person([person.localid], session)[0]
-
-    return matched_ids
+    return related_master_ids
 
 
 def search_masterrecord_ids(  # pylint: disable=too-many-branches

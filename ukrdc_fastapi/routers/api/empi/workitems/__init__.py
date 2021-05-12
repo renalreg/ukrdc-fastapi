@@ -41,7 +41,6 @@ def workitems_list(
     since: Optional[datetime.datetime] = None,
     until: Optional[datetime.datetime] = None,
     status: Optional[list[int]] = Query([1]),
-    ukrdcid: Optional[list[str]] = Query(None),
     jtrace: Session = Depends(get_jtrace),
 ):
     """Retreive a list of open work items from the EMPI"""
@@ -57,10 +56,6 @@ def workitems_list(
 
     # Get a query of open workitems
     workitems = workitems.filter(WorkItem.status.in_(status))
-
-    # If a list of UKRDCIDs is found in the query, filter by UKRDCIDs
-    if ukrdcid:
-        workitems = filters.workitems_by_ukrdcids(jtrace, workitems, ukrdcid)
 
     # Sort, paginate, and return
     return paginate(workitems.order_by(WorkItem.last_updated.desc()))

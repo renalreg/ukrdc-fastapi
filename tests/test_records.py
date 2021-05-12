@@ -1,6 +1,3 @@
-import re
-
-from ukrdc_fastapi.schemas.errors import MessageSchema as ErrorMessageSchema
 from ukrdc_fastapi.schemas.laborder import LabOrderSchema, ResultItemSchema
 from ukrdc_fastapi.schemas.patientrecord import (
     PatientRecordSchema,
@@ -22,17 +19,6 @@ def test_record(client):
     record = PatientRecordSchema(**response.json())
     assert record.pid == "PYTEST01:PV:00000000A"
 
-
-# Record errors
-
-"""
-def test_record_errors(client):
-    response = client.get("/api/patientrecords/PYTEST01:PV:00000000A/errors")
-    assert response.status_code == 200
-    errors = [ErrorMessageSchema(**item) for item in response.json()]
-    assert len(errors) == 1
-    assert errors[0].id == 1
-"""
 
 # Record lab orders
 

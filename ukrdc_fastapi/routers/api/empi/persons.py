@@ -8,7 +8,7 @@ from ukrdc_sqla.empi import MasterRecord, Person
 from ukrdc_fastapi.dependencies import get_jtrace
 from ukrdc_fastapi.dependencies.auth import Permissions, auth
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema, PersonSchema
-from ukrdc_fastapi.utils.filters import find_ids_related_to_person
+from ukrdc_fastapi.utils.filters.empi import find_masterrecords_related_to_person
 from ukrdc_fastapi.utils.paginate import Page, paginate
 
 router = APIRouter()
@@ -53,10 +53,5 @@ def person_masterrecords(person_id: str, jtrace: Session = Depends(get_jtrace)):
     if not person:
         raise HTTPException(404, detail="EMPI Person not found")
 
-    related_masterrecord_ids, _ = find_ids_related_to_person([person.localid], jtrace)
-
-    masterrecords: OrmQuery = jtrace.query(MasterRecord).filter(
-        MasterRecord.id.in_(related_masterrecord_ids)
-    )
-
+    masterrecords = find_masterrecords_related_to_person(person, jtrace)
     return masterrecords.all()

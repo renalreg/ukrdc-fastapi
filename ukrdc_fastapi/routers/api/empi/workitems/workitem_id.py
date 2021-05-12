@@ -12,7 +12,7 @@ from ukrdc_sqla.empi import MasterRecord, WorkItem
 from ukrdc_fastapi.dependencies import get_jtrace, get_mirth, get_redis
 from ukrdc_fastapi.dependencies.auth import Permissions, User, auth
 from ukrdc_fastapi.schemas.empi import WorkItemSchema
-from ukrdc_fastapi.utils import filters
+from ukrdc_fastapi.utils.filters.empi import PersonMasterLink, find_related_link_records
 from ukrdc_fastapi.utils.mirth import (
     MirthMessageResponseSchema,
     build_close_workitem_message,
@@ -176,9 +176,7 @@ async def workitem_merge(
         raise HTTPException(404, detail="Work item not found")
 
     # Get a set of related link record (id, person_id, master_id) tuples
-    related_person_master_links: set[
-        filters.PersonMasterLink
-    ] = filters.find_related_link_records(
+    related_person_master_links: set[PersonMasterLink] = find_related_link_records(
         jtrace, workitem.master_id, person_id=workitem.person_id
     )
 

@@ -14,21 +14,6 @@ def test_workitems_list(client):
     assert returned_ids == {1, 2, 3}
 
 
-def test_workitems_list_ukrdcid_filter_single(client):
-    response = client.get("/api/empi/workitems?ukrdcid=999999999")
-    assert response.status_code == 200
-    returned_ids = {item["id"] for item in response.json()["items"]}
-    assert returned_ids == {1, 2}
-
-
-def test_workitems_list_ukrdcid_filter_multiple(client):
-    response = client.get("/api/empi/workitems?ukrdcid=999999999&ukrdcid=999999911")
-    assert response.status_code == 200
-
-    returned_ids = {item["id"] for item in response.json()["items"]}
-    assert returned_ids == {1, 2, 3}
-
-
 def test_workitems_list_filter_since(client):
     response = client.get("/api/empi/workitems?since=2021-01-01T00:00:00")
     assert response.status_code == 200
