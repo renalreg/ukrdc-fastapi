@@ -2,8 +2,6 @@ import datetime
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Security
-from fastapi_pagination import Page
-from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import MasterRecord, WorkItem
 from ukrdc_sqla.errorsdb import Facility, Message
@@ -12,8 +10,9 @@ from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace
 from ukrdc_fastapi.dependencies.auth import Permissions, auth
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema, WorkItemShortSchema
 from ukrdc_fastapi.schemas.errors import MessageSchema
+from ukrdc_fastapi.utils.paginate import Page, paginate
 
-router = APIRouter()
+router = APIRouter(tags=["Errors"])
 
 
 class ExtendedErrorSchema(MessageSchema):

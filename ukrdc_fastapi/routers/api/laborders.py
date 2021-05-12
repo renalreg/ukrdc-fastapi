@@ -9,7 +9,7 @@ from ukrdc_fastapi.dependencies.auth import Permissions, auth
 from ukrdc_fastapi.schemas.laborder import LabOrderSchema, LabOrderShortSchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
 
-router = APIRouter()
+router = APIRouter(tags=["Lab Orders"])
 
 
 @router.get(

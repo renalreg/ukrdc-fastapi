@@ -2,7 +2,7 @@ from fastapi import APIRouter
 
 from . import masterrecords, persons, search, workitems
 
-router = APIRouter()
+router = APIRouter(tags=["Patient Index"])
 
 router.include_router(workitems.router, prefix="/workitems")
 router.include_router(persons.router, prefix="/persons")

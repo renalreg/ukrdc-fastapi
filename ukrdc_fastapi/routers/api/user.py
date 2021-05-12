@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 from ukrdc_fastapi.dependencies.auth import User, auth
 
-router = APIRouter()
+router = APIRouter(tags=["User Info"])
 
 
 class UserSchema(BaseModel):

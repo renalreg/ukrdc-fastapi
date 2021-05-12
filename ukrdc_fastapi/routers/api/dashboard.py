@@ -14,7 +14,7 @@ from ukrdc_fastapi.config import settings
 from ukrdc_fastapi.dependencies import get_jtrace, get_redis
 from ukrdc_fastapi.dependencies.auth import Permissions, auth
 
-router = APIRouter()
+router = APIRouter(tags=["Summary Dashboard"])
 
 
 class ChannelDashStatisticsSchema(ChannelStatistics):

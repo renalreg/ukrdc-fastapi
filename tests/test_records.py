@@ -1,5 +1,6 @@
 import re
 
+from ukrdc_fastapi.schemas.errors import MessageSchema as ErrorMessageSchema
 from ukrdc_fastapi.schemas.laborder import LabOrderSchema, ResultItemSchema
 from ukrdc_fastapi.schemas.patientrecord import (
     PatientRecordSchema,
@@ -21,6 +22,17 @@ def test_record(client):
     record = PatientRecordSchema(**response.json())
     assert record.pid == "PYTEST01:PV:00000000A"
 
+
+# Record errors
+
+"""
+def test_record_errors(client):
+    response = client.get("/api/patientrecords/PYTEST01:PV:00000000A/errors")
+    assert response.status_code == 200
+    errors = [ErrorMessageSchema(**item) for item in response.json()]
+    assert len(errors) == 1
+    assert errors[0].id == 1
+"""
 
 # Record lab orders
 
@@ -169,7 +181,7 @@ def test_record_surveys_missing(client):
 
 def test_record_export_data(client, httpx_session):
     response = client.post(
-        "/api/patientrecords/PYTEST01:PV:00000000A/export-pv/", json={}
+        "/api/patientrecords/PYTEST01:PV:00000000A/export/pv/", json={}
     )
     assert response.json() == {
         "message": "<result><pid>PYTEST01:PV:00000000A</pid><tests>FULL</tests><documents>FULL</documents></result>",
@@ -179,7 +191,7 @@ def test_record_export_data(client, httpx_session):
 
 def test_record_export_tests(client, httpx_session):
     response = client.post(
-        "/api/patientrecords/PYTEST01:PV:00000000A/export-pv-tests/", json={}
+        "/api/patientrecords/PYTEST01:PV:00000000A/export/pv-tests/", json={}
     )
     assert response.json() == {
         "status": "success",
@@ -189,7 +201,7 @@ def test_record_export_tests(client, httpx_session):
 
 def test_record_export_docs(client, httpx_session):
     response = client.post(
-        "/api/patientrecords/PYTEST01:PV:00000000A/export-pv-docs/", json={}
+        "/api/patientrecords/PYTEST01:PV:00000000A/export/pv-docs/", json={}
     )
     assert response.json() == {
         "message": "<result><pid>PYTEST01:PV:00000000A</pid><documents>FULL</documents></result>",
@@ -199,7 +211,7 @@ def test_record_export_docs(client, httpx_session):
 
 def test_record_export_radar(client, httpx_session):
     response = client.post(
-        "/api/patientrecords/PYTEST01:PV:00000000A/export-radar/", json={}
+        "/api/patientrecords/PYTEST01:PV:00000000A/export/radar/", json={}
     )
     assert response.json() == {
         "message": "<result><pid>PYTEST01:PV:00000000A</pid></result>",

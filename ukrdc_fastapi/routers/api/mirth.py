@@ -15,7 +15,7 @@ from ukrdc_fastapi.utils.mirth import (
     get_cached_channels_with_statistics,
 )
 
-router = APIRouter()
+router = APIRouter(tags=["Mirth"])
 
 
 class MirthPage(OrmModel):

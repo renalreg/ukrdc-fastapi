@@ -21,43 +21,11 @@ def root():
     return RedirectResponse(url="./docs")
 
 
-router.include_router(
-    dashboard.router,
-    prefix="/dash",
-    tags=["Summary Dashboard"],
-)
-router.include_router(
-    user.router,
-    prefix="/user",
-    tags=["User Info"],
-)
-router.include_router(
-    empi.router,
-    prefix="/empi",
-    tags=["Master-Patient Index"],
-)
-router.include_router(
-    patientrecords.router,
-    prefix="/patientrecords",
-    tags=["Patient Records"],
-)
-router.include_router(
-    laborders.router,
-    prefix="/laborders",
-    tags=["Lab Orders"],
-)
-router.include_router(
-    errors.router,
-    prefix="/errors",
-    tags=["Errors"],
-)
-router.include_router(
-    resultitems.router,
-    prefix="/resultitems",
-    tags=["Result Items"],
-)
-router.include_router(
-    mirth.router,
-    prefix="/mirth",
-    tags=["Mirth"],
-)
+router.include_router(dashboard.router, prefix="/dash")
+router.include_router(user.router, prefix="/user")
+router.include_router(empi.router, prefix="/empi")
+router.include_router(patientrecords.router, prefix="/patientrecords")
+router.include_router(laborders.router, prefix="/laborders")
+router.include_router(errors.router, prefix="/errors")
+router.include_router(resultitems.router, prefix="/resultitems")
+router.include_router(mirth.router, prefix="/mirth")
