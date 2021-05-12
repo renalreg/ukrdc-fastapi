@@ -4,7 +4,6 @@ from pathlib import Path
 
 import fakeredis
 import pytest
-from fastapi.security import HTTPBearer
 from fastapi.testclient import TestClient
 from mirth_client import MirthAPI
 from pytest_httpx import HTTPXMock
@@ -13,6 +12,8 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 from ukrdc_sqla.empi import Base as JtraceBase
 from ukrdc_sqla.empi import LinkRecord, MasterRecord, Person, WorkItem
+from ukrdc_sqla.errorsdb import Base as ErrorsBase
+from ukrdc_sqla.errorsdb import Message as ErrorMessage
 from ukrdc_sqla.pkb import PKBLink
 from ukrdc_sqla.ukrdc import Address
 from ukrdc_sqla.ukrdc import Base as UKRDC3Base
@@ -36,6 +37,7 @@ from ukrdc_sqla.ukrdc import (
 
 from ukrdc_fastapi.dependencies import (
     auth,
+    get_errorsdb,
     get_jtrace,
     get_mirth,
     get_redis,
@@ -439,6 +441,41 @@ def populate_jtrace_session(session):
     session.commit()
 
 
+def populate_errorsdb_session(session):
+    # Mock error relating to MR 1, WORKITEMS 1 and 2
+    error_1 = ErrorMessage(
+        id=1,
+        message_id=1,
+        channel_id="MIRTH-CHANNEL-UUID",
+        received=datetime(2021, 1, 1),
+        msg_status="ERROR1",
+        ni="999999999",
+        filename="FILENAME_1.XML",
+        facility="PATIENT_RECORD_SENDING_FACILITY_1",
+        error="ERROR MESSAGE 1",
+        status="STATUS1",
+    )
+
+    # Mock error unrelated to workitems
+    error_2 = ErrorMessage(
+        id=2,
+        message_id=2,
+        channel_id="MIRTH-CHANNEL-UUID",
+        received=datetime(2021, 1, 1),
+        msg_status="ERROR2",
+        ni=None,
+        filename="FILENAME_2.XML",
+        facility="MOCK_SENDING_FACILITY_1",
+        error="ERROR MESSAGE 2",
+        status="STATUS2",
+    )
+
+    session.add(error_1)
+    session.add(error_2)
+
+    session.commit()
+
+
 @pytest.fixture(scope="function")
 def jtrace_sessionmaker():
     """
@@ -478,6 +515,25 @@ def ukrdc3_sessionmaker():
 
 
 @pytest.fixture(scope="function")
+def errorsdb_sessionmaker():
+    """
+    Create a new function-scoped in-memory ERRORS database,
+    populate with test data, and return the session class
+    """
+    engine = create_engine(
+        "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
+    )
+    ErrorsTestSession = sessionmaker(
+        autocommit=False,
+        autoflush=False,
+        bind=engine,
+    )
+    ErrorsBase.metadata.create_all(bind=engine)
+    populate_errorsdb_session(ErrorsTestSession())
+    return ErrorsTestSession
+
+
+@pytest.fixture(scope="function")
 def ukrdc3_session(ukrdc3_sessionmaker):
     """Create and yield a fresh in-memory test UKRDC3 database session"""
     db = ukrdc3_sessionmaker()
@@ -498,13 +554,23 @@ def jtrace_session(jtrace_sessionmaker):
 
 
 @pytest.fixture(scope="function")
+def errorsdb_session(errorsdb_sessionmaker):
+    """Create and yield a fresh in-memory test ERRORS database session"""
+    db = errorsdb_sessionmaker()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+@pytest.fixture(scope="function")
 def redis_session():
     """Create a fresh in-memory Redis database session"""
     return fakeredis.FakeStrictRedis(decode_responses=True)
 
 
 @pytest.fixture(scope="function")
-def app(jtrace_session, ukrdc3_session, redis_session):
+def app(jtrace_session, ukrdc3_session, errorsdb_session, redis_session):
     from ukrdc_fastapi.main import app
 
     async def _get_mirth():
@@ -520,11 +586,15 @@ def app(jtrace_session, ukrdc3_session, redis_session):
     def _get_jtrace():
         return jtrace_session
 
+    def _get_errorsdb():
+        return errorsdb_session
+
     # Override FastAPI dependencies to point to function-scoped sessions
     app.dependency_overrides[get_mirth] = _get_mirth
     app.dependency_overrides[get_redis] = _get_redis
     app.dependency_overrides[get_ukrdc3] = _get_ukrdc3
     app.dependency_overrides[get_jtrace] = _get_jtrace
+    app.dependency_overrides[get_errorsdb] = _get_errorsdb
 
     return app
 
