@@ -27,11 +27,6 @@ def test_laborder(client):
     assert order.id == "LABORDER1"
 
 
-def test_laborder_not_found(client):
-    response = client.get("/api/laborders/MISSING")
-    assert response.status_code == 404
-
-
 def test_laborder_delete(client, ukrdc3_session):
     laborder = LabOrder(
         id="LABORDER_TEMP",

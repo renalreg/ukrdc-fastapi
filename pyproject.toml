@@ -84,3 +84,6 @@ minversion = "6.0"
 testpaths = [
   "tests",
 ]
+
+[tool.coverage.report]
+exclude_lines = ["raise HTTPException"]

@@ -24,11 +24,6 @@ def test_masterrecord_detail(client):
     assert mr.id == 1
 
 
-def test_masterrecord_detail_not_found(client):
-    response = client.get("/api/empi/masterrecords/9999")
-    assert response.status_code == 404
-
-
 def test_masterrecord_related(client, jtrace_session):
     # Create a new master record
     master_record_3 = MasterRecord(

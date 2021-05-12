@@ -1,7 +1,18 @@
 import re
 
-from ukrdc_fastapi.schemas.laborder import LabOrderSchema
-from ukrdc_fastapi.schemas.patientrecord import PatientRecordSchema
+from ukrdc_fastapi.schemas.laborder import LabOrderSchema, ResultItemSchema
+from ukrdc_fastapi.schemas.patientrecord import (
+    PatientRecordSchema,
+    PatientRecordShortSchema,
+)
+
+
+def test_records(client):
+    response = client.get("/api/patientrecords")
+    assert response.status_code == 200
+    records = [PatientRecordShortSchema(**item) for item in response.json()["items"]]
+    record_ids = {record.pid for record in records}
+    assert record_ids == {"PYTEST01:PV:00000000A"}
 
 
 def test_record(client):
@@ -9,17 +20,6 @@ def test_record(client):
     assert response.status_code == 200
     record = PatientRecordSchema(**response.json())
     assert record.pid == "PYTEST01:PV:00000000A"
-
-
-def test_record_missing(client):
-    response = client.get("/api/patientrecords/MISSING_PID")
-    assert response.status_code == 404
-    assert response.json() == {"detail": "Record not found"}
-
-
-def test_records_no_ni(client):
-    response = client.get("/api/patientrecords")
-    assert response.status_code == 200
 
 
 # Record lab orders
@@ -36,6 +36,16 @@ def test_record_laborders(client):
 def test_record_laborders_missing(client):
     response = client.get("/api/patientrecords/MISSING_PID/laborders")
     assert response.json() == []
+
+
+# Record result items
+
+
+def test_record_laborders(client):
+    response = client.get("/api/patientrecords/PYTEST01:PV:00000000A/resultitems")
+    assert response.status_code == 200
+    orders = [ResultItemSchema(**item) for item in response.json()["items"]]
+    print(orders)
 
 
 # Record observations

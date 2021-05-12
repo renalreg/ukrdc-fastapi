@@ -50,22 +50,12 @@ def test_workitem_detail(client):
     assert wi.id == 1
 
 
-def test_workitem_detail_not_found(client):
-    response = client.get("/api/empi/workitems/9999")
-    assert response.status_code == 404
-
-
 def test_workitem_related(client):
     response = client.get("/api/empi/workitems/1/related")
     assert response.status_code == 200
 
     returned_ids = {item["id"] for item in response.json()}
     assert returned_ids == {2}
-
-
-def test_workitem_related_not_found(client):
-    response = client.get("/api/empi/workitems/9999/related")
-    assert response.status_code == 404
 
 
 @pytest.mark.parametrize("workitem_id", [1, 2, 3])
@@ -80,14 +70,6 @@ def test_workitem_close(client, workitem_id, httpx_session):
     assert "<status>3</status>" in message
     assert f"<workitem>{workitem_id}</workitem>" in message
     assert "<updatedBy>TEST@UKRDC_FASTAPI</updatedBy>" in message
-
-
-def test_workitem_close_not_found(client):
-    response = client.post(
-        f"/api/empi/workitems/9999/close/",
-        json={},
-    )
-    assert response.status_code == 404
 
 
 def test_workitem_merge(client, jtrace_session, httpx_session):
@@ -144,11 +126,6 @@ def test_workitem_merge_nothing_to_merge(client):
     # Expect a 400 error since only 1 master record is associated
     # with this work item, so nothing to merge
     assert response.status_code == 400
-
-
-def test_workitem_merge_not_found(client):
-    response = client.post(f"/api/empi/workitems/9999/merge/", json={})
-    assert response.status_code == 404
 
 
 def test_workitem_unlink(client, httpx_session):
