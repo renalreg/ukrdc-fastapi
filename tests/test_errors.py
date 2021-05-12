@@ -26,16 +26,6 @@ def test_errors_list_facility(client):
     assert returned_ids == {2}
 
 
-def test_errors_list_status(client):
-    since = datetime.datetime(2020, 1, 1, 0, 0, 0).isoformat()
-    until = datetime.datetime(2021, 12, 12, 23, 59, 59).isoformat()
-    response = client.get(f"/api/errors/?since={since}&until={until}&status=ERROR2")
-    assert response.status_code == 200
-    messages = [MessageSchema(**item) for item in response.json()["items"]]
-    returned_ids = {item.id for item in messages}
-    assert returned_ids == {2}
-
-
 def test_errors_detail(client):
     response = client.get("/api/errors/1")
     error = ExtendedErrorSchema(**response.json())

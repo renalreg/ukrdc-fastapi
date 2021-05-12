@@ -40,12 +40,12 @@ def paginate_error_query(query: Query, jtrace: Session) -> Page[ErrorSchema]:
     Returns:
         [type]: [description]
     """
-    page = paginate(query)
-    page.items = [
+    page = paginate(query)  # type: ignore
+    page.items = [  # type: ignore
         make_error(MessageSchema(**item.dict()), jtrace) if item.ni else item
-        for item in page.items
+        for item in page.items  # type: ignore
     ]
-    return page
+    return page  # type: ignore
 
 
 def make_error(message: MessageSchema, jtrace: Session) -> ErrorSchema:
@@ -69,6 +69,17 @@ def make_error(message: MessageSchema, jtrace: Session) -> ErrorSchema:
 
 
 def make_extended_error(message: MessageSchema, jtrace: Session):
+    """
+    Take a basic errorsdb message and extend it to include
+    associated master records and work items.
+
+    Args:
+        message (MessageSchema): ErrorsDB message object
+        jtrace (Session): EMPI session
+
+    Returns:
+        ErrorSchema: Expanded error message object
+    """
     # Get masterrecords directly referenced by the error
     direct_records: list[MasterRecord] = (
         jtrace.query(MasterRecord).filter(MasterRecord.nationalid == message.ni).all()

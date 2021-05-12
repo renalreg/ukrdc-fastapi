@@ -5,9 +5,9 @@ from fastapi_pagination.default import Page as BasePage
 from fastapi_pagination.default import Params as BaseParams
 from fastapi_pagination.ext.sqlalchemy import paginate, paginate_query
 
-__all__ = ["PaginationParams", "Page", "paginate", "paginate_query"]
+__all__ = ["Page", "paginate", "paginate_query"]
 
-T = TypeVar("T")
+T = TypeVar("T")  # pylint: disable=invalid-name
 
 
 class Params(BaseParams):
