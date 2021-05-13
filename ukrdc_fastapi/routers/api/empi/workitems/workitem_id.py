@@ -144,7 +144,7 @@ def workitem_errors(
 
     workitem_ni: str = workitem.master_record.nationalid
 
-    messages: query = errorsdb.query(Message).filter(Message.ni == workitem_ni)
+    messages = errorsdb.query(Message).filter(Message.ni == workitem_ni)
 
     messages = filter_error_messages(
         messages, facility, since, until, status, default_since_delta=365
