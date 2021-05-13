@@ -10,6 +10,7 @@ from ukrdc_sqla.ukrdc import PatientRecord
 
 from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_ukrdc3
 from ukrdc_fastapi.dependencies.auth import Permissions, auth
+from ukrdc_fastapi.schemas.base import OrmModel
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema, PersonSchema, WorkItemSchema
 from ukrdc_fastapi.schemas.errors import MessageSchema
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordShortSchema
@@ -19,6 +20,12 @@ from ukrdc_fastapi.utils.filters.empi import (
 )
 from ukrdc_fastapi.utils.filters.errors import filter_error_messages
 from ukrdc_fastapi.utils.paginate import Page, paginate
+
+
+class MasterRecordStatisticsSchema(OrmModel):
+    workitems: int
+    errors: int
+
 
 router = APIRouter(prefix="/{record_id}")
 
@@ -35,6 +42,34 @@ def master_record_detail(record_id: str, jtrace: Session = Depends(get_jtrace)):
         raise HTTPException(404, detail="Master Record not found")
 
     return record
+
+
+@router.get(
+    "/statistics",
+    response_model=MasterRecordStatisticsSchema,
+    dependencies=[Security(auth.permission(Permissions.READ_EMPI))],
+)
+def master_record_statistics(
+    record_id: str,
+    jtrace: Session = Depends(get_jtrace),
+    errorsdb: Session = Depends(get_errorsdb),
+):
+    """Retreive a particular master record from the EMPI"""
+    record: MasterRecord = jtrace.query(MasterRecord).get(record_id)
+    if not record:
+        raise HTTPException(404, detail="Master Record not found")
+
+    errors = errorsdb.query(Message).filter(Message.ni == record.nationalid)
+    errors = filter_error_messages(errors, None, None, None, "ERROR")
+
+    workitems = jtrace.query(WorkItem).filter(
+        WorkItem.master_id == record.id,
+        WorkItem.status == 1,
+    )
+
+    return MasterRecordStatisticsSchema(
+        workitems=workitems.count(), errors=errors.count()
+    )
 
 
 @router.get(

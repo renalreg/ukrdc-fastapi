@@ -22,7 +22,9 @@ class MasterRecordSchema(OrmModel):
     links = LinkSet(
         {
             "self": UrlFor("master_record_detail", {"record_id": "<id>"}),
+            "statistics": UrlFor("master_record_statistics", {"record_id": "<id>"}),
             "related": UrlFor("master_record_related", {"record_id": "<id>"}),
+            "errors": UrlFor("master_record_errors", {"record_id": "<id>"}),
             "persons": UrlFor("master_record_persons", {"record_id": "<id>"}),
             "workitems": UrlFor("master_record_workitems", {"record_id": "<id>"}),
             "patientrecords": UrlFor(
