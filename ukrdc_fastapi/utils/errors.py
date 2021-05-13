@@ -7,65 +7,21 @@ messages into something more useful.
 
 NOTE: This entire submodule is essentially a hack to get extra info
 not found in the errorsdb. Ideally we should look to include some of
-this by default in the database, as this stuff adds a tonne of wasted
-time to every errors query.
+this by default in the database.
 """
 
 from typing import Optional
 
-from sqlalchemy.orm import Query, Session
+from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import MasterRecord, WorkItem
 
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema, WorkItemShortSchema
 from ukrdc_fastapi.schemas.errors import MessageSchema
-from ukrdc_fastapi.utils.paginate import Page, paginate
 
 
-class ErrorSchema(MessageSchema):
+class ExtendedErrorSchema(MessageSchema):
     master_records: Optional[list[MasterRecordSchema]]
-
-
-class ExtendedErrorSchema(ErrorSchema):
     work_items: Optional[list[WorkItemShortSchema]]
-
-
-def paginate_error_query(query: Query, jtrace: Session) -> Page[ErrorSchema]:
-    """Take an errorsdb query, paginate the query, and expand the
-    rows into ErrorSchema objects included associated MasterRecords
-
-    Args:
-        query (Query): [description]
-        jtrace (Session): [description]
-
-    Returns:
-        [type]: [description]
-    """
-    page = paginate(query)  # type: ignore
-    page.items = [  # type: ignore
-        make_error(MessageSchema(**item.dict()), jtrace) if item.ni else item
-        for item in page.items  # type: ignore
-    ]
-    return page  # type: ignore
-
-
-def make_error(message: MessageSchema, jtrace: Session) -> ErrorSchema:
-    """
-    Take a basic errorsdb message and extend it to include
-    associated master records.
-
-    Args:
-        message (MessageSchema): ErrorsDB message object
-        jtrace (Session): EMPI session
-
-    Returns:
-        ErrorSchema: Expanded error message object
-    """
-    # Get masterrecords directly referenced by the error
-    direct_records: list[MasterRecord] = (
-        jtrace.query(MasterRecord).filter(MasterRecord.nationalid == message.ni).all()
-    )
-
-    return ErrorSchema(**message.dict(), master_records=direct_records)
 
 
 def make_extended_error(message: MessageSchema, jtrace: Session):

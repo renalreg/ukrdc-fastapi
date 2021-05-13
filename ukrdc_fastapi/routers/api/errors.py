@@ -8,21 +8,16 @@ from ukrdc_sqla.errorsdb import Facility, Message
 from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace
 from ukrdc_fastapi.dependencies.auth import Permissions, auth
 from ukrdc_fastapi.schemas.errors import MessageSchema
-from ukrdc_fastapi.utils.errors import (
-    ErrorSchema,
-    ExtendedErrorSchema,
-    make_extended_error,
-    paginate_error_query,
-)
+from ukrdc_fastapi.utils.errors import ExtendedErrorSchema, make_extended_error
 from ukrdc_fastapi.utils.filters.errors import filter_error_messages
-from ukrdc_fastapi.utils.paginate import Page
+from ukrdc_fastapi.utils.paginate import Page, paginate
 
 router = APIRouter(tags=["Errors"])
 
 
 @router.get(
     "/",
-    response_model=Page[ErrorSchema],
+    response_model=Page[MessageSchema],
     dependencies=[Security(auth.permission(Permissions.READ_MIRTH))],
 )
 def error_messages(
@@ -31,7 +26,6 @@ def error_messages(
     until: Optional[datetime.datetime] = None,
     status: str = "ERROR",
     errorsdb: Session = Depends(get_errorsdb),
-    jtrace: Session = Depends(get_jtrace),
 ):
     """
     Retreive a list of error messages, optionally filtered by NI, facility, or date.
@@ -43,7 +37,7 @@ def error_messages(
         messages, facility, since, until, status, default_since_delta=365
     )
 
-    return paginate_error_query(messages, jtrace)
+    return paginate(messages)
 
 
 @router.get(

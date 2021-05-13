@@ -11,14 +11,14 @@ from ukrdc_sqla.ukrdc import PatientRecord
 from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_ukrdc3
 from ukrdc_fastapi.dependencies.auth import Permissions, auth
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema, PersonSchema, WorkItemSchema
+from ukrdc_fastapi.schemas.errors import MessageSchema
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordShortSchema
-from ukrdc_fastapi.utils.errors import ErrorSchema, paginate_error_query
 from ukrdc_fastapi.utils.filters.empi import (
     find_persons_related_to_masterrecord,
     find_related_masterrecords,
 )
 from ukrdc_fastapi.utils.filters.errors import filter_error_messages
-from ukrdc_fastapi.utils.paginate import Page
+from ukrdc_fastapi.utils.paginate import Page, paginate
 
 router = APIRouter(prefix="/{record_id}")
 
@@ -57,7 +57,7 @@ def master_record_related(record_id: str, jtrace: Session = Depends(get_jtrace))
 
 @router.get(
     "/errors/",
-    response_model=Page[ErrorSchema],
+    response_model=Page[MessageSchema],
     dependencies=[Security(auth.permission(Permissions.READ_EMPI))],
 )
 def master_record_errors(
@@ -89,7 +89,7 @@ def master_record_errors(
         messages, facility, since, until, status, default_since_delta=365
     )
 
-    return paginate_error_query(messages, jtrace)
+    return paginate(messages)
 
 
 @router.get(
