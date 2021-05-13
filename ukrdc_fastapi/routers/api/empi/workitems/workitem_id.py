@@ -1,3 +1,4 @@
+import datetime
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Security
@@ -6,13 +7,16 @@ from mirth_client import MirthAPI
 from pydantic import BaseModel
 from redis import Redis
 from sqlalchemy import or_
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, query
 from ukrdc_sqla.empi import MasterRecord, WorkItem
+from ukrdc_sqla.errorsdb import Message
 
-from ukrdc_fastapi.dependencies import get_jtrace, get_mirth, get_redis
+from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_mirth, get_redis
 from ukrdc_fastapi.dependencies.auth import Permissions, User, auth
 from ukrdc_fastapi.schemas.empi import WorkItemSchema
+from ukrdc_fastapi.schemas.errors import MessageSchema
 from ukrdc_fastapi.utils.filters.empi import PersonMasterLink, find_related_link_records
+from ukrdc_fastapi.utils.filters.errors import filter_error_messages
 from ukrdc_fastapi.utils.mirth import (
     MirthMessageResponseSchema,
     build_close_workitem_message,
@@ -21,6 +25,7 @@ from ukrdc_fastapi.utils.mirth import (
     build_update_workitem_message,
     get_channel_from_name,
 )
+from ukrdc_fastapi.utils.paginate import Page, paginate
 
 router = APIRouter(prefix="/{workitem_id}")
 
@@ -103,16 +108,49 @@ def workitem_related(workitem_id: int, jtrace: Session = Depends(get_jtrace)):
     if not workitem:
         raise HTTPException(404, detail="Work item not found")
 
+    filters = []
+    if workitem.master_record:
+        filters.append(WorkItem.master_id == workitem.master_id)
+    if workitem.person:
+        filters.append(WorkItem.person_id == workitem.person_id)
+
     other_workitems = jtrace.query(WorkItem).filter(
-        or_(
-            WorkItem.master_id == workitem.master_id,
-            WorkItem.person_id == workitem.person_id,
-        ),
+        or_(*filters),
         WorkItem.id != workitem.id,
         WorkItem.status == 1,
     )
 
     return other_workitems.all()
+
+
+@router.get(
+    "/errors/",
+    response_model=Page[MessageSchema],
+    dependencies=[Security(auth.permission(Permissions.READ_WORKITEMS))],
+)
+def workitem_errors(
+    workitem_id: int,
+    facility: Optional[str] = None,
+    since: Optional[datetime.datetime] = None,
+    until: Optional[datetime.datetime] = None,
+    status: str = "ERROR",
+    jtrace: Session = Depends(get_jtrace),
+    errorsdb: Session = Depends(get_errorsdb),
+):
+    """Retreive a list of other work items related to a particular work item"""
+    workitem = jtrace.query(WorkItem).get(workitem_id)
+    if not workitem:
+        raise HTTPException(404, detail="Work item not found")
+
+    workitem_ni: str = workitem.master_record.nationalid
+
+    messages: query = errorsdb.query(Message).filter(Message.ni == workitem_ni)
+
+    messages = filter_error_messages(
+        messages, facility, since, until, status, default_since_delta=365
+    )
+
+    return paginate(messages)
 
 
 @router.post(
