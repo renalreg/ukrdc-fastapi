@@ -12,7 +12,7 @@ from ukrdc_fastapi.utils.errors import ExtendedErrorSchema, make_extended_error
 from ukrdc_fastapi.utils.filters.errors import filter_error_messages
 from ukrdc_fastapi.utils.paginate import Page, paginate
 
-router = APIRouter(tags=["Errors"])
+router = APIRouter(tags=["Errors/Messages"])
 
 
 @router.get(
