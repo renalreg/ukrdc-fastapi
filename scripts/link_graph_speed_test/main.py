@@ -1,0 +1,145 @@
+from dataclasses import dataclass
+from time import time
+
+from sqlalchemy import or_
+from sqlalchemy.orm import Session
+from sqlalchemy.orm.query import Query
+from ukrdc_sqla.empi import LinkRecord, MasterRecord
+
+from ukrdc_fastapi.dependencies.database import JtraceSession
+
+
+class Timer(object):
+    def __init__(self, description):
+        self.description = description
+
+    def __enter__(self):
+        self.start = time()
+
+    def __exit__(self, type, value, traceback):
+        self.end = time()
+        print(f"{self.description}: {self.end - self.start}")
+
+
+def native(jtrace: Session, seen_master_ids: set[int], seen_person_ids: set[int]):
+    found_new: bool = True
+    while found_new:
+        links: list[LinkRecord] = (
+            jtrace.query(LinkRecord)
+            .filter(
+                (LinkRecord.master_id.in_(seen_master_ids))
+                | (LinkRecord.person_id.in_(seen_person_ids))
+            )
+            .all()
+        )
+
+        master_ids: set[int] = {item.master_id for item in links}
+        person_ids: set[int] = {item.person_id for item in links}
+        if seen_master_ids.issuperset(master_ids) and seen_person_ids.issuperset(
+            person_ids
+        ):
+            found_new = False
+        seen_master_ids |= master_ids
+        seen_person_ids |= person_ids
+    return (seen_master_ids, seen_person_ids)
+
+
+def sql(jtrace: Session, seen_master_ids: set[int], seen_person_ids: set[int]):
+    """
+    Construct sets of related master records and person records.
+    This performs a recursive search of associated link records,
+    fetching the master and person record IDs from each link record.
+    """
+    mr_set = set()
+    pr_set = set()
+    top = (
+        jtrace.query(LinkRecord.master_id, LinkRecord.person_id)
+        .filter(
+            LinkRecord.master_id.in_(seen_master_ids)
+            | LinkRecord.person_id.in_(seen_person_ids)
+        )
+        .cte(name="cte", recursive=True)
+    )
+
+    bottom = jtrace.query(LinkRecord.master_id, LinkRecord.person_id).join(
+        top,
+        or_(
+            LinkRecord.master_id == top.c.master_id,
+            LinkRecord.person_id == top.c.person_id,
+        ),
+    )
+
+    recursive = top.union(bottom)
+
+    q = jtrace.query(recursive)
+    for item in q.all():
+        mr_set.add(item.master_id)
+        pr_set.add(item.person_id)
+
+    return (mr_set, pr_set)
+
+
+def _find_related_links(jtrace: Session, link_records: Query):
+    return jtrace.query(LinkRecord.master_id, LinkRecord.person_id).filter(
+        (LinkRecord.master_id.in_({r.master_id for r in link_records}))
+        | (LinkRecord.person_id.in_({r.person_id for r in link_records}))
+    )
+
+
+def native_recursive(
+    jtrace: Session, seen_master_ids: set[int], seen_person_ids: set[int]
+):
+    links = jtrace.query(LinkRecord.master_id, LinkRecord.person_id).filter(
+        LinkRecord.master_id.in_(seen_master_ids)
+        | LinkRecord.person_id.in_(seen_person_ids)
+    )
+    previous_count = 0
+    current_count = links.count()
+
+    while current_count != previous_count:
+        previous_count = current_count
+        links = _find_related_links(jtrace, links)
+        current_count = links.count()
+
+    mr_set = set()
+    pr_set = set()
+    for item in links.all():
+        mr_set.add(item.master_id)
+        pr_set.add(item.person_id)
+
+    return (mr_set, pr_set)
+
+
+if __name__ == "__main__":
+    results = {}
+
+    def _check_results(r):
+        if r[0] != results[record.id]:
+            print(f"WARNING: Different results for {record.id}")
+            print("Expected:")
+            print(results[record.id])
+            print("Got:")
+            print(r[0])
+
+    print("Setting up...")
+    session = JtraceSession()
+    records = session.query(MasterRecord).limit(100).all()
+    print("Starting test...")
+
+    for record in records:
+        results[record.id] = {}
+
+    with Timer("Native"):
+        for record in records:
+            r = native(session, {record.id}, set())
+            results[record.id] = r[0]
+
+    with Timer("Native Recursive"):
+        for record in records:
+            r = native_recursive(session, {record.id}, set())
+            _check_results(r)
+
+    with Timer("SQL"):
+        for record in records:
+            r = sql(session, {record.id}, set())
+            _check_results(r)

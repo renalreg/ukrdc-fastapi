@@ -14,6 +14,18 @@ def find_related_ids(
     Construct sets of related master records and person records.
     This performs a recursive search of associated link records,
     fetching the master and person record IDs from each link record.
+
+    NOTE: (JTC. 2021-05-14) I tried replacing this code with a
+    self-contained SQL query, using a CTE query, see:
+    https://github.com/renalreg/ukrdc-fastapi/commit/cd46897ccf0a88c1996c72f91bc0dc5c1837b643
+
+    However, this actually made it slower, I think because it will
+    keep running until every possible link in the network has been
+    found, whereas here we can skip nodes if no new record IDs are
+    found? I'm not totally sure the reason, but it does make me wonder
+    if this function might miss results. The commit linked above
+    can be used if this is found to be the case, but note that it
+    will slow this function down by around 1.5x
     """
     found_new: bool = True
     while found_new:
