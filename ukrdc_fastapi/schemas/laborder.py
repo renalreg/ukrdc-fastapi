@@ -40,4 +40,4 @@ class ResultItemServiceSchema(OrmModel):
 
 
 class LabOrderSchema(LabOrderShortSchema):
-    result_items: list[ResultItemSchema]
+    result_items: Optional[list[ResultItemSchema]]
