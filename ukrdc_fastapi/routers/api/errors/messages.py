@@ -41,7 +41,7 @@ def error_messages(
 
 
 @router.get(
-    "/facilities",
+    "/facilities/",
     response_model=list[str],
     dependencies=[Security(auth.permission(Permissions.READ_MIRTH))],
 )
@@ -54,7 +54,7 @@ def error_facilities(
 
 
 @router.get(
-    "/{error_id}",
+    "/{error_id}/",
     response_model=ExtendedErrorSchema,
     dependencies=[Security(auth.permission(Permissions.READ_MIRTH))],
 )
