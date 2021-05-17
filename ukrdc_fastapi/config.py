@@ -7,6 +7,9 @@ class Settings(BaseSettings):
     # Used to correct linking when behind a reverse proxy
     api_base: str = "/api"
 
+    # Deployment environment, used for error logging etc
+    deployment_env: str = "development"
+
     # Messages to display on user dashboards
     motd: list[str] = []
     # Warnings to display on user dashboards

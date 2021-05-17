@@ -21,6 +21,7 @@ def add_sentry(app: FastAPI):
             dsn=settings.sentry_dsn,
             integrations=[RedisIntegration(), SqlalchemyIntegration()],
             traces_sample_rate=1.0,
+            environment=settings.deployment_env,
         )
         app.add_middleware(SentryAsgiMiddleware)
     else:
