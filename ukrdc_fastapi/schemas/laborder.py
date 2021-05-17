@@ -2,7 +2,6 @@ import datetime
 from typing import Optional
 
 from fastapi_hypermodel import LinkSet, UrlFor
-from pydantic import validator
 
 from .base import OrmModel
 
