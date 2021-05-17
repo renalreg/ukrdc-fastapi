@@ -2,6 +2,7 @@ import datetime
 from typing import Optional
 
 from fastapi_hypermodel import LinkSet, UrlFor
+from pydantic import validator
 
 from .base import OrmModel
 
@@ -19,8 +20,8 @@ class ResultItemSchema(OrmModel):
     id: str
     order_id: str
     service_id: str
-    service_id_description: str
-    value: str
+    service_id_description: Optional[str]
+    value: Optional[str]
     value_units: Optional[str]
     result_type: Optional[str]
     observation_time: datetime.datetime
@@ -40,4 +41,4 @@ class ResultItemServiceSchema(OrmModel):
 
 
 class LabOrderSchema(LabOrderShortSchema):
-    result_items: Optional[list[ResultItemSchema]]
+    result_items: list[ResultItemSchema]
