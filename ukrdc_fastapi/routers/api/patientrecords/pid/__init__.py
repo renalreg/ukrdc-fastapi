@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi import Query as QueryParam
 from fastapi import Security
 from sqlalchemy.orm import Session
+from ukrdc_sqla.empi import Person
 from ukrdc_sqla.ukrdc import (
     LabOrder,
     Medication,
@@ -14,7 +15,7 @@ from ukrdc_sqla.ukrdc import (
     Survey,
 )
 
-from ukrdc_fastapi.dependencies import get_ukrdc3
+from ukrdc_fastapi.dependencies import get_jtrace, get_ukrdc3
 from ukrdc_fastapi.dependencies.auth import Permissions, auth
 from ukrdc_fastapi.schemas.laborder import (
     LabOrderSchema,
@@ -23,8 +24,12 @@ from ukrdc_fastapi.schemas.laborder import (
 )
 from ukrdc_fastapi.schemas.medication import MedicationSchema
 from ukrdc_fastapi.schemas.observation import ObservationSchema
-from ukrdc_fastapi.schemas.patientrecord import PatientRecordSchema
+from ukrdc_fastapi.schemas.patientrecord import (
+    PatientRecordSchema,
+    PatientRecordShortSchema,
+)
 from ukrdc_fastapi.schemas.survey import SurveySchema
+from ukrdc_fastapi.utils.filters.empi import find_related_ids
 from ukrdc_fastapi.utils.paginate import Page, paginate
 
 from . import export
@@ -44,6 +49,36 @@ def patient_record(pid: str, ukrdc3: Session = Depends(get_ukrdc3)):
     if not record:
         raise HTTPException(404, detail="Record not found")
     return record
+
+
+@router.get(
+    "/related/",
+    response_model=list[PatientRecordShortSchema],
+    dependencies=[Security(auth.permission(Permissions.READ_PATIENTRECORDS))],
+)
+def patient_related(
+    pid: str,
+    ukrdc3: Session = Depends(get_ukrdc3),
+    jtrace: Session = Depends(get_jtrace),
+):
+    """Retreive patient records related to a specific patient record"""
+    record = ukrdc3.query(PatientRecord).filter(PatientRecord.pid == pid).first()
+    if not record:
+        raise HTTPException(404, detail="Record not found")
+
+    record_persons = jtrace.query(Person).filter(Person.localid == record.pid)
+    _, related_person_ids = find_related_ids(
+        jtrace, set(), {related_person.id for related_person in record_persons}
+    )
+    related_persons = jtrace.query(Person).filter(Person.id.in_(related_person_ids))
+
+    related_patient_ids = {person.localid for person in related_persons}
+
+    related_records = ukrdc3.query(PatientRecord).filter(
+        PatientRecord.pid.in_(related_patient_ids)
+    )
+
+    return related_records.all()
 
 
 @router.get(
