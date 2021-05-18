@@ -23,15 +23,20 @@ router = APIRouter(tags=["Result Items"])
 )
 def resultitems(
     service_id: Optional[list[str]] = QueryParam([]),
+    order_id: Optional[list[str]] = QueryParam([]),
     since: Optional[datetime.datetime] = None,
     until: Optional[datetime.datetime] = None,
     ukrdc3: Session = Depends(get_ukrdc3),
 ):
     """Retreive a list of lab results, optionally filtered by NI or service ID"""
+    # TODO: DRY fefactor filtering. This is mostly duplicated from resultitems.py
     query: Query = ukrdc3.query(ResultItem)
 
     if service_id:
         query = query.filter(ResultItem.service_id.in_(service_id))
+
+    if order_id:
+        query = query.filter(ResultItem.order_id.in_(order_id))
 
     # Optionally filter Workitems updated since
     if since:

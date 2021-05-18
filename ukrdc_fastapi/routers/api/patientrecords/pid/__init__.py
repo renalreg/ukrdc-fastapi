@@ -18,7 +18,7 @@ from ukrdc_sqla.ukrdc import (
 from ukrdc_fastapi.dependencies import get_jtrace, get_ukrdc3
 from ukrdc_fastapi.dependencies.auth import Permissions, auth
 from ukrdc_fastapi.schemas.laborder import (
-    LabOrderSchema,
+    LabOrderShortSchema,
     ResultItemSchema,
     ResultItemServiceSchema,
 )
@@ -83,16 +83,14 @@ def patient_related(
 
 @router.get(
     "/laborders/",
-    response_model=list[LabOrderSchema],
+    response_model=Page[LabOrderShortSchema],
     dependencies=[Security(auth.permission(Permissions.READ_PATIENTRECORDS))],
 )
 def patient_laborders(pid: str, ukrdc3: Session = Depends(get_ukrdc3)):
     """Retreive a specific patient's lab orders"""
     orders = ukrdc3.query(LabOrder).filter(LabOrder.pid == pid)
-    items: list[LabOrder] = orders.order_by(
-        LabOrder.specimen_collected_time.desc()
-    ).all()
-    return items
+    orders = orders.order_by(LabOrder.specimen_collected_time.desc())
+    return paginate(orders)
 
 
 @router.get(
@@ -103,6 +101,7 @@ def patient_laborders(pid: str, ukrdc3: Session = Depends(get_ukrdc3)):
 def patient_resultitems(
     pid: str,
     service_id: Optional[list[str]] = QueryParam([]),
+    order_id: Optional[list[str]] = QueryParam([]),
     since: Optional[datetime.datetime] = None,
     until: Optional[datetime.datetime] = None,
     ukrdc3: Session = Depends(get_ukrdc3),
@@ -111,8 +110,12 @@ def patient_resultitems(
     query = (
         ukrdc3.query(ResultItem).join(LabOrder.result_items).filter(LabOrder.pid == pid)
     )
+
     if service_id:
         query = query.filter(ResultItem.service_id.in_(service_id))
+
+    if order_id:
+        query = query.filter(ResultItem.order_id.in_(order_id))
 
     # Optionally filter Workitems updated since
     if since:
@@ -122,7 +125,7 @@ def patient_resultitems(
     if until:
         query = query.filter(ResultItem.observation_time <= until)
 
-    items = query.order_by(ResultItem.entered_on.desc())
+    items = query.order_by(ResultItem.observation_time.desc())
     return paginate(items)
 
 

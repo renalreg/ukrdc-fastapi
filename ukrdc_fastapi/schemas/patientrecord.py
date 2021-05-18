@@ -26,6 +26,7 @@ class PatientRecordShortSchema(OrmModel):
         {
             "self": UrlFor("patient_record", {"pid": "<pid>"}),
             "laborders": UrlFor("patient_laborders", {"pid": "<pid>"}),
+            "results": UrlFor("patient_resultitems", {"pid": "<pid>"}),
             "observations": UrlFor("patient_observations", {"pid": "<pid>"}),
             "medications": UrlFor("patient_medications", {"pid": "<pid>"}),
             "surveys": UrlFor("patient_surveys", {"pid": "<pid>"}),
