@@ -66,14 +66,20 @@ def patient_related(
     if not record:
         raise HTTPException(404, detail="Record not found")
 
+    # Get Person records directly related to the Patient Record
     record_persons = jtrace.query(Person).filter(Person.localid == record.pid)
+
+    # Find all Person IDs indirectly related to the Person record
     _, related_person_ids = find_related_ids(
         jtrace, set(), {related_person.id for related_person in record_persons}
     )
+    # Find all Person records in the list of related Person IDs
     related_persons = jtrace.query(Person).filter(Person.id.in_(related_person_ids))
 
+    # Find all Patient IDs from the related Person records
     related_patient_ids = {person.localid for person in related_persons}
 
+    # Find all Patient records in the list of related Patient IDs
     related_records = ukrdc3.query(PatientRecord).filter(
         PatientRecord.pid.in_(related_patient_ids)
     )
@@ -113,15 +119,10 @@ def patient_resultitems(
 
     if service_id:
         query = query.filter(ResultItem.service_id.in_(service_id))
-
     if order_id:
         query = query.filter(ResultItem.order_id.in_(order_id))
-
-    # Optionally filter Workitems updated since
     if since:
         query = query.filter(ResultItem.observation_time >= since)
-
-    # Optionally filter Workitems updated before
     if until:
         query = query.filter(ResultItem.observation_time <= until)
 

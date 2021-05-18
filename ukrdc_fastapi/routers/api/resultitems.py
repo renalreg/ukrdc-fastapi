@@ -29,20 +29,14 @@ def resultitems(
     ukrdc3: Session = Depends(get_ukrdc3),
 ):
     """Retreive a list of lab results, optionally filtered by NI or service ID"""
-    # TODO: DRY fefactor filtering. This is mostly duplicated from resultitems.py
     query: Query = ukrdc3.query(ResultItem)
 
     if service_id:
         query = query.filter(ResultItem.service_id.in_(service_id))
-
     if order_id:
         query = query.filter(ResultItem.order_id.in_(order_id))
-
-    # Optionally filter Workitems updated since
     if since:
         query = query.filter(ResultItem.observation_time >= since)
-
-    # Optionally filter Workitems updated before
     if until:
         query = query.filter(ResultItem.observation_time <= until)
 
