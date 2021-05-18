@@ -1,4 +1,4 @@
-from ukrdc_fastapi.schemas.laborder import LabOrderSchema, ResultItemSchema
+from ukrdc_fastapi.schemas.laborder import LabOrderShortSchema, ResultItemSchema
 from ukrdc_fastapi.schemas.patientrecord import (
     PatientRecordSchema,
     PatientRecordShortSchema,
@@ -26,7 +26,7 @@ def test_record(client):
 def test_record_laborders(client):
     response = client.get("/api/patientrecords/PYTEST01:PV:00000000A/laborders")
     assert response.status_code == 200
-    orders = [LabOrderSchema(**item) for item in response.json()]
+    orders = [LabOrderShortSchema(**item) for item in response.json()["items"]]
     assert len(orders) == 1
     assert orders[0].id == "LABORDER1"
 
