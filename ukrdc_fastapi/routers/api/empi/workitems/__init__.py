@@ -7,7 +7,7 @@ from mirth_client import MirthAPI
 from pydantic import BaseModel, Field
 from redis import Redis
 from sqlalchemy.orm import Session
-from ukrdc_sqla.empi import WorkItem
+from ukrdc_sqla.empi import Person, PidXRef, WorkItem
 
 from ukrdc_fastapi.dependencies import get_jtrace, get_mirth, get_redis
 from ukrdc_fastapi.dependencies.auth import Permissions, User, auth
@@ -41,10 +41,18 @@ def workitems_list(
     since: Optional[datetime.datetime] = None,
     until: Optional[datetime.datetime] = None,
     status: Optional[list[int]] = Query([1]),
+    facility: Optional[str] = None,
     jtrace: Session = Depends(get_jtrace),
 ):
     """Retreive a list of open work items from the EMPI"""
     workitems = jtrace.query(WorkItem)
+
+    if facility:
+        workitems = (
+            workitems.join(Person)
+            .join(PidXRef)
+            .filter(PidXRef.sending_facility == facility)
+        )
 
     # Optionally filter Workitems updated since
     if since:
