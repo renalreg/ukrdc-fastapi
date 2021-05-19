@@ -25,6 +25,7 @@ from ukrdc_fastapi.utils.paginate import Page, paginate
 class MasterRecordStatisticsSchema(OrmModel):
     workitems: int
     errors: int
+    ukrdcids: int
 
 
 router = APIRouter(prefix="/{record_id}")
@@ -67,8 +68,14 @@ def master_record_statistics(
         WorkItem.status == 1,
     )
 
+    ukrdc_records = find_related_masterrecords(record, jtrace).filter(
+        MasterRecord.nationalid_type == "UKRDC"
+    )
+
     return MasterRecordStatisticsSchema(
-        workitems=workitems.count(), errors=errors.count()
+        workitems=workitems.count(),
+        errors=errors.count(),
+        ukrdcids=ukrdc_records.count(),
     )
 
 
