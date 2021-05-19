@@ -5,6 +5,7 @@ from . import (
     dashboard,
     empi,
     errors,
+    facilities,
     laborders,
     mirth,
     patientrecords,
@@ -22,6 +23,7 @@ def root():
 
 
 router.include_router(dashboard.router, prefix="/dash")
+router.include_router(facilities.router, prefix="/facilities")
 router.include_router(user.router, prefix="/user")
 router.include_router(empi.router, prefix="/empi")
 router.include_router(patientrecords.router, prefix="/patientrecords")
