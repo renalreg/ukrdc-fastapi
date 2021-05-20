@@ -161,6 +161,18 @@ def find_related_link_records(
 
 
 def filter_masterrecords_by_facility(records: Query, facility: str) -> Query:
+    """
+    Given a query of MasterRecords, filter the query by sending facility.
+    If multiple facilities send to the same masterrecord, the record will
+    be included for each.
+
+    Args:
+        records (Query): SQLAlchemy query of MasterRecords
+        facility (str): Facility code/ID
+
+    Returns:
+        Query: Filtered MasterRecord query
+    """
     return (
         records.join(LinkRecord)
         .join(Person)
