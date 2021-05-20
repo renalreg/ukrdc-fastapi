@@ -2,7 +2,7 @@ from collections import namedtuple
 from typing import Optional
 
 from sqlalchemy.orm import Query, Session
-from ukrdc_sqla.empi import LinkRecord, MasterRecord, Person
+from ukrdc_sqla.empi import LinkRecord, MasterRecord, Person, PidXRef
 
 PersonMasterLink = namedtuple("PersonMasterLink", ("id", "person_id", "master_id"))
 
@@ -158,3 +158,12 @@ def find_related_link_records(
             linkrecord_ids.add(person_master_link)
 
     return linkrecord_ids
+
+
+def filter_masterrecords_by_facility(records: Query, facility: str) -> Query:
+    return (
+        records.join(LinkRecord)
+        .join(Person)
+        .join(PidXRef)
+        .filter(PidXRef.sending_facility == facility)
+    )
