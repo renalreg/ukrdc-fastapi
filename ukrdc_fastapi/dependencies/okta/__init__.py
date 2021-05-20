@@ -83,7 +83,7 @@ class OktaAuth:  # pylint: disable=too-many-instance-attributes
                 )
             )
         except Exception as e:
-            raise HTTPException(403, detail="Invalid authentication token") from e
+            raise HTTPException(401, detail="Invalid authentication token") from e
 
         return payload
 
