@@ -3,7 +3,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Security
 from sqlalchemy.orm import Query as OrmQuery
 from sqlalchemy.orm import Session
-from ukrdc_sqla.empi import MasterRecord, Person
+from ukrdc_sqla.empi import Person
 
 from ukrdc_fastapi.dependencies import get_jtrace
 from ukrdc_fastapi.dependencies.auth import Permissions, auth
