@@ -7,12 +7,13 @@ from mirth_client import MirthAPI
 from pydantic import BaseModel
 from redis import Redis
 from sqlalchemy import or_
-from sqlalchemy.orm import Session, query
-from ukrdc_sqla.empi import MasterRecord, WorkItem
+from sqlalchemy.orm import Session
+from ukrdc_sqla.empi import WorkItem
 from ukrdc_sqla.errorsdb import Message
 
+from ukrdc_fastapi.access_models.empi import WorkItemAM
 from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_mirth, get_redis
-from ukrdc_fastapi.dependencies.auth import Permissions, User, auth
+from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, User, auth
 from ukrdc_fastapi.schemas.empi import WorkItemSchema
 from ukrdc_fastapi.schemas.errors import MessageSchema
 from ukrdc_fastapi.utils.filters.empi import PersonMasterLink, find_related_link_records
@@ -30,6 +31,27 @@ from ukrdc_fastapi.utils.paginate import Page, paginate
 router = APIRouter(prefix="/{workitem_id}")
 
 
+def safe_get_workitem(jtrace: Session, workitem_id: str, user: UKRDCUser) -> WorkItem:
+    """Return a WorkItem by ID if it exists and the user has permission
+
+    Args:
+        jtrace (Session): JTRACE SQLAlchemy session
+        workitem_id (str): WorkItem ID
+        user (UKRDCUser): User object
+
+    Raises:
+        HTTPException: User does not have permission to access the resource
+
+    Returns:
+        WorkItem: WorkItem
+    """
+    workitem = jtrace.query(WorkItem).get(workitem_id)
+    if not workitem:
+        raise HTTPException(404, detail="Work item not found")
+    WorkItemAM.assert_permission(workitem, user)
+    return workitem
+
+
 class CloseWorkItemRequestSchema(BaseModel):
     comment: Optional[str]
 
@@ -44,11 +66,13 @@ class UpdateWorkItemRequestSchema(BaseModel):
     response_model=WorkItemSchema,
     dependencies=[Security(auth.permission(Permissions.READ_WORKITEMS))],
 )
-def workitem_detail(workitem_id: int, jtrace: Session = Depends(get_jtrace)):
+def workitem_detail(
+    workitem_id: int,
+    user: UKRDCUser = Security(auth.get_user),
+    jtrace: Session = Depends(get_jtrace),
+):
     """Retreive a particular work item from the EMPI"""
-    workitem = jtrace.query(WorkItem).get(workitem_id)
-    if not workitem:
-        raise HTTPException(404, detail="Work item not found")
+    workitem = safe_get_workitem(jtrace, workitem_id, user)
 
     return workitem
 
@@ -71,9 +95,7 @@ async def workitem_update(
     redis: Redis = Depends(get_redis),
 ):
     """Update a particular work item in the EMPI"""
-    workitem = jtrace.query(WorkItem).get(workitem_id)
-    if not workitem:
-        raise HTTPException(404, detail="Work item not found")
+    workitem = safe_get_workitem(jtrace, workitem_id, user)
 
     channel = await get_channel_from_name("WorkItemUpdate", mirth, redis)
 
@@ -102,11 +124,13 @@ async def workitem_update(
     response_model=list[WorkItemSchema],
     dependencies=[Security(auth.permission(Permissions.READ_WORKITEMS))],
 )
-def workitem_related(workitem_id: int, jtrace: Session = Depends(get_jtrace)):
+def workitem_related(
+    workitem_id: int,
+    user: UKRDCUser = Security(auth.get_user),
+    jtrace: Session = Depends(get_jtrace),
+):
     """Retreive a list of other work items related to a particular work item"""
-    workitem = jtrace.query(WorkItem).get(workitem_id)
-    if not workitem:
-        raise HTTPException(404, detail="Work item not found")
+    workitem = safe_get_workitem(jtrace, workitem_id, user)
 
     filters = []
     if workitem.master_record:
@@ -120,6 +144,7 @@ def workitem_related(workitem_id: int, jtrace: Session = Depends(get_jtrace)):
         WorkItem.status == 1,
     )
 
+    other_workitems = WorkItem.apply_query_permissions(other_workitems, user)
     return other_workitems.all()
 
 
@@ -134,13 +159,12 @@ def workitem_errors(
     since: Optional[datetime.datetime] = None,
     until: Optional[datetime.datetime] = None,
     status: str = "ERROR",
+    user: UKRDCUser = Security(auth.get_user),
     jtrace: Session = Depends(get_jtrace),
     errorsdb: Session = Depends(get_errorsdb),
 ):
     """Retreive a list of other work items related to a particular work item"""
-    workitem = jtrace.query(WorkItem).get(workitem_id)
-    if not workitem:
-        raise HTTPException(404, detail="Work item not found")
+    workitem = safe_get_workitem(jtrace, workitem_id, user)
 
     workitem_ni: str = workitem.master_record.nationalid
 
@@ -171,9 +195,7 @@ async def workitem_close(
     redis: Redis = Depends(get_redis),
 ):
     """Update and close a particular work item"""
-    workitem = jtrace.query(WorkItem).get(workitem_id)
-    if not workitem:
-        raise HTTPException(404, detail="Work item not found")
+    workitem = safe_get_workitem(jtrace, workitem_id, user)
 
     channel = await get_channel_from_name("WorkItemUpdate", mirth, redis)
     if not channel:
@@ -204,14 +226,13 @@ async def workitem_close(
 )
 async def workitem_merge(
     workitem_id: int,
+    user: UKRDCUser = Security(auth.get_user),
     jtrace: Session = Depends(get_jtrace),
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
 ):
     """Merge a particular work item"""
-    workitem = jtrace.query(WorkItem).get(workitem_id)
-    if not workitem:
-        raise HTTPException(404, detail="Work item not found")
+    workitem = safe_get_workitem(jtrace, workitem_id, user)
 
     # Get a set of related link record (id, person_id, master_id) tuples
     related_person_master_links: set[PersonMasterLink] = find_related_link_records(
@@ -273,10 +294,7 @@ async def workitem_unlink(
     redis: Redis = Depends(get_redis),
 ):
     """Unlink the master record and person record in a particular work item"""
-
-    workitem = jtrace.query(WorkItem).get(workitem_id)
-    if not workitem:
-        raise HTTPException(404, detail="Work item not found")
+    workitem = safe_get_workitem(jtrace, workitem_id, user)
 
     channel = await get_channel_from_name("Unlink", mirth, redis)
     if not channel:

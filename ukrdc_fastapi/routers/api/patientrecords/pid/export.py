@@ -20,11 +20,7 @@ router = APIRouter(tags=["Patient Records/Export"])
 @router.post(
     "/pv/",
     response_model=MirthMessageResponseSchema,
-    dependencies=[
-        Security(
-            auth.permission([Permissions.READ_PATIENTRECORDS, Permissions.WRITE_MIRTH])
-        )
-    ],
+    dependencies=[Security(auth.permission(auth.permissions.EXPORT_RECORDS))],
 )
 async def patient_export_pv(
     pid: str, mirth: MirthAPI = Depends(get_mirth), redis: Redis = Depends(get_redis)
@@ -49,11 +45,7 @@ async def patient_export_pv(
 @router.post(
     "/pv-tests/",
     response_model=MirthMessageResponseSchema,
-    dependencies=[
-        Security(
-            auth.permission([Permissions.READ_PATIENTRECORDS, Permissions.WRITE_MIRTH])
-        )
-    ],
+    dependencies=[Security(auth.permission(auth.permissions.EXPORT_RECORDS))],
 )
 async def patient_export_pv_tests(
     pid: str, mirth: MirthAPI = Depends(get_mirth), redis: Redis = Depends(get_redis)
@@ -78,11 +70,7 @@ async def patient_export_pv_tests(
 @router.post(
     "/pv-docs/",
     response_model=MirthMessageResponseSchema,
-    dependencies=[
-        Security(
-            auth.permission([Permissions.READ_PATIENTRECORDS, Permissions.WRITE_MIRTH])
-        )
-    ],
+    dependencies=[Security(auth.permission(auth.permissions.EXPORT_RECORDS))],
 )
 async def patient_export_pv_docs(
     pid: str, mirth: MirthAPI = Depends(get_mirth), redis: Redis = Depends(get_redis)
@@ -107,11 +95,7 @@ async def patient_export_pv_docs(
 @router.post(
     "/radar/",
     response_model=MirthMessageResponseSchema,
-    dependencies=[
-        Security(
-            auth.permission([Permissions.READ_PATIENTRECORDS, Permissions.WRITE_MIRTH])
-        )
-    ],
+    dependencies=[Security(auth.permission(auth.permissions.EXPORT_RECORDS))],
 )
 async def patient_export_radar(
     pid: str, mirth: MirthAPI = Depends(get_mirth), redis: Redis = Depends(get_redis)

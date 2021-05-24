@@ -1,13 +1,14 @@
 import json
 from typing import Optional
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Security
 from pydantic import BaseModel
 from redis import Redis
 from sqlalchemy.orm import Session
 from ukrdc_sqla.ukrdc import Code
 
 from ukrdc_fastapi.dependencies import get_redis, get_ukrdc3
+from ukrdc_fastapi.dependencies.auth import auth
 
 router = APIRouter(tags=["Facilities"])
 
@@ -19,7 +20,9 @@ class FacilitySchema(BaseModel):
 
 @router.get("/", response_model=list[FacilitySchema])
 def facility_list(
-    ukrdc3: Session = Depends(get_ukrdc3), redis: Redis = Depends(get_redis)
+    units: list[str] = Security(auth.get_units),
+    ukrdc3: Session = Depends(get_ukrdc3),
+    redis: Redis = Depends(get_redis),
 ):
     """Retreive a list of on-record facilities"""
     redis_key: str = "ukrdc3:facilities"
@@ -41,5 +44,9 @@ def facility_list(
             facilities = [
                 FacilitySchema(**facility) for facility in json.loads(facilities_json)
             ]
+
+    # Filter results by unit permissions
+    if auth.permissions.UNIT_WILDCARD not in units:
+        facilities = [facility for facility in facilities if facility.id in units]
 
     return facilities
