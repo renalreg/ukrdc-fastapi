@@ -17,6 +17,29 @@ from ukrdc_fastapi.utils.paginate import Page, paginate
 router = APIRouter(tags=["Result Items"])
 
 
+def safe_get_resultitem(
+    ukrdc3: Session, resultitem_id: str, user: UKRDCUser
+) -> ResultItem:
+    """Return a LabOrder by ID if it exists and the user has permission
+
+    Args:
+        ukrdc3 (Session): UKRDC SQLAlchemy session
+        resultitem_id (str): ResultItem ID
+        user (UKRDCUser): User object
+
+    Raises:
+        HTTPException: User does not have permission to access the resource
+
+    Returns:
+        ResultItem: ResultItem
+    """
+    item: ResultItem = ukrdc3.query(ResultItem).get(resultitem_id)
+    if not item:
+        raise HTTPException(404, detail="Result item not found")
+    ResultItemAM.assert_permission(item, user)
+    return item
+
+
 @router.get(
     "/",
     response_model=Page[ResultItemSchema],
@@ -59,11 +82,7 @@ def resultitem_detail(
     ukrdc3: Session = Depends(get_ukrdc3),
 ):
     """Retreive a particular lab result"""
-    item = ukrdc3.query(ResultItem).get(resultitem_id)
-    if not item:
-        raise HTTPException(404, detail="Result item not found")
-    ResultItemAM.assert_permission(item, user)
-
+    item: ResultItem = safe_get_resultitem(ukrdc3, resultitem_id, user)
     return item
 
 
@@ -78,10 +97,7 @@ def resultitem_delete(
     ukrdc3: Session = Depends(get_ukrdc3),
 ):
     """Mark a particular lab result for deletion"""
-    item: ResultItem = ukrdc3.query(ResultItem).get(resultitem_id)
-    if not item:
-        raise HTTPException(404, detail="Result item not found")
-    ResultItemAM.assert_permission(item, user)
+    item: ResultItem = safe_get_resultitem(ukrdc3, resultitem_id, user)
 
     logging.info(
         "DELETING: %s %s (%s) - %s%s",

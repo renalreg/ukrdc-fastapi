@@ -12,10 +12,9 @@ from ukrdc_sqla.ukrdc import (
     Observation,
     PatientRecord,
     ResultItem,
-    Survey,
 )
 
-from ukrdc_fastapi.access_models.ukrdc import LabOrderAM, PatientRecordAM, ResultItemAM
+from ukrdc_fastapi.access_models.ukrdc import LabOrderAM, PatientRecordAM
 from ukrdc_fastapi.dependencies import get_jtrace, get_ukrdc3
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.schemas.laborder import (

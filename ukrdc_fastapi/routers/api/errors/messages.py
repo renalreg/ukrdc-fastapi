@@ -57,7 +57,6 @@ def error_detail(
     error = errorsdb.query(Message).get(error_id)
     if not error:
         raise HTTPException(404, detail="Error record not found")
-
     MessageAM.assert_permission(error, user)
 
     return make_extended_error(MessageSchema.from_orm(error), jtrace)

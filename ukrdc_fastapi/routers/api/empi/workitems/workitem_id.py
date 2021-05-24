@@ -8,12 +8,12 @@ from pydantic import BaseModel
 from redis import Redis
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
-from ukrdc_sqla.empi import WorkItem
+from ukrdc_sqla.empi import MasterRecord, WorkItem
 from ukrdc_sqla.errorsdb import Message
 
 from ukrdc_fastapi.access_models.empi import WorkItemAM
 from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_mirth, get_redis
-from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, User, auth
+from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.schemas.empi import WorkItemSchema
 from ukrdc_fastapi.schemas.errors import MessageSchema
 from ukrdc_fastapi.utils.filters.empi import PersonMasterLink, find_related_link_records
@@ -31,12 +31,12 @@ from ukrdc_fastapi.utils.paginate import Page, paginate
 router = APIRouter(prefix="/{workitem_id}")
 
 
-def safe_get_workitem(jtrace: Session, workitem_id: str, user: UKRDCUser) -> WorkItem:
+def safe_get_workitem(jtrace: Session, workitem_id: int, user: UKRDCUser) -> WorkItem:
     """Return a WorkItem by ID if it exists and the user has permission
 
     Args:
         jtrace (Session): JTRACE SQLAlchemy session
-        workitem_id (str): WorkItem ID
+        workitem_id (int): WorkItem ID
         user (UKRDCUser): User object
 
     Raises:
@@ -89,7 +89,7 @@ def workitem_detail(
 async def workitem_update(
     workitem_id: int,
     args: UpdateWorkItemRequestSchema,
-    user: User = Security(auth.get_user),
+    user: UKRDCUser = Security(auth.get_user),
     jtrace: Session = Depends(get_jtrace),
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
@@ -144,7 +144,7 @@ def workitem_related(
         WorkItem.status == 1,
     )
 
-    other_workitems = WorkItem.apply_query_permissions(other_workitems, user)
+    other_workitems = WorkItemAM.apply_query_permissions(other_workitems, user)
     return other_workitems.all()
 
 
@@ -190,7 +190,7 @@ async def workitem_close(
     workitem_id: int,
     args: CloseWorkItemRequestSchema,
     jtrace: Session = Depends(get_jtrace),
-    user: User = Security(auth.get_user),
+    user: UKRDCUser = Security(auth.get_user),
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
 ):
@@ -288,7 +288,7 @@ async def workitem_merge(
 )
 async def workitem_unlink(
     workitem_id: int,
-    user: User = Security(auth.get_user),
+    user: UKRDCUser = Security(auth.get_user),
     jtrace: Session = Depends(get_jtrace),
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),

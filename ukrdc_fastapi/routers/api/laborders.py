@@ -13,6 +13,27 @@ from ukrdc_fastapi.utils.paginate import Page, paginate
 router = APIRouter(tags=["Lab Orders"])
 
 
+def safe_get_laborder(ukrdc3: Session, order_id: str, user: UKRDCUser) -> LabOrder:
+    """Return a LabOrder by ID if it exists and the user has permission
+
+    Args:
+        ukrdc3 (Session): UKRDC SQLAlchemy session
+        order_id (str): LabOrder ID
+        user (UKRDCUser): User object
+
+    Raises:
+        HTTPException: User does not have permission to access the resource
+
+    Returns:
+        LabOrder: LabOrder
+    """
+    order = ukrdc3.query(LabOrder).get(order_id)
+    if not order:
+        raise HTTPException(404, detail="Lab order not found")
+    LabOrderAM.assert_permission(order, user)
+    return order
+
+
 @router.get(
     "/",
     response_model=Page[LabOrderShortSchema],
@@ -42,11 +63,7 @@ def laborder_get(
     ukrdc3: Session = Depends(get_ukrdc3),
 ):
     """Retreive a particular lab order"""
-    order = ukrdc3.query(LabOrder).get(order_id)
-    if not order:
-        raise HTTPException(404, detail="Lab order not found")
-    LabOrderAM.assert_permission(order, user)
-
+    order: LabOrder = safe_get_laborder(ukrdc3, order_id, user)
     return order
 
 
@@ -61,10 +78,7 @@ def laborder_delete(
     ukrdc3: Session = Depends(get_ukrdc3),
 ):
     """Mark a particular lab order for deletion"""
-    order: LabOrder = ukrdc3.query(LabOrder).get(order_id)
-    if not order:
-        raise HTTPException(404, detail="Lab order not found")
-    LabOrderAM.assert_permission(order, user)
+    order: LabOrder = safe_get_laborder(ukrdc3, order_id, user)
 
     pid = order.pid
     deletes = [

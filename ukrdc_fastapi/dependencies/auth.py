@@ -1,17 +1,14 @@
-from typing import Literal, Sequence, Union
+from typing import Sequence
 
 from fastapi import Depends
 from fastapi.security.http import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import Field
-from sqlalchemy.sql.functions import user
 
 from ukrdc_fastapi.config import settings
 
-from .okta import OktaAccessToken, OktaAuth
-from .okta import OktaUserModel
-from .okta import OktaUserModel as User
+from .okta import OktaAccessToken, OktaAuth, OktaUserModel
 
-__all__ = ["OktaAccessToken", "OktaAuth", "User", "auth", "Permissions"]
+__all__ = ["OktaAccessToken", "OktaAuth", "auth", "Permissions"]
 
 
 class Permissions:
@@ -36,18 +33,37 @@ class Permissions:
 
     UNIT_PREFIX = "ukrdc:unit:"
     UNIT_WILDCARD = "*"
-    SENDING_FACILITIES_FOR_ALL = ["PV", "NHSBT"]
 
     @classmethod
-    def unit_codes(
-        cls, permissions: list[str], include_global_facilities: bool = False
-    ) -> list[str]:
+    def all(cls):
+        """Return all permissions for a superuser"""
+        return [
+            cls.READ_RECORDS,
+            cls.READ_ERRORS,
+            cls.READ_MIRTH,
+            cls.READ_WORKITEMS,
+            cls.WRITE_RECORDS,
+            cls.WRITE_ERRORS,
+            cls.WRITE_MIRTH,
+            cls.WRITE_WORKITEMS,
+            cls.EXPORT_RECORDS,
+            cls.UNIT_PREFIX + cls.UNIT_WILDCARD,
+        ]
+
+    @classmethod
+    def unit_codes(cls, permissions: list[str]) -> list[str]:
+        """Convert user permissions into a list of unit/facility codes
+
+        Args:
+            permissions (list[str]): User permission strings
+
+        Returns:
+            list[str]: List of unit/facility codes
+        """
         unit_permissions: list[str] = [
             perm for perm in permissions if perm.startswith(cls.UNIT_PREFIX)
         ]
         units = [perm.split(":")[-1] for perm in unit_permissions]
-        if include_global_facilities:
-            units.extend(cls.SENDING_FACILITIES_FOR_ALL)
         return units
 
 
