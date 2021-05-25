@@ -40,7 +40,7 @@ router = APIRouter(prefix="/{record_id}")
     dependencies=[Security(auth.permission(auth.permissions.READ_RECORDS))],
 )
 def master_record_detail(
-    record_id: str,
+    record_id: int,
     user: UKRDCUser = Security(auth.get_user),
     jtrace: Session = Depends(get_jtrace),
 ):
@@ -54,7 +54,7 @@ def master_record_detail(
     dependencies=[Security(auth.permission(auth.permissions.READ_RECORDS))],
 )
 def master_record_statistics(
-    record_id: str,
+    record_id: int,
     user: UKRDCUser = Security(auth.get_user),
     jtrace: Session = Depends(get_jtrace),
     errorsdb: Session = Depends(get_errorsdb),
@@ -86,7 +86,7 @@ def master_record_statistics(
     dependencies=[Security(auth.permission(auth.permissions.READ_RECORDS))],
 )
 def master_record_related(
-    record_id: str,
+    record_id: int,
     user: UKRDCUser = Security(auth.get_user),
     jtrace: Session = Depends(get_jtrace),
 ):
@@ -104,7 +104,7 @@ def master_record_related(
     dependencies=[Security(auth.permission(auth.permissions.READ_RECORDS))],
 )
 def master_record_errors(
-    record_id: str,
+    record_id: int,
     user: UKRDCUser = Security(auth.get_user),
     facility: Optional[str] = None,
     since: Optional[datetime.datetime] = None,
@@ -143,7 +143,7 @@ def master_record_errors(
     dependencies=[Security(auth.permission(auth.permissions.READ_RECORDS))],
 )
 def master_record_workitems(
-    record_id: str,
+    record_id: int,
     user: UKRDCUser = Security(auth.get_user),
     jtrace: Session = Depends(get_jtrace),
 ):
@@ -158,7 +158,7 @@ def master_record_workitems(
     dependencies=[Security(auth.permission(auth.permissions.READ_RECORDS))],
 )
 def master_record_persons(
-    record_id: str,
+    record_id: int,
     user: UKRDCUser = Security(auth.get_user),
     jtrace: Session = Depends(get_jtrace),
 ):
@@ -174,7 +174,7 @@ def master_record_persons(
     dependencies=[Security(auth.permission(auth.permissions.READ_RECORDS))],
 )
 def master_record_patientrecords(
-    record_id: str,
+    record_id: int,
     user: UKRDCUser = Security(auth.get_user),
     jtrace: Session = Depends(get_jtrace),
     ukrdc3: Session = Depends(get_ukrdc3),

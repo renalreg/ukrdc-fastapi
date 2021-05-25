@@ -31,7 +31,7 @@ def persons(
     dependencies=[Security(auth.permission(Permissions.READ_EMPI))],
 )
 def person_detail(
-    person_id: str,
+    person_id: int,
     user: UKRDCUser = Security(auth.get_user),
     jtrace: Session = Depends(get_jtrace),
 ):
@@ -45,7 +45,7 @@ def person_detail(
     dependencies=[Security(auth.permission(Permissions.READ_EMPI))],
 )
 def person_masterrecords(
-    person_id: str,
+    person_id: int,
     user: UKRDCUser = Security(auth.get_user),
     jtrace: Session = Depends(get_jtrace),
 ):

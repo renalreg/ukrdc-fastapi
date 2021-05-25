@@ -60,12 +60,12 @@ def get_masterrecords(
     return _apply_query_permissions(records, user)
 
 
-def get_masterrecord(jtrace: Session, record_id: str, user: UKRDCUser) -> MasterRecord:
+def get_masterrecord(jtrace: Session, record_id: int, user: UKRDCUser) -> MasterRecord:
     """Return a MasterRecord by ID if it exists and the user has permission
 
     Args:
         jtrace (Session): JTRACE SQLAlchemy session
-        record_id (str): MasterRecord ID
+        record_id (int): MasterRecord ID
         user (UKRDCUser): User object
 
     Raises:
@@ -82,7 +82,7 @@ def get_masterrecord(jtrace: Session, record_id: str, user: UKRDCUser) -> Master
 
 
 def get_masterrecords_related_to_masterrecord(
-    jtrace: Session, record_id: str, user: UKRDCUser
+    jtrace: Session, record_id: int, user: UKRDCUser
 ) -> Query:
     # Find all related master record IDs by recursing through link records
     related_master_ids, _ = find_related_ids(jtrace, {record_id}, set())

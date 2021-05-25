@@ -35,12 +35,12 @@ def get_persons(jtrace: Session, user: UKRDCUser):
     return _apply_query_permissions(people, user)
 
 
-def get_person(jtrace: Session, person_id: str, user: UKRDCUser) -> Person:
+def get_person(jtrace: Session, person_id: int, user: UKRDCUser) -> Person:
     """Return a MasterRecord by ID if it exists and the user has permission
 
     Args:
         jtrace (Session): JTRACE SQLAlchemy session
-        person_id (str): Person ID
+        person_id (int): Person ID
         user (UKRDCUser): User object
 
     Raises:
