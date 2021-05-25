@@ -1,0 +1,43 @@
+from typing import Optional
+
+from sqlalchemy.orm.query import Query
+from sqlalchemy.orm.session import Session
+from ukrdc_sqla.ukrdc import Observation
+
+from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
+
+
+def get_observations(
+    ukrdc3: Session,
+    user: UKRDCUser,
+    pid: Optional[str] = None,
+    codes: Optional[list[str]] = None,
+) -> Query:
+    observations = ukrdc3.query(Observation)
+
+    if pid:
+        observations = observations.filter(Observation.pid == pid)
+
+    if codes:
+        observations = observations.filter(Observation.observation_code.in_(codes))
+
+    observations = observations.order_by(Observation.observation_time.desc())
+
+    units = Permissions.unit_codes(user.permissions)
+    if Permissions.UNIT_WILDCARD in units:
+        return observations
+
+    return observations.filter(
+        Observation.entering_organization_code.in_(units)
+        | Observation.entered_at.in_(units)
+    )
+
+
+def get_observation_codes(
+    ukrdc3: Session,
+    user: UKRDCUser,
+    pid: Optional[str] = None,
+) -> list[str]:
+    observations = get_observations(ukrdc3, user, pid)
+    codes = observations.distinct(Observation.observation_code)
+    return [item.observation_code for item in codes.all()]

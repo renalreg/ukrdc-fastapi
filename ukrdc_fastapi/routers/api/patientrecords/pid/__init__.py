@@ -1,22 +1,22 @@
 import datetime
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from fastapi import Query as QueryParam
 from fastapi import Security
 from sqlalchemy.orm import Session
-from ukrdc_sqla.empi import Person
-from ukrdc_sqla.ukrdc import (
-    LabOrder,
-    Medication,
-    Observation,
-    PatientRecord,
-    ResultItem,
-)
 
-from ukrdc_fastapi.access_models.ukrdc import LabOrderAM, PatientRecordAM
 from ukrdc_fastapi.dependencies import get_jtrace, get_ukrdc3
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
+from ukrdc_fastapi.query.laborders import get_laborders
+from ukrdc_fastapi.query.medications import get_medications
+from ukrdc_fastapi.query.observations import get_observation_codes, get_observations
+from ukrdc_fastapi.query.patientrecords import (
+    get_patientrecord,
+    get_patientrecords_related_to_patientrecord,
+)
+from ukrdc_fastapi.query.resultitems import get_resultitem_services, get_resultitems
+from ukrdc_fastapi.query.survey import get_surveys
 from ukrdc_fastapi.schemas.laborder import (
     LabOrderShortSchema,
     ResultItemSchema,
@@ -29,34 +29,12 @@ from ukrdc_fastapi.schemas.patientrecord import (
     PatientRecordShortSchema,
 )
 from ukrdc_fastapi.schemas.survey import SurveySchema
-from ukrdc_fastapi.utils.filters.empi import find_related_ids
 from ukrdc_fastapi.utils.paginate import Page, paginate
 
 from . import export
 
 router = APIRouter(prefix="/{pid}")
 router.include_router(export.router, prefix="/export")
-
-
-def safe_get_patient(ukrdc3: Session, pid: str, user: UKRDCUser) -> Person:
-    """Return a MasterRecord by ID if it exists and the user has permission
-
-    Args:
-        ukrdc3 (Session): UKRDC SQLAlchemy session
-        pid (str): Patient ID
-        user (UKRDCUser): User object
-
-    Raises:
-        HTTPException: User does not have permission to access the resource
-
-    Returns:
-        PatientRecord: PatientRecord
-    """
-    record = ukrdc3.query(PatientRecord).get(pid)
-    if not record:
-        raise HTTPException(404, detail="Record not found")
-    PatientRecordAM.assert_permission(record, user)
-    return record
 
 
 @router.get(
@@ -70,8 +48,7 @@ def patient_record(
     ukrdc3: Session = Depends(get_ukrdc3),
 ):
     """Retreive a specific patient record"""
-    record = safe_get_patient(ukrdc3, pid, user)
-    return record
+    return get_patientrecord(ukrdc3, pid, user)
 
 
 @router.get(
@@ -86,28 +63,7 @@ def patient_related(
     jtrace: Session = Depends(get_jtrace),
 ):
     """Retreive patient records related to a specific patient record"""
-    record = safe_get_patient(ukrdc3, pid, user)
-
-    # Get Person records directly related to the Patient Record
-    record_persons = jtrace.query(Person).filter(Person.localid == record.pid)
-
-    # Find all Person IDs indirectly related to the Person record
-    _, related_person_ids = find_related_ids(
-        jtrace, set(), {related_person.id for related_person in record_persons}
-    )
-    # Find all Person records in the list of related Person IDs
-    related_persons = jtrace.query(Person).filter(Person.id.in_(related_person_ids))
-
-    # Find all Patient IDs from the related Person records
-    related_patient_ids = {person.localid for person in related_persons}
-
-    # Find all Patient records in the list of related Patient IDs
-    related_records = ukrdc3.query(PatientRecord).filter(
-        PatientRecord.pid.in_(related_patient_ids)
-    )
-
-    related_records = PatientRecordAM.apply_query_permissions(related_records, user)
-    return related_records.all()
+    return get_patientrecords_related_to_patientrecord(ukrdc3, jtrace, pid, user).all()
 
 
 @router.get(
@@ -121,11 +77,7 @@ def patient_laborders(
     ukrdc3: Session = Depends(get_ukrdc3),
 ):
     """Retreive a specific patient's lab orders"""
-    orders = ukrdc3.query(LabOrder).filter(LabOrder.pid == pid)
-    orders = orders.order_by(LabOrder.specimen_collected_time.desc())
-
-    orders = LabOrderAM.apply_query_permissions(orders, user)
-    return paginate(orders)
+    return paginate(get_laborders(ukrdc3, user, pid=pid))
 
 
 @router.get(
@@ -143,23 +95,18 @@ def patient_resultitems(
     ukrdc3: Session = Depends(get_ukrdc3),
 ):
     """Retreive a specific patient's lab orders"""
-    query = (
-        ukrdc3.query(ResultItem).join(LabOrder.result_items).filter(LabOrder.pid == pid)
+
+    return paginate(
+        get_resultitems(
+            ukrdc3,
+            user,
+            pid=pid,
+            service_id=service_id,
+            order_id=order_id,
+            since=since,
+            until=until,
+        )
     )
-    query = LabOrderAM.apply_query_permissions(query, user)
-
-    if service_id:
-        query = query.filter(ResultItem.service_id.in_(service_id))
-    if order_id:
-        query = query.filter(ResultItem.order_id.in_(order_id))
-    if since:
-        query = query.filter(ResultItem.observation_time >= since)
-    if until:
-        query = query.filter(ResultItem.observation_time <= until)
-
-    items = query.order_by(ResultItem.observation_time.desc())
-
-    return paginate(items)
 
 
 @router.get(
@@ -173,20 +120,7 @@ def patient_resultitems_services(
     ukrdc3: Session = Depends(get_ukrdc3),
 ):
     """Retreive a list of resultitem services available for a specific patient"""
-    items = (
-        ukrdc3.query(ResultItem).join(LabOrder.result_items).filter(LabOrder.pid == pid)
-    )
-    items = LabOrderAM.apply_query_permissions(items, user)
-
-    services = items.distinct(ResultItem.service_id)
-    return [
-        ResultItemServiceSchema(
-            id=item.service_id,
-            description=item.service_id_description,
-            standard=item.service_id_std,
-        )
-        for item in services.all()
-    ]
+    return get_resultitem_services(ukrdc3, user, pid=pid)
 
 
 @router.get(
@@ -201,13 +135,7 @@ def patient_observations(
     ukrdc3: Session = Depends(get_ukrdc3),
 ):
     """Retreive a specific patient's lab orders"""
-    record: PatientRecord = safe_get_patient(ukrdc3, pid, user)
-    observations = record.observations
-
-    if code:
-        observations = observations.filter(Observation.observation_code.in_(code))
-    observations = observations.order_by(Observation.observation_time.desc())
-    return paginate(observations)
+    return paginate(get_observations(ukrdc3, user, pid=pid, codes=code))
 
 
 @router.get(
@@ -221,10 +149,7 @@ def patient_observations_codes(
     ukrdc3: Session = Depends(get_ukrdc3),
 ):
     """Retreive a list of observation codes available for a specific patient"""
-    record: PatientRecord = safe_get_patient(ukrdc3, pid, user)
-    observations = record.observations
-    codes = observations.distinct(Observation.observation_code)
-    return [item.observation_code for item in codes.all()]
+    return get_observation_codes(ukrdc3, user, pid=pid)
 
 
 @router.get(
@@ -238,9 +163,7 @@ def patient_medications(
     ukrdc3: Session = Depends(get_ukrdc3),
 ):
     """Retreive a specific patient's medications"""
-    record: PatientRecord = safe_get_patient(ukrdc3, pid, user)
-    medications = record.medications
-    return medications.order_by(Medication.from_time).all()
+    return get_medications(ukrdc3, user, pid=pid).all()
 
 
 @router.get(
@@ -254,5 +177,4 @@ def patient_surveys(
     ukrdc3: Session = Depends(get_ukrdc3),
 ):
     """Retreive a specific patient's surveys"""
-    record: PatientRecord = safe_get_patient(ukrdc3, pid, user)
-    return record.surveys
+    return get_surveys(ukrdc3, user, pid=pid).all()

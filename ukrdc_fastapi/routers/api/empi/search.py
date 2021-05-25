@@ -1,12 +1,12 @@
 from fastapi import APIRouter, Depends
 from fastapi import Query as QueryParam
 from fastapi import Security
-from sqlalchemy.orm import Query, Session
+from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import MasterRecord
 
-from ukrdc_fastapi.access_models.empi import MasterRecordAM
 from ukrdc_fastapi.dependencies import get_jtrace
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
+from ukrdc_fastapi.query.masterrecords import get_masterrecords
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
 from ukrdc_fastapi.utils.search.masterrecords import search_masterrecord_ids
@@ -39,7 +39,7 @@ def search_masterrecords(
         nhs_number, mrn_number, ukrdc_number, full_name, pidx, dob, search, jtrace
     )
 
-    matched_records: Query = jtrace.query(MasterRecord).filter(
+    matched_records = get_masterrecords(jtrace, user).filter(
         MasterRecord.id.in_(matched_ids)
     )
 
@@ -52,5 +52,4 @@ def search_masterrecords(
             MasterRecord.nationalid_type != "UKRDC"
         )
 
-    matched_records = MasterRecordAM.apply_query_permissions(matched_records, user)
     return paginate(matched_records)

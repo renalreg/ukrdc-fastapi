@@ -4,8 +4,11 @@ import os
 from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import MasterRecord
 
+from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
 from ukrdc_fastapi.dependencies.database import JtraceSession
-from ukrdc_fastapi.utils.filters.empi import find_related_masterrecords
+from ukrdc_fastapi.query.masterrecords import get_masterrecords_related_to_masterrecord
+
+USER = UKRDCUser(id="", email="", scopes=[], permissions=Permissions.all())
 
 
 def find_ukrdc_dupes(jtrace: Session):
@@ -26,9 +29,10 @@ def find_ukrdc_dupes(jtrace: Session):
 
     for record in records:
         print(f"Processing record {record.id}")
-        related_ukrdc_records = find_related_masterrecords(record, jtrace).filter(
-            MasterRecord.nationalid_type == "UKRDC"
-        )
+        related_ukrdc_records = get_masterrecords_related_to_masterrecord(
+            jtrace,
+            record.id,
+        ).filter(MasterRecord.nationalid_type == "UKRDC")
         if related_ukrdc_records.count() > 1:
             print(f"Multiple UKRDC IDs found for {record.id}")
 
