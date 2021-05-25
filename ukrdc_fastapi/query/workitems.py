@@ -5,17 +5,42 @@ from fastapi.exceptions import HTTPException
 from httpx import Response
 from mirth_client.mirth import MirthAPI
 from redis import Redis
+from sqlalchemy.orm.query import Query
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.expression import or_
 from ukrdc_sqla.empi import Person, PidXRef, WorkItem
 
-from ukrdc_fastapi.access_models.empi import WorkItemAM
-from ukrdc_fastapi.dependencies.auth import UKRDCUser
+from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
 from ukrdc_fastapi.utils.mirth import (
     MirthMessageResponseSchema,
     build_update_workitem_message,
     get_channel_from_name,
 )
+
+
+def _apply_query_permissions(query: Query, user: UKRDCUser):
+    units = Permissions.unit_codes(user.permissions)
+    if Permissions.UNIT_WILDCARD in units:
+        return query
+
+    return query.join(Person).join(PidXRef).filter(PidXRef.sending_facility.in_(units))
+
+
+def _assert_permission(workitem: WorkItem, user: UKRDCUser):
+    units = Permissions.unit_codes(user.permissions)
+    if Permissions.UNIT_WILDCARD in units:
+        return
+
+    person: Person = workitem.person
+    xref: PidXRef
+    for xref in person.xref_entries:
+        if xref.sending_facility in units:
+            return
+
+    raise HTTPException(
+        403,
+        detail="You do not have permission to access this resource. Sending facility does not match.",
+    )
 
 
 def get_workitems(
@@ -55,7 +80,7 @@ def get_workitems(
     # Sort workitems
     workitems = workitems.order_by(WorkItem.last_updated.desc())
 
-    return WorkItemAM.apply_query_permissions(workitems, user)
+    return _apply_query_permissions(workitems, user)
 
 
 def get_workitem(jtrace: Session, workitem_id: int, user: UKRDCUser) -> WorkItem:
@@ -75,7 +100,7 @@ def get_workitem(jtrace: Session, workitem_id: int, user: UKRDCUser) -> WorkItem
     workitem = jtrace.query(WorkItem).get(workitem_id)
     if not workitem:
         raise HTTPException(404, detail="Work item not found")
-    WorkItemAM.assert_permission(workitem, user)
+    _assert_permission(workitem, user)
     return workitem
 
 
@@ -129,4 +154,4 @@ def get_workitems_related_to_workitem(
         WorkItem.status == 1,
     )
 
-    return WorkItemAM.apply_query_permissions(other_workitems, user)
+    return _apply_query_permissions(other_workitems, user)

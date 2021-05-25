@@ -1,14 +1,38 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
-from ukrdc_sqla.empi import Person
+from sqlalchemy.orm.query import Query
+from ukrdc_sqla.empi import Person, PidXRef
 
-from ukrdc_fastapi.access_models.empi import PersonAM
-from ukrdc_fastapi.dependencies.auth import UKRDCUser
+from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
+
+
+def _apply_query_permissions(query: Query, user: UKRDCUser):
+    units = Permissions.unit_codes(user.permissions)
+    if Permissions.UNIT_WILDCARD in units:
+        return query
+
+    return query.join(PidXRef).filter(PidXRef.sending_facility.in_(units))
+
+
+def _assert_permission(person: Person, user: UKRDCUser):
+    units = Permissions.unit_codes(user.permissions)
+    if Permissions.UNIT_WILDCARD in units:
+        return
+
+    xref: PidXRef
+    for xref in person.xref_entries:
+        if xref.sending_facility in units:
+            return
+
+    raise HTTPException(
+        403,
+        detail="You do not have permission to access this resource. Sending facility does not match.",
+    )
 
 
 def get_persons(jtrace: Session, user: UKRDCUser):
     people = jtrace.query(Person)
-    return PersonAM.apply_query_permissions(people, user)
+    return _apply_query_permissions(people, user)
 
 
 def get_person(jtrace: Session, person_id: str, user: UKRDCUser) -> Person:
@@ -28,5 +52,5 @@ def get_person(jtrace: Session, person_id: str, user: UKRDCUser) -> Person:
     person = jtrace.query(Person).get(person_id)
     if not person:
         raise HTTPException(404, detail="EMPI Person not found")
-    PersonAM.assert_permission(person, user)
+    _assert_permission(person, user)
     return person
