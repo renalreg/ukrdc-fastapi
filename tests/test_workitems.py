@@ -127,31 +127,6 @@ def test_workitem_unlink(client, httpx_session):
     assert f"<updateDescription />" in message
 
 
-@pytest.mark.parametrize("master_record", [1, 2])
-@pytest.mark.parametrize("person_id", [1, 2, 3, 4])
-@pytest.mark.parametrize("comment", [None, "", "COMMENT"])
-def test_workitems_unlink(client, master_record, person_id, comment, httpx_session):
-    response = client.post(
-        f"/api/empi/workitems/unlink/",
-        json={
-            "master_record": master_record,
-            "person_id": person_id,
-            "comment": comment,
-        },
-    )
-
-    assert response.json().get("status") == "success"
-    message = response.json().get("message")
-
-    assert f"<masterRecord>{master_record}</masterRecord>" in message
-    assert f"<personId>{person_id}</personId>" in message
-    assert "<updatedBy>TEST@UKRDC_FASTAPI</updatedBy>" in message
-    if comment:
-        assert f"<updateDescription>{comment}</updateDescription>" in message
-    else:
-        assert f"<updateDescription />" in message
-
-
 def test_workitem_update(client, httpx_session):
     response = client.put(
         "/api/empi/workitems/1/", json={"status": 3, "comment": "UPDATE COMMENT"}

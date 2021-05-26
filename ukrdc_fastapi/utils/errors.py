@@ -24,7 +24,7 @@ class ExtendedErrorSchema(MessageSchema):
     work_items: Optional[list[WorkItemShortSchema]]
 
 
-def make_extended_error(message: MessageSchema, jtrace: Session):
+def make_extended_error(message: MessageSchema, jtrace: Session) -> ExtendedErrorSchema:
     """
     Take a basic errorsdb message and extend it to include
     associated master records and work items.

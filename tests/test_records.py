@@ -79,11 +79,6 @@ def test_record_observations(client):
     ]
 
 
-def test_record_observations_missing(client):
-    response = client.get("/api/patientrecords/MISSING_PID/observations")
-    assert response.json()["items"] == []
-
-
 # Record medications
 
 
@@ -108,11 +103,6 @@ def test_record_medications(client):
             "enteringOrganizationDescription": None,
         },
     ]
-
-
-def test_record_medications_missing(client):
-    response = client.get("/api/patientrecords/MISSING_PID/medications")
-    assert response.json() == []
 
 
 # Record surveys
@@ -155,11 +145,6 @@ def test_record_surveys(client):
             "enteredatcode": "ENTEREDATCODE",
         }
     ]
-
-
-def test_record_surveys_missing(client):
-    response = client.get("/api/patientrecords/MISSING_PID/surveys")
-    assert response.json() == []
 
 
 # Record export-data

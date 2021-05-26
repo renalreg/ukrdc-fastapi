@@ -43,13 +43,13 @@ from ukrdc_fastapi.dependencies import (
     get_redis,
     get_ukrdc3,
 )
-from ukrdc_fastapi.dependencies.auth import User
+from ukrdc_fastapi.dependencies.auth import UKRDCUser
 
 # FastAPI dependency override gets confused by some of our auth stuff,
 # so we'll do a dirty patch for testing
 
 
-class FakeAuth:
+class FakeAuth(auth.URKDCAuth):
     def __init__(self, *_) -> None:
         pass
 
@@ -57,10 +57,10 @@ class FakeAuth:
         return
 
     def get_user(self):
-        return User(
+        return UKRDCUser(
             id="TEST_ID",
             email="TEST@UKRDC_FASTAPI",
-            permissions=auth.Permissions.all(),
+            permissions=self.permissions.all(),
             scopes=["openid", "profile", "email", "offline_access"],
         )
 

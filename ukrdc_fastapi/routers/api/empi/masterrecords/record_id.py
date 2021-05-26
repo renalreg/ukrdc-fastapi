@@ -1,24 +1,27 @@
 import datetime
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Security
-from sqlalchemy.orm import Query as ORMQuery
+from fastapi import APIRouter, Depends, Security
 from sqlalchemy.orm import Session
-from ukrdc_sqla.empi import MasterRecord, WorkItem
+from ukrdc_sqla.empi import MasterRecord, Person, WorkItem
 from ukrdc_sqla.errorsdb import Message
 from ukrdc_sqla.ukrdc import PatientRecord
 
 from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_ukrdc3
-from ukrdc_fastapi.dependencies.auth import Permissions, auth
+from ukrdc_fastapi.dependencies.auth import UKRDCUser, auth
+from ukrdc_fastapi.query.errors import get_errors
+from ukrdc_fastapi.query.masterrecords import (
+    get_masterrecord,
+    get_masterrecords_related_to_masterrecord,
+)
+from ukrdc_fastapi.query.patientrecords import get_patientrecords
+from ukrdc_fastapi.query.persons import get_persons
+from ukrdc_fastapi.query.workitems import get_workitems
 from ukrdc_fastapi.schemas.base import OrmModel
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema, PersonSchema, WorkItemSchema
 from ukrdc_fastapi.schemas.errors import MessageSchema
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordShortSchema
-from ukrdc_fastapi.utils.filters.empi import (
-    find_persons_related_to_masterrecord,
-    find_related_masterrecords,
-)
-from ukrdc_fastapi.utils.filters.errors import filter_error_messages
+from ukrdc_fastapi.utils.links import find_related_ids
 from ukrdc_fastapi.utils.paginate import Page, paginate
 
 
@@ -34,43 +37,41 @@ router = APIRouter(prefix="/{record_id}")
 @router.get(
     "/",
     response_model=MasterRecordSchema,
-    dependencies=[Security(auth.permission(Permissions.READ_EMPI))],
+    dependencies=[Security(auth.permission(auth.permissions.READ_RECORDS))],
 )
-def master_record_detail(record_id: str, jtrace: Session = Depends(get_jtrace)):
+def master_record_detail(
+    record_id: int,
+    user: UKRDCUser = Security(auth.get_user),
+    jtrace: Session = Depends(get_jtrace),
+):
     """Retreive a particular master record from the EMPI"""
-    record: MasterRecord = jtrace.query(MasterRecord).get(record_id)
-    if not record:
-        raise HTTPException(404, detail="Master Record not found")
-
-    return record
+    return get_masterrecord(jtrace, record_id, user)
 
 
 @router.get(
     "/statistics",
     response_model=MasterRecordStatisticsSchema,
-    dependencies=[Security(auth.permission(Permissions.READ_EMPI))],
+    dependencies=[Security(auth.permission(auth.permissions.READ_RECORDS))],
 )
 def master_record_statistics(
-    record_id: str,
+    record_id: int,
+    user: UKRDCUser = Security(auth.get_user),
     jtrace: Session = Depends(get_jtrace),
     errorsdb: Session = Depends(get_errorsdb),
 ):
     """Retreive a particular master record from the EMPI"""
-    record: MasterRecord = jtrace.query(MasterRecord).get(record_id)
-    if not record:
-        raise HTTPException(404, detail="Master Record not found")
+    record: MasterRecord = get_masterrecord(jtrace, record_id, user)
 
-    errors = errorsdb.query(Message).filter(Message.ni == record.nationalid)
-    errors = filter_error_messages(errors, None, None, None, "ERROR")
+    errors = get_errors(errorsdb, user, nis=[record.nationalid])
 
     workitems = jtrace.query(WorkItem).filter(
         WorkItem.master_id == record.id,
         WorkItem.status == 1,
     )
 
-    ukrdc_records = find_related_masterrecords(record, jtrace).filter(
-        MasterRecord.nationalid_type == "UKRDC"
-    )
+    ukrdc_records = get_masterrecords_related_to_masterrecord(
+        jtrace, record.id, user
+    ).filter(MasterRecord.nationalid_type == "UKRDC")
 
     return MasterRecordStatisticsSchema(
         workitems=workitems.count(),
@@ -82,28 +83,29 @@ def master_record_statistics(
 @router.get(
     "/related/",
     response_model=list[MasterRecordSchema],
-    dependencies=[Security(auth.permission(Permissions.READ_EMPI))],
+    dependencies=[Security(auth.permission(auth.permissions.READ_RECORDS))],
 )
-def master_record_related(record_id: str, jtrace: Session = Depends(get_jtrace)):
+def master_record_related(
+    record_id: int,
+    user: UKRDCUser = Security(auth.get_user),
+    jtrace: Session = Depends(get_jtrace),
+):
     """Retreive a list of other master records related to a particular master record"""
-    record: MasterRecord = jtrace.query(MasterRecord).get(record_id)
-    if not record:
-        raise HTTPException(404, detail="Master Record not found")
-
-    other_records = find_related_masterrecords(record, jtrace).filter(
-        MasterRecord.id != record_id
+    return (
+        get_masterrecords_related_to_masterrecord(jtrace, record_id, user)
+        .filter(MasterRecord.id != record_id)
+        .all()
     )
-
-    return other_records.all()
 
 
 @router.get(
     "/errors/",
     response_model=Page[MessageSchema],
-    dependencies=[Security(auth.permission(Permissions.READ_EMPI))],
+    dependencies=[Security(auth.permission(auth.permissions.READ_RECORDS))],
 )
 def master_record_errors(
-    record_id: str,
+    record_id: int,
+    user: UKRDCUser = Security(auth.get_user),
     facility: Optional[str] = None,
     since: Optional[datetime.datetime] = None,
     until: Optional[datetime.datetime] = None,
@@ -115,86 +117,80 @@ def master_record_errors(
     Retreive a list of errors related to a particular master record.
     By default returns message created within the last 365 days.
     """
-    record: MasterRecord = jtrace.query(MasterRecord).get(record_id)
-
-    related_master_records = find_related_masterrecords(record, jtrace)
+    related_master_records = get_masterrecords_related_to_masterrecord(
+        jtrace, record_id, user
+    )
 
     related_national_ids: list[str] = [
         record.nationalid for record in related_master_records.all()
     ]
 
-    messages: ORMQuery = errorsdb.query(Message).filter(
-        Message.ni.in_(related_national_ids)
+    messages = get_errors(
+        errorsdb,
+        user,
+        status=status,
+        nis=related_national_ids,
+        facility=facility,
+        since=since,
+        until=until,
     )
-
-    messages = filter_error_messages(
-        messages, facility, since, until, status, default_since_delta=365
-    )
-
     return paginate(messages)
 
 
 @router.get(
     "/workitems/",
     response_model=list[WorkItemSchema],
-    dependencies=[Security(auth.permission(Permissions.READ_EMPI))],
+    dependencies=[Security(auth.permission(auth.permissions.READ_RECORDS))],
 )
-def master_record_workitems(record_id: str, jtrace: Session = Depends(get_jtrace)):
+def master_record_workitems(
+    record_id: int,
+    user: UKRDCUser = Security(auth.get_user),
+    jtrace: Session = Depends(get_jtrace),
+):
     """Retreive a list of work items related to a particular master record."""
-    record: MasterRecord = jtrace.query(MasterRecord).get(record_id)
-    if not record:
-        raise HTTPException(404, detail="Master Record not found")
-
-    related_workitems: ORMQuery = jtrace.query(WorkItem).filter(
-        WorkItem.master_id == record.id,
-        WorkItem.status == 1,
-    )
-
-    return related_workitems.all()
+    record: MasterRecord = get_masterrecord(jtrace, record_id, user)
+    return get_workitems(jtrace, user, master_id=record.id).all()
 
 
 @router.get(
     "/persons/",
     response_model=list[PersonSchema],
-    dependencies=[Security(auth.permission(Permissions.READ_EMPI))],
+    dependencies=[Security(auth.permission(auth.permissions.READ_RECORDS))],
 )
-def master_record_persons(record_id: str, jtrace: Session = Depends(get_jtrace)):
+def master_record_persons(
+    record_id: int,
+    user: UKRDCUser = Security(auth.get_user),
+    jtrace: Session = Depends(get_jtrace),
+):
     """Retreive a list of person records related to a particular master record."""
-    record: MasterRecord = jtrace.query(MasterRecord).get(record_id)
-    if not record:
-        raise HTTPException(404, detail="Master Record not found")
-
-    persons = find_persons_related_to_masterrecord(record, jtrace)
-    return persons.all()
+    # Find all related person record IDs by recursing through link records
+    _, related_person_ids = find_related_ids(jtrace, {record_id}, set())
+    return get_persons(jtrace, user).filter(Person.id.in_(related_person_ids)).all()
 
 
 @router.get(
     "/patientrecords/",
     response_model=list[PatientRecordShortSchema],
-    dependencies=[
-        Security(
-            auth.permission([Permissions.READ_EMPI, Permissions.READ_PATIENTRECORDS])
-        )
-    ],
+    dependencies=[Security(auth.permission(auth.permissions.READ_RECORDS))],
 )
 def master_record_patientrecords(
-    record_id: str,
+    record_id: int,
+    user: UKRDCUser = Security(auth.get_user),
     jtrace: Session = Depends(get_jtrace),
     ukrdc3: Session = Depends(get_ukrdc3),
 ):
     """Retreive a list of patient records related to a particular master record."""
-    record: MasterRecord = jtrace.query(MasterRecord).get(record_id)
-    if not record:
-        raise HTTPException(404, detail="Master Record not found")
-
-    related_persons = find_persons_related_to_masterrecord(record, jtrace)
+    _, related_person_ids = find_related_ids(jtrace, {record_id}, set())
+    related_persons = get_persons(jtrace, user).filter(
+        Person.id.in_(related_person_ids)
+    )
 
     related_patient_ids = set()
     for person in related_persons:
         related_patient_ids.add(person.localid)
 
-    patient_records: ORMQuery = ukrdc3.query(PatientRecord).filter(
+    records = get_patientrecords(ukrdc3, user).filter(
         PatientRecord.pid.in_(related_patient_ids)
     )
 
-    return patient_records.all()
+    return records.all()

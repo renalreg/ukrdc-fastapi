@@ -1,23 +1,14 @@
 import datetime
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Security
-from httpx import Response
-from mirth_client import MirthAPI
+from fastapi import APIRouter, Depends, Query, Security
 from pydantic import BaseModel, Field
-from redis import Redis
 from sqlalchemy.orm import Session
-from ukrdc_sqla.empi import Person, PidXRef, WorkItem
 
-from ukrdc_fastapi.dependencies import get_jtrace, get_mirth, get_redis
-from ukrdc_fastapi.dependencies.auth import Permissions, User, auth
+from ukrdc_fastapi.dependencies import get_jtrace
+from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
+from ukrdc_fastapi.query.workitems import get_workitems
 from ukrdc_fastapi.schemas.empi import WorkItemShortSchema
-from ukrdc_fastapi.utils import filters
-from ukrdc_fastapi.utils.mirth import (
-    MirthMessageResponseSchema,
-    build_unlink_message,
-    get_channel_from_name,
-)
 from ukrdc_fastapi.utils.paginate import Page, paginate
 
 from . import workitem_id
@@ -42,63 +33,12 @@ def workitems_list(
     until: Optional[datetime.datetime] = None,
     status: Optional[list[int]] = Query([1]),
     facility: Optional[str] = None,
+    user: UKRDCUser = Security(auth.get_user),
     jtrace: Session = Depends(get_jtrace),
 ):
     """Retreive a list of open work items from the EMPI"""
-    workitems = jtrace.query(WorkItem)
-
-    if facility:
-        workitems = (
-            workitems.join(Person)
-            .join(PidXRef)
-            .filter(PidXRef.sending_facility == facility)
+    return paginate(
+        get_workitems(
+            jtrace, user, statuses=status, facility=facility, since=since, until=until
         )
-
-    # Optionally filter Workitems updated since
-    if since:
-        workitems = workitems.filter(WorkItem.last_updated >= since)
-
-    # Optionally filter Workitems updated before
-    if until:
-        workitems = workitems.filter(WorkItem.last_updated <= until)
-
-    # Get a query of open workitems
-    workitems = workitems.filter(WorkItem.status.in_(status))
-
-    # Sort, paginate, and return
-    return paginate(workitems.order_by(WorkItem.last_updated.desc()))
-
-
-@router.post(
-    "/unlink/",
-    response_model=MirthMessageResponseSchema,
-    dependencies=[
-        Security(
-            auth.permission([Permissions.READ_WORKITEMS, Permissions.WRITE_WORKITEMS])
-        )
-    ],
-)
-async def workitems_unlink(
-    args: UnlinkWorkItemRequestSchema,
-    user: User = Security(auth.get_user),
-    mirth: MirthAPI = Depends(get_mirth),
-    redis: Redis = Depends(get_redis),
-):
-    """Unlink any master record and person record"""
-
-    channel = await get_channel_from_name("Unlink", mirth, redis)
-    if not channel:
-        raise HTTPException(
-            500, detail="ID for Unlink channel not found"
-        )  # pragma: no cover
-
-    message: str = build_unlink_message(
-        args.master_record, args.person_id, user.email, args.comment
     )
-
-    response: Response = await channel.post_message(message)
-
-    if response.status_code != 204:
-        raise HTTPException(500, detail=response.text)
-
-    return MirthMessageResponseSchema(status="success", message=message)

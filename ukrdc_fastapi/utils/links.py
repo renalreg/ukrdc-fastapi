@@ -2,7 +2,7 @@ from collections import namedtuple
 from typing import Optional
 
 from sqlalchemy.orm import Query, Session
-from ukrdc_sqla.empi import LinkRecord, MasterRecord, Person, PidXRef
+from ukrdc_sqla.empi import LinkRecord
 
 PersonMasterLink = namedtuple("PersonMasterLink", ("id", "person_id", "master_id"))
 
@@ -47,58 +47,6 @@ def find_related_ids(
         seen_master_ids |= master_ids
         seen_person_ids |= person_ids
     return (seen_master_ids, seen_person_ids)
-
-
-def find_persons_related_to_masterrecord(
-    initial_record: MasterRecord, jtrace: Session
-) -> Query:
-    """Given an input MasterRecord, recursively find all related Person records
-
-    Args:
-        initial_record (MasterRecord): Starting point of search
-        jtrace (Session): EMPI database session
-
-    Returns:
-        Query: EMPI database query of all related records
-    """
-    # Find all related person record IDs by recursing through link records
-    _, related_person_ids = find_related_ids(jtrace, {initial_record.id}, set())
-    # Return a jtrace query of the matched person records
-    return jtrace.query(Person).filter(Person.id.in_(related_person_ids))
-
-
-def find_masterrecords_related_to_person(
-    initial_record: Person, jtrace: Session
-) -> Query:
-    """Given an input Person record, recursively find all related MasterRecords
-
-    Args:
-        initial_record (Person): Starting point of search
-        jtrace (Session): EMPI database session
-
-    Returns:
-        Query: EMPI database query of all related records
-    """
-    # Find all related master record IDs by recursing through link records
-    related_master_ids, _ = find_related_ids(jtrace, set(), {initial_record.id})
-    # Return a jtrace query of the matched master records
-    return jtrace.query(MasterRecord).filter(MasterRecord.id.in_(related_master_ids))
-
-
-def find_related_masterrecords(initial_record: MasterRecord, jtrace: Session) -> Query:
-    """Given an input MasterRecord, recursively find all related MasterRecords
-
-    Args:
-        initial_record (MasterRecord): Starting point of search
-        jtrace (Session): EMPI database session
-
-    Returns:
-        Query: EMPI database query of all related records
-    """
-    # Find all related master record IDs by recursing through link records
-    related_master_ids, _ = find_related_ids(jtrace, {initial_record.id}, set())
-    # Return a jtrace query of the matched master records
-    return jtrace.query(MasterRecord).filter(MasterRecord.id.in_(related_master_ids))
 
 
 def find_related_link_records(
@@ -158,24 +106,3 @@ def find_related_link_records(
             linkrecord_ids.add(person_master_link)
 
     return linkrecord_ids
-
-
-def filter_masterrecords_by_facility(records: Query, facility: str) -> Query:
-    """
-    Given a query of MasterRecords, filter the query by sending facility.
-    If multiple facilities send to the same masterrecord, the record will
-    be included for each.
-
-    Args:
-        records (Query): SQLAlchemy query of MasterRecords
-        facility (str): Facility code/ID
-
-    Returns:
-        Query: Filtered MasterRecord query
-    """
-    return (
-        records.join(LinkRecord)
-        .join(Person)
-        .join(PidXRef)
-        .filter(PidXRef.sending_facility == facility)
-    )
