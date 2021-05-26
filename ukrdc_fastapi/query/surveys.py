@@ -12,6 +12,16 @@ def get_surveys(
     user: UKRDCUser,
     pid: Optional[str] = None,
 ) -> Query:
+    """Get a list of patient surveys
+
+    Args:
+        ukrdc3 (Session): Database session
+        user (UKRDCUser): Logged-in user object
+        pid (Optional[str], optional): PID of survey PatientRecord. Defaults to None.
+
+    Returns:
+        Query: SQLAlchemy query of surveys
+    """
     # Join with PatientRecord for unit permissions
     surveys = ukrdc3.query(Survey).join(PatientRecord.surveys)
 

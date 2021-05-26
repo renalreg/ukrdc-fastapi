@@ -9,7 +9,19 @@ from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
 from ukrdc_fastapi.schemas.facility import FacilitySchema
 
 
-def get_facilities(ukrdc3: Session, redis: Redis, user: UKRDCUser):
+def get_facilities(
+    ukrdc3: Session, redis: Redis, user: UKRDCUser
+) -> list[FacilitySchema]:
+    """Get a list of all unit/facility codes available to the current user
+
+    Args:
+        ukrdc3 (Session): SQLALchemy session
+        redis (Redis): Redis session
+        user (UKRDCUser): Logged-in user object
+
+    Returns:
+        list[FacilitySchema]: List of unit codes
+    """
     redis_key: str = "ukrdc3:facilities"
 
     if not redis.exists(redis_key):

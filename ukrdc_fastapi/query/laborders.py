@@ -7,6 +7,7 @@ from sqlalchemy.orm.query import Query
 from ukrdc_sqla.ukrdc import LabOrder, PVDelete
 
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
+from ukrdc_fastapi.query.common import PermissionsError
 
 
 def _apply_query_permissions(query: Query, user: UKRDCUser):
@@ -31,13 +32,20 @@ def _assert_permission(laborder: LabOrder, user: UKRDCUser):
         or laborder.entered_at in units
         or laborder.entering_organization_code in units
     ):
-        raise HTTPException(
-            403,
-            detail="You do not have permission to access this resource. Sending facility does not match.",
-        )
+        raise PermissionsError()
 
 
 def get_laborders(ukrdc3: Session, user: UKRDCUser, pid: Optional[str] = None):
+    """Return a list of laborders
+
+    Args:
+        ukrdc3 (Session): SQLAlchemy session
+        user (UKRDCUser): Logged-in user
+        pid (Optional[str], optional): PatientRecord PID to filer by. Defaults to None.
+
+    Returns:
+        Query: SQLAlchemy query
+    """
     orders = ukrdc3.query(LabOrder)
 
     if pid:
@@ -70,6 +78,13 @@ def get_laborder(ukrdc3: Session, order_id: str, user: UKRDCUser) -> LabOrder:
 
 
 def delete_laborder(ukrdc3: Session, order_id: str, user: UKRDCUser) -> None:
+    """Delete a LabOrder by ID if it exists and the user has permission
+
+    Args:
+        ukrdc3 (Session): UKRDC SQLAlchemy session
+        order_id (str): LabOrder ID
+        user (UKRDCUser): User object
+    """
     order: LabOrder = get_laborder(ukrdc3, order_id, user)
 
     pid = order.pid

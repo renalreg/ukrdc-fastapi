@@ -12,6 +12,16 @@ def get_medications(
     user: UKRDCUser,
     pid: Optional[str] = None,
 ) -> Query:
+    """Get a list of medication records
+
+    Args:
+        ukrdc3 (Session): SQLALchemy session
+        user (UKRDCUser): Logged-in user object
+        pid (Optional[str], optional): PID of observation patientrecord. Defaults to None.
+
+    Returns:
+        Query: Medication query
+    """
     medications = ukrdc3.query(Medication)
 
     if pid:

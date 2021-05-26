@@ -13,6 +13,17 @@ def get_observations(
     pid: Optional[str] = None,
     codes: Optional[list[str]] = None,
 ) -> Query:
+    """Get a list of Patient observations
+
+    Args:
+        ukrdc3 (Session): SQLALchemy session
+        user (UKRDCUser): Logged-in user object
+        pid (Optional[str], optional): PID of observation patientrecord. Defaults to None.
+        codes (Optional[list[str]], optional): List of observation codes to filter by. Defaults to None.
+
+    Returns:
+        Query: SQLALchemy query
+    """
     observations = ukrdc3.query(Observation)
 
     if pid:
@@ -38,6 +49,16 @@ def get_observation_codes(
     user: UKRDCUser,
     pid: Optional[str] = None,
 ) -> list[str]:
+    """Get a list of available observation codes
+
+    Args:
+        ukrdc3 (Session): SQLALchemy session
+        user (UKRDCUser): Logged-in user object
+        pid (Optional[str], optional): PID of observation patientrecord. Defaults to None.
+
+    Returns:
+        list[str]: List of unique observation codes
+    """
     observations = get_observations(ukrdc3, user, pid)
     codes = observations.distinct(Observation.observation_code)
     return [item.observation_code for item in codes.all()]

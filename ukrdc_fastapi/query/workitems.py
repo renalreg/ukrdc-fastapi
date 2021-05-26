@@ -11,6 +11,7 @@ from sqlalchemy.sql.expression import or_
 from ukrdc_sqla.empi import Person, PidXRef, WorkItem
 
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
+from ukrdc_fastapi.query.common import PermissionsError, person_belongs_to_units
 from ukrdc_fastapi.utils.mirth import (
     MirthMessageResponseSchema,
     build_update_workitem_message,
@@ -32,15 +33,10 @@ def _assert_permission(workitem: WorkItem, user: UKRDCUser):
         return
 
     person: Person = workitem.person
-    xref: PidXRef
-    for xref in person.xref_entries:
-        if xref.sending_facility in units:
-            return
+    if person_belongs_to_units(person, units):
+        return
 
-    raise HTTPException(
-        403,
-        detail="You do not have permission to access this resource. Sending facility does not match.",
-    )
+    raise PermissionsError()
 
 
 def get_workitems(
@@ -52,6 +48,20 @@ def get_workitems(
     since: Optional[datetime.datetime] = None,
     until: Optional[datetime.datetime] = None,
 ):
+    """Get a list of WorkItems
+
+    Args:
+        jtrace (Session): SQLAlchemy session
+        user (UKRDCUser): Logged-in user
+        statuses (list[int], optional): WorkItem statuses to filter by. Defaults to None.
+        master_id (Optional[int], optional): WorkItem MasterRecord ID to filter by. Defaults to None.
+        facility (Optional[str], optional): Associated Person sending facility to filter by. Defaults to None.
+        since (Optional[datetime.datetime], optional): Show items since datetime. Defaults to None.
+        until (Optional[datetime.datetime], optional): Show items until datetime. Defaults to None.
+
+    Returns:
+        [type]: [description]
+    """
     status_list: list[int] = statuses or [1]
 
     workitems = jtrace.query(WorkItem)
@@ -91,9 +101,6 @@ def get_workitem(jtrace: Session, workitem_id: int, user: UKRDCUser) -> WorkItem
         workitem_id (int): WorkItem ID
         user (UKRDCUser): User object
 
-    Raises:
-        HTTPException: User does not have permission to access the resource
-
     Returns:
         WorkItem: WorkItem
     """
@@ -113,6 +120,20 @@ async def update_workitem(
     status: Optional[int] = None,
     comment: Optional[str] = None,
 ) -> MirthMessageResponseSchema:
+    """Update a WorkItem by ID if it exists and the user has permission
+
+    Args:
+        jtrace (Session): JTRACE SQLAlchemy session
+        workitem_id (int): WorkItem ID
+        user (UKRDCUser): User object
+        mirth (MirthAPI): Mirth API instance
+        redis (Redis): Redis session
+        status (int, optional): New WorkItem status
+        comment (str, optional): User comment to add to WorkItem
+
+    Returns:
+        MirthMessageResponseSchema: Mirth API response object
+    """
     workitem = get_workitem(jtrace, workitem_id, user)
 
     channel = await get_channel_from_name("WorkItemUpdate", mirth, redis)
@@ -139,7 +160,17 @@ async def update_workitem(
 
 def get_workitems_related_to_workitem(
     jtrace: Session, workitem_id: int, user: UKRDCUser
-):
+) -> Query:
+    """Get a list of WorkItems related via the LinkRecord network to a given WorkItem
+
+    Args:
+        jtrace (Session): JTRACE SQLAlchemy session
+        workitem_id (int): WorkItem ID
+        user (UKRDCUser): Logged-in user
+
+    Returns:
+        Query: SQLAlchemy query
+    """
     workitem = get_workitem(jtrace, workitem_id, user)
 
     filters = []

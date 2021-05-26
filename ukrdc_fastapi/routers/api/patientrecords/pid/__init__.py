@@ -16,7 +16,7 @@ from ukrdc_fastapi.query.patientrecords import (
     get_patientrecords_related_to_patientrecord,
 )
 from ukrdc_fastapi.query.resultitems import get_resultitem_services, get_resultitems
-from ukrdc_fastapi.query.survey import get_surveys
+from ukrdc_fastapi.query.surveys import get_surveys
 from ukrdc_fastapi.schemas.laborder import (
     LabOrderShortSchema,
     ResultItemSchema,

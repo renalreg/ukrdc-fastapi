@@ -7,6 +7,7 @@ from sqlalchemy.orm.session import Session
 from ukrdc_sqla.errorsdb import Message
 
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
+from ukrdc_fastapi.query.common import PermissionsError
 from ukrdc_fastapi.schemas.errors import MessageSchema
 from ukrdc_fastapi.utils.errors import ExtendedErrorSchema, make_extended_error
 
@@ -25,10 +26,7 @@ def _assert_permission(message: Message, user: UKRDCUser):
         return
 
     if message.facility not in units:
-        raise HTTPException(
-            403,
-            detail="You do not have permission to access this resource. Sending facility does not match.",
-        )
+        raise PermissionsError()
 
 
 def get_errors(
@@ -39,7 +37,21 @@ def get_errors(
     facility: Optional[str] = None,
     since: Optional[datetime.datetime] = None,
     until: Optional[datetime.datetime] = None,
-):
+) -> Query:
+    """Get a list of error messages from the errorsdb
+
+    Args:
+        errorsdb (Session): SQLAlchemy session
+        user (UKRDCUser): Logged-in user
+        status (str, optional): Status code to filter by. Defaults to "ERROR".
+        nis (Optional[list[str]], optional): List of pateint NIs to filer by. Defaults to None.
+        facility (Optional[str], optional): Unit/facility code to filter by. Defaults to None.
+        since (Optional[datetime.datetime], optional): Show records since datetime. Defaults to 365 days ago.
+        until (Optional[datetime.datetime], optional): Show records until datetime. Defaults to None.
+
+    Returns:
+        Query: SQLAlchemy query
+    """
     query = errorsdb.query(Message)
 
     # Default to showing last 365 days
@@ -72,6 +84,17 @@ def get_errors(
 def get_error(
     errorsdb: Session, jtrace: Session, error_id: str, user: UKRDCUser
 ) -> ExtendedErrorSchema:
+    """Get an error by error_id, and convert to an ExtendedError object
+
+    Args:
+        errorsdb (Session): SQLAlchemy session
+        jtrace (Session): SQLAlchemy session for the EMPI
+        error_id (str): Error ID to retreive
+        user (UKRDCUser): Logged-in user
+
+    Returns:
+        ExtendedErrorSchema: Error message object
+    """
     error = errorsdb.query(Message).get(error_id)
     if not error:
         raise HTTPException(404, detail="Error record not found")

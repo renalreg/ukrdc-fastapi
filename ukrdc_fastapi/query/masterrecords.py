@@ -6,6 +6,7 @@ from sqlalchemy.orm.query import Query
 from ukrdc_sqla.empi import LinkRecord, MasterRecord, Person, PidXRef
 
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
+from ukrdc_fastapi.query.common import PermissionsError, person_belongs_to_units
 from ukrdc_fastapi.utils.links import find_related_ids
 
 
@@ -30,23 +31,27 @@ def _assert_permission(record: MasterRecord, user: UKRDCUser):
     link: LinkRecord
     for link in record.link_records:
         person: Person = link.person
-        xref: PidXRef
-        for xref in person.xref_entries:
-            if xref.sending_facility in units:
-                return
+        if person_belongs_to_units(person, units):
+            return
 
-    raise HTTPException(
-        403,
-        detail=f"You do not have permission to access this resource. Sending facility does not match.",
-    )
+    raise PermissionsError()
 
 
 def get_masterrecords(
     jtrace: Session,
     user: UKRDCUser,
     facility: Optional[str] = None,
-):
-    """Retreive a list of master records from the EMPI"""
+) -> Query:
+    """Get a list of MasterRecords from the EMPI
+
+    Args:
+        jtrace (Session): SQLALchemy session
+        user (UKRDCUser): Logged-in user object
+        facility (Optional[str], optional): Facility code to get records from. Defaults to None.
+
+    Returns:
+        Query: SQLALchemy query
+    """
     records = jtrace.query(MasterRecord)
 
     if facility:
@@ -68,9 +73,6 @@ def get_masterrecord(jtrace: Session, record_id: int, user: UKRDCUser) -> Master
         record_id (int): MasterRecord ID
         user (UKRDCUser): User object
 
-    Raises:
-        HTTPException: User does not have permission to access the resource
-
     Returns:
         MasterRecord: MasterRecord
     """
@@ -84,6 +86,16 @@ def get_masterrecord(jtrace: Session, record_id: int, user: UKRDCUser) -> Master
 def get_masterrecords_related_to_masterrecord(
     jtrace: Session, record_id: int, user: UKRDCUser
 ) -> Query:
+    """Get a query of MasterRecords related via the LinkRecord network to a given MasterRecord
+
+    Args:
+        jtrace (Session): JTRACE SQLAlchemy session
+        record_id (int): MasterRecord ID
+        user (UKRDCUser): Logged-in user
+
+    Returns:
+        Query: SQLAlchemy query
+    """
     # Find all related master record IDs by recursing through link records
     related_master_ids, _ = find_related_ids(jtrace, {record_id}, set())
     # Return a jtrace query of the matched master records

@@ -5,6 +5,7 @@ from ukrdc_sqla.empi import Person
 from ukrdc_sqla.ukrdc import PatientRecord
 
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
+from ukrdc_fastapi.query.common import PermissionsError
 from ukrdc_fastapi.utils.links import find_related_ids
 
 
@@ -22,13 +23,19 @@ def _assert_permission(patient_record: PatientRecord, user: UKRDCUser):
         return
 
     if patient_record.sendingfacility not in units:
-        raise HTTPException(
-            403,
-            detail="You do not have permission to access this resource. Sending facility does not match.",
-        )
+        raise PermissionsError()
 
 
 def get_patientrecords(ukrdc3: Session, user: UKRDCUser) -> Query:
+    """Get a list of PatientRecords
+
+    Args:
+        ukrdc3 (Session): UKRDC SQLAlchemy session
+        user (UKRDCUser): User object
+
+    Returns:
+        Query: SQLAlchemy query
+    """
     records = ukrdc3.query(PatientRecord)
     return _apply_query_permissions(records, user)
 
@@ -40,9 +47,6 @@ def get_patientrecord(ukrdc3: Session, pid: str, user: UKRDCUser) -> PatientReco
         ukrdc3 (Session): UKRDC SQLAlchemy session
         pid (str): Patient ID
         user (UKRDCUser): User object
-
-    Raises:
-        HTTPException: User does not have permission to access the resource
 
     Returns:
         PatientRecord: PatientRecord
@@ -57,6 +61,17 @@ def get_patientrecord(ukrdc3: Session, pid: str, user: UKRDCUser) -> PatientReco
 def get_patientrecords_related_to_patientrecord(
     ukrdc3: Session, jtrace: Session, pid: str, user: UKRDCUser
 ) -> Query:
+    """Get a query of PatientRecords related via the LinkRecord network to a given PatientRecord
+
+    Args:
+        ukrdc3 (Session): UKRDC SQLAlchemy session
+        jtrace (Session): JTRACE SQLAlchemy session
+        pid (str): PatientRecord PID
+        user (UKRDCUser): User object
+
+    Returns:
+        Query: SQLAlchemy query
+    """
     record = get_patientrecord(ukrdc3, pid, user)
 
     # Get Person records directly related to the Patient Record

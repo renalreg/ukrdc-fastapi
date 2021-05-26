@@ -33,8 +33,21 @@ def get_resultitems(
     order_id: Optional[list[str]] = None,
     since: Optional[datetime.datetime] = None,
     until: Optional[datetime.datetime] = None,
-):
-    """Retreive a list of lab results, optionally filtered by NI or service ID"""
+) -> Query:
+    """Retreive a list of lab results, optionally filtered by NI or service ID
+
+    Args:
+        ukrdc3 (Session): SQLALchemy session
+        user (UKRDCUser): Logged-in user
+        pid (Optional[str], optional): PatientRecord PID to filer by. Defaults to None.
+        service_id (Optional[list[str]], optional): Result services to filter by. Defaults to None.
+        order_id (Optional[list[str]], optional): LabOrder ID to filer by. Defaults to None.
+        since (Optional[datetime.datetime], optional): Show results since datetime. Defaults to None.
+        until (Optional[datetime.datetime], optional): Show results until datetime. Defaults to None.
+
+    Returns:
+        Query: SQLAlchemy query
+    """
     query: Query = ukrdc3.query(ResultItem).join(LabOrder.result_items)
 
     if pid:
@@ -58,6 +71,16 @@ def get_resultitem_services(
     user: UKRDCUser,
     pid: Optional[str] = None,
 ) -> list[ResultItemServiceSchema]:
+    """Get a list of available result services
+
+    Args:
+        ukrdc3 (Session): SQLALchemy session
+        user (UKRDCUser): Logged-in user object
+        pid (Optional[str], optional): PID of resultiutem patientrecord. Defaults to None.
+
+    Returns:
+        list[ResultItemServiceSchema]: List of unique resultitem services
+    """
     items = get_resultitems(ukrdc3, user, pid)
     services = items.distinct(ResultItem.service_id)
     return [
@@ -71,15 +94,12 @@ def get_resultitem_services(
 
 
 def get_resultitem(ukrdc3: Session, resultitem_id: str, user: UKRDCUser) -> ResultItem:
-    """Return a LabOrder by ID if it exists and the user has permission
+    """Return a ResultItem by ID if it exists and the user has permission
 
     Args:
         ukrdc3 (Session): UKRDC SQLAlchemy session
         resultitem_id (str): ResultItem ID
-        user (UKRDCUser): User object
-
-    Raises:
-        HTTPException: User does not have permission to access the resource
+        user (UKRDCUser): Logged-in user
 
     Returns:
         ResultItem: ResultItem
@@ -92,6 +112,13 @@ def get_resultitem(ukrdc3: Session, resultitem_id: str, user: UKRDCUser) -> Resu
 
 
 def delete_resultitem(ukrdc3: Session, resultitem_id: str, user: UKRDCUser) -> None:
+    """Delete a ResultItem by ID if it exists and the user has permission
+
+    Args:
+        ukrdc3 (Session): UKRDC SQLAlchemy session
+        resultitem_id (str): ResultItem ID
+        user (UKRDCUser): Logged-in user
+    """
     item: ResultItem = get_resultitem(ukrdc3, resultitem_id, user)
 
     logging.info(
