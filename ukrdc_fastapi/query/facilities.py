@@ -1,12 +1,102 @@
+import datetime
 import json
 from typing import Optional
 
+from fastapi.exceptions import HTTPException
 from redis import Redis
 from sqlalchemy.orm import Session
-from ukrdc_sqla.ukrdc import Code
+from ukrdc_sqla.errorsdb import Message
+from ukrdc_sqla.ukrdc import Code, PatientRecord
 
+from ukrdc_fastapi.config import settings
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
+from ukrdc_fastapi.query.common import PermissionsError
+from ukrdc_fastapi.query.errors import get_errors
+from ukrdc_fastapi.query.patientrecords import get_patientrecords
+from ukrdc_fastapi.schemas.base import OrmModel
 from ukrdc_fastapi.schemas.facility import FacilitySchema
+from ukrdc_fastapi.utils.statistics import TotalDayPrev, total_day_prev
+
+
+class FacilityStatisticsSchema(OrmModel):
+    records_with_errors: int
+    patient_records: TotalDayPrev
+    errors: TotalDayPrev
+
+
+class FacilityDetailsSchema(FacilitySchema):
+    statistics: FacilityStatisticsSchema
+
+
+def _get_error_stats(
+    errorsdb: Session,
+    user: UKRDCUser,
+    facility: Optional[str] = None,
+) -> TotalDayPrev:
+    """Get total, today, and yesterday error message counts for a facility.
+    Total gives the total messages from all time (since 1/1/1970), not just last year.
+
+    Args:
+        errorsdb (Session): SQLAlchemy session
+        user (UKRDCUser): Logged-in user
+        facility (Optional[str], optional): Facility code to filter by. Defaults to None.
+
+    Returns:
+        TotalDayPrev: Error statistics
+    """
+    errors_query = get_errors(
+        errorsdb,
+        user,
+        facility=facility,
+        since=datetime.datetime(1970, 1, 1, 0, 0, 0),
+        sort_query=False,
+    )
+    return total_day_prev(errors_query, Message, "received")
+
+
+def _get_error_ni_count(
+    errorsdb: Session,
+    user: UKRDCUser,
+    facility: Optional[str] = None,
+) -> int:
+    """Get the number of unique national identifiers appearing in the errorsdb for a facility
+
+    Args:
+        errorsdb (Session): SQLAlchemy session
+        user (UKRDCUser): Logged-in user
+        facility (Optional[str], optional): Facility code to filter by. Defaults to None.
+
+    Returns:
+        int: Number of unique NIs with error messages
+    """
+    errors_query = get_errors(
+        errorsdb,
+        user,
+        facility=facility,
+        since=datetime.datetime(1970, 1, 1, 0, 0, 0),
+        sort_query=False,
+    )
+    errors_set = errors_query.distinct(Message.ni)
+    return errors_set.count()
+
+
+def _get_record_stats(
+    ukrdc3: Session, user: UKRDCUser, facility: Optional[str] = None
+) -> TotalDayPrev:
+    """Get total, today, and yesterday PatientRecord counts for a facility.
+
+    Args:
+        ukrdc3 (Session): SQLAlchemy session
+        user (UKRDCUser): Logged-in user
+        facility (Optional[str], optional): Facility code to filter by. Defaults to None.
+
+    Returns:
+        TotalDayPrev: PatientRecord statistics
+    """
+    query = get_patientrecords(ukrdc3, user).filter(
+        PatientRecord.sendingfacility == facility
+    )
+    return total_day_prev(query, PatientRecord, "creation_date")
 
 
 def get_facilities(
@@ -48,3 +138,59 @@ def get_facilities(
         facilities = [facility for facility in facilities if facility.id in units]
 
     return facilities
+
+
+def get_facility(
+    ukrdc3: Session,
+    errorsdb: Session,
+    redis: Redis,
+    facility_code: str,
+    user: UKRDCUser,
+) -> FacilitySchema:
+    """Get a summary of a particular facility/unit
+
+    Args:
+        ukrdc3 (Session): SQLAlchemy session
+        facility_code (str): Facility/unit code
+        user (UKRDCUser): Logged-in user
+
+    Returns:
+        FacilitySchema: Matched facility
+    """
+    code = (
+        ukrdc3.query(Code)
+        .filter(Code.coding_standard == "RR1+", Code.code == facility_code)
+        .first()
+    )
+
+    if not code:
+        raise HTTPException(404, detail="Lab order not found")
+
+    # Assert permissions
+    units = Permissions.unit_codes(user.permissions)
+    if (Permissions.UNIT_WILDCARD not in units) and (code.code not in units):
+        raise PermissionsError()
+
+    # Check for cached statistics
+    redis_key: str = f"facilities:{facility_code}:statistics"
+    if not redis.exists(redis_key):
+        statistics = FacilityStatisticsSchema(
+            records_with_errors=_get_error_ni_count(
+                errorsdb, user, facility=facility_code
+            ),
+            patient_records=_get_record_stats(ukrdc3, user, facility=facility_code),
+            errors=_get_error_stats(errorsdb, user, facility=facility_code),
+        )
+        redis.set(redis_key, statistics.json())  # type: ignore
+        redis.expire(redis_key, settings.cache_statistics_seconds)
+    else:
+        statistics_json: str = redis.get(redis_key)  # type: ignore
+        statistics = FacilityStatisticsSchema.parse_raw(statistics_json)
+
+    facility_details = FacilityDetailsSchema(
+        id=code.code,
+        description=code.description,
+        statistics=statistics,
+    )
+
+    return facility_details

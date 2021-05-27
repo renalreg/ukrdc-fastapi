@@ -37,6 +37,7 @@ def get_errors(
     facility: Optional[str] = None,
     since: Optional[datetime.datetime] = None,
     until: Optional[datetime.datetime] = None,
+    sort_query: bool = True,
 ) -> Query:
     """Get a list of error messages from the errorsdb
 
@@ -75,8 +76,9 @@ def get_errors(
     if nis:
         query = query.filter(Message.ni.in_(nis))
 
-    # Sort
-    query = query.order_by(Message.received.desc())
+    if sort_query:
+        query = query.order_by(Message.received.desc())
+
     query = _apply_query_permissions(query, user)
     return query
 
