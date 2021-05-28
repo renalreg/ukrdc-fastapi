@@ -43,7 +43,7 @@ class DashboardSchema(BaseModel):
     ukrdcrecords: Optional[UKRDCRecordsDashSchema] = None
 
 
-def _get_workitems_stats(jtrace: Session, redis: Session, refresh: bool = False):
+def _get_workitems_stats(jtrace: Session, redis: Redis, refresh: bool = False):
     if redis.exists("dashboard:workitems") and not refresh:
         return WorkItemsDashSchema(**redis.hgetall("dashboard:workitems"))
     else:
@@ -59,7 +59,7 @@ def _get_workitems_stats(jtrace: Session, redis: Session, refresh: bool = False)
         return workitems
 
 
-def _get_empi_stats(jtrace: Session, redis: Session, refresh: bool = False):
+def _get_empi_stats(jtrace: Session, redis: Redis, refresh: bool = False):
     if redis.exists("dashboard:ukrdcrecords") and not refresh:
         return UKRDCRecordsDashSchema(**redis.hgetall("dashboard:ukrdcrecords"))
     else:
