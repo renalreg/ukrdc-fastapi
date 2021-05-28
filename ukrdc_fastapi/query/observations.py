@@ -12,6 +12,7 @@ def get_observations(
     user: UKRDCUser,
     pid: Optional[str] = None,
     codes: Optional[list[str]] = None,
+    sort_query: bool = True,
 ) -> Query:
     """Get a list of Patient observations
 
@@ -32,7 +33,8 @@ def get_observations(
     if codes:
         observations = observations.filter(Observation.observation_code.in_(codes))
 
-    observations = observations.order_by(Observation.observation_time.desc())
+    if sort_query:
+        observations = observations.order_by(Observation.observation_time.desc())
 
     units = Permissions.unit_codes(user.permissions)
     if Permissions.UNIT_WILDCARD in units:
@@ -59,6 +61,6 @@ def get_observation_codes(
     Returns:
         list[str]: List of unique observation codes
     """
-    observations = get_observations(ukrdc3, user, pid)
+    observations = get_observations(ukrdc3, user, pid, sort_query=False)
     codes = observations.distinct(Observation.observation_code)
     return [item.observation_code for item in codes.all()]
