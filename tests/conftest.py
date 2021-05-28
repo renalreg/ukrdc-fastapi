@@ -18,6 +18,7 @@ from ukrdc_sqla.pkb import PKBLink
 from ukrdc_sqla.ukrdc import Address
 from ukrdc_sqla.ukrdc import Base as UKRDC3Base
 from ukrdc_sqla.ukrdc import (
+    Code,
     Diagnosis,
     Document,
     LabOrder,
@@ -81,6 +82,20 @@ auth.auth = FakeAuth()
 
 
 def populate_ukrdc3_session(session):
+
+    code1 = Code(
+        coding_standard="RR1+",
+        code="PATIENT_RECORD_SENDING_FACILITY_1",
+        description="PATIENT_RECORD_SENDING_FACILITY_1_DESCRIPTION",
+    )
+    code2 = Code(
+        coding_standard="RR1+",
+        code="PATIENT_RECORD_SENDING_FACILITY_2",
+        description="PATIENT_RECORD_SENDING_FACILITY_2_DESCRIPTION",
+    )
+    session.add(code1)
+    session.add(code2)
+
     pid: str = "PYTEST01:PV:00000000A"
 
     patient_record = PatientRecord(
@@ -465,7 +480,7 @@ def populate_errorsdb_session(session):
         msg_status="ERROR",
         ni=None,
         filename="FILENAME_2.XML",
-        facility="MOCK_SENDING_FACILITY_1",
+        facility="PATIENT_RECORD_SENDING_FACILITY_2",
         error="ERROR MESSAGE 2",
         status="STATUS2",
     )

@@ -18,7 +18,7 @@ def test_errors_list_facility(client):
     since = datetime.datetime(2020, 1, 1, 0, 0, 0).isoformat()
     until = datetime.datetime(2021, 12, 12, 23, 59, 59).isoformat()
     response = client.get(
-        f"/api/errors/messages/?since={since}&until={until}&facility=MOCK_SENDING_FACILITY_1"
+        f"/api/errors/messages/?since={since}&until={until}&facility=PATIENT_RECORD_SENDING_FACILITY_2"
     )
     assert response.status_code == 200
     messages = [MessageSchema(**item) for item in response.json()["items"]]
