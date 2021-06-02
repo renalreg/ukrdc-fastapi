@@ -96,10 +96,11 @@ def populate_ukrdc3_session(session):
     session.add(code1)
     session.add(code2)
 
-    pid: str = "PYTEST01:PV:00000000A"
+    pid_1: str = "PYTEST01:PV:00000000A"
+    pid_2: str = "PYTEST02:PV:00000000A"
 
-    patient_record = PatientRecord(
-        pid=pid,
+    patient_record_1 = PatientRecord(
+        pid=pid_1,
         sendingfacility="TEST_SENDING_FACILITY_1",
         sendingextract="PV",
         localpatientid="00000000A",
@@ -107,14 +108,27 @@ def populate_ukrdc3_session(session):
         repository_update_date=datetime(2020, 3, 16),
         repository_creation_date=datetime(2020, 3, 16),
     )
-    patient_record.update_date = datetime(2021, 1, 21)
-    patient_record.repository_update_date = datetime(2021, 1, 21)
-    session.add(patient_record)
+    patient_record_1.update_date = datetime(2021, 1, 21)
+    patient_record_1.repository_update_date = datetime(2021, 1, 21)
+    session.add(patient_record_1)
 
-    name = Name(id=1, pid=pid, family="Star", given="Patrick", nameuse="L")
+    patient_record_2 = PatientRecord(
+        pid=pid_2,
+        sendingfacility="TEST_SENDING_FACILITY_2",
+        sendingextract="PV",
+        localpatientid="00000000B",
+        ukrdcid="000000001",
+        repository_update_date=datetime(2020, 3, 16),
+        repository_creation_date=datetime(2020, 3, 16),
+    )
+    patient_record_2.update_date = datetime(2021, 1, 21)
+    patient_record_2.repository_update_date = datetime(2021, 1, 21)
+    session.add(patient_record_2)
+
+    name = Name(id=1, pid=pid_1, family="Star", given="Patrick", nameuse="L")
     address = Address(
         id="ADDRESS1",
-        pid=pid,
+        pid=pid_1,
         street="120 Conch Street",
         town="Bikini Bottom",
         county="Bikini County",
@@ -123,16 +137,16 @@ def populate_ukrdc3_session(session):
     )
     address_alt = Address(
         id="ADDRESS2",
-        pid=pid,
+        pid=pid_1,
         street="121 Conch Street",
         town="Bikini Bottom",
         county="Bikini County",
         postcode="XX0 1AA",
         country_description="Pacific Ocean",
     )
-    patient = Patient(pid=pid, birth_time=datetime(1984, 3, 17), gender="1")
+    patient = Patient(pid=pid_1, birth_time=datetime(1984, 3, 17), gender="1")
     patient_number = PatientNumber(
-        id=1, pid=pid, patientid="999999999", organization="NHS", numbertype="NI"
+        id=1, pid=pid_1, patientid="999999999", organization="NHS", numbertype="NI"
     )
     session.add(name)
     session.add(address)
@@ -142,7 +156,7 @@ def populate_ukrdc3_session(session):
 
     diagnosis_1 = Diagnosis(
         id="DIAGNOSIS1",
-        pid=pid,
+        pid=pid_1,
         diagnosis_code="DIAGNOSIS_CODE",
         diagnosis_code_std="DIAGNOSIS_CODE_STD",
         diagnosis_desc="DIAGNOSIS_DESCRIPTION",
@@ -158,7 +172,7 @@ def populate_ukrdc3_session(session):
     )
     diagnosis_2 = Diagnosis(
         id="DIAGNOSIS2",
-        pid=pid,
+        pid=pid_1,
         diagnosis_code="DIAGNOSIS_CODE_2",
         diagnosis_code_std="DIAGNOSIS_CODE_STD_2",
         identification_time=datetime(2020, 3, 16),
@@ -177,7 +191,7 @@ def populate_ukrdc3_session(session):
     session.add(pkb_link_2)
 
     renal_diagnosis_1 = RenalDiagnosis(
-        pid=pid,
+        pid=pid_1,
         diagnosis_code="R_DIAGNOSIS_CODE",
         diagnosis_code_std="R_DIAGNOSIS_CODE_STD",
         diagnosis_desc="R_DIAGNOSIS_DESCRIPTION",
@@ -195,7 +209,7 @@ def populate_ukrdc3_session(session):
 
     medication_1 = Medication(
         id="MEDICATION1",
-        pid=pid,
+        pid=pid_1,
         frequency="FREQUENCY",
         from_time=datetime(2019, 3, 16),
         to_time=None,
@@ -207,7 +221,7 @@ def populate_ukrdc3_session(session):
     )
     medication_2 = Medication(
         id="MEDICATION2",
-        pid=pid,
+        pid=pid_1,
         frequency="FREQUENCY_2",
         from_time=datetime(2019, 3, 16),
         to_time=datetime(9999, 3, 16),
@@ -217,13 +231,26 @@ def populate_ukrdc3_session(session):
         dose_uom_description="DOSE_UOM_DESCRIPTION_2",
         dose_uom_code_std="DOSE_UOM_CODE_STD_2",
     )
+    medication_3 = Medication(
+        id="MEDICATION3",
+        pid=pid_2,
+        frequency="FREQUENCY_3",
+        from_time=datetime(2019, 3, 16),
+        to_time=datetime(9999, 3, 16),
+        drug_product_generic="DRUG_PRODUCT_GENERIC_3",
+        dose_quantity="DOSE_QUANTITY_3",
+        dose_uom_code="DOSE_UOM_CODE_3",
+        dose_uom_description="DOSE_UOM_DESCRIPTION_3",
+        dose_uom_code_std="DOSE_UOM_CODE_STD_3",
+    )
     session.add(medication_1)
     session.add(medication_2)
+    session.add(medication_3)
 
     laborder_1 = LabOrder(
         id="LABORDER1",
         entered_at="TEST_SENDING_FACILITY_1",
-        pid=pid,
+        pid=pid_1,
         external_id="EXTERNAL_ID_1",
         order_category="ORDER_CATEGORY",
         specimen_collected_time=datetime(2020, 3, 16),
@@ -232,7 +259,7 @@ def populate_ukrdc3_session(session):
         id="RESULTITEM1",
         order_id="LABORDER1",
         service_id_std="SERVICE_ID_STD",
-        service_id="SERVICE_ID",
+        service_id="SERVICE_ID_1",
         service_id_description="SERVICE_ID_DESCRIPTION",
         value="VALUE",
         value_units="VALUE_UNITS",
@@ -241,7 +268,7 @@ def populate_ukrdc3_session(session):
     laborder_2 = LabOrder(
         id="LABORDER2",
         entered_at="TEST_SENDING_FACILITY_2",
-        pid=pid,
+        pid=pid_1,
         external_id="EXTERNAL_ID_2",
         order_category="ORDER_CATEGORY",
         specimen_collected_time=datetime(2021, 1, 1),
@@ -250,7 +277,7 @@ def populate_ukrdc3_session(session):
         id="RESULTITEM2",
         order_id="LABORDER2",
         service_id_std="SERVICE_ID_STD",
-        service_id="SERVICE_ID",
+        service_id="SERVICE_ID_2",
         service_id_description="SERVICE_ID_DESCRIPTION",
         value="VALUE",
         value_units="VALUE_UNITS",
@@ -261,9 +288,9 @@ def populate_ukrdc3_session(session):
     session.add(laborder_2)
     session.add(resultitem_2)
 
-    observation = Observation(
+    observation_1 = Observation(
         id="OBSERVATION1",
-        pid=pid,
+        pid=pid_1,
         observation_code_std="OBSERVATION_CODE_STD",
         observation_code="OBSERVATION_CODE",
         observation_desc="OBSERVATION_DESC",
@@ -271,11 +298,22 @@ def populate_ukrdc3_session(session):
         observation_units="OBSERVATION_UNITS",
         observation_time=datetime(2020, 3, 16),
     )
-    session.add(observation)
+    observation_2 = Observation(
+        id="OBSERVATION2",
+        pid=pid_2,
+        observation_code_std="OBSERVATION_CODE_STD",
+        observation_code="OBSERVATION_CODE",
+        observation_desc="OBSERVATION_DESC",
+        observation_value="OBSERVATION_VALUE",
+        observation_units="OBSERVATION_UNITS",
+        observation_time=datetime(2020, 3, 16),
+    )
+    session.add(observation_1)
+    session.add(observation_2)
 
     observation_dia = Observation(
         id="OBSERVATION_DIA_1",
-        pid=pid,
+        pid=pid_1,
         observation_code_std="PV",
         observation_code="bpdia",
         observation_desc="OBSERVATION_DIA_1_DESC",
@@ -285,7 +323,7 @@ def populate_ukrdc3_session(session):
     )
     observation_sys = Observation(
         id="OBSERVATION_SYS_1",
-        pid=pid,
+        pid=pid_1,
         observation_code_std="PV",
         observation_code="bpsys",
         observation_desc="OBSERVATION_SYS_1_DESC",
@@ -298,7 +336,15 @@ def populate_ukrdc3_session(session):
 
     survey_1 = Survey(
         id="SURVEY1",
-        pid=pid,
+        pid=pid_1,
+        surveytime=datetime(2020, 3, 16, 18, 00),
+        surveytypecode="TYPECODE",
+        enteredbycode="ENTEREDBYCODE",
+        enteredatcode="ENTEREDATCODE",
+    )
+    survey_2 = Survey(
+        id="SURVEY2",
+        pid=pid_2,
         surveytime=datetime(2020, 3, 16, 18, 00),
         surveytypecode="TYPECODE",
         enteredbycode="ENTEREDBYCODE",
@@ -323,13 +369,14 @@ def populate_ukrdc3_session(session):
         id="LEVEL1", surveyid="SURVEY1", value="LEVEL_VALUE", leveltypecode="TYPECODE"
     )
     session.add(survey_1)
+    session.add(survey_2)
     session.add(question_1)
     session.add(question_2)
     session.add(score)
     session.add(level)
 
     document_pdf = Document(
-        id="DOCUMENT_PDF", pid=pid, documenttime=datetime(2020, 3, 16)
+        id="DOCUMENT_PDF", pid=pid_1, documenttime=datetime(2020, 3, 16)
     )
     document_pdf.stream = (
         b"%PDF-1.0\n\n"
@@ -348,7 +395,7 @@ def populate_ukrdc3_session(session):
     document_pdf.filetype = "application/pdf"
     document_txt = Document(
         id="DOCUMENT_TXT",
-        pid=pid,
+        pid=pid_1,
         documenttime=datetime(2020, 3, 16),
         notetext="DOCUMENT_TXT_NOTETEXT",
     )
@@ -399,16 +446,23 @@ def populate_jtrace_session(session):
     person_2 = Person(
         id=2,
         originator="UKRDC",
-        localid="987654321",
+        localid="PYTEST02:PV:00000000A",
         localid_type="CLPID",
         date_of_birth=datetime(1950, 1, 1),
         gender="9",
+    )
+    person_2_xref_1 = PidXRef(
+        id=2,
+        pid="PYTEST02:PV:00000000A",
+        sending_facility="TEST_SENDING_FACILITY_2",
+        sending_extract="XREF_SENDING_EXTRACT_2",
+        localid="XREF_LOCALID_2",
     )
 
     person_3 = Person(
         id=3,
         originator="UKRDC",
-        localid="192837465",
+        localid="PYTEST03:PV:00000000A",
         localid_type="CLPID",
         date_of_birth=datetime(1950, 1, 1),
         gender="9",
@@ -417,10 +471,17 @@ def populate_jtrace_session(session):
     person_4 = Person(
         id=4,
         originator="UKRDC",
-        localid="918273645",
+        localid="PYTEST04:PV:00000000A",
         localid_type="CLPID",
         date_of_birth=datetime(1950, 1, 1),
         gender="9",
+    )
+    person_4_xref_1 = PidXRef(
+        id=3,
+        pid="PYTEST04:PV:00000000A",
+        sending_facility="TEST_SENDING_FACILITY_1",
+        sending_extract="XREF_SENDING_EXTRACT_1",
+        localid="XREF_LOCALID_1",
     )
 
     link_record_1 = LinkRecord(
@@ -470,18 +531,31 @@ def populate_jtrace_session(session):
         last_updated=datetime(2021, 1, 1),
     )
 
+    work_item_closed = WorkItem(
+        id=4,
+        person_id=1,
+        master_id=1,
+        type=9,
+        description="DESCRIPTION_CLOSED",
+        status=3,
+        last_updated=datetime(2021, 1, 1),
+    )
+
     session.add(master_record_1)
     session.add(master_record_2)
     session.add(person_1)
     session.add(person_1_xref_1)
     session.add(person_2)
+    session.add(person_2_xref_1)
     session.add(person_3)
     session.add(person_4)
+    session.add(person_4_xref_1)
     session.add(link_record_1)
     session.add(link_record_2)
     session.add(work_item_1)
     session.add(work_item_2)
     session.add(work_item_3)
+    session.add(work_item_closed)
 
     session.commit()
 
@@ -615,6 +689,13 @@ def redis_session():
 
 
 @pytest.fixture(scope="function")
+async def mirth_session():
+    """Create a fresh in-memory Mirth session"""
+    async with MirthAPI("mock://mirth.url") as api:
+        yield api
+
+
+@pytest.fixture(scope="function")
 def app(jtrace_session, ukrdc3_session, errorsdb_session, redis_session):
     from ukrdc_fastapi.main import app
 
@@ -684,7 +765,7 @@ def httpx_session(httpx_mock: HTTPXMock):
     )
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def superuser():
     return UKRDCUser(
         id="TEST_ID",
@@ -694,7 +775,7 @@ def superuser():
     )
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def test_user():
     return UKRDCUser(
         id="TEST_ID",

@@ -9,13 +9,11 @@ from ukrdc_fastapi.query.common import PermissionsError
 
 def test_get_masterrecords_superuser(jtrace_session, superuser):
     all_records = masterrecords.get_masterrecords(jtrace_session, superuser)
-    # Superuser should see all records
     assert {record.id for record in all_records} == {1, 2}
 
 
 def test_get_masterrecords_user(jtrace_session, test_user):
     all_records = masterrecords.get_masterrecords(jtrace_session, test_user)
-    # Superuser should see all records
     assert {record.id for record in all_records} == {1}
 
 
@@ -23,7 +21,6 @@ def test_get_masterrecords_facility(jtrace_session, superuser):
     all_records = masterrecords.get_masterrecords(
         jtrace_session, superuser, facility="TEST_SENDING_FACILITY_1"
     )
-    # Superuser should see all records
     assert {record.id for record in all_records} == {1}
 
 

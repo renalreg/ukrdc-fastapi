@@ -2,6 +2,9 @@ from datetime import datetime
 
 from ukrdc_sqla.empi import LinkRecord, MasterRecord
 
+from ukrdc_fastapi.routers.api.empi.masterrecords.record_id import (
+    MasterRecordStatisticsSchema,
+)
 from ukrdc_fastapi.schemas.empi import (
     MasterRecordSchema,
     PersonSchema,
@@ -61,6 +64,16 @@ def test_masterrecord_related(client, jtrace_session):
     assert returned_ids == {3}
 
 
+def test_masterrecord_statistics(client):
+    response = client.get("/api/empi/masterrecords/1/statistics")
+    assert response.status_code == 200
+
+    stats = MasterRecordStatisticsSchema(**response.json())
+    assert stats.workitems == 2
+    assert stats.errors == 1
+    assert stats.ukrdcids == 1
+
+
 def test_masterrecord_workitems(client):
     response = client.get("/api/empi/masterrecords/1/workitems")
     assert response.status_code == 200
@@ -76,7 +89,7 @@ def test_masterrecord_errors(client):
 
     errors = [MessageSchema(**item) for item in response.json()["items"]]
     returned_ids = {item.id for item in errors}
-    assert returned_ids == {1, 2}
+    assert returned_ids == {1}
 
 
 def test_masterrecord_persons(client):
@@ -93,5 +106,5 @@ def test_masterrecord_patientrecords(client):
     assert response.status_code == 200
 
     records = [PatientRecordShortSchema(**item) for item in response.json()]
-    assert len(records) == 1
-    assert records[0].pid == "PYTEST01:PV:00000000A"
+    pids = {record.pid for record in records}
+    assert pids == {"PYTEST01:PV:00000000A", "PYTEST02:PV:00000000A"}

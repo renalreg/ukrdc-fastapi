@@ -8,7 +8,10 @@ from ukrdc_fastapi.schemas.laborder import LabOrderSchema
 def test_laborders_list(client):
     response = client.get("/api/laborders")
     assert response.status_code == 200
-    assert {item.get("id") for item in response.json().get("items")} == {"LABORDER1"}
+    assert {item.get("id") for item in response.json().get("items")} == {
+        "LABORDER1",
+        "LABORDER2",
+    }
 
 
 def test_laborder(client):

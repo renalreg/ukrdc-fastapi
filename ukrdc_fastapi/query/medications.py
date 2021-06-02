@@ -2,7 +2,7 @@ from typing import Optional
 
 from sqlalchemy.orm.query import Query
 from sqlalchemy.orm.session import Session
-from ukrdc_sqla.ukrdc import Medication
+from ukrdc_sqla.ukrdc import Medication, PatientRecord
 
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
 
@@ -33,4 +33,6 @@ def get_medications(
     if Permissions.UNIT_WILDCARD in units:
         return medications
 
-    return medications.filter(Medication.entering_organization_code.in_(units))
+    return medications.join(PatientRecord).filter(
+        PatientRecord.sendingfacility.in_(units)
+    )

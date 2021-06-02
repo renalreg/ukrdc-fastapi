@@ -149,6 +149,7 @@ async def workitem_close(
     redis: Redis = Depends(get_redis),
 ):
     """Update and close a particular work item"""
+    # TODO: Split logic out of route
     workitem = get_workitem(jtrace, workitem_id, user)
 
     channel = await get_channel_from_name("WorkItemUpdate", mirth, redis)
@@ -186,6 +187,7 @@ async def workitem_merge(
     redis: Redis = Depends(get_redis),
 ):
     """Merge a particular work item"""
+    # TODO: Split logic out of route
     workitem = get_workitem(jtrace, workitem_id, user)
 
     # Get a set of related link record (id, person_id, master_id) tuples

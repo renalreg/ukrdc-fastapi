@@ -1,11 +1,36 @@
 # UKRDC-FastAPI Architecture
 
+  - [tests](#tests)
+    - [tests/test_routers](#tests-test_routers)
+    - [tests/test_query](#tests-test_query)
   - [ukrdc_fastapi](#ukrdc_fastapi)
     - [ukrdc_fastapi/routers](#ukrdc_fastapi-routers)
     - [ukrdc_fastapi/dependencies](#ukrdc_fastapi-dependencies)
     - [ukrdc_fastapi/utils](#ukrdc_fastapi-utils)
     - [ukrdc_fastapi/schemas](#ukrdc_fastapi-schemas)
     - [ukrdc_fastapi/query](#ukrdc_fastapi-query)
+
+<a name="tests"></a>
+
+## tests
+
+Pytest tests for the UKRDC FastAPI app and internal utilities. The tests are broken up into 2 sections, `query` for testing DB query logic while ignoring the FastAPI application, and `routers` for testing the fully integrated FastAPI application.
+
+<a name="tests-test_routers"></a>
+
+### test_routers
+
+Tests for FastAPI routers.
+
+These tests should really only test the response models and API URL paths. Actual query logic should be tested by the `test_query` submodule.
+
+<a name="tests-test_query"></a>
+
+### test_query
+
+Unit tests for the `query` submodule handling DB query logic.
+
+These tests should also verify the permissions model.
 
 <a name="ukrdc_fastapi"></a>
 

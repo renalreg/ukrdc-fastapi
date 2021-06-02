@@ -28,6 +28,12 @@ def test_get_facilities_caching(ukrdc3_session, redis_session, superuser):
     assert all_facils_1 == all_facils_2
 
 
+def test_get_facilities_empty_cache(ukrdc3_session, redis_session, superuser):
+    redis_session.set("ukrdc3:facilities", "")
+    all_facils = facilities.get_facilities(ukrdc3_session, redis_session, superuser)
+    assert all_facils == []
+
+
 def test_get_facility(ukrdc3_session, errorsdb_session, redis_session, superuser):
     facility = facilities.get_facility(
         ukrdc3_session,
