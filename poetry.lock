@@ -190,7 +190,7 @@ pydantic = ">=1.7.3,<2.0.0"
 
 [[package]]
 name = "fastapi-pagination"
-version = "0.7.3"
+version = "0.7.4"
 description = "FastAPI pagination"
 category = "main"
 optional = false
@@ -205,13 +205,13 @@ typing-extensions = ">=3.7.4,<4.0.0"
 
 [package.extras]
 gino = ["gino[starlette] (>=1.0.1,<2.0.0)", "SQLAlchemy (>=1.3.20,<2.0.0)", "sqlalchemy-stubs (>=0.4,<0.5)"]
-all = ["gino[starlette] (>=1.0.1,<2.0.0)", "SQLAlchemy (>=1.3.20,<2.0.0)", "sqlalchemy-stubs (>=0.4,<0.5)", "databases[mysql,postgresql,sqlite] (>=0.4.0,<0.5.0)", "orm (>=0.1.5,<0.2.0)", "tortoise-orm[aiomysql,asyncpg,aiosqlite] (>=0.16.18,<0.18.0)", "asyncpg (==0.22.0)", "ormar (>=0.10.5,<0.11.0)", "Django (<3.3.0)"]
+all = ["gino[starlette] (>=1.0.1,<2.0.0)", "SQLAlchemy (>=1.3.20,<2.0.0)", "sqlalchemy-stubs (>=0.4,<0.5)", "databases[mysql,postgresql,sqlite] (>=0.4.0,<0.5.0)", "orm (>=0.1.5,<0.2.0)", "tortoise-orm[aiomysql,aiosqlite,asyncpg] (>=0.16.18,<0.18.0)", "asyncpg (==0.23.0)", "ormar (>=0.10.5,<0.11.0)", "Django (<3.3.0)"]
 sqlalchemy = ["SQLAlchemy (>=1.3.20,<2.0.0)", "sqlalchemy-stubs (>=0.4,<0.5)"]
-asyncpg = ["SQLAlchemy (>=1.3.20,<2.0.0)", "asyncpg (==0.22.0)"]
+asyncpg = ["SQLAlchemy (>=1.3.20,<2.0.0)", "asyncpg (==0.23.0)"]
 databases = ["databases[mysql,postgresql,sqlite] (>=0.4.0,<0.5.0)"]
 orm = ["databases[mysql,postgresql,sqlite] (>=0.4.0,<0.5.0)", "orm (>=0.1.5,<0.2.0)"]
 django = ["databases[mysql,postgresql,sqlite] (>=0.4.0,<0.5.0)", "Django (<3.3.0)"]
-tortoise = ["tortoise-orm[aiomysql,asyncpg,aiosqlite] (>=0.16.18,<0.18.0)"]
+tortoise = ["tortoise-orm[aiomysql,aiosqlite,asyncpg] (>=0.16.18,<0.18.0)"]
 ormar = ["ormar (>=0.10.5,<0.11.0)"]
 
 [[package]]
@@ -920,7 +920,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "129264df3ef90047861fa324f67287d713976efccd8afb3f81c60b3b762a4552"
+content-hash = "84d3d0804c50bdb9b60e969fd9145a139ca354017f9cd2e6691293cec5f38eb9"
 
 [metadata.files]
 appdirs = [
@@ -1038,8 +1038,8 @@ fastapi-hypermodel = [
     {file = "fastapi_hypermodel-0.2.4-py3-none-any.whl", hash = "sha256:595586e2bf2ce65d7de96da74c647e896f0198b1519a68ef806220b262f33557"},
 ]
 fastapi-pagination = [
-    {file = "fastapi-pagination-0.7.3.tar.gz", hash = "sha256:cfac8d9d9b9c462c54d05f6ee5919f469806643a4c55466e36a5196e0015ac46"},
-    {file = "fastapi_pagination-0.7.3-py3-none-any.whl", hash = "sha256:2a4b19c84596be51e8b64b8bad0acecff00b221ac8bb3951e3c278e06fa93a9b"},
+    {file = "fastapi-pagination-0.7.4.tar.gz", hash = "sha256:12d61d97454a3b56a4e7e12647ab37ab85aa40371101b64f0debda1f1a23e58f"},
+    {file = "fastapi_pagination-0.7.4-py3-none-any.whl", hash = "sha256:f01808f5a216b30afab58028bb0c8c19b60109c954951560945e8bd21c63cd5d"},
 ]
 filelock = [
     {file = "filelock-3.0.12-py3-none-any.whl", hash = "sha256:929b7d63ec5b7d6b71b0fa5ac14e030b3f70b75747cef1b10da9b879fef15836"},
