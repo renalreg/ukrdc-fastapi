@@ -11,7 +11,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 from ukrdc_sqla.empi import Base as JtraceBase
-from ukrdc_sqla.empi import LinkRecord, MasterRecord, Person, WorkItem
+from ukrdc_sqla.empi import LinkRecord, MasterRecord, Person, PidXRef, WorkItem
 from ukrdc_sqla.errorsdb import Base as ErrorsBase
 from ukrdc_sqla.errorsdb import Message as ErrorMessage
 from ukrdc_sqla.pkb import PKBLink
@@ -44,7 +44,7 @@ from ukrdc_fastapi.dependencies import (
     get_redis,
     get_ukrdc3,
 )
-from ukrdc_fastapi.dependencies.auth import UKRDCUser
+from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
 
 # FastAPI dependency override gets confused by some of our auth stuff,
 # so we'll do a dirty patch for testing
@@ -85,13 +85,13 @@ def populate_ukrdc3_session(session):
 
     code1 = Code(
         coding_standard="RR1+",
-        code="PATIENT_RECORD_SENDING_FACILITY_1",
-        description="PATIENT_RECORD_SENDING_FACILITY_1_DESCRIPTION",
+        code="TEST_SENDING_FACILITY_1",
+        description="TEST_SENDING_FACILITY_1_DESCRIPTION",
     )
     code2 = Code(
         coding_standard="RR1+",
-        code="PATIENT_RECORD_SENDING_FACILITY_2",
-        description="PATIENT_RECORD_SENDING_FACILITY_2_DESCRIPTION",
+        code="TEST_SENDING_FACILITY_2",
+        description="TEST_SENDING_FACILITY_2_DESCRIPTION",
     )
     session.add(code1)
     session.add(code2)
@@ -100,7 +100,7 @@ def populate_ukrdc3_session(session):
 
     patient_record = PatientRecord(
         pid=pid,
-        sendingfacility="PATIENT_RECORD_SENDING_FACILITY_1",
+        sendingfacility="TEST_SENDING_FACILITY_1",
         sendingextract="PV",
         localpatientid="00000000A",
         ukrdcid="000000000",
@@ -220,14 +220,15 @@ def populate_ukrdc3_session(session):
     session.add(medication_1)
     session.add(medication_2)
 
-    laborder = LabOrder(
+    laborder_1 = LabOrder(
         id="LABORDER1",
+        entered_at="TEST_SENDING_FACILITY_1",
         pid=pid,
-        external_id="EXTERNAL_ID",
+        external_id="EXTERNAL_ID_1",
         order_category="ORDER_CATEGORY",
         specimen_collected_time=datetime(2020, 3, 16),
     )
-    resultitem = ResultItem(
+    resultitem_1 = ResultItem(
         id="RESULTITEM1",
         order_id="LABORDER1",
         service_id_std="SERVICE_ID_STD",
@@ -237,8 +238,28 @@ def populate_ukrdc3_session(session):
         value_units="VALUE_UNITS",
         observation_time=datetime(2020, 3, 16),
     )
-    session.add(laborder)
-    session.add(resultitem)
+    laborder_2 = LabOrder(
+        id="LABORDER2",
+        entered_at="TEST_SENDING_FACILITY_2",
+        pid=pid,
+        external_id="EXTERNAL_ID_2",
+        order_category="ORDER_CATEGORY",
+        specimen_collected_time=datetime(2021, 1, 1),
+    )
+    resultitem_2 = ResultItem(
+        id="RESULTITEM2",
+        order_id="LABORDER2",
+        service_id_std="SERVICE_ID_STD",
+        service_id="SERVICE_ID",
+        service_id_description="SERVICE_ID_DESCRIPTION",
+        value="VALUE",
+        value_units="VALUE_UNITS",
+        observation_time=datetime(2021, 1, 1),
+    )
+    session.add(laborder_1)
+    session.add(resultitem_1)
+    session.add(laborder_2)
+    session.add(resultitem_2)
 
     observation = Observation(
         id="OBSERVATION1",
@@ -367,6 +388,14 @@ def populate_jtrace_session(session):
         gender="9",
     )
 
+    person_1_xref_1 = PidXRef(
+        id=1,
+        pid="PYTEST01:PV:00000000A",
+        sending_facility="TEST_SENDING_FACILITY_1",
+        sending_extract="XREF_SENDING_EXTRACT_1",
+        localid="XREF_LOCALID_1",
+    )
+
     person_2 = Person(
         id=2,
         originator="UKRDC",
@@ -444,6 +473,7 @@ def populate_jtrace_session(session):
     session.add(master_record_1)
     session.add(master_record_2)
     session.add(person_1)
+    session.add(person_1_xref_1)
     session.add(person_2)
     session.add(person_3)
     session.add(person_4)
@@ -466,7 +496,7 @@ def populate_errorsdb_session(session):
         msg_status="ERROR",
         ni="999999999",
         filename="FILENAME_1.XML",
-        facility="PATIENT_RECORD_SENDING_FACILITY_1",
+        facility="TEST_SENDING_FACILITY_1",
         error="ERROR MESSAGE 1",
         status="STATUS1",
     )
@@ -476,11 +506,11 @@ def populate_errorsdb_session(session):
         id=2,
         message_id=2,
         channel_id="MIRTH-CHANNEL-UUID",
-        received=datetime(2021, 1, 1),
+        received=datetime(2020, 3, 16),
         msg_status="ERROR",
         ni=None,
         filename="FILENAME_2.XML",
-        facility="PATIENT_RECORD_SENDING_FACILITY_2",
+        facility="TEST_SENDING_FACILITY_2",
         error="ERROR MESSAGE 2",
         status="STATUS2",
     )
@@ -651,4 +681,24 @@ def httpx_session(httpx_mock: HTTPXMock):
 
     httpx_mock.add_response(
         status_code=204, url=re.compile(r"mock:\/\/mirth.url\/channels\/.*\/messages")
+    )
+
+
+@pytest.fixture
+def superuser():
+    return UKRDCUser(
+        id="TEST_ID",
+        email="TEST@UKRDC_FASTAPI",
+        permissions=Permissions.all(),
+        scopes=["openid", "profile", "email", "offline_access"],
+    )
+
+
+@pytest.fixture
+def test_user():
+    return UKRDCUser(
+        id="TEST_ID",
+        email="TEST@UKRDC_FASTAPI",
+        permissions=[*Permissions.all()[:-1], "ukrdc:unit:TEST_SENDING_FACILITY_1"],
+        scopes=["openid", "profile", "email", "offline_access"],
     )

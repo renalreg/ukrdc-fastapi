@@ -4,6 +4,8 @@ from ukrdc_fastapi.schemas.patientrecord import (
     PatientRecordShortSchema,
 )
 
+# TODO: Overhaul these tests
+
 
 def test_records(client):
     response = client.get("/api/patientrecords")

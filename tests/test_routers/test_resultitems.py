@@ -8,7 +8,7 @@ from ukrdc_fastapi.schemas.laborder import LabOrderShortSchema, ResultItemSchema
 def _commit_extra_resultitem(session):
     patient_record = PatientRecord(
         pid="PYTEST01:LABORDERS:00000000L",
-        sendingfacility="PATIENT_RECORD_SENDING_FACILITY_1",
+        sendingfacility="TEST_SENDING_FACILITY_1",
         sendingextract="PV",
         localpatientid="00000000L",
         ukrdcid="000000001",

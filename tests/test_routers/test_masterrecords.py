@@ -76,8 +76,7 @@ def test_masterrecord_errors(client):
 
     errors = [MessageSchema(**item) for item in response.json()["items"]]
     returned_ids = {item.id for item in errors}
-    # assert returned_ids == {1, 2}
-    print(returned_ids)
+    assert returned_ids == {1, 2}
 
 
 def test_masterrecord_persons(client):
