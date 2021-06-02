@@ -143,7 +143,7 @@ six = "*"
 
 [[package]]
 name = "fakeredis"
-version = "1.5.0"
+version = "1.5.1"
 description = "Fake implementation of redis API for testing purposes."
 category = "dev"
 optional = false
@@ -205,13 +205,13 @@ typing-extensions = ">=3.7.4,<4.0.0"
 
 [package.extras]
 gino = ["gino[starlette] (>=1.0.1,<2.0.0)", "SQLAlchemy (>=1.3.20,<2.0.0)", "sqlalchemy-stubs (>=0.4,<0.5)"]
-all = ["gino[starlette] (>=1.0.1,<2.0.0)", "SQLAlchemy (>=1.3.20,<2.0.0)", "sqlalchemy-stubs (>=0.4,<0.5)", "databases[mysql,postgresql,sqlite] (>=0.4.0,<0.5.0)", "orm (>=0.1.5,<0.2.0)", "tortoise-orm[aiomysql,asyncpg,aiosqlite] (>=0.16.18,<0.18.0)", "asyncpg (==0.22.0)", "ormar (>=0.10.5,<0.11.0)", "Django (<3.3.0)"]
+all = ["gino[starlette] (>=1.0.1,<2.0.0)", "SQLAlchemy (>=1.3.20,<2.0.0)", "sqlalchemy-stubs (>=0.4,<0.5)", "databases[postgresql,sqlite,mysql] (>=0.4.0,<0.5.0)", "orm (>=0.1.5,<0.2.0)", "tortoise-orm[aiosqlite,aiomysql,asyncpg] (>=0.16.18,<0.18.0)", "asyncpg (==0.22.0)", "ormar (>=0.10.5,<0.11.0)", "Django (<3.3.0)"]
 sqlalchemy = ["SQLAlchemy (>=1.3.20,<2.0.0)", "sqlalchemy-stubs (>=0.4,<0.5)"]
 asyncpg = ["SQLAlchemy (>=1.3.20,<2.0.0)", "asyncpg (==0.22.0)"]
-databases = ["databases[mysql,postgresql,sqlite] (>=0.4.0,<0.5.0)"]
-orm = ["databases[mysql,postgresql,sqlite] (>=0.4.0,<0.5.0)", "orm (>=0.1.5,<0.2.0)"]
-django = ["databases[mysql,postgresql,sqlite] (>=0.4.0,<0.5.0)", "Django (<3.3.0)"]
-tortoise = ["tortoise-orm[aiomysql,asyncpg,aiosqlite] (>=0.16.18,<0.18.0)"]
+databases = ["databases[postgresql,sqlite,mysql] (>=0.4.0,<0.5.0)"]
+orm = ["databases[postgresql,sqlite,mysql] (>=0.4.0,<0.5.0)", "orm (>=0.1.5,<0.2.0)"]
+django = ["databases[postgresql,sqlite,mysql] (>=0.4.0,<0.5.0)", "Django (<3.3.0)"]
+tortoise = ["tortoise-orm[aiosqlite,aiomysql,asyncpg] (>=0.16.18,<0.18.0)"]
 ormar = ["ormar (>=0.10.5,<0.11.0)"]
 
 [[package]]
@@ -920,7 +920,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "129264df3ef90047861fa324f67287d713976efccd8afb3f81c60b3b762a4552"
+content-hash = "18cc52ff28c0a3edfa4eabc66dc243711e32b6987541dec4f6a6a20d017f8e89"
 
 [metadata.files]
 appdirs = [
@@ -1026,8 +1026,8 @@ ecdsa = [
     {file = "ecdsa-0.14.1.tar.gz", hash = "sha256:64c613005f13efec6541bb0a33290d0d03c27abab5f15fbab20fb0ee162bdd8e"},
 ]
 fakeredis = [
-    {file = "fakeredis-1.5.0-py3-none-any.whl", hash = "sha256:e0416e4941cecd3089b0d901e60c8dc3c944f6384f5e29e2261c0d3c5fa99669"},
-    {file = "fakeredis-1.5.0.tar.gz", hash = "sha256:1ac0cef767c37f51718874a33afb5413e69d132988cb6a80c6e6dbeddf8c7623"},
+    {file = "fakeredis-1.5.1-py3-none-any.whl", hash = "sha256:afeb843b031697b3faff0eef8eedadef110741486b37e2bfb95167617785040f"},
+    {file = "fakeredis-1.5.1.tar.gz", hash = "sha256:7f85faf640a0da564d8342a7d62936b07f23f4a85f756118fbd35b55f64f281c"},
 ]
 fastapi = [
     {file = "fastapi-0.63.0-py3-none-any.whl", hash = "sha256:98d8ea9591d8512fdadf255d2a8fa56515cdd8624dca4af369da73727409508e"},
