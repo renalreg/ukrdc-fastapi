@@ -2,7 +2,7 @@ from typing import Optional
 
 from sqlalchemy.orm.query import Query
 from sqlalchemy.orm.session import Session
-from ukrdc_sqla.ukrdc import Observation
+from ukrdc_sqla.ukrdc import Observation, PatientRecord
 
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
 
@@ -40,9 +40,8 @@ def get_observations(
     if Permissions.UNIT_WILDCARD in units:
         return observations
 
-    return observations.filter(
-        Observation.entering_organization_code.in_(units)
-        | Observation.entered_at.in_(units)
+    return observations.join(PatientRecord).filter(
+        PatientRecord.sendingfacility.in_(units)
     )
 
 
@@ -50,7 +49,7 @@ def get_observation_codes(
     ukrdc3: Session,
     user: UKRDCUser,
     pid: Optional[str] = None,
-) -> list[str]:
+) -> set[str]:
     """Get a list of available observation codes
 
     Args:
@@ -63,4 +62,4 @@ def get_observation_codes(
     """
     observations = get_observations(ukrdc3, user, pid, sort_query=False)
     codes = observations.distinct(Observation.observation_code)
-    return [item.observation_code for item in codes.all()]
+    return {item.observation_code for item in codes.all()}

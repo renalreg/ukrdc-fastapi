@@ -8,7 +8,7 @@ from ukrdc_fastapi.schemas.laborder import LabOrderShortSchema, ResultItemSchema
 def _commit_extra_resultitem(session):
     patient_record = PatientRecord(
         pid="PYTEST01:LABORDERS:00000000L",
-        sendingfacility="PATIENT_RECORD_SENDING_FACILITY_1",
+        sendingfacility="TEST_SENDING_FACILITY_1",
         sendingextract="PV",
         localpatientid="00000000L",
         ukrdcid="000000001",
@@ -49,22 +49,24 @@ def _commit_extra_resultitem(session):
 def _commit_extra_resultitem_and_check(session, client):
     # Check we have no unexpected items
     response_unfiltered = client.get("/api/resultitems")
-    assert len(response_unfiltered.json()["items"]) == 1
+    og_len = len(response_unfiltered.json()["items"])
 
     # Add an extra test item
     _commit_extra_resultitem(session)
 
     # Check we have multiple laborders when unfiltered
     response_unfiltered = client.get("/api/resultitems")
-    assert len(response_unfiltered.json()["items"]) == 2
+    assert len(response_unfiltered.json()["items"]) == og_len + 1
 
 
 def test_resultitems_list(client):
     response = client.get("/api/resultitems")
     assert response.status_code == 200
     items = [ResultItemSchema(**item) for item in response.json()["items"]]
-    assert len(items) == 1
-    assert items[0].id == "RESULTITEM1"
+    assert {result.id for result in items} == {
+        "RESULTITEM1",
+        "RESULTITEM2",
+    }
 
 
 def test_resultitems_list_filtered_serviceId(ukrdc3_session, client):
@@ -91,11 +93,9 @@ def test_resultitem_delete(client):
     assert response.status_code == 204
 
     # Check the resultitem was deleted
-    response = client.get("/api/resultitems/")
-    assert response.status_code == 200
-    assert response.json()["items"] == []
+    response = client.get("/api/resultitems/RESULTITEM1/")
+    assert response.status_code == 404
 
     # Check the orphaned laborder was deleted
-    response = client.get("/api/laborders/")
-    assert response.status_code == 200
-    assert response.json()["items"] == []
+    response = client.get("/api/laborders/LABORDER1/")
+    assert response.status_code == 404

@@ -33,6 +33,7 @@ def get_resultitems(
     order_id: Optional[list[str]] = None,
     since: Optional[datetime.datetime] = None,
     until: Optional[datetime.datetime] = None,
+    sort_query: bool = True,
 ) -> Query:
     """Retreive a list of lab results, optionally filtered by NI or service ID
 
@@ -61,7 +62,8 @@ def get_resultitems(
     if until:
         query = query.filter(ResultItem.observation_time <= until)
 
-    query = query.order_by(ResultItem.entered_on.desc())
+    if sort_query:
+        query = query.order_by(ResultItem.entered_on.desc())
 
     return _apply_query_permissions(query, user)
 
@@ -81,7 +83,7 @@ def get_resultitem_services(
     Returns:
         list[ResultItemServiceSchema]: List of unique resultitem services
     """
-    items = get_resultitems(ukrdc3, user, pid)
+    items = get_resultitems(ukrdc3, user, pid, sort_query=False)
     services = items.distinct(ResultItem.service_id)
     return [
         ResultItemServiceSchema(

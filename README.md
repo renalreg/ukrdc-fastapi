@@ -8,12 +8,34 @@ This rewrite of the UKRDC API is currently in development, and is not yet being 
 
 ## Developer Installation
 
+### Prerequisites
+
+- Create a `.env` file with Mirth and database credentials, for example (replacing "\*\*\*\*" with the actual credentials):
+
+```
+UKRDC_HOST="db.ukrdc.nhs.uk"
+JTRACE_HOST="db.ukrdc.nhs.uk"
+ERRORS_HOST="db.ukrdc.nhs.uk"
+
+UKRDC_PASS="****"
+JTRACE_PASS="****"
+ERRORS_PASS="****"
+
+MIRTH_URL="https://mirth.ukrdc.nhs.uk/api"
+MIRTH_VERIFY_SSL=false
+MIRTH_USER="webapi"
+MIRTH_PASS="****"
+
+APP_CLIENT_ID=0oan98slw3m4mnhxq5d6
+SWAGGER_CLIENT_ID="0oan75eooLX2DcdQK5d6"
+```
+
+- Ensure a local Redis instance is running locally on port 6379
+
+### Installation
+
 - Install Poetry
 - Run `poetry install`
-
-## Basic Installation
-
-- `pip install .`
 
 ## Run the server
 
@@ -38,3 +60,9 @@ On some oeprating systems and environments, it may be difficult to properly set 
   }
 }
 ```
+
+### Build ARCHITECTURE.md
+
+- Install `pipx`
+- `pipx install archmd`
+- `archmd . --out "ARCHITECTURE.md" --title="UKRDC-FastAPI Architecture"`
