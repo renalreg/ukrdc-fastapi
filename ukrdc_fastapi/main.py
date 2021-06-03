@@ -1,5 +1,7 @@
 import logging
 
+import redis
+import sqlalchemy
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_hypermodel import HyperModel
@@ -9,7 +11,9 @@ from mirth_client import MirthAPI
 from mirth_client.models import LoginResponse
 
 from ukrdc_fastapi.config import settings
+from ukrdc_fastapi.dependencies import get_redis
 from ukrdc_fastapi.dependencies.auth import auth
+from ukrdc_fastapi.dependencies.database import Ukrdc3Session
 from ukrdc_fastapi.dependencies.sentry import add_sentry
 from ukrdc_fastapi.routers import api
 
@@ -64,7 +68,7 @@ class StartupError(RuntimeError):
 @app.on_event("startup")
 async def check_connections():
     """
-    Check Mirth credentials and that all expected Mirth channels are available
+    Check Mirth, database, and Redis connections
     """
     logging.info("Checking connection to Mirth API...")
     mirth_api: MirthAPI
@@ -83,6 +87,22 @@ async def check_connections():
             raise StartupError(
                 "Unable to connect to Mirth API. Ensure connection is properly configured."
             ) from e
+
+    logging.info("Checking connection to UKRDC database...")
+    try:
+        Ukrdc3Session().connection()
+    except sqlalchemy.exc.OperationalError as e:
+        raise StartupError(
+            "Unable to connect to UKRDC database. Ensure connection is properly configured."
+        ) from e
+
+    logging.info("Checking connection to Redis database...")
+    try:
+        get_redis().ping()
+    except redis.exceptions.ConnectionError as e:
+        raise StartupError(
+            "Unable to connect to Redis instance. Ensure redis-server is running locally."
+        )
 
 
 # Run app
