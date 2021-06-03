@@ -5,6 +5,7 @@ import pytest
 from ukrdc_sqla.empi import LinkRecord, MasterRecord, WorkItem
 
 from ukrdc_fastapi.schemas.empi import WorkItemSchema
+from ukrdc_fastapi.schemas.errors import MessageSchema
 
 
 def test_workitems_list(client):
@@ -43,6 +44,15 @@ def test_workitem_related(client):
     assert returned_ids == {2}
 
 
+def test_workitem_errors(client):
+    response = client.get("/api/empi/workitems/1/errors")
+    assert response.status_code == 200
+
+    errors = [MessageSchema(**item) for item in response.json()["items"]]
+    error_ids = {error.id for error in errors}
+    assert error_ids == {1}
+
+
 @pytest.mark.parametrize("workitem_id", [1, 2, 3])
 def test_workitem_close(client, workitem_id, httpx_session):
     response = client.post(
@@ -59,8 +69,8 @@ def test_workitem_close(client, workitem_id, httpx_session):
 
 def test_workitem_merge(client, jtrace_session, httpx_session):
     # Create a new master record
-    master_record_3 = MasterRecord(
-        id=3,
+    master_record_30 = MasterRecord(
+        id=30,
         status=0,
         last_updated=datetime(2021, 1, 1),
         date_of_birth=datetime(1980, 12, 12),
@@ -70,20 +80,20 @@ def test_workitem_merge(client, jtrace_session, httpx_session):
     )
 
     # Link the new master record to an existing person
-    link_record_3 = LinkRecord(
-        id=3,
+    link_record_30 = LinkRecord(
+        id=30,
         person_id=1,
-        master_id=3,
+        master_id=30,
         link_type=0,
         link_code=0,
         last_updated=datetime(2020, 3, 16),
     )
 
     # Create a work item binding person 1 to master ID 3
-    work_item_4 = WorkItem(
-        id=4,
+    work_item_40 = WorkItem(
+        id=40,
         person_id=1,
-        master_id=3,
+        master_id=30,
         type=9,
         description="DESCRIPTION_4",
         status=1,
@@ -91,18 +101,18 @@ def test_workitem_merge(client, jtrace_session, httpx_session):
     )
 
     # Person 3 now has 2 master records we want to merge
-    jtrace_session.add(master_record_3)
-    jtrace_session.add(link_record_3)
-    jtrace_session.add(work_item_4)
+    jtrace_session.add(master_record_30)
+    jtrace_session.add(link_record_30)
+    jtrace_session.add(work_item_40)
     jtrace_session.commit()
 
-    response = client.post(f"/api/empi/workitems/4/merge/", json={})
+    response = client.post(f"/api/empi/workitems/40/merge/", json={})
     assert response.json().get("status") == "success"
     message = response.json().get("message")
 
     # Check we are merging master records 1 and 3
     assert f"<superceding>1</superceding>" in message
-    assert f"<superceeded>3</superceeded>" in message
+    assert f"<superceeded>30</superceeded>" in message
 
 
 def test_workitem_merge_nothing_to_merge(client):

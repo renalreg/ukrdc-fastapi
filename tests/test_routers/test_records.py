@@ -4,13 +4,15 @@ from ukrdc_fastapi.schemas.patientrecord import (
     PatientRecordShortSchema,
 )
 
+# TODO: Overhaul these tests
+
 
 def test_records(client):
     response = client.get("/api/patientrecords")
     assert response.status_code == 200
     records = [PatientRecordShortSchema(**item) for item in response.json()["items"]]
     record_ids = {record.pid for record in records}
-    assert record_ids == {"PYTEST01:PV:00000000A"}
+    assert record_ids == {"PYTEST01:PV:00000000A", "PYTEST02:PV:00000000A"}
 
 
 def test_record(client):
@@ -27,8 +29,10 @@ def test_record_laborders(client):
     response = client.get("/api/patientrecords/PYTEST01:PV:00000000A/laborders")
     assert response.status_code == 200
     orders = [LabOrderShortSchema(**item) for item in response.json()["items"]]
-    assert len(orders) == 1
-    assert orders[0].id == "LABORDER1"
+    assert {order.id for order in orders} == {
+        "LABORDER1",
+        "LABORDER2",
+    }
 
 
 # Record result items
@@ -38,8 +42,10 @@ def test_record_resultitems(client):
     response = client.get("/api/patientrecords/PYTEST01:PV:00000000A/resultitems")
     assert response.status_code == 200
     results = [ResultItemSchema(**item) for item in response.json()["items"]]
-    assert len(results) == 1
-    assert results[0].id == "RESULTITEM1"
+    assert {result.id for result in results} == {
+        "RESULTITEM1",
+        "RESULTITEM2",
+    }
 
 
 # Record observations

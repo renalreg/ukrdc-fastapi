@@ -146,7 +146,7 @@ def get_facility(
     redis: Redis,
     facility_code: str,
     user: UKRDCUser,
-) -> FacilitySchema:
+) -> FacilityDetailsSchema:
     """Get a summary of a particular facility/unit
 
     Args:
@@ -155,7 +155,7 @@ def get_facility(
         user (UKRDCUser): Logged-in user
 
     Returns:
-        FacilitySchema: Matched facility
+        FacilityDetailsSchema: Matched facility
     """
     code = (
         ukrdc3.query(Code)
@@ -172,7 +172,7 @@ def get_facility(
         raise PermissionsError()
 
     # Check for cached statistics
-    redis_key: str = f"facilities:{facility_code}:statistics"
+    redis_key: str = f"ukrdc3:facilities:{facility_code}:statistics"
     if not redis.exists(redis_key):
         statistics = FacilityStatisticsSchema(
             records_with_errors=_get_error_ni_count(

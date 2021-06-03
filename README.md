@@ -38,3 +38,9 @@ On some oeprating systems and environments, it may be difficult to properly set 
   }
 }
 ```
+
+### Build ARCHITECTURE.md
+
+- Install `pipx`
+- `pipx install archmd`
+- `archmd . --out "ARCHITECTURE.md" --title="UKRDC-FastAPI Architecture"`
