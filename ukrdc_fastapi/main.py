@@ -102,7 +102,7 @@ async def check_connections():
     except redis.exceptions.ConnectionError as e:
         raise StartupError(
             "Unable to connect to Redis instance. Ensure redis-server is running locally."
-        )
+        ) from e
 
 
 # Run app
