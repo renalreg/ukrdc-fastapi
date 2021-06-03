@@ -4,6 +4,7 @@ from typing import Optional
 from fastapi.exceptions import HTTPException
 from sqlalchemy.orm.query import Query
 from sqlalchemy.orm.session import Session
+from sqlalchemy.sql import func
 from ukrdc_sqla.errorsdb import Message
 
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
@@ -80,6 +81,45 @@ def get_errors(
         query = query.order_by(Message.received.desc())
 
     query = _apply_query_permissions(query, user)
+    return query
+
+
+def get_errors_history(
+    errorsdb: Session,
+    user: UKRDCUser,
+    status: str = "ERROR",
+    facility: Optional[str] = None,
+    since: Optional[datetime.datetime] = None,
+    until: Optional[datetime.datetime] = None,
+) -> Query:
+    query = errorsdb.query(
+        func.date_trunc("day", Message.received),
+        Message.facility,
+        Message.msg_status,
+        func.count(Message.received),
+    )
+
+    query = _apply_query_permissions(query, user)
+
+    if facility:
+        query = query.filter(Message.facility == facility)
+
+    if status:
+        query = query.filter(Message.msg_status == status)
+
+    # Default to showing last 365 days
+    since_datetime: datetime.datetime = (
+        since or datetime.datetime.utcnow() - datetime.timedelta(days=365)
+    )
+    query = query.filter(func.date_trunc("day", Message.received) >= since_datetime)
+
+    # Optionally filter out messages newer than `untildays`
+    if until:
+        query = query.filter(func.date_trunc("day", Message.received) <= until)
+
+    query = query.group_by(
+        func.date_trunc("day", Message.received), Message.facility, Message.msg_status
+    )
     return query
 
 
