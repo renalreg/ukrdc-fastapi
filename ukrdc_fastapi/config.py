@@ -20,11 +20,9 @@ class Settings(BaseSettings):
     cache_groups_seconds: int = 86400
     cache_statistics_seconds: int = 900
 
-    secret_key: str = "****"
-
     swagger_client_id: str = ""
     app_client_id: str = ""
-    oauth_issuer: str = "https://dev-58161221.okta.com/oauth2/ausn7fa9zfh1DC2La5d6"
+    oauth_issuer: str = "https://renalregistry.okta.com/oauth2/ausn7fa9zfh1DC2La5d6"
     oauth_audience: str = "api://ukrdc"
 
     user_permission_key: str = "org.ukrdc.permissions"
