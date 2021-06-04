@@ -92,8 +92,10 @@ def get_errors_history(
     since: Optional[datetime.datetime] = None,
     until: Optional[datetime.datetime] = None,
 ) -> Query:
+    trunc_func = func.date_trunc("day", Message.received)
+
     query = errorsdb.query(
-        func.date_trunc("day", Message.received),
+        trunc_func,
         Message.facility,
         Message.msg_status,
         func.count(Message.received),
@@ -111,15 +113,13 @@ def get_errors_history(
     since_datetime: datetime.datetime = (
         since or datetime.datetime.utcnow() - datetime.timedelta(days=365)
     )
-    query = query.filter(func.date_trunc("day", Message.received) >= since_datetime)
+    query = query.filter(trunc_func >= since_datetime)
 
     # Optionally filter out messages newer than `untildays`
     if until:
-        query = query.filter(func.date_trunc("day", Message.received) <= until)
+        query = query.filter(trunc_func <= until)
 
-    query = query.group_by(
-        func.date_trunc("day", Message.received), Message.facility, Message.msg_status
-    )
+    query = query.group_by(trunc_func, Message.facility, Message.msg_status)
     return query
 
 
