@@ -68,9 +68,14 @@ def get_workitems(
 
     if facility:
         workitems = (
-            workitems.join(Person)
-            .join(PidXRef)
-            .filter(PidXRef.sending_facility == facility)
+            workitems.outerjoin(Person)
+            .outerjoin(PidXRef)
+            .filter(
+                or_(
+                    PidXRef.sending_facility == facility,
+                    WorkItem.attributes.like(f'%"SF":"{facility}"%'),
+                )
+            )
         )
 
     # Optionally filter Workitems updated since
