@@ -5,7 +5,7 @@ on:
     inputs:
       deployment_env:
         description: "Deployment environment"
-        default: "dev"
+        default: "staging"
 
 jobs:
   publish:
