@@ -76,7 +76,7 @@ def get_masterrecord(jtrace: Session, record_id: int, user: UKRDCUser) -> Master
     Returns:
         MasterRecord: MasterRecord
     """
-    record: MasterRecord = jtrace.query(MasterRecord).get(record_id)
+    record: Optional[MasterRecord] = jtrace.query(MasterRecord).get(record_id)
     if not record:
         raise HTTPException(404, detail="Master Record not found")
     _assert_permission(record, user)

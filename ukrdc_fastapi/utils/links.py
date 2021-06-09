@@ -50,7 +50,7 @@ def find_related_ids(
 
 
 def find_related_link_records(
-    session: Session, master_id: str, person_id: Optional[str] = None
+    session: Session, master_id: int, person_id: Optional[int] = None
 ) -> set[PersonMasterLink]:
     """
     Return a list of person <-> masterrecord LinkRecord IDs
@@ -63,7 +63,7 @@ def find_related_link_records(
     """
 
     linkrecord_ids: set[PersonMasterLink] = set()
-    new_entries: set[tuple[str, str]] = set()
+    new_entries: set[tuple[int, int]] = set()
     entries: Query
 
     # If no explicit person_id is give, we'll derive one

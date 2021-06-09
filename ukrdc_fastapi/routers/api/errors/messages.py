@@ -49,4 +49,5 @@ def error_detail(
     errorsdb: Session = Depends(get_errorsdb),
     jtrace: Session = Depends(get_jtrace),
 ):
+    """Retreive detailed information about a specific error message"""
     return get_error(errorsdb, jtrace, error_id, user)

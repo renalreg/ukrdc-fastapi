@@ -37,6 +37,7 @@ class MessagePage(MirthPage):
 async def mirth_channels(
     mirth: MirthAPI = Depends(get_mirth), redis: Redis = Depends(get_redis)
 ):
+    """Retrieve a list of Mirth channels"""
     return await get_cached_channels_with_statistics(mirth, redis)
 
 
@@ -49,6 +50,7 @@ async def mirth_groups(
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
 ) -> list[ChannelGroupModel]:
+    """Retrieve a list of Mirth channel groups"""
     return await get_cached_all(mirth, redis)
 
 
@@ -62,6 +64,7 @@ async def mirth_channel(
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
 ):
+    """Get details and statistics about a specific Mirth channel"""
     channels = await get_cached_channels_with_statistics(mirth, redis)
     channel_map = {str(channel.id): channel for channel in channels}
 
@@ -83,6 +86,7 @@ async def mirth_channel_messages(
     size: int = 20,
     mirth: MirthAPI = Depends(get_mirth),
 ):
+    """Retreive a list a messages from a specific Mirth channel"""
     messages = await mirth.channel(channel_id).get_messages(
         include_content=False, limit=size, offset=page * size
     )
@@ -97,7 +101,8 @@ async def mirth_channel_messages(
 )
 async def mirth_channel_message(
     channel_id: str,
-    message_id: int,
+    message_id: str,
     mirth: MirthAPI = Depends(get_mirth),
 ):
+    """Retreive a specific message from a specific Mirth channel"""
     return await mirth.channel(channel_id).get_message(message_id, include_content=True)

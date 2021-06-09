@@ -3,8 +3,16 @@ from mirth_client.models import ChannelMessageModel, ChannelModel
 
 from .base import OrmModel
 
+"""
+DEVELOPER NOTES:
 
-class MirthChannelModel(ChannelModel, OrmModel):
+We need to # type: ignore both these classes since MyPy dislikes the
+differing Config class definitions in each base class. In practice this
+works fine as Pydantic can handle this.
+"""
+
+
+class MirthChannelModel(ChannelModel, OrmModel):  # type: ignore
     links = LinkSet(
         {
             "self": UrlFor("mirth_channel", {"channel_id": "<id>"}),
@@ -12,7 +20,7 @@ class MirthChannelModel(ChannelModel, OrmModel):
     )
 
 
-class MirthChannelMessageModel(ChannelMessageModel, OrmModel):
+class MirthChannelMessageModel(ChannelMessageModel, OrmModel):  # type: ignore
     links = LinkSet(
         {
             "self": UrlFor(

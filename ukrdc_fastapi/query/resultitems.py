@@ -106,7 +106,7 @@ def get_resultitem(ukrdc3: Session, resultitem_id: str, user: UKRDCUser) -> Resu
     Returns:
         ResultItem: ResultItem
     """
-    item: ResultItem = ukrdc3.query(ResultItem).get(resultitem_id)
+    item: Optional[ResultItem] = ukrdc3.query(ResultItem).get(resultitem_id)
     if not item:
         raise HTTPException(404, detail="Result item not found")
     _assert_permission(item, user)
@@ -121,7 +121,10 @@ def delete_resultitem(ukrdc3: Session, resultitem_id: str, user: UKRDCUser) -> N
         resultitem_id (str): ResultItem ID
         user (UKRDCUser): Logged-in user
     """
-    item: ResultItem = get_resultitem(ukrdc3, resultitem_id, user)
+    item: Optional[ResultItem] = get_resultitem(ukrdc3, resultitem_id, user)
+
+    if not item:
+        raise HTTPException(404, detail="Result item not found")
 
     logging.info(
         "DELETING: %s %s (%s) - %s%s",
@@ -131,16 +134,18 @@ def delete_resultitem(ukrdc3: Session, resultitem_id: str, user: UKRDCUser) -> N
         item.value,
         item.value_units if item.value_units else "",
     )
-    order_id: str = item.order_id
     ukrdc3.delete(item)
     ukrdc3.commit()
-    order: LabOrder = ukrdc3.query(LabOrder).get(order_id)
-    if order.result_items.count() == 0:
-        logging.info(
-            "DELETING laborder without any result items: %s %s",
-            order.specimen_collected_time,
-            order.entered_at,
-        )
 
-        ukrdc3.delete(order)
+    order_id: Optional[str] = item.order_id
+    if order_id:
+        order: Optional[LabOrder] = ukrdc3.query(LabOrder).get(order_id)
+        if order and order.result_items.count() == 0:
+            logging.info(
+                "DELETING laborder without any result items: %s %s",
+                order.specimen_collected_time,
+                order.entered_at,
+            )
+
+            ukrdc3.delete(order)
     ukrdc3.commit()

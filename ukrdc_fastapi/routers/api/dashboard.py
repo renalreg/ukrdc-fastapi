@@ -46,33 +46,33 @@ class DashboardSchema(BaseModel):
 def _get_workitems_stats(jtrace: Session, redis: Redis, refresh: bool = False):
     if redis.exists("dashboard:workitems") and not refresh:
         return WorkItemsDashSchema(**redis.hgetall("dashboard:workitems"))
-    else:
-        open_workitems_stats: TotalDayPrev = total_day_prev(
-            jtrace.query(WorkItem).filter(WorkItem.status == 1),
-            WorkItem,
-            "last_updated",
-        ).dict()
-        workitems = WorkItemsDashSchema(**open_workitems_stats)
-        redis.hset("dashboard:workitems", mapping=open_workitems_stats)  # type: ignore
-        # Remove cached statistics after 15 minutes. Next request will re-query
-        redis.expire("dashboard:workitems", 900)
-        return workitems
+
+    open_workitems_stats: TotalDayPrev = total_day_prev(
+        jtrace.query(WorkItem).filter(WorkItem.status == 1),
+        WorkItem,
+        "last_updated",
+    )
+    workitems = WorkItemsDashSchema(**open_workitems_stats.dict())
+    redis.hset("dashboard:workitems", mapping=open_workitems_stats.dict())  # type: ignore
+    # Remove cached statistics after 15 minutes. Next request will re-query
+    redis.expire("dashboard:workitems", 900)
+    return workitems
 
 
 def _get_empi_stats(jtrace: Session, redis: Redis, refresh: bool = False):
     if redis.exists("dashboard:ukrdcrecords") and not refresh:
         return UKRDCRecordsDashSchema(**redis.hgetall("dashboard:ukrdcrecords"))
-    else:
-        ukrdc_masterrecords_stats: TotalDayPrev = total_day_prev(
-            jtrace.query(MasterRecord).filter(MasterRecord.nationalid_type == "UKRDC"),
-            MasterRecord,
-            "creation_date",
-        ).dict()
-        ukrdcrecords = UKRDCRecordsDashSchema(**ukrdc_masterrecords_stats)
-        redis.hset("dashboard:ukrdcrecords", mapping=ukrdc_masterrecords_stats)  # type: ignore
-        # Remove cached statistics after 15 minutes. Next request will re-query
-        redis.expire("dashboard:ukrdcrecords", 900)
-        return ukrdcrecords
+
+    ukrdc_masterrecords_stats: TotalDayPrev = total_day_prev(
+        jtrace.query(MasterRecord).filter(MasterRecord.nationalid_type == "UKRDC"),
+        MasterRecord,
+        "creation_date",
+    )
+    ukrdcrecords = UKRDCRecordsDashSchema(**ukrdc_masterrecords_stats.dict())
+    redis.hset("dashboard:ukrdcrecords", mapping=ukrdc_masterrecords_stats.dict())  # type: ignore
+    # Remove cached statistics after 15 minutes. Next request will re-query
+    redis.expire("dashboard:ukrdcrecords", 900)
+    return ukrdcrecords
 
 
 @router.get("/", response_model=DashboardSchema)

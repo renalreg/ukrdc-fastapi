@@ -4,7 +4,6 @@ from typing import Optional
 from fastapi import APIRouter, Depends, Security
 from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import MasterRecord, Person, WorkItem
-from ukrdc_sqla.errorsdb import Message
 from ukrdc_sqla.ukrdc import PatientRecord
 
 from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_ukrdc3

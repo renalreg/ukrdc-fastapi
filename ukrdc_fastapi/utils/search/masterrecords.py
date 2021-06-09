@@ -163,15 +163,15 @@ def masterrecord_ids_from_ukrdc_no(session: Session, ukrdc_nos: Iterable[str]):
     conditions = [
         MasterRecord.nationalid.like(f"{ukrdc_no.strip()}_") for ukrdc_no in ukrdc_nos
     ]
-    matched_ids = {
-        mr.id
-        for mr in session.query(MasterRecord.id)
+    masterrecords: list[MasterRecord] = (
+        session.query(MasterRecord)
         .filter(
             or_(*conditions),
             MasterRecord.nationalid_type.in_(["UKRDC"]),
         )
         .all()
-    }
+    )
+    matched_ids = {mr.id for mr in masterrecords}
 
     return matched_ids
 
@@ -187,9 +187,10 @@ def masterrecord_ids_from_full_name(session: Session, names: Iterable[str]):
         ]
     conditions += [MasterRecord.givenname.ilike(name) for name in names]
     conditions += [MasterRecord.surname.ilike(name) for name in names]
-    matched_ids = {
-        mr.id for mr in session.query(MasterRecord.id).filter(or_(*conditions)).all()
-    }
+    masterrecords: list[MasterRecord] = (
+        session.query(MasterRecord).filter(or_(*conditions)).all()
+    )
+    matched_ids = {mr.id for mr in masterrecords}
 
     return matched_ids
 
@@ -200,7 +201,7 @@ def masterrecord_ids_from_dob(
     """Finds Ids from date of birth"""
     conditions = [MasterRecord.date_of_birth == dob for dob in dobs]
     matched_ids = {
-        mr.id for mr in session.query(MasterRecord.id).filter(or_(*conditions)).all()
+        mr.id for mr in session.query(MasterRecord).filter(or_(*conditions)).all()
     }
 
     return matched_ids
@@ -213,11 +214,11 @@ def masterrecord_ids_from_pidxref_no(session: Session, pid_nos: Iterable[str]):
     query = session.query(Person).filter(Person.localid_type == "CLPID")
 
     conditions = [Person.localid.like(pid_no) for pid_no in pid_nos]
-    matched_persons = query.filter(or_(*conditions)).all()
+    matched_persons: list[Person] = query.filter(or_(*conditions)).all()
 
     # Find all related master record IDs by recursing through link records
     related_master_ids, _ = find_related_ids(
-        session, set(), {person.localid for person in matched_persons}
+        session, set(), {person.id for person in matched_persons}
     )
 
     return related_master_ids
@@ -234,7 +235,7 @@ def search_masterrecord_ids(  # pylint: disable=too-many-branches
     jtrace: Session,
 ):
     """Search the EMPI for a particular master record"""
-    match_sets: list[set[str]] = []
+    match_sets: list[set[int]] = []
 
     searchset = SearchSet()
 
@@ -284,11 +285,11 @@ def search_masterrecord_ids(  # pylint: disable=too-many-branches
     if searchset.pids:
         match_sets.append(masterrecord_ids_from_pidxref_no(jtrace, searchset.pids))
 
-    non_empty_sets: list[set[str]] = [
+    non_empty_sets: list[set[int]] = [
         match_set for match_set in match_sets if match_set
     ]
 
-    matched_ids: set[str]
+    matched_ids: set[int]
     if non_empty_sets:
         matched_ids = set.intersection(*non_empty_sets)
     else:

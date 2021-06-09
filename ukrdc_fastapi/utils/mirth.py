@@ -158,7 +158,7 @@ async def get_cached_channels_with_statistics(
         get_cached_statistics(mirth, redis),
     )
     statistics_map: dict[str, ChannelStatistics] = {
-        stats.channel_id: stats for stats in statistics
+        str(stats.channel_id): stats for stats in statistics
     }
 
     return [
@@ -167,7 +167,7 @@ async def get_cached_channels_with_statistics(
             name=channel.name,
             description=channel.description,
             revision=channel.revision,
-            statistics=statistics_map.get(channel.id),
+            statistics=statistics_map.get(str(channel.id)),
         )
         for channel in channels
     ]
@@ -215,7 +215,7 @@ async def get_cached_all(mirth: MirthAPI, redis: Redis) -> list[ChannelGroupMode
 
 async def get_cached_channel_map(
     mirth: MirthAPI, redis: Redis, by_name: bool = False
-) -> dict[str, ChannelFullModel]:
+) -> dict[str, ChannelModel]:
     """Fetch a mapping of channel IDs -> ChannelModel objects.
     To reduce load on the Mirth server, channel mappings will
     be cached to Redis, and reloaded only when required.
@@ -226,7 +226,7 @@ async def get_cached_channel_map(
         by_name (bool, optional): Use channel name as the returned keys. Defaults to False.
 
     Returns:
-        dict[str, ChannelFullModel]: Mapping of channel ID or name to ChannelFullModel objects
+        dict[str, ChannelModel]: Mapping of channel ID or name to ChannelModel objects
     """
     channels: list[ChannelModel] = await get_cached_channels(mirth, redis)
 
@@ -261,12 +261,12 @@ async def get_channel_from_name(
     return mirth.channel(name_map[name].id)
 
 
-def build_merge_message(superceding: str, superceeded: str) -> str:
+def build_merge_message(superceding: int, superceeded: int) -> str:
     """Build rawData for two master records be merged.
 
     Args:
-        superceding (str): MasterRecord.id of first item in merge
-        superceeded (str): MasterRecord.id of second item in merge
+        superceding (int): MasterRecord.id of first item in merge
+        superceeded (int): MasterRecord.id of second item in merge
 
     Returns:
         str: XML rawData for Mirth message
@@ -283,16 +283,16 @@ def build_merge_message(superceding: str, superceeded: str) -> str:
 
 
 def build_unlink_message(
-    master_record: str,
-    person_id: str,
+    master_record: int,
+    person_id: int,
     user: str,
     description: Optional[str] = None,
 ) -> str:
     """Build rawData for a Person record be unlinked from a MasterRecord
 
     Args:
-        master_record (str): MasterRecord.id
-        person_id (str): Person.id
+        master_record (int): MasterRecord.id
+        person_id (int): Person.id
         user (str): End user initiating the unlink
         description (Optional[str], optional): Unlink comments. Defaults to None.
 
