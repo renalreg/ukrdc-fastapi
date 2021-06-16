@@ -26,7 +26,7 @@ mirth-client = "1.1.0a0"
 
 [tool.poetry.dev-dependencies]
 bandit = "^1.7.0"
-black = "^21.4b2"
+black = "^21.6b0"
 coverage = {extras = ["toml"], version = "^5.5"}
 fakeredis = "^1.5.1"
 isort = "^5.7.0"
