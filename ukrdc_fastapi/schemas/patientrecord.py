@@ -23,7 +23,7 @@ class PatientRecordSchema(OrmModel):
     repository_update_date: datetime.datetime
 
     program_memberships: list[ProgramMembershipSchema]
-    patient: PatientSchema
+    patient: Optional[PatientSchema]
 
     links = LinkSet(
         {
