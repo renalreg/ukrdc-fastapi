@@ -24,10 +24,7 @@ from ukrdc_fastapi.schemas.laborder import (
 )
 from ukrdc_fastapi.schemas.medication import MedicationSchema
 from ukrdc_fastapi.schemas.observation import ObservationSchema
-from ukrdc_fastapi.schemas.patientrecord import (
-    PatientRecordSchema,
-    PatientRecordShortSchema,
-)
+from ukrdc_fastapi.schemas.patientrecord import PatientRecordSchema
 from ukrdc_fastapi.schemas.survey import SurveySchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
 
@@ -53,7 +50,7 @@ def patient_record(
 
 @router.get(
     "/related/",
-    response_model=list[PatientRecordShortSchema],
+    response_model=list[PatientRecordSchema],
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
 def patient_related(

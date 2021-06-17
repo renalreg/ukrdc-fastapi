@@ -1,7 +1,7 @@
 from ukrdc_fastapi.schemas.laborder import LabOrderShortSchema, ResultItemSchema
 from ukrdc_fastapi.schemas.patientrecord import (
     PatientRecordSchema,
-    PatientRecordShortSchema,
+    PatientRecordSchema,
 )
 
 # TODO: Overhaul these tests
@@ -10,7 +10,7 @@ from ukrdc_fastapi.schemas.patientrecord import (
 def test_records(client):
     response = client.get("/api/patientrecords")
     assert response.status_code == 200
-    records = [PatientRecordShortSchema(**item) for item in response.json()["items"]]
+    records = [PatientRecordSchema(**item) for item in response.json()["items"]]
     record_ids = {record.pid for record in records}
     assert record_ids == {"PYTEST01:PV:00000000A", "PYTEST02:PV:00000000A"}
 

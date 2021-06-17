@@ -11,7 +11,7 @@ from ukrdc_fastapi.schemas.empi import (
     WorkItemShortSchema,
 )
 from ukrdc_fastapi.schemas.errors import MessageSchema
-from ukrdc_fastapi.schemas.patientrecord import PatientRecordShortSchema
+from ukrdc_fastapi.schemas.patientrecord import PatientRecordSchema
 
 
 def test_masterrecords_list(client):
@@ -61,7 +61,7 @@ def test_masterrecord_related(client, jtrace_session):
     # Check MR3 is identified as related to MR1
     mrecs = [MasterRecordSchema(**item) for item in response.json()]
     returned_ids = {item.id for item in mrecs}
-    assert returned_ids == {3}
+    assert returned_ids == {1, 3}
 
 
 def test_masterrecord_statistics(client):
@@ -105,6 +105,6 @@ def test_masterrecord_patientrecords(client):
     response = client.get("/api/empi/masterrecords/1/patientrecords")
     assert response.status_code == 200
 
-    records = [PatientRecordShortSchema(**item) for item in response.json()]
+    records = [PatientRecordSchema(**item) for item in response.json()]
     pids = {record.pid for record in records}
     assert pids == {"PYTEST01:PV:00000000A", "PYTEST02:PV:00000000A"}

@@ -1,13 +1,12 @@
 from fastapi import APIRouter, Depends, Security
 from sqlalchemy.orm import Session
-from ukrdc_sqla.empi import MasterRecord
+from ukrdc_sqla.empi import MasterRecord, Person
 
 from ukrdc_fastapi.dependencies import get_jtrace
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.query.masterrecords import get_masterrecords
 from ukrdc_fastapi.query.persons import get_person, get_persons
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema, PersonSchema
-from ukrdc_fastapi.utils.links import find_related_ids
 from ukrdc_fastapi.utils.paginate import Page, paginate
 
 router = APIRouter()
@@ -21,7 +20,7 @@ router = APIRouter()
 def persons(
     user: UKRDCUser = Security(auth.get_user), jtrace: Session = Depends(get_jtrace)
 ):
-    """Retreive a list of person records from the EMPI"""
+    """Retreive a list of Person records from the EMPI"""
     return paginate(get_persons(jtrace, user))
 
 
@@ -35,7 +34,7 @@ def person_detail(
     user: UKRDCUser = Security(auth.get_user),
     jtrace: Session = Depends(get_jtrace),
 ):
-    """Retreive a particular person record from the EMPI"""
+    """Retreive a particular Person record from the EMPI"""
     return get_person(jtrace, person_id, user)
 
 
@@ -49,9 +48,9 @@ def person_masterrecords(
     user: UKRDCUser = Security(auth.get_user),
     jtrace: Session = Depends(get_jtrace),
 ):
-    """Retreive a particular person record from the EMPI"""
-    # Find all related master record IDs by recursing through link records
-    related_master_ids, _ = find_related_ids(jtrace, set(), {person_id})
+    """Retreive MasterRecords directly linked to a particular Person record"""
+    person: Person = get_person(jtrace, person_id, user)
+    related_master_ids = [link.master_id for link in person.link_records]
     return (
         get_masterrecords(jtrace, user)
         .filter(MasterRecord.id.in_(related_master_ids))
