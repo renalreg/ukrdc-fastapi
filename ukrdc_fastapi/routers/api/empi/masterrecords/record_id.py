@@ -19,7 +19,7 @@ from ukrdc_fastapi.query.workitems import get_workitems
 from ukrdc_fastapi.schemas.base import OrmModel
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema, PersonSchema, WorkItemSchema
 from ukrdc_fastapi.schemas.errors import MessageSchema
-from ukrdc_fastapi.schemas.patientrecord import PatientRecordShortSchema
+from ukrdc_fastapi.schemas.patientrecord import PatientRecordSchema
 from ukrdc_fastapi.utils.links import find_related_ids
 from ukrdc_fastapi.utils.paginate import Page, paginate
 
@@ -90,11 +90,7 @@ def master_record_related(
     jtrace: Session = Depends(get_jtrace),
 ):
     """Retreive a list of other master records related to a particular master record"""
-    return (
-        get_masterrecords_related_to_masterrecord(jtrace, record_id, user)
-        .filter(MasterRecord.id != record_id)
-        .all()
-    )
+    return get_masterrecords_related_to_masterrecord(jtrace, record_id, user).all()
 
 
 @router.get(
@@ -169,7 +165,7 @@ def master_record_persons(
 
 @router.get(
     "/patientrecords/",
-    response_model=list[PatientRecordShortSchema],
+    response_model=list[PatientRecordSchema],
     dependencies=[Security(auth.permission(auth.permissions.READ_RECORDS))],
 )
 def master_record_patientrecords(

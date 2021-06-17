@@ -13,7 +13,7 @@ class ProgramMembershipSchema(OrmModel):
     to_time: Optional[datetime.date]
 
 
-class PatientRecordShortSchema(OrmModel):
+class PatientRecordSchema(OrmModel):
     pid: str
     sendingfacility: str
     sendingextract: str
@@ -21,6 +21,9 @@ class PatientRecordShortSchema(OrmModel):
     ukrdcid: str
     repository_creation_date: datetime.datetime
     repository_update_date: datetime.datetime
+
+    program_memberships: list[ProgramMembershipSchema]
+    patient: PatientSchema
 
     links = LinkSet(
         {
@@ -36,8 +39,3 @@ class PatientRecordShortSchema(OrmModel):
             "exportRADAR": UrlFor("patient_export_radar", {"pid": "<pid>"}),
         }
     )
-
-
-class PatientRecordSchema(PatientRecordShortSchema):
-    program_memberships: list[ProgramMembershipSchema]
-    patient: PatientSchema
