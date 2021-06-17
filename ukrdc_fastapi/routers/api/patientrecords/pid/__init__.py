@@ -24,10 +24,7 @@ from ukrdc_fastapi.schemas.laborder import (
 )
 from ukrdc_fastapi.schemas.medication import MedicationSchema
 from ukrdc_fastapi.schemas.observation import ObservationSchema
-from ukrdc_fastapi.schemas.patientrecord import (
-    PatientRecordSchema,
-    PatientRecordSchema,
-)
+from ukrdc_fastapi.schemas.patientrecord import PatientRecordSchema
 from ukrdc_fastapi.schemas.survey import SurveySchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
 
