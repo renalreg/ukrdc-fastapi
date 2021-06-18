@@ -43,7 +43,8 @@ def get_workitems(
     jtrace: Session,
     user: UKRDCUser,
     statuses: list[int] = None,
-    master_id: Optional[int] = None,
+    master_id: Optional[list[int]] = None,
+    person_id: Optional[list[int]] = None,
     facility: Optional[str] = None,
     since: Optional[datetime.datetime] = None,
     until: Optional[datetime.datetime] = None,
@@ -86,8 +87,14 @@ def get_workitems(
     if until:
         workitems = workitems.filter(WorkItem.last_updated <= until)
 
+    filters = []
     if master_id:
-        workitems = workitems.filter(WorkItem.master_id == master_id)
+        filters.append(WorkItem.master_id.in_(master_id))
+    if person_id:
+        filters.append(WorkItem.person_id.in_(person_id))
+
+    if master_id or person_id:
+        workitems = workitems.filter(or_(*filters))
 
     # Get a query of open workitems
     workitems = workitems.filter(WorkItem.status.in_(status_list))

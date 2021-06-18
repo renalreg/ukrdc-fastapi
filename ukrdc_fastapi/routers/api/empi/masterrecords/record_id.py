@@ -143,8 +143,12 @@ def master_record_workitems(
     jtrace: Session = Depends(get_jtrace),
 ):
     """Retreive a list of work items related to a particular master record."""
-    record: MasterRecord = get_masterrecord(jtrace, record_id, user)
-    return get_workitems(jtrace, user, master_id=record.id).all()
+    related: list[MasterRecord] = get_masterrecords_related_to_masterrecord(
+        jtrace, record_id, user
+    ).all()
+    return get_workitems(
+        jtrace, user, master_id=[record.id for record in related]
+    ).all()
 
 
 @router.get(

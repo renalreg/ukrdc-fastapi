@@ -43,7 +43,7 @@ def test_get_workitems_until(jtrace_session, superuser):
 
 
 def test_get_workitems_masterid(jtrace_session, superuser):
-    all_items = workitems.get_workitems(jtrace_session, superuser, master_id=1)
+    all_items = workitems.get_workitems(jtrace_session, superuser, master_id=[1])
     assert {item.id for item in all_items} == {1, 2}
 
 
