@@ -1,8 +1,7 @@
 import datetime
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Security
-from httpx import Response
+from fastapi import APIRouter, Depends, Security
 from mirth_client import MirthAPI
 from pydantic import BaseModel
 from redis import Redis
@@ -12,19 +11,15 @@ from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_mirth, get_
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.query.errors import get_errors
 from ukrdc_fastapi.query.mirth.merge import merge_person_into_master_record
-from ukrdc_fastapi.query.mirth.workitems import update_workitem
+from ukrdc_fastapi.query.mirth.unlink import unlink_person_from_master_record
+from ukrdc_fastapi.query.mirth.workitems import close_workitem, update_workitem
 from ukrdc_fastapi.query.workitems import (
     get_workitem,
     get_workitems_related_to_workitem,
 )
 from ukrdc_fastapi.schemas.empi import WorkItemSchema
 from ukrdc_fastapi.schemas.errors import MessageSchema
-from ukrdc_fastapi.utils.mirth import (
-    MirthMessageResponseSchema,
-    build_close_workitem_message,
-    build_unlink_message,
-    get_channel_from_name,
-)
+from ukrdc_fastapi.utils.mirth import MirthMessageResponseSchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
 
 router = APIRouter(prefix="/{workitem_id}")
@@ -147,25 +142,10 @@ async def workitem_close(
     redis: Redis = Depends(get_redis),
 ):
     """Update and close a particular work item"""
-    # TODO: Move logic into query.mirth
     workitem = get_workitem(jtrace, workitem_id, user)
-
-    channel = await get_channel_from_name("WorkItemUpdate", mirth, redis)
-    if not channel:
-        raise HTTPException(
-            500, detail="ID for WorkItemUpdate channel not found"
-        )  # pragma: no cover
-
-    message: str = build_close_workitem_message(
-        workitem.id, args.comment or "", user.email
+    return await close_workitem(
+        jtrace, workitem.id, user, mirth, redis, comment=args.comment
     )
-
-    response: Response = await channel.post_message(message)
-
-    if response.status_code != 204:
-        raise HTTPException(500, detail=response.text)
-
-    return MirthMessageResponseSchema(status="success", message=message)
 
 
 @router.post(
@@ -208,22 +188,7 @@ async def workitem_unlink(
     redis: Redis = Depends(get_redis),
 ):
     """Unlink the master record and person record in a particular work item"""
-    # TODO: Move logic into query.mirth
     workitem = get_workitem(jtrace, workitem_id, user)
-
-    channel = await get_channel_from_name("Unlink", mirth, redis)
-    if not channel:
-        raise HTTPException(
-            500, detail="ID for Unlink channel not found"
-        )  # pragma: no cover
-
-    message: str = build_unlink_message(
-        workitem.master_id, workitem.person_id, user.email
+    return await unlink_person_from_master_record(
+        workitem.person_id, workitem.master_id, user, jtrace, mirth, redis
     )
-
-    response: Response = await channel.post_message(message)
-
-    if response.status_code != 204:
-        raise HTTPException(500, detail=response.text)
-
-    return MirthMessageResponseSchema(status="success", message=message)

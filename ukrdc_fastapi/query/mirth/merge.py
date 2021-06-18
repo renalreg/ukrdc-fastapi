@@ -7,6 +7,7 @@ from ukrdc_sqla.empi import MasterRecord
 
 from ukrdc_fastapi.dependencies.auth import UKRDCUser
 from ukrdc_fastapi.query.masterrecords import get_masterrecord
+from ukrdc_fastapi.query.persons import get_person
 from ukrdc_fastapi.utils.links import PersonMasterLink, find_related_link_records
 from ukrdc_fastapi.utils.mirth import (
     MirthMessageResponseSchema,
@@ -53,11 +54,14 @@ async def merge_person_into_master_record(
     mirth: MirthAPI,
     redis: Redis,
 ):
-    """Merge a particular work item"""
+    """Merge a particular Person record into a Master Record"""
+    # Get records to assert user permission
+    person = get_person(jtrace, person_id, user)
+    master = get_masterrecord(jtrace, master_id, user)
 
     # Get a set of related link record (id, person_id, master_id) tuples
     related_person_master_links: set[PersonMasterLink] = find_related_link_records(
-        jtrace, master_id, person_id=person_id
+        jtrace, master.id, person_id=person.id
     )
 
     # Find all related master records within the UKRDC
