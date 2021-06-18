@@ -1,33 +1,26 @@
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Security
-from fastapi.exceptions import HTTPException
-from httpx import Response
 from mirth_client.mirth import MirthAPI
 from pydantic.fields import Field
 from pydantic.main import BaseModel
 from redis import Redis
 from sqlalchemy.orm import Session
-from ukrdc_sqla.empi import MasterRecord
 
 from ukrdc_fastapi.dependencies import get_jtrace, get_mirth, get_redis
 from ukrdc_fastapi.dependencies.auth import UKRDCUser, auth
-from ukrdc_fastapi.query.masterrecords import get_masterrecord, get_masterrecords
+from ukrdc_fastapi.query.masterrecords import get_masterrecords
 from ukrdc_fastapi.query.mirth.merge import merge_master_records
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema
-from ukrdc_fastapi.utils.mirth import (
-    MirthMessageResponseSchema,
-    build_merge_message,
-    get_channel_from_name,
-)
+from ukrdc_fastapi.utils.mirth import MirthMessageResponseSchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
 
 from . import record_id
 
 
 class MergeRequestSchema(BaseModel):
-    superceding: str = Field(..., title="Superceding master-record ID")
-    superceeded: str = Field(..., title="Superceeded master-record ID")
+    superceding: int = Field(..., title="Superceding master-record ID")
+    superceeded: int = Field(..., title="Superceeded master-record ID")
 
 
 router = APIRouter(tags=["Patient Index/Master Records"])

@@ -16,16 +16,16 @@ from ukrdc_fastapi.utils.mirth import (
 
 
 async def merge_master_records(
-    superceding: int,
-    superceeded: int,
+    superceding_id: int,
+    superceeded_id: int,
     user: UKRDCUser,
     jtrace: Session,
     mirth: MirthAPI,
     redis: Redis,
 ) -> MirthMessageResponseSchema:
     """Merge a pair of MasterRecords"""
-    superceding: MasterRecord = get_masterrecord(jtrace, superceding, user)
-    superceeded: MasterRecord = get_masterrecord(jtrace, superceeded, user)
+    superceding: MasterRecord = get_masterrecord(jtrace, superceding_id, user)
+    superceeded: MasterRecord = get_masterrecord(jtrace, superceeded_id, user)
 
     channel = await get_channel_from_name("Merge Patient", mirth, redis)
     if not channel:
