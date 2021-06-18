@@ -63,14 +63,14 @@ def master_record_statistics(
 
     errors = get_errors(errorsdb, user, nis=[record.nationalid])
 
-    workitems = jtrace.query(WorkItem).filter(
-        WorkItem.master_id == record.id,
-        WorkItem.status == 1,
+    related: list[MasterRecord] = get_masterrecords_related_to_masterrecord(
+        jtrace, record_id, user
+    )
+    workitems = get_workitems(
+        jtrace, user, master_id=[record.id for record in related.all()]
     )
 
-    ukrdc_records = get_masterrecords_related_to_masterrecord(
-        jtrace, record.id, user
-    ).filter(MasterRecord.nationalid_type == "UKRDC")
+    ukrdc_records = related.filter(MasterRecord.nationalid_type == "UKRDC")
 
     return MasterRecordStatisticsSchema(
         workitems=workitems.count(),
