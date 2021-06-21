@@ -3,7 +3,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, Security
 from sqlalchemy.orm import Session
-from ukrdc_sqla.empi import MasterRecord, Person, WorkItem
+from ukrdc_sqla.empi import MasterRecord, Person
 from ukrdc_sqla.ukrdc import PatientRecord
 
 from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_ukrdc3
@@ -63,14 +63,12 @@ def master_record_statistics(
 
     errors = get_errors(errorsdb, user, nis=[record.nationalid])
 
-    workitems = jtrace.query(WorkItem).filter(
-        WorkItem.master_id == record.id,
-        WorkItem.status == 1,
+    related = get_masterrecords_related_to_masterrecord(jtrace, record_id, user)
+    workitems = get_workitems(
+        jtrace, user, master_id=[record.id for record in related.all()]
     )
 
-    ukrdc_records = get_masterrecords_related_to_masterrecord(
-        jtrace, record.id, user
-    ).filter(MasterRecord.nationalid_type == "UKRDC")
+    ukrdc_records = related.filter(MasterRecord.nationalid_type == "UKRDC")
 
     return MasterRecordStatisticsSchema(
         workitems=workitems.count(),
@@ -143,8 +141,12 @@ def master_record_workitems(
     jtrace: Session = Depends(get_jtrace),
 ):
     """Retreive a list of work items related to a particular master record."""
-    record: MasterRecord = get_masterrecord(jtrace, record_id, user)
-    return get_workitems(jtrace, user, master_id=record.id).all()
+    related: list[MasterRecord] = get_masterrecords_related_to_masterrecord(
+        jtrace, record_id, user
+    ).all()
+    return get_workitems(
+        jtrace, user, master_id=[record.id for record in related]
+    ).all()
 
 
 @router.get(

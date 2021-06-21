@@ -2,9 +2,6 @@ import datetime
 from typing import Optional
 
 from fastapi.exceptions import HTTPException
-from httpx import Response
-from mirth_client.mirth import MirthAPI
-from redis import Redis
 from sqlalchemy.orm.query import Query
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.expression import or_
@@ -12,11 +9,6 @@ from ukrdc_sqla.empi import Person, PidXRef, WorkItem
 
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
 from ukrdc_fastapi.query.common import PermissionsError, person_belongs_to_units
-from ukrdc_fastapi.utils.mirth import (
-    MirthMessageResponseSchema,
-    build_update_workitem_message,
-    get_channel_from_name,
-)
 
 
 def _apply_query_permissions(query: Query, user: UKRDCUser):
@@ -43,7 +35,8 @@ def get_workitems(
     jtrace: Session,
     user: UKRDCUser,
     statuses: list[int] = None,
-    master_id: Optional[int] = None,
+    master_id: Optional[list[int]] = None,
+    person_id: Optional[list[int]] = None,
     facility: Optional[str] = None,
     since: Optional[datetime.datetime] = None,
     until: Optional[datetime.datetime] = None,
@@ -86,8 +79,14 @@ def get_workitems(
     if until:
         workitems = workitems.filter(WorkItem.last_updated <= until)
 
+    filters = []
     if master_id:
-        workitems = workitems.filter(WorkItem.master_id == master_id)
+        filters.append(WorkItem.master_id.in_(master_id))
+    if person_id:
+        filters.append(WorkItem.person_id.in_(person_id))
+
+    if master_id or person_id:
+        workitems = workitems.filter(or_(*filters))
 
     # Get a query of open workitems
     workitems = workitems.filter(WorkItem.status.in_(status_list))
@@ -114,53 +113,6 @@ def get_workitem(jtrace: Session, workitem_id: int, user: UKRDCUser) -> WorkItem
         raise HTTPException(404, detail="Work item not found")
     _assert_permission(workitem, user)
     return workitem
-
-
-async def update_workitem(
-    jtrace: Session,
-    workitem_id: int,
-    user: UKRDCUser,
-    mirth: MirthAPI,
-    redis: Redis,
-    status: Optional[int] = None,
-    comment: Optional[str] = None,
-) -> MirthMessageResponseSchema:
-    """Update a WorkItem by ID if it exists and the user has permission
-
-    Args:
-        jtrace (Session): JTRACE SQLAlchemy session
-        workitem_id (int): WorkItem ID
-        user (UKRDCUser): User object
-        mirth (MirthAPI): Mirth API instance
-        redis (Redis): Redis session
-        status (int, optional): New WorkItem status
-        comment (str, optional): User comment to add to WorkItem
-
-    Returns:
-        MirthMessageResponseSchema: Mirth API response object
-    """
-    workitem = get_workitem(jtrace, workitem_id, user)
-
-    channel = await get_channel_from_name("WorkItemUpdate", mirth, redis)
-
-    if not channel:
-        raise HTTPException(
-            500, detail="ID for WorkItemUpdate channel not found"
-        )  # pragma: no cover
-
-    message: str = build_update_workitem_message(
-        workitem.id,
-        status or workitem.status,
-        comment or workitem.description,
-        user.email,
-    )
-
-    response: Response = await channel.post_message(message)
-
-    if response.status_code != 204:
-        raise HTTPException(500, detail=response.text)
-
-    return MirthMessageResponseSchema(status="success", message=message)
 
 
 def get_workitems_related_to_workitem(
