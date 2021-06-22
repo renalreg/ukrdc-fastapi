@@ -135,7 +135,7 @@ def workitem_errors(
 )
 async def workitem_close(
     workitem_id: int,
-    args: CloseWorkItemRequestSchema,
+    args: Optional[CloseWorkItemRequestSchema],
     jtrace: Session = Depends(get_jtrace),
     user: UKRDCUser = Security(auth.get_user),
     mirth: MirthAPI = Depends(get_mirth),
