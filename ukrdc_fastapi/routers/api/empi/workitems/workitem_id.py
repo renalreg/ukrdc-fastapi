@@ -144,7 +144,12 @@ async def workitem_close(
     """Update and close a particular work item"""
     workitem = get_workitem(jtrace, workitem_id, user)
     return await close_workitem(
-        jtrace, workitem.id, user, mirth, redis, comment=args.comment
+        jtrace,
+        workitem.id,
+        user,
+        mirth,
+        redis,
+        comment=(args.comment if args else None),
     )
 
 
