@@ -3,7 +3,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, Security
 from sqlalchemy.orm import Session
-from ukrdc_sqla.empi import MasterRecord, Person
+from ukrdc_sqla.empi import LinkRecord, MasterRecord, Person
 from ukrdc_sqla.ukrdc import PatientRecord
 
 from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_ukrdc3
@@ -17,7 +17,12 @@ from ukrdc_fastapi.query.patientrecords import get_patientrecords
 from ukrdc_fastapi.query.persons import get_persons
 from ukrdc_fastapi.query.workitems import get_workitems
 from ukrdc_fastapi.schemas.base import OrmModel
-from ukrdc_fastapi.schemas.empi import MasterRecordSchema, PersonSchema, WorkItemSchema
+from ukrdc_fastapi.schemas.empi import (
+    LinkRecordSchema,
+    MasterRecordSchema,
+    PersonSchema,
+    WorkItemSchema,
+)
 from ukrdc_fastapi.schemas.errors import MessageSchema
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordSchema
 from ukrdc_fastapi.utils.links import find_related_ids
@@ -75,6 +80,25 @@ def master_record_statistics(
         errors=errors.count(),
         ukrdcids=ukrdc_records.count(),
     )
+
+
+@router.get(
+    "/linkrecords/",
+    response_model=list[LinkRecordSchema],
+    dependencies=[Security(auth.permission(auth.permissions.READ_RECORDS))],
+)
+def master_record_linkrecords(
+    record_id: int,
+    user: UKRDCUser = Security(auth.get_user),
+    jtrace: Session = Depends(get_jtrace),
+):
+    """Retreive a list of link records related to a particular master record"""
+    # Find record and asserrt permissions
+    records = get_masterrecords_related_to_masterrecord(jtrace, record_id, user).all()
+    link_records: list[LinkRecord] = []
+    for record in records:
+        link_records.extend(record.link_records)
+    return link_records
 
 
 @router.get(
