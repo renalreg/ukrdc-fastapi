@@ -4,7 +4,6 @@ from typing import Optional
 from fastapi.exceptions import HTTPException
 from sqlalchemy.orm.query import Query
 from sqlalchemy.orm.session import Session
-from ukrdc_sqla.empi import MasterRecord
 from ukrdc_sqla.errorsdb import Message
 
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
