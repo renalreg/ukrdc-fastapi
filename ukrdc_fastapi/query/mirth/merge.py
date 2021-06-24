@@ -40,7 +40,7 @@ async def merge_master_records(
 
     response: Response = await channel.post_message(message)
 
-    if response.status_code != 204:
+    if response.status_code >= 400:
         raise HTTPException(500, detail=response.text)
 
     return MirthMessageResponseSchema(status="success", message=message)

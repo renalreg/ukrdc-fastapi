@@ -57,7 +57,7 @@ async def update_workitem(
 
     response: Response = await channel.post_message(message)
 
-    if response.status_code != 204:
+    if response.status_code >= 400:
         raise HTTPException(500, detail=response.text)
 
     return MirthMessageResponseSchema(status="success", message=message)
@@ -96,7 +96,7 @@ async def close_workitem(
 
     response: Response = await channel.post_message(message)
 
-    if response.status_code != 204:
+    if response.status_code >= 400:
         raise HTTPException(500, detail=response.text)
 
     return MirthMessageResponseSchema(status="success", message=message)

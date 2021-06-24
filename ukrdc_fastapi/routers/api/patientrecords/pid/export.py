@@ -36,7 +36,7 @@ async def patient_export_pv(
 
     response: Response = await channel.post_message(message)
 
-    if response.status_code != 204:
+    if response.status_code >= 400:
         raise HTTPException(500, detail=response.text)
 
     return MirthMessageResponseSchema(status="success", message=message)
@@ -61,7 +61,7 @@ async def patient_export_pv_tests(
 
     response: Response = await channel.post_message(message)
 
-    if response.status_code != 204:
+    if response.status_code >= 400:
         raise HTTPException(500, detail=response.text)
 
     return MirthMessageResponseSchema(status="success", message=message)
@@ -86,7 +86,7 @@ async def patient_export_pv_docs(
 
     response: Response = await channel.post_message(message)
 
-    if response.status_code != 204:
+    if response.status_code >= 400:
         raise HTTPException(500, detail=response.text)
 
     return MirthMessageResponseSchema(status="success", message=message)
@@ -111,7 +111,7 @@ async def patient_export_radar(
 
     response: Response = await channel.post_message(message)
 
-    if response.status_code != 204:
+    if response.status_code >= 400:
         raise HTTPException(500, detail=response.text)
 
     return MirthMessageResponseSchema(status="success", message=message)

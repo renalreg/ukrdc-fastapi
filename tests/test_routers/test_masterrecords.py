@@ -6,6 +6,7 @@ from ukrdc_fastapi.routers.api.empi.masterrecords.record_id import (
     MasterRecordStatisticsSchema,
 )
 from ukrdc_fastapi.schemas.empi import (
+    LinkRecordSchema,
     MasterRecordSchema,
     PersonSchema,
     WorkItemShortSchema,
@@ -72,6 +73,15 @@ def test_masterrecord_statistics(client):
     assert stats.workitems == 2
     assert stats.errors == 1
     assert stats.ukrdcids == 1
+
+
+def test_masterrecord_linkrecords(client):
+    response = client.get("/api/empi/masterrecords/1/linkrecords")
+    assert response.status_code == 200
+
+    records = [LinkRecordSchema(**item) for item in response.json()]
+    returned_ids = {item.id for item in records}
+    assert returned_ids == {1, 2}
 
 
 def test_masterrecord_workitems(client):

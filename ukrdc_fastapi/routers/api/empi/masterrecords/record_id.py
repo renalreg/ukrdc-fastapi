@@ -3,12 +3,12 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, Security
 from sqlalchemy.orm import Session
-from ukrdc_sqla.empi import MasterRecord, Person
+from ukrdc_sqla.empi import LinkRecord, MasterRecord, Person
 from ukrdc_sqla.ukrdc import PatientRecord
 
 from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_ukrdc3
 from ukrdc_fastapi.dependencies.auth import UKRDCUser, auth
-from ukrdc_fastapi.query.errors import get_errors
+from ukrdc_fastapi.query.errors import get_errors_related_to_masterrecord
 from ukrdc_fastapi.query.masterrecords import (
     get_masterrecord,
     get_masterrecords_related_to_masterrecord,
@@ -17,7 +17,12 @@ from ukrdc_fastapi.query.patientrecords import get_patientrecords
 from ukrdc_fastapi.query.persons import get_persons
 from ukrdc_fastapi.query.workitems import get_workitems
 from ukrdc_fastapi.schemas.base import OrmModel
-from ukrdc_fastapi.schemas.empi import MasterRecordSchema, PersonSchema, WorkItemSchema
+from ukrdc_fastapi.schemas.empi import (
+    LinkRecordSchema,
+    MasterRecordSchema,
+    PersonSchema,
+    WorkItemSchema,
+)
 from ukrdc_fastapi.schemas.errors import MessageSchema
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordSchema
 from ukrdc_fastapi.utils.links import find_related_ids
@@ -61,9 +66,9 @@ def master_record_statistics(
     """Retreive a particular master record from the EMPI"""
     record: MasterRecord = get_masterrecord(jtrace, record_id, user)
 
-    errors = get_errors(errorsdb, user, nis=[record.nationalid])
+    errors = get_errors_related_to_masterrecord(errorsdb, jtrace, user, record.id)
 
-    related = get_masterrecords_related_to_masterrecord(jtrace, record_id, user)
+    related = get_masterrecords_related_to_masterrecord(jtrace, record.id, user)
     workitems = get_workitems(
         jtrace, user, master_id=[record.id for record in related.all()]
     )
@@ -75,6 +80,25 @@ def master_record_statistics(
         errors=errors.count(),
         ukrdcids=ukrdc_records.count(),
     )
+
+
+@router.get(
+    "/linkrecords/",
+    response_model=list[LinkRecordSchema],
+    dependencies=[Security(auth.permission(auth.permissions.READ_RECORDS))],
+)
+def master_record_linkrecords(
+    record_id: int,
+    user: UKRDCUser = Security(auth.get_user),
+    jtrace: Session = Depends(get_jtrace),
+):
+    """Retreive a list of link records related to a particular master record"""
+    # Find record and asserrt permissions
+    records = get_masterrecords_related_to_masterrecord(jtrace, record_id, user).all()
+    link_records: list[LinkRecord] = []
+    for record in records:
+        link_records.extend(record.link_records)
+    return link_records
 
 
 @router.get(
@@ -110,24 +134,11 @@ def master_record_errors(
     Retreive a list of errors related to a particular master record.
     By default returns message created within the last 365 days.
     """
-    related_master_records = get_masterrecords_related_to_masterrecord(
-        jtrace, record_id, user
+    return paginate(
+        get_errors_related_to_masterrecord(
+            errorsdb, jtrace, user, record_id, status, facility, since, until
+        )
     )
-
-    related_national_ids: list[str] = [
-        record.nationalid for record in related_master_records.all()
-    ]
-
-    messages = get_errors(
-        errorsdb,
-        user,
-        status=status,
-        nis=related_national_ids,
-        facility=facility,
-        since=since,
-        until=until,
-    )
-    return paginate(messages)
 
 
 @router.get(

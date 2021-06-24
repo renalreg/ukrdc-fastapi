@@ -135,7 +135,7 @@ def workitem_errors(
 )
 async def workitem_close(
     workitem_id: int,
-    args: CloseWorkItemRequestSchema,
+    args: Optional[CloseWorkItemRequestSchema],
     jtrace: Session = Depends(get_jtrace),
     user: UKRDCUser = Security(auth.get_user),
     mirth: MirthAPI = Depends(get_mirth),
@@ -144,7 +144,12 @@ async def workitem_close(
     """Update and close a particular work item"""
     workitem = get_workitem(jtrace, workitem_id, user)
     return await close_workitem(
-        jtrace, workitem.id, user, mirth, redis, comment=args.comment
+        jtrace,
+        workitem.id,
+        user,
+        mirth,
+        redis,
+        comment=(args.comment if args else None),
     )
 
 
