@@ -55,7 +55,7 @@ def _get_workitems_stats(jtrace: Session, redis: Redis, refresh: bool = False):
     workitems = WorkItemsDashSchema(**open_workitems_stats.dict())
     redis.hset("dashboard:workitems", mapping=open_workitems_stats.dict())  # type: ignore
     # Remove cached statistics after 15 minutes. Next request will re-query
-    redis.expire("dashboard:workitems", 900)
+    redis.expire("dashboard:workitems", settings.cache_dashboard_seconds)
     return workitems
 
 
@@ -71,7 +71,7 @@ def _get_empi_stats(jtrace: Session, redis: Redis, refresh: bool = False):
     ukrdcrecords = UKRDCRecordsDashSchema(**ukrdc_masterrecords_stats.dict())
     redis.hset("dashboard:ukrdcrecords", mapping=ukrdc_masterrecords_stats.dict())  # type: ignore
     # Remove cached statistics after 15 minutes. Next request will re-query
-    redis.expire("dashboard:ukrdcrecords", 900)
+    redis.expire("dashboard:ukrdcrecords", settings.cache_dashboard_seconds)
     return ukrdcrecords
 
 
