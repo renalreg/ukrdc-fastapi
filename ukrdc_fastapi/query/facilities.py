@@ -118,7 +118,9 @@ def _get_and_cache_facility(
             records_with_errors=_get_error_ni_count(
                 errorsdb, auth.superuser, facility=code.code
             ),
-            patient_records=_get_record_stats(ukrdc3, auth.superuser, facility=code.code),
+            patient_records=_get_record_stats(
+                ukrdc3, auth.superuser, facility=code.code
+            ),
             errors=_get_error_stats(errorsdb, auth.superuser, facility=code.code),
         )
         redis.set(redis_key, statistics.json())  # type: ignore
@@ -134,7 +136,6 @@ def _get_and_cache_facility(
     )
 
     return facility_details
-
 
 
 def get_facilities(

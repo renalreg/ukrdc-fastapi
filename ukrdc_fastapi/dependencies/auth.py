@@ -105,6 +105,7 @@ class URKDCAuth(OktaAuth):
             scopes=["openid", "profile", "email", "offline_access"],
         )
 
+
 auth = URKDCAuth(
     settings.oauth_issuer,
     settings.oauth_audience,
