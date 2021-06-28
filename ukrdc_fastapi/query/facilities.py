@@ -9,7 +9,7 @@ from ukrdc_sqla.errorsdb import Message
 from ukrdc_sqla.ukrdc import Code, PatientRecord
 
 from ukrdc_fastapi.config import settings
-from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
+from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.query.common import PermissionsError
 from ukrdc_fastapi.query.errors import get_errors
 from ukrdc_fastapi.query.patientrecords import get_patientrecords
@@ -99,6 +99,44 @@ def _get_record_stats(
     return total_day_prev(query, PatientRecord, "creation_date")
 
 
+def _get_and_cache_facility(
+    code: Code,
+    ukrdc3: Session,
+    errorsdb: Session,
+    redis: Redis,
+) -> FacilityDetailsSchema:
+    """
+    Retrieve, or generate and cache, facility statistics.
+    Data is retreieved as the internal superuser to ensure all requests
+    end up with the same counts. Permissions are handled downstream, in
+    `get_facility(...)`
+    """
+    # Check for cached statistics
+    redis_key: str = f"ukrdc3:facilities:{code.code}:statistics"
+    if not redis.exists(redis_key):
+        statistics = FacilityStatisticsSchema(
+            records_with_errors=_get_error_ni_count(
+                errorsdb, auth.superuser, facility=code.code
+            ),
+            patient_records=_get_record_stats(ukrdc3, auth.superuser, facility=code.code),
+            errors=_get_error_stats(errorsdb, auth.superuser, facility=code.code),
+        )
+        redis.set(redis_key, statistics.json())  # type: ignore
+        redis.expire(redis_key, settings.cache_statistics_seconds)
+    else:
+        statistics_json: str = redis.get(redis_key)  # type: ignore
+        statistics = FacilityStatisticsSchema.parse_raw(statistics_json)
+
+    facility_details = FacilityDetailsSchema(
+        id=code.code,
+        description=code.description,
+        statistics=statistics,
+    )
+
+    return facility_details
+
+
+
 def get_facilities(
     ukrdc3: Session, redis: Redis, user: UKRDCUser
 ) -> list[FacilitySchema]:
@@ -171,26 +209,5 @@ def get_facility(
     if (Permissions.UNIT_WILDCARD not in units) and (code.code not in units):
         raise PermissionsError()
 
-    # Check for cached statistics
-    redis_key: str = f"ukrdc3:facilities:{facility_code}:statistics"
-    if not redis.exists(redis_key):
-        statistics = FacilityStatisticsSchema(
-            records_with_errors=_get_error_ni_count(
-                errorsdb, user, facility=facility_code
-            ),
-            patient_records=_get_record_stats(ukrdc3, user, facility=facility_code),
-            errors=_get_error_stats(errorsdb, user, facility=facility_code),
-        )
-        redis.set(redis_key, statistics.json())  # type: ignore
-        redis.expire(redis_key, settings.cache_statistics_seconds)
-    else:
-        statistics_json: str = redis.get(redis_key)  # type: ignore
-        statistics = FacilityStatisticsSchema.parse_raw(statistics_json)
-
-    facility_details = FacilityDetailsSchema(
-        id=code.code,
-        description=code.description,
-        statistics=statistics,
-    )
-
-    return facility_details
+    # Get cached statistics
+    return _get_and_cache_facility(code, ukrdc3, errorsdb, redis)
