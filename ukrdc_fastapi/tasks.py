@@ -10,8 +10,8 @@ from ukrdc_fastapi.dependencies.database import (
     JtraceSession,
     Ukrdc3Session,
 )
+from ukrdc_fastapi.query.dashboard import get_empi_stats, get_workitems_stats
 from ukrdc_fastapi.query.facilities import _get_and_cache_facility
-from ukrdc_fastapi.routers.api.dashboard import _get_empi_stats, _get_workitems_stats
 
 
 @repeat_every(seconds=settings.cache_statistics_seconds)
@@ -31,5 +31,5 @@ def cache_dash_stats() -> None:
     jtrace = JtraceSession()
     redis = get_redis()
     logging.info("Refreshing admin statistics")
-    _get_workitems_stats(jtrace, redis, refresh=True)
-    _get_empi_stats(jtrace, redis, refresh=True)
+    get_workitems_stats(jtrace, redis, refresh=True)
+    get_empi_stats(jtrace, redis, refresh=True)
