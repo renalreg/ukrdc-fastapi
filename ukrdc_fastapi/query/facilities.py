@@ -164,7 +164,7 @@ def get_facility(
     )
 
     if not code:
-        raise HTTPException(404, detail="Lab order not found")
+        raise HTTPException(404, detail="Facility not found")
 
     # Assert permissions
     units = Permissions.unit_codes(user.permissions)
