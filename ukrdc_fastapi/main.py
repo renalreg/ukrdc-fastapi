@@ -16,6 +16,7 @@ from ukrdc_fastapi.dependencies.auth import auth
 from ukrdc_fastapi.dependencies.database import Ukrdc3Session
 from ukrdc_fastapi.dependencies.sentry import add_sentry
 from ukrdc_fastapi.routers import api
+from ukrdc_fastapi.tasks import cache_all_facilities, cache_dash_stats
 
 # Create app
 
@@ -58,7 +59,10 @@ add_sentry(app)
 add_pagination(app)
 HyperModel.init_app(app)
 
-# Run startup checks
+# Attach event handlers
+
+app.router.add_event_handler("startup", cache_dash_stats)
+app.router.add_event_handler("startup", cache_all_facilities)
 
 
 class StartupError(RuntimeError):

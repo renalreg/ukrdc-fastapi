@@ -96,6 +96,20 @@ class URKDCAuth(OktaAuth):
         ]
         return [perm.split(":")[-1] for perm in unit_permissions]
 
+    @property
+    def superuser(self):
+        """Generate a superuser object for internal use only
+
+        Returns:
+            UKRDCUser: User object with all available permissions
+        """
+        return UKRDCUser(
+            id="SUPERUSER",
+            email="SUPERUSER@UKRDC_FASTAPI",
+            permissions=self.permissions.all(),
+            scopes=["openid", "profile", "email", "offline_access"],
+        )
+
 
 auth = URKDCAuth(
     settings.oauth_issuer,
