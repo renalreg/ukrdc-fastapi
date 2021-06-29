@@ -21,7 +21,19 @@ class UKRDCRecordsDashSchema(_DayPrevTotalSchema):
     href = UrlFor("master_records")
 
 
-def get_workitems_stats(jtrace: Session, redis: Redis, refresh: bool = False):
+def get_workitems_stats(
+    jtrace: Session, redis: Redis, refresh: bool = False
+) -> WorkItemsDashSchema:
+    """Get and cache statistics about workitems from all facilities
+
+    Args:
+        jtrace (Session): SQLAlchemy session
+        redis (Redis): Redis session
+        refresh (bool, optional): Force refresh, ignoring cache. Defaults to False.
+
+    Returns:
+        WorkItemsDashSchema: WorkItem statistics
+    """
     if redis.exists("dashboard:workitems") and not refresh:
         return WorkItemsDashSchema(**redis.hgetall("dashboard:workitems"))
 
@@ -36,7 +48,19 @@ def get_workitems_stats(jtrace: Session, redis: Redis, refresh: bool = False):
     return workitems
 
 
-def get_empi_stats(jtrace: Session, redis: Redis, refresh: bool = False):
+def get_empi_stats(
+    jtrace: Session, redis: Redis, refresh: bool = False
+) -> UKRDCRecordsDashSchema:
+    """Get and cache statistics about records from all facilities
+
+    Args:
+        jtrace (Session): SQLAlchemy session
+        redis (Redis): Redis session
+        refresh (bool, optional): Force refresh, ignoring cache. Defaults to False.
+
+    Returns:
+        UKRDCRecordsDashSchema: EMPI statistics
+    """
     if redis.exists("dashboard:ukrdcrecords") and not refresh:
         return UKRDCRecordsDashSchema(**redis.hgetall("dashboard:ukrdcrecords"))
 

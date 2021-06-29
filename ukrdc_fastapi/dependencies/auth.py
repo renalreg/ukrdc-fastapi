@@ -98,6 +98,11 @@ class URKDCAuth(OktaAuth):
 
     @property
     def superuser(self):
+        """Generate a superuser object for internal use only
+
+        Returns:
+            UKRDCUser: User object with all available permissions
+        """
         return UKRDCUser(
             id="SUPERUSER",
             email="SUPERUSER@UKRDC_FASTAPI",
