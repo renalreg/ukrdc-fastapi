@@ -1,39 +1,21 @@
-import datetime
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Security
-from fastapi_hypermodel import HyperModel, UrlFor
-from mirth_client.models import ChannelStatistics
 from pydantic import BaseModel
 from redis import Redis
 from sqlalchemy.orm import Session
-from ukrdc_sqla.empi import MasterRecord, WorkItem
 
 from ukrdc_fastapi.config import settings
 from ukrdc_fastapi.dependencies import get_jtrace, get_redis
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
-from ukrdc_fastapi.utils.statistics import TotalDayPrev, total_day_prev
+from ukrdc_fastapi.query.dashboard import (
+    UKRDCRecordsDashSchema,
+    WorkItemsDashSchema,
+    get_empi_stats,
+    get_workitems_stats,
+)
 
 router = APIRouter(tags=["Summary Dashboard"])
-
-
-class ChannelDashStatisticsSchema(ChannelStatistics):
-    name: Optional[str]
-    updated: Optional[datetime.datetime]
-
-
-class _DayPrevTotalSchema(HyperModel):
-    total: int
-    day: int
-    prev: int
-
-
-class WorkItemsDashSchema(_DayPrevTotalSchema):
-    href = UrlFor("workitems_list")
-
-
-class UKRDCRecordsDashSchema(_DayPrevTotalSchema):
-    href = UrlFor("master_records")
 
 
 class DashboardSchema(BaseModel):
@@ -41,38 +23,6 @@ class DashboardSchema(BaseModel):
     warnings: list[str]
     workitems: Optional[WorkItemsDashSchema] = None
     ukrdcrecords: Optional[UKRDCRecordsDashSchema] = None
-
-
-def _get_workitems_stats(jtrace: Session, redis: Redis, refresh: bool = False):
-    if redis.exists("dashboard:workitems") and not refresh:
-        return WorkItemsDashSchema(**redis.hgetall("dashboard:workitems"))
-
-    open_workitems_stats: TotalDayPrev = total_day_prev(
-        jtrace.query(WorkItem).filter(WorkItem.status == 1),
-        WorkItem,
-        "last_updated",
-    )
-    workitems = WorkItemsDashSchema(**open_workitems_stats.dict())
-    redis.hset("dashboard:workitems", mapping=open_workitems_stats.dict())  # type: ignore
-    # Remove cached statistics after 15 minutes. Next request will re-query
-    redis.expire("dashboard:workitems", 900)
-    return workitems
-
-
-def _get_empi_stats(jtrace: Session, redis: Redis, refresh: bool = False):
-    if redis.exists("dashboard:ukrdcrecords") and not refresh:
-        return UKRDCRecordsDashSchema(**redis.hgetall("dashboard:ukrdcrecords"))
-
-    ukrdc_masterrecords_stats: TotalDayPrev = total_day_prev(
-        jtrace.query(MasterRecord).filter(MasterRecord.nationalid_type == "UKRDC"),
-        MasterRecord,
-        "creation_date",
-    )
-    ukrdcrecords = UKRDCRecordsDashSchema(**ukrdc_masterrecords_stats.dict())
-    redis.hset("dashboard:ukrdcrecords", mapping=ukrdc_masterrecords_stats.dict())  # type: ignore
-    # Remove cached statistics after 15 minutes. Next request will re-query
-    redis.expire("dashboard:ukrdcrecords", 900)
-    return ukrdcrecords
 
 
 @router.get("/", response_model=DashboardSchema)
@@ -89,7 +39,7 @@ def dashboard(
 
     # Admin statistics
     if Permissions.UNIT_WILDCARD in units:
-        dash.workitems = _get_workitems_stats(jtrace, redis, refresh=refresh)
-        dash.ukrdcrecords = _get_empi_stats(jtrace, redis, refresh=refresh)
+        dash.workitems = get_workitems_stats(jtrace, redis, refresh=refresh)
+        dash.ukrdcrecords = get_empi_stats(jtrace, redis, refresh=refresh)
 
     return dash
