@@ -8,7 +8,7 @@ from ukrdc_fastapi.schemas.patientrecord import (
 
 
 def test_records(client):
-    response = client.get("/api/patientrecords")
+    response = client.get("/api/v1/patientrecords")
     assert response.status_code == 200
     records = [PatientRecordSchema(**item) for item in response.json()["items"]]
     record_ids = {record.pid for record in records}
@@ -16,7 +16,7 @@ def test_records(client):
 
 
 def test_record(client):
-    response = client.get("/api/patientrecords/PYTEST01:PV:00000000A")
+    response = client.get("/api/v1/patientrecords/PYTEST01:PV:00000000A")
     assert response.status_code == 200
     record = PatientRecordSchema(**response.json())
     assert record.pid == "PYTEST01:PV:00000000A"
@@ -26,7 +26,7 @@ def test_record(client):
 
 
 def test_record_laborders(client):
-    response = client.get("/api/patientrecords/PYTEST01:PV:00000000A/laborders")
+    response = client.get("/api/v1/patientrecords/PYTEST01:PV:00000000A/laborders")
     assert response.status_code == 200
     orders = [LabOrderShortSchema(**item) for item in response.json()["items"]]
     assert {order.id for order in orders} == {
@@ -39,7 +39,7 @@ def test_record_laborders(client):
 
 
 def test_record_resultitems(client):
-    response = client.get("/api/patientrecords/PYTEST01:PV:00000000A/resultitems")
+    response = client.get("/api/v1/patientrecords/PYTEST01:PV:00000000A/resultitems")
     assert response.status_code == 200
     results = [ResultItemSchema(**item) for item in response.json()["items"]]
     assert {result.id for result in results} == {
@@ -52,7 +52,7 @@ def test_record_resultitems(client):
 
 
 def test_record_observations(client):
-    response = client.get("/api/patientrecords/PYTEST01:PV:00000000A/observations")
+    response = client.get("/api/v1/patientrecords/PYTEST01:PV:00000000A/observations")
     assert response.status_code == 200
     assert response.json()["items"] == [
         {
@@ -89,7 +89,7 @@ def test_record_observations(client):
 
 
 def test_record_medications(client):
-    response = client.get("/api/patientrecords/PYTEST01:PV:00000000A/medications")
+    response = client.get("/api/v1/patientrecords/PYTEST01:PV:00000000A/medications")
     assert response.status_code == 200
     assert response.json() == [
         {
@@ -115,7 +115,7 @@ def test_record_medications(client):
 
 
 def test_record_surveys(client):
-    response = client.get("/api/patientrecords/PYTEST01:PV:00000000A/surveys")
+    response = client.get("/api/v1/patientrecords/PYTEST01:PV:00000000A/surveys")
     assert response.status_code == 200
     assert response.json() == [
         {
@@ -158,7 +158,7 @@ def test_record_surveys(client):
 
 def test_record_export_data(client, httpx_session):
     response = client.post(
-        "/api/patientrecords/PYTEST01:PV:00000000A/export/pv/", json={}
+        "/api/v1/patientrecords/PYTEST01:PV:00000000A/export/pv/", json={}
     )
     assert response.json() == {
         "message": "<result><pid>PYTEST01:PV:00000000A</pid><tests>FULL</tests><documents>FULL</documents></result>",
@@ -168,7 +168,7 @@ def test_record_export_data(client, httpx_session):
 
 def test_record_export_tests(client, httpx_session):
     response = client.post(
-        "/api/patientrecords/PYTEST01:PV:00000000A/export/pv-tests/", json={}
+        "/api/v1/patientrecords/PYTEST01:PV:00000000A/export/pv-tests/", json={}
     )
     assert response.json() == {
         "status": "success",
@@ -178,7 +178,7 @@ def test_record_export_tests(client, httpx_session):
 
 def test_record_export_docs(client, httpx_session):
     response = client.post(
-        "/api/patientrecords/PYTEST01:PV:00000000A/export/pv-docs/", json={}
+        "/api/v1/patientrecords/PYTEST01:PV:00000000A/export/pv-docs/", json={}
     )
     assert response.json() == {
         "message": "<result><pid>PYTEST01:PV:00000000A</pid><documents>FULL</documents></result>",
@@ -188,7 +188,7 @@ def test_record_export_docs(client, httpx_session):
 
 def test_record_export_radar(client, httpx_session):
     response = client.post(
-        "/api/patientrecords/PYTEST01:PV:00000000A/export/radar/", json={}
+        "/api/v1/patientrecords/PYTEST01:PV:00000000A/export/radar/", json={}
     )
     assert response.json() == {
         "message": "<result><pid>PYTEST01:PV:00000000A</pid></result>",

@@ -11,7 +11,7 @@ from ukrdc_fastapi.utils.paginate import Page, paginate
 
 from . import record_id
 
-router = APIRouter(tags=["Patient Index/Master Records"])
+router = APIRouter(tags=["Master Records"])
 router.include_router(record_id.router)
 
 
