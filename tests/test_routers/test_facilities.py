@@ -1,5 +1,5 @@
 def test_facilities(client):
-    response = client.get("/api/facilities")
+    response = client.get("/api/v1/facilities")
     ids = {item.get("id") for item in response.json()}
     assert ids == {
         "TEST_SENDING_FACILITY_1",
@@ -8,7 +8,7 @@ def test_facilities(client):
 
 
 def test_facility_detail(client):
-    response = client.get("/api/facilities/TEST_SENDING_FACILITY_1")
+    response = client.get("/api/v1/facilities/TEST_SENDING_FACILITY_1")
     # NOTE: DISTINCT ON (used to calculate error stats) isn't supported by SQLite
     json = response.json()
     assert json["id"] == "TEST_SENDING_FACILITY_1"
