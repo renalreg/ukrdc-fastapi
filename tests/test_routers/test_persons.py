@@ -6,14 +6,14 @@ from ukrdc_fastapi.schemas.empi import MasterRecordSchema, PersonSchema
 
 
 def test_persons_list(client):
-    response = client.get("/api/empi/persons")
+    response = client.get("/api/v1/persons")
     assert response.status_code == 200
     returned_ids = {item["id"] for item in response.json()["items"]}
     assert returned_ids == {1, 2, 3, 4}
 
 
 def test_person_detail(client):
-    response = client.get("/api/empi/persons/1")
+    response = client.get("/api/v1/persons/1")
     assert response.status_code == 200
     person = PersonSchema(**response.json())
     assert person.id == 1
@@ -46,7 +46,7 @@ def test_person_masterrecords(client, jtrace_session):
     jtrace_session.add(link_record_3)
     jtrace_session.commit()
 
-    response = client.get("/api/empi/persons/1/masterrecords")
+    response = client.get("/api/v1/persons/1/masterrecords")
     assert response.status_code == 200
 
     # Check MR3 is identified as related to MR1

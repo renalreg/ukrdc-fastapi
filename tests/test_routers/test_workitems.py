@@ -9,35 +9,35 @@ from ukrdc_fastapi.schemas.errors import MessageSchema
 
 
 def test_workitems_list(client):
-    response = client.get("/api/empi/workitems")
+    response = client.get("/api/v1/workitems")
     assert response.status_code == 200
     returned_ids = {item["id"] for item in response.json()["items"]}
     assert returned_ids == {1, 2, 3}
 
 
 def test_workitems_list_filter_since(client):
-    response = client.get("/api/empi/workitems?since=2021-01-01T00:00:00")
+    response = client.get("/api/v1/workitems?since=2021-01-01T00:00:00")
     assert response.status_code == 200
     returned_ids = {item["id"] for item in response.json()["items"]}
     assert returned_ids == {2, 3}
 
 
 def test_workitems_list_filter_until(client):
-    response = client.get("/api/empi/workitems?until=2020-12-01T23:59:59")
+    response = client.get("/api/v1/workitems?until=2020-12-01T23:59:59")
     assert response.status_code == 200
     returned_ids = {item["id"] for item in response.json()["items"]}
     assert returned_ids == {1}
 
 
 def test_workitem_detail(client):
-    response = client.get("/api/empi/workitems/1")
+    response = client.get("/api/v1/workitems/1")
     assert response.status_code == 200
     wi = WorkItemSchema(**response.json())
     assert wi.id == 1
 
 
 def test_workitem_related(client):
-    response = client.get("/api/empi/workitems/1/related")
+    response = client.get("/api/v1/workitems/1/related")
     assert response.status_code == 200
 
     returned_ids = {item["id"] for item in response.json()}
@@ -45,7 +45,7 @@ def test_workitem_related(client):
 
 
 def test_workitem_errors(client):
-    response = client.get("/api/empi/workitems/1/errors")
+    response = client.get("/api/v1/workitems/1/errors")
     assert response.status_code == 200
 
     errors = [MessageSchema(**item) for item in response.json()["items"]]
@@ -56,7 +56,7 @@ def test_workitem_errors(client):
 @pytest.mark.parametrize("workitem_id", [1, 2, 3])
 def test_workitem_close(client, workitem_id, httpx_session):
     response = client.post(
-        f"/api/empi/workitems/{workitem_id}/close/",
+        f"/api/v1/workitems/{workitem_id}/close/",
         json={},
     )
     print(response.text)
@@ -106,7 +106,7 @@ def test_workitem_merge(client, jtrace_session, httpx_session):
     jtrace_session.add(work_item_40)
     jtrace_session.commit()
 
-    response = client.post(f"/api/empi/workitems/40/merge/", json={})
+    response = client.post(f"/api/v1/workitems/40/merge/", json={})
     assert response.json().get("status") == "success"
     message = response.json().get("message")
 
@@ -116,7 +116,7 @@ def test_workitem_merge(client, jtrace_session, httpx_session):
 
 
 def test_workitem_merge_nothing_to_merge(client):
-    response = client.post(f"/api/empi/workitems/1/merge/", json={})
+    response = client.post(f"/api/v1/workitems/1/merge/", json={})
 
     # Expect a 400 error since only 1 master record is associated
     # with this work item, so nothing to merge
@@ -125,7 +125,7 @@ def test_workitem_merge_nothing_to_merge(client):
 
 def test_workitem_unlink(client, httpx_session):
     response = client.post(
-        "/api/empi/workitems/1/unlink/",
+        "/api/v1/workitems/1/unlink/",
     )
 
     assert response.json().get("status") == "success"
@@ -139,7 +139,7 @@ def test_workitem_unlink(client, httpx_session):
 
 def test_workitem_update(client, httpx_session):
     response = client.put(
-        "/api/empi/workitems/1/", json={"status": 3, "comment": "UPDATE COMMENT"}
+        "/api/v1/workitems/1/", json={"status": 3, "comment": "UPDATE COMMENT"}
     )
 
     assert response.json().get("status") == "success"
