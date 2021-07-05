@@ -17,7 +17,7 @@ from ukrdc_fastapi.schemas.errors import MessageSchema
 from ukrdc_fastapi.utils.errors import ExtendedErrorSchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
 
-router = APIRouter(tags=["Errors/Messages"])
+router = APIRouter()
 
 
 class MessageSourceSchema(OrmModel):
