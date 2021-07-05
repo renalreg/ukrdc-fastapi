@@ -88,7 +88,7 @@ async def error_source(
     error = get_error(errorsdb, jtrace, error_id, user)
 
     message = await mirth.channel(error.channel_id).get_message(
-        error.message_id, include_content=True
+        str(error.message_id), include_content=True
     )
     if not message:
         raise HTTPException(404, "Mirth message not found")
