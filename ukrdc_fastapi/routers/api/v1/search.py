@@ -11,7 +11,7 @@ from ukrdc_fastapi.schemas.empi import MasterRecordSchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
 from ukrdc_fastapi.utils.search.masterrecords import search_masterrecord_ids
 
-router = APIRouter()
+router = APIRouter(tags=["Search"])
 
 
 @router.get(

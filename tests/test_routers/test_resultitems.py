@@ -48,19 +48,19 @@ def _commit_extra_resultitem(session):
 
 def _commit_extra_resultitem_and_check(session, client):
     # Check we have no unexpected items
-    response_unfiltered = client.get("/api/resultitems")
+    response_unfiltered = client.get("/api/v1/resultitems")
     og_len = len(response_unfiltered.json()["items"])
 
     # Add an extra test item
     _commit_extra_resultitem(session)
 
     # Check we have multiple laborders when unfiltered
-    response_unfiltered = client.get("/api/resultitems")
+    response_unfiltered = client.get("/api/v1/resultitems")
     assert len(response_unfiltered.json()["items"]) == og_len + 1
 
 
 def test_resultitems_list(client):
-    response = client.get("/api/resultitems")
+    response = client.get("/api/v1/resultitems")
     assert response.status_code == 200
     items = [ResultItemSchema(**item) for item in response.json()["items"]]
     assert {result.id for result in items} == {
@@ -74,7 +74,7 @@ def test_resultitems_list_filtered_serviceId(ukrdc3_session, client):
     _commit_extra_resultitem_and_check(ukrdc3_session, client)
 
     # Filter by NI
-    response = client.get("/api/resultitems?service_id=SERVICE_ID_TEST2_1")
+    response = client.get("/api/v1/resultitems?service_id=SERVICE_ID_TEST2_1")
     assert response.status_code == 200
     items = [ResultItemSchema(**item) for item in response.json()["items"]]
     assert len(items) == 1
@@ -82,20 +82,20 @@ def test_resultitems_list_filtered_serviceId(ukrdc3_session, client):
 
 
 def test_resultitem_detail(client):
-    response = client.get("/api/resultitems/RESULTITEM1")
+    response = client.get("/api/v1/resultitems/RESULTITEM1")
     assert response.status_code == 200
     item = ResultItemSchema(**response.json())
     assert item.id == "RESULTITEM1"
 
 
 def test_resultitem_delete(client):
-    response = client.delete("/api/resultitems/RESULTITEM1/")
+    response = client.delete("/api/v1/resultitems/RESULTITEM1/")
     assert response.status_code == 204
 
     # Check the resultitem was deleted
-    response = client.get("/api/resultitems/RESULTITEM1/")
+    response = client.get("/api/v1/resultitems/RESULTITEM1/")
     assert response.status_code == 404
 
     # Check the orphaned laborder was deleted
-    response = client.get("/api/laborders/LABORDER1/")
+    response = client.get("/api/v1/laborders/LABORDER1/")
     assert response.status_code == 404
