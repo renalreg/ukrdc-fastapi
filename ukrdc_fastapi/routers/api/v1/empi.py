@@ -10,14 +10,7 @@ from ukrdc_fastapi.dependencies.auth import UKRDCUser, auth
 from ukrdc_fastapi.query.mirth.merge import merge_master_records
 from ukrdc_fastapi.utils.mirth import MirthMessageResponseSchema
 
-from . import masterrecords, persons, search, workitems
-
-router = APIRouter(tags=["Patient Index"])
-
-router.include_router(workitems.router, prefix="/workitems")
-router.include_router(persons.router, prefix="/persons")
-router.include_router(masterrecords.router, prefix="/masterrecords")
-router.include_router(search.router, prefix="/search")
+router = APIRouter(tags=["Patient Index Operations"])
 
 
 class MergeRequestSchema(BaseModel):

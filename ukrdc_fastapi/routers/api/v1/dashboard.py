@@ -15,7 +15,7 @@ from ukrdc_fastapi.query.dashboard import (
     get_workitems_stats,
 )
 
-router = APIRouter(tags=["Summary Dashboard"])
+router = APIRouter(tags=["Dashboard"])
 
 
 class DashboardSchema(BaseModel):

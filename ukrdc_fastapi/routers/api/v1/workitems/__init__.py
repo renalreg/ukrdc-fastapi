@@ -13,7 +13,7 @@ from ukrdc_fastapi.utils.paginate import Page, paginate
 
 from . import workitem_id
 
-router = APIRouter(tags=["Patient Index/Work Items"])
+router = APIRouter(tags=["Work Items"])
 router.include_router(workitem_id.router)
 
 

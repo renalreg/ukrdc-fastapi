@@ -9,7 +9,7 @@ from ukrdc_fastapi.query.persons import get_person, get_persons
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema, PersonSchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
 
-router = APIRouter()
+router = APIRouter(tags=["Persons"])
 
 
 @router.get(

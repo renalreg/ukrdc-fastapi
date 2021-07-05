@@ -143,3 +143,6 @@ cython_debug/
 
 # IDE files
 .vscode/
+
+# Pyenv files
+.python-version

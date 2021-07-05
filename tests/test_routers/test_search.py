@@ -37,7 +37,7 @@ def test_search_all(jtrace_session, client):
 
     # Search for each item individually
     for index, number in enumerate(TEST_NUMBERS):
-        url = f"/api/empi/search/?search={number}"
+        url = f"/api/v1/search/?search={number}"
 
         response = client.get(url)
         assert response.status_code == 200
@@ -52,7 +52,7 @@ def test_search_nhsno(jtrace_session, client):
 
     # Search for each item individually
     for index, number in enumerate(TEST_NUMBERS):
-        url = f"/api/empi/search/?nhs_number={number}"
+        url = f"/api/v1/search/?nhs_number={number}"
 
         response = client.get(url)
         assert response.status_code == 200
@@ -66,7 +66,7 @@ def test_search_multiple_nhsno(jtrace_session, client):
     _commit_extra_patients(jtrace_session, number_type="NHS")
 
     # Add extra test items
-    path = "/api/empi/search/?"
+    path = "/api/v1/search/?"
     for number in TEST_NUMBERS[:5]:
         path += f"nhs_number={number}&"
     path = path.rstrip("&")
@@ -86,7 +86,7 @@ def test_search_implicit_dob(jtrace_session, client):
     for index, _ in enumerate(TEST_NUMBERS):
         # NHS number is master record `nationalid`
         dob = f"1950-01-{str((index + 11) % 28).zfill(2)}"
-        url = f"/api/empi/search/?search={dob}"
+        url = f"/api/v1/search/?search={dob}"
 
         response = client.get(url)
         assert response.status_code == 200

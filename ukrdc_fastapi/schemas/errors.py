@@ -31,6 +31,10 @@ class MessageSchema(OrmModel):
                 {"error_id": "<id>"},
             ),
             "source": UrlFor(
+                "error_source",
+                {"error_id": "<id>"},
+            ),
+            "mirth": UrlFor(
                 "mirth_channel_message",
                 {"channel_id": "<channel_id>", "message_id": "<message_id>"},
             ),
