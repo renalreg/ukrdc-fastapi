@@ -63,7 +63,7 @@ def get_resultitems(
         query = query.filter(ResultItem.observation_time <= until)
 
     if sort_query:
-        query = query.order_by(ResultItem.entered_on.desc())
+        query = query.order_by(ResultItem.observation_time.desc())
 
     return _apply_query_permissions(query, user)
 
