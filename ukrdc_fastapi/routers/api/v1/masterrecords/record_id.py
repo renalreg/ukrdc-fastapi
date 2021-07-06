@@ -68,17 +68,26 @@ def master_record_statistics(
 
     errors = get_errors_related_to_masterrecord(errorsdb, jtrace, user, record.id)
 
-    related = get_masterrecords_related_to_masterrecord(jtrace, record.id, user)
-    workitems = get_workitems(
-        jtrace, user, master_id=[record.id for record in related.all()]
-    )
+    related_ukrdc_records = get_masterrecords_related_to_masterrecord(
+        jtrace, record.id, user
+    ).filter(MasterRecord.nationalid_type == "UKRDC")
 
-    ukrdc_records = related.filter(MasterRecord.nationalid_type == "UKRDC")
+    workitems = get_workitems(
+        jtrace, user, master_id=[record.id for record in related_ukrdc_records.all()]
+    )
 
     return MasterRecordStatisticsSchema(
         workitems=workitems.count(),
         errors=errors.count(),
-        ukrdcids=ukrdc_records.count(),
+        # Workaround for https://jira.ukrdc.org/browse/UI-56
+        # For some reason, if you log in as a non-admin user,
+        # related_ukrdc_records.count() returns the wrong value
+        # sometimes, despite the query returning the right data.
+        # I truly, deeply do not understand why this would happen,
+        # so I've had to implement this slightly slower workaround.
+        # Assuming the patient doesn't somehow have hundreds of
+        # UKRDC records, the speed decrease should be negligable.
+        ukrdcids=len(related_ukrdc_records.all()),
     )
 
 
