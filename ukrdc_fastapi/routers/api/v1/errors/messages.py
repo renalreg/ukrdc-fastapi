@@ -17,7 +17,7 @@ from ukrdc_fastapi.schemas.base import OrmModel
 from ukrdc_fastapi.schemas.errors import MessageSchema
 from ukrdc_fastapi.utils.errors import ExtendedErrorSchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
-from ukrdc_fastapi.utils.sort import sorter
+from ukrdc_fastapi.utils.sort import Sorter, make_sorter
 
 router = APIRouter()
 
@@ -40,8 +40,8 @@ def error_messages(
     ni: Optional[list[str]] = QueryParam([]),
     user: UKRDCUser = Security(auth.get_user),
     errorsdb: Session = Depends(get_errorsdb),
-    sorter: dict = Depends(
-        sorter(
+    sorter: Sorter = Depends(
+        make_sorter(
             [Message.id, Message.received, Message.ni], default_sort_by=Message.received
         )
     ),

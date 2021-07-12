@@ -28,7 +28,7 @@ from ukrdc_fastapi.schemas.observation import ObservationSchema
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordSchema
 from ukrdc_fastapi.schemas.survey import SurveySchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
-from ukrdc_fastapi.utils.sort import sorter
+from ukrdc_fastapi.utils.sort import Sorter, make_sorter
 
 from . import export
 
@@ -92,8 +92,8 @@ def patient_resultitems(
     until: Optional[datetime.datetime] = None,
     user: UKRDCUser = Security(auth.get_user),
     ukrdc3: Session = Depends(get_ukrdc3),
-    sorter: dict = Depends(
-        sorter(
+    sorter: Sorter = Depends(
+        make_sorter(
             [ResultItem.observation_time, ResultItem.entered_on],
             default_sort_by=ResultItem.observation_time,
         )
@@ -138,8 +138,8 @@ def patient_observations(
     code: Optional[list[str]] = QueryParam([]),
     user: UKRDCUser = Security(auth.get_user),
     ukrdc3: Session = Depends(get_ukrdc3),
-    sorter: dict = Depends(
-        sorter(
+    sorter: Sorter = Depends(
+        make_sorter(
             [Observation.observation_time, Observation.updated_on],
             default_sort_by=Observation.observation_time,
         )

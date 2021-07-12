@@ -11,7 +11,7 @@ from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.query.workitems import get_workitems
 from ukrdc_fastapi.schemas.empi import WorkItemShortSchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
-from ukrdc_fastapi.utils.sort import sorter
+from ukrdc_fastapi.utils.sort import Sorter, make_sorter
 
 from . import workitem_id
 
@@ -37,8 +37,8 @@ def workitems_list(
     facility: Optional[str] = None,
     user: UKRDCUser = Security(auth.get_user),
     jtrace: Session = Depends(get_jtrace),
-    sorter: dict = Depends(
-        sorter(
+    sorter: Sorter = Depends(
+        make_sorter(
             [WorkItem.id, WorkItem.last_updated],
             default_sort_by=WorkItem.last_updated,
         )

@@ -27,16 +27,15 @@ class Sorter:
         self.default_order_by = default_order_by
 
     def sort(self, query: ORMQuery):
-        if not self.sort_by and not self.default_sort_by:
-            return query
-
         sort_column: Optional[Column]
-        if self.default_sort_by:
-            sort_column = self.default_sort_by
-        else:
+        if self.sort_by:
             sort_column = self.column_map.get(self.sort_by.value)
             if not sort_column:
                 raise HTTPException(400, f"Invalid sort key '{self.sort_by.value}'")
+        elif self.default_sort_by:
+            sort_column = self.default_sort_by
+        else:
+            return query
 
         if self.order_by:
             if self.order_by == OrderBy.asc:
@@ -52,7 +51,7 @@ class Sorter:
         return query.order_by(sort_func())
 
 
-def _make_sorter_enum_name(columns: list[Column]):
+def _make_sorter_enum_name(columns: list[Column]) -> str:
     modelnames = set()
     for col in columns:
         cls = str(col).split(".")[0]
@@ -60,13 +59,13 @@ def _make_sorter_enum_name(columns: list[Column]):
     return "".join(modelnames) + "Enum"
 
 
-def sorter(
+def make_sorter(
     columns: list[Column],
     default_sort_by: Optional[Column] = None,
     default_order_by: OrderBy = OrderBy.desc,
 ):
     column_map: dict[str, Column] = {col.key: col for col in columns}
-    SortEnum = enum.Enum(
+    SortEnum = enum.Enum(  # type: ignore
         _make_sorter_enum_name(columns), {col.key: col.key for col in columns}
     )
 
