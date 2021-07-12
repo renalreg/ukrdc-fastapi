@@ -91,9 +91,6 @@ def get_workitems(
     # Get a query of open workitems
     workitems = workitems.filter(WorkItem.status.in_(status_list))
 
-    # Sort workitems
-    workitems = workitems.order_by(WorkItem.last_updated.desc())
-
     return _apply_query_permissions(workitems, user)
 
 

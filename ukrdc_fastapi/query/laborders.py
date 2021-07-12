@@ -51,8 +51,6 @@ def get_laborders(ukrdc3: Session, user: UKRDCUser, pid: Optional[str] = None):
     if pid:
         orders = orders.filter(LabOrder.pid == pid)
 
-    orders = orders.order_by(LabOrder.specimen_collected_time.desc())
-
     return _apply_query_permissions(orders, user)
 
 

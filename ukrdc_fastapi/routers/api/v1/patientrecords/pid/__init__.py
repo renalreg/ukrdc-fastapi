@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends
 from fastapi import Query as QueryParam
 from fastapi import Security
 from sqlalchemy.orm import Session
+from ukrdc_sqla.ukrdc import Observation, ResultItem
 
 from ukrdc_fastapi.dependencies import get_jtrace, get_ukrdc3
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
@@ -27,6 +28,7 @@ from ukrdc_fastapi.schemas.observation import ObservationSchema
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordSchema
 from ukrdc_fastapi.schemas.survey import SurveySchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
+from ukrdc_fastapi.utils.sort import sorter
 
 from . import export
 
@@ -90,20 +92,27 @@ def patient_resultitems(
     until: Optional[datetime.datetime] = None,
     user: UKRDCUser = Security(auth.get_user),
     ukrdc3: Session = Depends(get_ukrdc3),
+    sorter: dict = Depends(
+        sorter(
+            ResultItem,
+            [ResultItem.observation_time, ResultItem.entered_on],
+            default_sort_by=ResultItem.observation_time,
+        )
+    ),
 ):
     """Retreive a specific patient's lab orders"""
 
-    return paginate(
-        get_resultitems(
-            ukrdc3,
-            user,
-            pid=pid,
-            service_id=service_id,
-            order_id=order_id,
-            since=since,
-            until=until,
-        )
+    query = get_resultitems(
+        ukrdc3,
+        user,
+        pid=pid,
+        service_id=service_id,
+        order_id=order_id,
+        since=since,
+        until=until,
     )
+    sorted = sorter.sort(query)
+    return paginate(sorted)
 
 
 @router.get(
@@ -130,9 +139,18 @@ def patient_observations(
     code: Optional[list[str]] = QueryParam([]),
     user: UKRDCUser = Security(auth.get_user),
     ukrdc3: Session = Depends(get_ukrdc3),
+    sorter: dict = Depends(
+        sorter(
+            Observation,
+            [Observation.observation_time, Observation.updated_on],
+            default_sort_by=Observation.observation_time,
+        )
+    ),
 ):
     """Retreive a specific patient's lab orders"""
-    return paginate(get_observations(ukrdc3, user, pid=pid, codes=code))
+    query = get_observations(ukrdc3, user, pid=pid, codes=code)
+    sorted = sorter.sort(query)
+    return paginate(sorted)
 
 
 @router.get(

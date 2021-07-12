@@ -8,6 +8,7 @@ from fastapi.exceptions import HTTPException
 from mirth_client.mirth import MirthAPI
 from mirth_client.models import ConnectorMessageData, ConnectorMessageModel
 from sqlalchemy.orm import Session
+from ukrdc_sqla.errorsdb import Message
 
 from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_mirth
 from ukrdc_fastapi.dependencies.auth import UKRDCUser, auth
@@ -16,6 +17,7 @@ from ukrdc_fastapi.schemas.base import OrmModel
 from ukrdc_fastapi.schemas.errors import MessageSchema
 from ukrdc_fastapi.utils.errors import ExtendedErrorSchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
+from ukrdc_fastapi.utils.sort import sorter
 
 router = APIRouter()
 
@@ -38,22 +40,29 @@ def error_messages(
     ni: Optional[list[str]] = QueryParam([]),
     user: UKRDCUser = Security(auth.get_user),
     errorsdb: Session = Depends(get_errorsdb),
+    sorter: dict = Depends(
+        sorter(
+            Message,
+            [Message.id, Message.received, Message.ni],
+            default_sort_by=Message.received,
+        )
+    ),
 ):
     """
     Retreive a list of error messages, optionally filtered by NI, facility, or date.
     By default returns message created within the last 365 days.
     """
-    return paginate(
-        get_errors(
-            errorsdb,
-            user,
-            status=status,
-            nis=ni,
-            facility=facility,
-            since=since,
-            until=until,
-        )
+    query = get_errors(
+        errorsdb,
+        user,
+        status=status,
+        nis=ni,
+        facility=facility,
+        since=since,
+        until=until,
     )
+    sorted = sorter.sort(query)
+    return paginate(sorted)
 
 
 @router.get(
