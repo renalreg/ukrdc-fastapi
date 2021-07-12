@@ -42,9 +42,7 @@ def error_messages(
     errorsdb: Session = Depends(get_errorsdb),
     sorter: dict = Depends(
         sorter(
-            Message,
-            [Message.id, Message.received, Message.ni],
-            default_sort_by=Message.received,
+            [Message.id, Message.received, Message.ni], default_sort_by=Message.received
         )
     ),
 ):

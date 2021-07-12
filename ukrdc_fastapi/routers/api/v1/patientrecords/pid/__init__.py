@@ -94,7 +94,6 @@ def patient_resultitems(
     ukrdc3: Session = Depends(get_ukrdc3),
     sorter: dict = Depends(
         sorter(
-            ResultItem,
             [ResultItem.observation_time, ResultItem.entered_on],
             default_sort_by=ResultItem.observation_time,
         )
@@ -141,7 +140,6 @@ def patient_observations(
     ukrdc3: Session = Depends(get_ukrdc3),
     sorter: dict = Depends(
         sorter(
-            Observation,
             [Observation.observation_time, Observation.updated_on],
             default_sort_by=Observation.observation_time,
         )

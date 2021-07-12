@@ -37,7 +37,12 @@ def workitems_list(
     facility: Optional[str] = None,
     user: UKRDCUser = Security(auth.get_user),
     jtrace: Session = Depends(get_jtrace),
-    sorter: dict = Depends(sorter(WorkItem, [WorkItem.id, WorkItem.last_updated])),
+    sorter: dict = Depends(
+        sorter(
+            [WorkItem.id, WorkItem.last_updated],
+            default_sort_by=WorkItem.last_updated,
+        )
+    ),
 ):
     """Retreive a list of open work items from the EMPI"""
     query = get_workitems(
