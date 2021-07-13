@@ -59,8 +59,7 @@ def error_messages(
         since=since,
         until=until,
     )
-    sorted = sorter.sort(query)
-    return paginate(sorted)
+    return paginate(sorter.sort(query))
 
 
 @router.get(

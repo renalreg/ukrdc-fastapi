@@ -48,5 +48,4 @@ def workitems_list(
     query = get_workitems(
         jtrace, user, statuses=status, facility=facility, since=since, until=until
     )
-    sorted = sorter.sort(query)
-    return paginate(sorted)
+    return paginate(sorter.sort(query))

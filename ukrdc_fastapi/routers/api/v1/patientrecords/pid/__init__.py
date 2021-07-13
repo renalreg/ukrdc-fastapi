@@ -110,8 +110,7 @@ def patient_resultitems(
         since=since,
         until=until,
     )
-    sorted = sorter.sort(query)
-    return paginate(sorted)
+    return paginate(sorter.sort(query))
 
 
 @router.get(
@@ -147,8 +146,7 @@ def patient_observations(
 ):
     """Retreive a specific patient's lab orders"""
     query = get_observations(ukrdc3, user, pid=pid, codes=code)
-    sorted = sorter.sort(query)
-    return paginate(sorted)
+    return paginate(sorter.sort(query))
 
 
 @router.get(
