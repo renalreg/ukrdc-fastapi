@@ -4,12 +4,14 @@ from typing import Optional
 from fastapi import APIRouter, Depends, Query, Security
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
+from ukrdc_sqla.empi import WorkItem
 
 from ukrdc_fastapi.dependencies import get_jtrace
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.query.workitems import get_workitems
 from ukrdc_fastapi.schemas.empi import WorkItemShortSchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
+from ukrdc_fastapi.utils.sort import Sorter, make_sorter
 
 from . import workitem_id
 
@@ -35,10 +37,15 @@ def workitems_list(
     facility: Optional[str] = None,
     user: UKRDCUser = Security(auth.get_user),
     jtrace: Session = Depends(get_jtrace),
+    sorter: Sorter = Depends(
+        make_sorter(
+            [WorkItem.id, WorkItem.last_updated],
+            default_sort_by=WorkItem.last_updated,
+        )
+    ),
 ):
     """Retreive a list of open work items from the EMPI"""
-    return paginate(
-        get_workitems(
-            jtrace, user, statuses=status, facility=facility, since=since, until=until
-        )
+    query = get_workitems(
+        jtrace, user, statuses=status, facility=facility, since=since, until=until
     )
+    return paginate(sorter.sort(query))

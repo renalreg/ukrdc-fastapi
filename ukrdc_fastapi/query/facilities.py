@@ -49,7 +49,6 @@ def _get_error_stats(
         user,
         facility=facility,
         since=datetime.datetime(1970, 1, 1, 0, 0, 0),
-        sort_query=False,
     )
     return total_day_prev(errors_query, Message, "received")
 
@@ -74,7 +73,6 @@ def _get_error_ni_count(
         user,
         facility=facility,
         since=datetime.datetime(1970, 1, 1, 0, 0, 0),
-        sort_query=False,
     )
     errors_set = errors_query.distinct(Message.ni)
     return errors_set.count()
