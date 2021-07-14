@@ -268,6 +268,20 @@ def get_errors_history(
     since: Optional[datetime.date] = None,
     until: Optional[datetime.date] = None,
 ) -> list[ErrorHistoryPoint]:
+    """Get a day-by-day error count for a particular facility/unit
+
+    Args:
+        ukrdc3 (Session): SQLAlchemy session
+        errorsdb (Session): SQLAlchemy session
+        redis (Redis): Redis session
+        facility_code (str): Facility/unit code
+        user (UKRDCUser): Logged-in user
+        since (Optional[datetime.date]): Filter start date. Defaults to None.
+        until (Optional[datetime.date]): Filter end date. Defaults to None.
+
+    Returns:
+        list[ErrorHistoryPoint]: Time-series error data
+    """
     code = (
         ukrdc3.query(Code)
         .filter(Code.coding_standard == "RR1+", Code.code == facility_code)
