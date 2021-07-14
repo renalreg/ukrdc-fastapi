@@ -9,8 +9,14 @@ def test_facilities(client):
 
 def test_facility_detail(client):
     response = client.get("/api/v1/facilities/TEST_SENDING_FACILITY_1")
-    # NOTE: DISTINCT ON (used to calculate error stats) isn't supported by SQLite
     json = response.json()
     assert json["id"] == "TEST_SENDING_FACILITY_1"
     # Expect non-null values
     assert json["statistics"]["recordsWithErrors"] == 1
+
+
+def test_facility_error_history(client):
+    response = client.get("/api/v1/facilities/TEST_SENDING_FACILITY_1/error_history")
+    json = response.json()
+    len(json) == 1
+    assert json[0].get("time") == "2021-01-01"
