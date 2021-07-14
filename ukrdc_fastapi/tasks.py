@@ -11,7 +11,10 @@ from ukrdc_fastapi.dependencies.database import (
     Ukrdc3Session,
 )
 from ukrdc_fastapi.query.dashboard import get_empi_stats, get_workitems_stats
-from ukrdc_fastapi.query.facilities import _get_and_cache_facility
+from ukrdc_fastapi.query.facilities import (
+    _get_and_cache_errors_history,
+    _get_and_cache_facility,
+)
 
 
 @repeat_every(seconds=settings.cache_statistics_seconds)
@@ -25,6 +28,7 @@ def cache_all_facilities() -> None:
     for code in codes:
         logging.debug("Caching %s", code.code)
         _get_and_cache_facility(code, ukrdc3, errorsdb, redis)
+        _get_and_cache_errors_history(code, errorsdb, redis)
 
 
 @repeat_every(seconds=settings.cache_dashboard_seconds)

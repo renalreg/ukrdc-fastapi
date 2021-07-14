@@ -5,6 +5,7 @@ from typing import Optional
 from fastapi.exceptions import HTTPException
 from redis import Redis
 from sqlalchemy.orm import Session
+from sqlalchemy.sql.functions import func
 from ukrdc_sqla.errorsdb import Message
 from ukrdc_sqla.ukrdc import Code, PatientRecord
 
@@ -210,3 +211,83 @@ def get_facility(
 
     # Get cached statistics
     return _get_and_cache_facility(code, ukrdc3, errorsdb, redis)
+
+
+class ErrorHistoryPoint(OrmModel):
+    time: datetime.date
+    count: int
+
+
+class ErrorHistory(OrmModel):
+    __root__: list[ErrorHistoryPoint]
+
+
+def _get_and_cache_errors_history(
+    code: Code,
+    errorsdb: Session,
+    redis: Redis,
+) -> list[ErrorHistoryPoint]:
+    # Check for cached statistics
+    redis_key: str = f"ukrdc3:facilities:{code.code}:errorhistory"
+    if not redis.exists(redis_key):
+        trunc_func = func.date_trunc("day", Message.received)
+        query = (
+            errorsdb.query(
+                trunc_func,
+                Message.facility,
+                Message.msg_status,
+                func.count(Message.received),
+            )
+            .filter(Message.facility == code.code)
+            .filter(Message.msg_status == "ERROR")
+            .filter(
+                trunc_func >= datetime.datetime.utcnow() - datetime.timedelta(days=365)
+            )
+        )
+        query = query.group_by(trunc_func, Message.facility, Message.msg_status)
+
+        counts: ErrorHistory = ErrorHistory(
+            __root__=[ErrorHistoryPoint(time=item[0], count=item[-1]) for item in query]
+        )
+        counts_json = counts.json()
+        redis.set(redis_key, counts_json)  # type: ignore
+        redis.expire(redis_key, settings.cache_statistics_seconds)
+    else:
+        counts_json: str = redis.get(redis_key)  # type: ignore
+        counts = ErrorHistory.parse_raw(counts_json)
+
+    return counts
+
+
+def get_errors_history(
+    ukrdc3: Session,
+    errorsdb: Session,
+    redis: Redis,
+    facility_code: str,
+    user: UKRDCUser,
+    since: Optional[datetime.date] = None,
+    until: Optional[datetime.date] = None,
+) -> list[ErrorHistoryPoint]:
+    code = (
+        ukrdc3.query(Code)
+        .filter(Code.coding_standard == "RR1+", Code.code == facility_code)
+        .first()
+    )
+
+    if not code:
+        raise HTTPException(404, detail="Facility not found")
+
+    # Assert permissions
+    units = Permissions.unit_codes(user.permissions)
+    if (Permissions.UNIT_WILDCARD not in units) and (code.code not in units):
+        raise PermissionsError()
+
+    # Get cached statistics
+    history = _get_and_cache_errors_history(code, errorsdb, redis).__root__
+
+    if since:
+        history = [point for point in history if point.time >= since]
+    if until:
+        history = [point for point in history if point.time <= until]
+
+    return history
