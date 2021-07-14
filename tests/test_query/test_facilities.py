@@ -1,3 +1,5 @@
+import datetime
+
 import pytest
 
 from ukrdc_fastapi.query import facilities
@@ -92,4 +94,65 @@ def test_get_facility_history(
         "TEST_SENDING_FACILITY_1",
         superuser,
     )
-    print(history)
+    assert len(history) == 1
+    assert history[0].time == datetime.date(2021, 1, 1)
+    assert history[0].count == 1
+
+
+def test_get_facility_history_caching(
+    ukrdc3_session, errorsdb_session, redis_session, superuser
+):
+    redis_session.delete("ukrdc3:facilities:TEST_SENDING_FACILITY_1:errorhistory")
+
+    history_1 = facilities.get_errors_history(
+        ukrdc3_session,
+        errorsdb_session,
+        redis_session,
+        "TEST_SENDING_FACILITY_1",
+        superuser,
+    )
+
+    history_2 = facilities.get_errors_history(
+        ukrdc3_session,
+        errorsdb_session,
+        redis_session,
+        "TEST_SENDING_FACILITY_1",
+        superuser,
+    )
+
+    assert history_1 == history_2
+
+
+def test_get_facility_history_range(
+    ukrdc3_session, errorsdb_session, redis_session, superuser
+):
+    history = facilities.get_errors_history(
+        ukrdc3_session,
+        errorsdb_session,
+        redis_session,
+        "TEST_SENDING_FACILITY_1",
+        superuser,
+        since=datetime.date(2021, 1, 2),
+    )
+    assert len(history) == 0
+
+    history = facilities.get_errors_history(
+        ukrdc3_session,
+        errorsdb_session,
+        redis_session,
+        "TEST_SENDING_FACILITY_1",
+        superuser,
+        until=datetime.date(2020, 12, 31),
+    )
+    assert len(history) == 0
+
+    history = facilities.get_errors_history(
+        ukrdc3_session,
+        errorsdb_session,
+        redis_session,
+        "TEST_SENDING_FACILITY_1",
+        superuser,
+        since=datetime.date(2020, 12, 31),
+        until=datetime.date(2021, 1, 2),
+    )
+    assert len(history) == 1
