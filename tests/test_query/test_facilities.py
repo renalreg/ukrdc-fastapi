@@ -80,3 +80,16 @@ def test_get_facility_denied(
             "TEST_SENDING_FACILITY_2",
             test_user,
         )
+
+
+def test_get_facility_history(
+    ukrdc3_session, errorsdb_session, redis_session, superuser
+):
+    history = facilities.get_errors_history(
+        ukrdc3_session,
+        errorsdb_session,
+        redis_session,
+        "TEST_SENDING_FACILITY_1",
+        superuser,
+    )
+    print(history)
