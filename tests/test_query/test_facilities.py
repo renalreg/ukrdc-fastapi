@@ -156,3 +156,16 @@ def test_get_facility_history_range(
         until=datetime.date(2021, 1, 2),
     )
     assert len(history) == 1
+
+
+def test_get_facility_history_denied(
+    ukrdc3_session, errorsdb_session, redis_session, test_user
+):
+    with pytest.raises(PermissionsError):
+        facilities.get_errors_history(
+            ukrdc3_session,
+            errorsdb_session,
+            redis_session,
+            "TEST_SENDING_FACILITY_2",
+            test_user,
+        )
