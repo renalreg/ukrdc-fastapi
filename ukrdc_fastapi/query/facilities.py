@@ -226,7 +226,7 @@ def _get_and_cache_errors_history(
     code: Code,
     errorsdb: Session,
     redis: Redis,
-) -> list[ErrorHistoryPoint]:
+) -> ErrorHistory:
     # Check for cached statistics
     redis_key: str = f"ukrdc3:facilities:{code.code}:errorhistory"
     if not redis.exists(redis_key):
