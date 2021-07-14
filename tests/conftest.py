@@ -1,4 +1,5 @@
 import re
+import tempfile
 from datetime import datetime
 from pathlib import Path
 
@@ -7,12 +8,14 @@ import pytest
 from fastapi.testclient import TestClient
 from mirth_client import MirthAPI
 from pytest_httpx import HTTPXMock
+from pytest_postgresql import factories
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 from ukrdc_sqla.empi import Base as JtraceBase
 from ukrdc_sqla.empi import LinkRecord, MasterRecord, Person, PidXRef, WorkItem
 from ukrdc_sqla.errorsdb import Base as ErrorsBase
+from ukrdc_sqla.errorsdb import Channel
 from ukrdc_sqla.errorsdb import Message as ErrorMessage
 from ukrdc_sqla.pkb import PKBLink
 from ukrdc_sqla.ukrdc import Address
@@ -45,6 +48,11 @@ from ukrdc_fastapi.dependencies import (
     get_ukrdc3,
 )
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
+
+# Using the factory to create a postgresql instance
+socket_dir = tempfile.TemporaryDirectory()
+postgresql_my_proc = factories.postgresql_proc(port=None, unixsocketdir=socket_dir.name)
+postgresql_my = factories.postgresql("postgresql_my_proc")
 
 # FastAPI dependency override gets confused by some of our auth stuff,
 # so we'll do a dirty patch for testing
@@ -481,7 +489,7 @@ def populate_jtrace_session(session):
         pid="PYTEST04:PV:00000000A",
         sending_facility="TEST_SENDING_FACILITY_1",
         sending_extract="XREF_SENDING_EXTRACT_1",
-        localid="XREF_LOCALID_1",
+        localid="XREF_LOCALID_2",
     )
 
     link_record_1 = LinkRecord(
@@ -561,6 +569,9 @@ def populate_jtrace_session(session):
 
 
 def populate_errorsdb_session(session):
+    channel_1 = Channel(id="MIRTH-CHANNEL-UUID", name="MIRTH-CHANNEL-NAME")
+    session.add(channel_1)
+
     # Mock error relating to MR 1, WORKITEMS 1 and 2
     error_1 = ErrorMessage(
         id=1,
@@ -596,14 +607,16 @@ def populate_errorsdb_session(session):
 
 
 @pytest.fixture(scope="function")
-def jtrace_sessionmaker():
+def jtrace_sessionmaker(postgresql_my):
     """
     Create a new function-scoped in-memory JTRACE database,
     populate with test data, and return the session class
     """
-    engine = create_engine(
-        "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
-    )
+
+    def dbcreator():
+        return postgresql_my.cursor().connection
+
+    engine = create_engine("postgresql+psycopg2://", creator=dbcreator)
     JtraceTestSession = sessionmaker(
         autocommit=False,
         autoflush=False,
@@ -615,14 +628,16 @@ def jtrace_sessionmaker():
 
 
 @pytest.fixture(scope="function")
-def ukrdc3_sessionmaker():
+def ukrdc3_sessionmaker(postgresql_my):
     """
     Create a new function-scoped in-memory UKRDC3 database,
     populate with test data, and return the session class
     """
-    engine = create_engine(
-        "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
-    )
+
+    def dbcreator():
+        return postgresql_my.cursor().connection
+
+    engine = create_engine("postgresql+psycopg2://", creator=dbcreator)
     UKRDCTestSession = sessionmaker(
         autocommit=False,
         autoflush=False,
@@ -634,14 +649,16 @@ def ukrdc3_sessionmaker():
 
 
 @pytest.fixture(scope="function")
-def errorsdb_sessionmaker():
+def errorsdb_sessionmaker(postgresql_my):
     """
     Create a new function-scoped in-memory ERRORS database,
     populate with test data, and return the session class
     """
-    engine = create_engine(
-        "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
-    )
+
+    def dbcreator():
+        return postgresql_my.cursor().connection
+
+    engine = create_engine("postgresql+psycopg2://", creator=dbcreator)
     ErrorsTestSession = sessionmaker(
         autocommit=False,
         autoflush=False,
