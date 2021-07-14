@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from ukrdc_sqla.ukrdc import LabOrder, PatientNumber, PatientRecord, ResultItem
+from ukrdc_sqla.ukrdc import LabOrder, Patient, PatientNumber, PatientRecord, ResultItem
 
 from ukrdc_fastapi.schemas.laborder import LabOrderShortSchema, ResultItemSchema
 
@@ -14,6 +14,9 @@ def _commit_extra_resultitem(session):
         ukrdcid="000000001",
         repository_update_date=datetime(2020, 3, 16),
         repository_creation_date=datetime(2020, 3, 16),
+    )
+    patient = Patient(
+        pid="PYTEST01:LABORDERS:00000000L", birth_time=datetime(1984, 3, 17), gender="1"
     )
     patient_number = PatientNumber(
         id=2,
@@ -40,6 +43,7 @@ def _commit_extra_resultitem(session):
         observation_time=datetime(2020, 3, 16),
     )
     session.add(patient_record)
+    session.add(patient)
     session.add(patient_number)
     session.add(laborder)
     session.add(resultitem)
