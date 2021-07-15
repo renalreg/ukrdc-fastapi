@@ -10,7 +10,6 @@ from ukrdc_sqla.errorsdb import Message
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
 from ukrdc_fastapi.query.common import PermissionsError, person_belongs_to_units
 from ukrdc_fastapi.query.errors import get_errors
-from ukrdc_fastapi.schemas.errors import MessageSchema, MinimalMessageSchema
 from ukrdc_fastapi.utils.links import find_related_ids
 
 
