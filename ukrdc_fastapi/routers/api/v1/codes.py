@@ -13,7 +13,7 @@ router = APIRouter(tags=["Codes"])
 
 
 @router.get(
-    "/",
+    "/list/",
     response_model=Page[CodeSchema],
     dependencies=[Security(auth.permission(Permissions.READ_CODES))],
 )
@@ -26,7 +26,7 @@ def code_list(
 
 
 @router.get(
-    "/maps",
+    "/maps/",
     response_model=Page[CodeMapSchema],
     dependencies=[Security(auth.permission(Permissions.READ_CODES))],
 )
@@ -50,7 +50,7 @@ def code_maps(
 
 
 @router.get(
-    "/standards",
+    "/standards/",
     response_model=list[str],
     dependencies=[Security(auth.permission(Permissions.READ_CODES))],
 )
