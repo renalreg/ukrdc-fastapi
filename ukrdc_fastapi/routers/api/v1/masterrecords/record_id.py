@@ -1,15 +1,17 @@
 import datetime
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Security
+from fastapi import APIRouter, Depends, Response, Security
 from sqlalchemy.orm import Session
+from starlette.status import HTTP_204_NO_CONTENT
 from ukrdc_sqla.empi import LinkRecord, MasterRecord, Person
 from ukrdc_sqla.ukrdc import PatientRecord
 
 from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_ukrdc3
 from ukrdc_fastapi.dependencies.auth import UKRDCUser, auth
-from ukrdc_fastapi.query.errors import get_errors_related_to_masterrecord
 from ukrdc_fastapi.query.masterrecords import (
+    get_errors_related_to_masterrecord,
+    get_last_message_on_masterrecord,
     get_masterrecord,
     get_masterrecords_related_to_masterrecord,
 )
@@ -23,7 +25,7 @@ from ukrdc_fastapi.schemas.empi import (
     PersonSchema,
     WorkItemSchema,
 )
-from ukrdc_fastapi.schemas.errors import MessageSchema
+from ukrdc_fastapi.schemas.errors import MessageSchema, MinimalMessageSchema
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordSchema
 from ukrdc_fastapi.utils.links import find_related_ids
 from ukrdc_fastapi.utils.paginate import Page, paginate
@@ -50,6 +52,27 @@ def master_record_detail(
 ):
     """Retreive a particular master record from the EMPI"""
     return get_masterrecord(jtrace, record_id, user)
+
+
+@router.get(
+    "/latest_message",
+    response_model=MinimalMessageSchema,
+    responses={204: {"model": None}},
+    dependencies=[Security(auth.permission(auth.permissions.READ_RECORDS))],
+)
+def master_record_latest_message(
+    record_id: int,
+    user: UKRDCUser = Security(auth.get_user),
+    jtrace: Session = Depends(get_jtrace),
+    errorsdb: Session = Depends(get_errorsdb),
+):
+    """
+    Retreive a minimal representation of the latest file received for the patient,
+    if received within the last year."""
+    latest = get_last_message_on_masterrecord(jtrace, errorsdb, record_id, user)
+    if not latest:
+        return Response(status_code=HTTP_204_NO_CONTENT)
+    return latest
 
 
 @router.get(

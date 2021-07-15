@@ -13,15 +13,18 @@ class ChannelSchema(OrmModel):
     store_last_message: Optional[bool]
 
 
-class MessageSchema(OrmModel):
+class MinimalMessageSchema(OrmModel):
     id: int
-    message_id: int
-    channel_id: str
     received: Optional[datetime.datetime]
     msg_status: str
     ni: Optional[str]
     filename: Optional[str]
     facility: Optional[str]
+
+
+class MessageSchema(MinimalMessageSchema):
+    message_id: int
+    channel_id: str
     error: Optional[str]
     status: Optional[str]
     links = LinkSet(
