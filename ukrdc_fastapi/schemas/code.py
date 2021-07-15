@@ -7,7 +7,7 @@ from .base import OrmModel
 class CodeSchema(OrmModel):
     coding_standard: str
     code: str
-    description: str
+    description: Optional[str]
     object_type: Optional[str]
 
     creation_date: datetime.datetime
