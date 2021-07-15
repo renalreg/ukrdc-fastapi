@@ -31,6 +31,9 @@ class Permissions:
     READ_MIRTH = "ukrdc:mirth:read"
     WRITE_MIRTH = "ukrdc:mirth:write"
 
+    READ_CODES = "ukrdc:codes:read"
+    WRITE_CODES = "ukrdc:codes:write"
+
     UNIT_PREFIX = "ukrdc:unit:"
     UNIT_WILDCARD = "*"
 
@@ -46,6 +49,8 @@ class Permissions:
             cls.WRITE_ERRORS,
             cls.WRITE_MIRTH,
             cls.WRITE_WORKITEMS,
+            cls.READ_CODES,
+            cls.WRITE_CODES,
             cls.EXPORT_RECORDS,
             cls.UNIT_PREFIX + cls.UNIT_WILDCARD,
         ]
