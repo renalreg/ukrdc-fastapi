@@ -22,6 +22,7 @@ from ukrdc_sqla.ukrdc import Address
 from ukrdc_sqla.ukrdc import Base as UKRDC3Base
 from ukrdc_sqla.ukrdc import (
     Code,
+    CodeMap,
     Diagnosis,
     Document,
     LabOrder,
@@ -101,8 +102,36 @@ def populate_ukrdc3_session(session):
         code="TEST_SENDING_FACILITY_2",
         description="TEST_SENDING_FACILITY_2_DESCRIPTION",
     )
+    code3 = Code(
+        coding_standard="CODING_STANDARD_1",
+        code="CODE_1",
+        description="DESCRIPTION_1",
+    )
+    code4 = Code(
+        coding_standard="CODING_STANDARD_2",
+        code="CODE_2",
+        description="DESCRIPTION_2",
+    )
+    codemap1 = CodeMap(
+        source_coding_standard="CODING_STANDARD_1",
+        destination_coding_standard="CODING_STANDARD_2",
+        source_code="CODE_1",
+        destination_code="CODE_2",
+        creation_date=datetime(2020, 3, 16),
+    )
+    codemap2 = CodeMap(
+        source_coding_standard="CODING_STANDARD_2",
+        destination_coding_standard="CODING_STANDARD_1",
+        source_code="CODE_2",
+        destination_code="CODE_1",
+        creation_date=datetime(2020, 3, 16),
+    )
     session.add(code1)
     session.add(code2)
+    session.add(code3)
+    session.add(code4)
+    session.add(codemap1)
+    session.add(codemap2)
 
     pid_1: str = "PYTEST01:PV:00000000A"
     pid_2: str = "PYTEST02:PV:00000000A"

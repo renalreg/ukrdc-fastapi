@@ -2,6 +2,7 @@ from fastapi import APIRouter
 from starlette.responses import RedirectResponse
 
 from . import (
+    codes,
     dashboard,
     empi,
     errors,
@@ -41,6 +42,7 @@ router.include_router(patientrecords.router, prefix="/patientrecords")
 router.include_router(laborders.router, prefix="/laborders")
 router.include_router(errors.router, prefix="/errors")
 router.include_router(resultitems.router, prefix="/resultitems")
+router.include_router(codes.router, prefix="/codes")
 
 # EMPI Records
 router.include_router(workitems.router, prefix="/workitems")
