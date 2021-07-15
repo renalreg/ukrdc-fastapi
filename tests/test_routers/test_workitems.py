@@ -59,7 +59,6 @@ def test_workitem_close(client, workitem_id, httpx_session):
         f"/api/v1/workitems/{workitem_id}/close/",
         json={},
     )
-    print(response.text)
     message = response.json().get("message")
 
     assert "<status>3</status>" in message
