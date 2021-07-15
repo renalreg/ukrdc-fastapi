@@ -89,7 +89,7 @@ def master_record_statistics(
     """Retreive a particular master record from the EMPI"""
     record: MasterRecord = get_masterrecord(jtrace, record_id, user)
 
-    errors = get_errors_related_to_masterrecord(errorsdb, jtrace, user, record.id)
+    errors = get_errors_related_to_masterrecord(errorsdb, jtrace, record.id, user)
 
     related_ukrdc_records = get_masterrecords_related_to_masterrecord(
         jtrace, record.id, user
@@ -168,7 +168,7 @@ def master_record_errors(
     """
     return paginate(
         get_errors_related_to_masterrecord(
-            errorsdb, jtrace, user, record_id, status, facility, since, until
+            errorsdb, jtrace, record_id, user, status, facility, since, until
         )
     )
 

@@ -110,8 +110,8 @@ def get_masterrecords_related_to_masterrecord(
 def get_errors_related_to_masterrecord(
     errorsdb: Session,
     jtrace: Session,
-    user: UKRDCUser,
     record_id: int,
+    user: UKRDCUser,
     status: Optional[str] = "ERROR",
     facility: Optional[str] = None,
     since: Optional[datetime.datetime] = None,
@@ -175,8 +175,8 @@ def get_last_message_on_masterrecord(
     msgs = get_errors_related_to_masterrecord(
         errorsdb,
         jtrace,
-        user,
         record.id,
+        user,
         status=None,
         since=datetime.datetime.utcnow() - datetime.timedelta(days=365),
     ).filter(Message.facility != "TRACING")
