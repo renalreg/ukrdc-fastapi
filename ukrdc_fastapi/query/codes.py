@@ -23,6 +23,10 @@ def get_codes(ukrdc3: Session, coding_standard: Optional[list[str]] = None) -> Q
     return query
 
 
+def get_code(ukrdc3: Session, coding_standard: str, code: str):
+    return ukrdc3.query(Code).get((coding_standard, code))
+
+
 def get_code_maps(
     ukrdc3: Session,
     source_coding_standard: Optional[list[str]] = None,
