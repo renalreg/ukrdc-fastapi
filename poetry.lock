@@ -256,13 +256,13 @@ typing-extensions = ">=3.7.4,<4.0.0"
 
 [package.extras]
 gino = ["gino[starlette] (>=1.0.1,<2.0.0)", "SQLAlchemy (>=1.3.20,<2.0.0)", "sqlalchemy-stubs (>=0.4,<0.5)"]
-all = ["gino[starlette] (>=1.0.1,<2.0.0)", "SQLAlchemy (>=1.3.20,<2.0.0)", "sqlalchemy-stubs (>=0.4,<0.5)", "databases[postgresql,sqlite,mysql] (>=0.4.0,<0.5.0)", "orm (>=0.1.5,<0.2.0)", "tortoise-orm[aiomysql,asyncpg,aiosqlite] (>=0.16.18,<0.18.0)", "asyncpg (==0.23.0)", "ormar (>=0.10.5,<0.11.0)", "Django (<3.3.0)"]
+all = ["gino[starlette] (>=1.0.1,<2.0.0)", "SQLAlchemy (>=1.3.20,<2.0.0)", "sqlalchemy-stubs (>=0.4,<0.5)", "databases[postgresql,mysql,sqlite] (>=0.4.0,<0.5.0)", "orm (>=0.1.5,<0.2.0)", "tortoise-orm[asyncpg,aiomysql,aiosqlite] (>=0.16.18,<0.18.0)", "asyncpg (==0.23.0)", "ormar (>=0.10.5,<0.11.0)", "Django (<3.3.0)"]
 sqlalchemy = ["SQLAlchemy (>=1.3.20,<2.0.0)", "sqlalchemy-stubs (>=0.4,<0.5)"]
 asyncpg = ["SQLAlchemy (>=1.3.20,<2.0.0)", "asyncpg (==0.23.0)"]
-databases = ["databases[postgresql,sqlite,mysql] (>=0.4.0,<0.5.0)"]
-orm = ["databases[postgresql,sqlite,mysql] (>=0.4.0,<0.5.0)", "orm (>=0.1.5,<0.2.0)"]
-django = ["databases[postgresql,sqlite,mysql] (>=0.4.0,<0.5.0)", "Django (<3.3.0)"]
-tortoise = ["tortoise-orm[aiomysql,asyncpg,aiosqlite] (>=0.16.18,<0.18.0)"]
+databases = ["databases[postgresql,mysql,sqlite] (>=0.4.0,<0.5.0)"]
+orm = ["databases[postgresql,mysql,sqlite] (>=0.4.0,<0.5.0)", "orm (>=0.1.5,<0.2.0)"]
+django = ["databases[postgresql,mysql,sqlite] (>=0.4.0,<0.5.0)", "Django (<3.3.0)"]
+tortoise = ["tortoise-orm[asyncpg,aiomysql,aiosqlite] (>=0.16.18,<0.18.0)"]
 ormar = ["ormar (>=0.10.5,<0.11.0)"]
 
 [[package]]
@@ -423,7 +423,7 @@ tests = ["pytest", "pytest-cov", "python-daemon"]
 
 [[package]]
 name = "mirth-client"
-version = "1.2.1"
+version = "1.2.2"
 description = "Basic Python interface for Mirth Connect"
 category = "main"
 optional = false
@@ -1065,8 +1065,8 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
 [metadata]
 lock-version = "1.1"
-python-versions = "^3.9" 
-content-hash = "802b73c0cf69a3d656cea0a81589f280a8269f21f7da31d2e9f40f40be62255b"
+python-versions = "^3.9"
+content-hash = "55ea58d7b831de197a9d65206925088764438332d79894dccde21997f4a134d8"
 
 [metadata.files]
 anyio = [
@@ -1323,8 +1323,8 @@ mirakuru = [
     {file = "mirakuru-2.4.1.tar.gz", hash = "sha256:7025d121d2f04e957bd6ae3239531d60ebba787839c89d6052479beb58b0cd0b"},
 ]
 mirth-client = [
-    {file = "mirth-client-1.2.1.tar.gz", hash = "sha256:9b6ac66567a5ce6be2225911edafcb8a31b8aa178e410ead7f98d42e406f87fd"},
-    {file = "mirth_client-1.2.1-py3-none-any.whl", hash = "sha256:19f7aa2f3a32857c551d1af75b5fd7e9f01a19e1df487c3a2d80e26161f7df81"},
+    {file = "mirth-client-1.2.2.tar.gz", hash = "sha256:10bb120eaac490d73d439a2bae3614bdc8fd886a078fdb385dab788f866f128e"},
+    {file = "mirth_client-1.2.2-py3-none-any.whl", hash = "sha256:7dbdc15e286a596f1062fd67c0d90f58641d8b57829cc66c55d5aadcb4986958"},
 ]
 mypy = [
     {file = "mypy-0.910-cp35-cp35m-macosx_10_9_x86_64.whl", hash = "sha256:a155d80ea6cee511a3694b108c4494a39f42de11ee4e61e72bc424c490e46457"},
