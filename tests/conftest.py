@@ -96,21 +96,25 @@ def populate_ukrdc3_session(session):
         coding_standard="RR1+",
         code="TEST_SENDING_FACILITY_1",
         description="TEST_SENDING_FACILITY_1_DESCRIPTION",
+        creation_date=datetime(2020, 3, 16),
     )
     code2 = Code(
         coding_standard="RR1+",
         code="TEST_SENDING_FACILITY_2",
         description="TEST_SENDING_FACILITY_2_DESCRIPTION",
+        creation_date=datetime(2020, 3, 16),
     )
     code3 = Code(
         coding_standard="CODING_STANDARD_1",
         code="CODE_1",
         description="DESCRIPTION_1",
+        creation_date=datetime(2020, 3, 16),
     )
     code4 = Code(
         coding_standard="CODING_STANDARD_2",
         code="CODE_2",
         description="DESCRIPTION_2",
+        creation_date=datetime(2020, 3, 16),
     )
     codemap1 = CodeMap(
         source_coding_standard="CODING_STANDARD_1",

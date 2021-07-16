@@ -1,4 +1,9 @@
+import datetime
+
+from fastapi.exceptions import HTTPException
+
 from ukrdc_fastapi.query import codes
+from ukrdc_fastapi.schemas.code import CodeMapSchema
 
 
 def test_get_codes(ukrdc3_session):
@@ -83,3 +88,28 @@ def test_get_code_maps_filter_code(ukrdc3_session):
     code_maps = codes.get_code_maps(ukrdc3_session, destination_code="CODE_2").all()
     assert len(code_maps) == 1
     assert code_maps[0].source_code == "CODE_1"
+
+
+def test_get_code(ukrdc3_session):
+    code = codes.get_code(ukrdc3_session, "CODING_STANDARD_1", "CODE_1")
+    assert code
+    assert code.maps_to == [
+        CodeMapSchema(
+            source_coding_standard="CODING_STANDARD_1",
+            source_code="CODE_1",
+            destination_coding_standard="CODING_STANDARD_2",
+            destination_code="CODE_2",
+            creation_date=datetime.datetime(2020, 3, 16, 0, 0),
+            update_date=None,
+        )
+    ]
+    assert code.mapped_by == [
+        CodeMapSchema(
+            source_coding_standard="CODING_STANDARD_2",
+            source_code="CODE_2",
+            destination_coding_standard="CODING_STANDARD_1",
+            destination_code="CODE_1",
+            creation_date=datetime.datetime(2020, 3, 16, 0, 0),
+            update_date=None,
+        )
+    ]

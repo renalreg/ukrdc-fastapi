@@ -5,7 +5,13 @@ from sqlalchemy.orm import Session
 
 from ukrdc_fastapi.dependencies import get_ukrdc3
 from ukrdc_fastapi.dependencies.auth import Permissions, auth
-from ukrdc_fastapi.query.codes import get_code_maps, get_codes, get_coding_standards
+from ukrdc_fastapi.query.codes import (
+    ExtendedCodeSchema,
+    get_code,
+    get_code_maps,
+    get_codes,
+    get_coding_standards,
+)
 from ukrdc_fastapi.schemas.code import CodeMapSchema, CodeSchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
 
@@ -13,7 +19,7 @@ router = APIRouter(tags=["Codes"])
 
 
 @router.get(
-    "/",
+    "/list/",
     response_model=Page[CodeSchema],
     dependencies=[Security(auth.permission(Permissions.READ_CODES))],
 )
@@ -26,7 +32,21 @@ def code_list(
 
 
 @router.get(
-    "/maps",
+    "/list/{coding_standard}.{code}/",
+    response_model=ExtendedCodeSchema,
+    dependencies=[Security(auth.permission(Permissions.READ_CODES))],
+)
+def code_details(
+    coding_standard: str,
+    code: str,
+    ukrdc3: Session = Depends(get_ukrdc3),
+):
+    """Retreive a list of internal codes"""
+    return get_code(ukrdc3, coding_standard, code)
+
+
+@router.get(
+    "/maps/",
     response_model=Page[CodeMapSchema],
     dependencies=[Security(auth.permission(Permissions.READ_CODES))],
 )
@@ -50,7 +70,7 @@ def code_maps(
 
 
 @router.get(
-    "/standards",
+    "/standards/",
     response_model=list[str],
     dependencies=[Security(auth.permission(Permissions.READ_CODES))],
 )
