@@ -4,6 +4,13 @@ from sqlalchemy.orm import Session
 from sqlalchemy.orm.query import Query
 from ukrdc_sqla.ukrdc import Code, CodeMap
 
+from ukrdc_fastapi.schemas.code import CodeMapSchema, CodeSchema
+
+
+class ExtendedCodeSchema(CodeSchema):
+    maps_to: list[CodeMapSchema]
+    mapped_by: list[CodeMapSchema]
+
 
 def get_codes(ukrdc3: Session, coding_standard: Optional[list[str]] = None) -> Query:
     """Get the list of codes from the code list
@@ -23,8 +30,27 @@ def get_codes(ukrdc3: Session, coding_standard: Optional[list[str]] = None) -> Q
     return query
 
 
-def get_code(ukrdc3: Session, coding_standard: str, code: str):
-    return ukrdc3.query(Code).get((coding_standard, code))
+def get_code(ukrdc3: Session, coding_standard: str, code: str) -> ExtendedCodeSchema:
+    code: Code = ukrdc3.query(Code).get((coding_standard, code))
+    maps_to = get_code_maps(
+        ukrdc3, source_coding_standard=[code.coding_standard], source_code=code.code
+    ).all()
+    mapped_by = get_code_maps(
+        ukrdc3,
+        destination_coding_standard=[code.coding_standard],
+        destination_code=code.code,
+    ).all()
+    return ExtendedCodeSchema(
+        coding_standard=code.coding_standard,
+        code=code.code,
+        description=code.description,
+        object_type=code.object_type,
+        creation_date=code.creation_date,
+        update_date=code.update_date,
+        units=code.units,
+        maps_to=maps_to,
+        mapped_by=mapped_by,
+    )
 
 
 def get_code_maps(
