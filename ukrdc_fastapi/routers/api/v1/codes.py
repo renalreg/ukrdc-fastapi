@@ -2,7 +2,6 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, Query, Security
 from sqlalchemy.orm import Session
-from ukrdc_sqla.ukrdc import Code
 
 from ukrdc_fastapi.dependencies import get_ukrdc3
 from ukrdc_fastapi.dependencies.auth import Permissions, auth
