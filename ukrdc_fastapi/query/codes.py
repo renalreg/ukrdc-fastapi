@@ -1,5 +1,6 @@
 from typing import Optional
 
+from fastapi.exceptions import HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.query import Query
 from ukrdc_sqla.ukrdc import Code, CodeMap
@@ -31,23 +32,37 @@ def get_codes(ukrdc3: Session, coding_standard: Optional[list[str]] = None) -> Q
 
 
 def get_code(ukrdc3: Session, coding_standard: str, code: str) -> ExtendedCodeSchema:
-    code: Code = ukrdc3.query(Code).get((coding_standard, code))
+    """Get details and mappings for a particular code
+
+    Args:
+        ukrdc3 (Session): SQLAlchemy session
+        coding_standard (str): Coding standard
+        code (str): Code
+
+    Returns:
+        ExtendedCodeSchema: Extended code details
+    """
+    code_obj: Optional[Code] = ukrdc3.query(Code).get((coding_standard, code))
+    if not code_obj:
+        raise HTTPException(404, detail="Facility not found")
     maps_to = get_code_maps(
-        ukrdc3, source_coding_standard=[code.coding_standard], source_code=code.code
+        ukrdc3,
+        source_coding_standard=[code_obj.coding_standard],
+        source_code=code_obj.code,
     ).all()
     mapped_by = get_code_maps(
         ukrdc3,
-        destination_coding_standard=[code.coding_standard],
-        destination_code=code.code,
+        destination_coding_standard=[code_obj.coding_standard],
+        destination_code=code_obj.code,
     ).all()
     return ExtendedCodeSchema(
-        coding_standard=code.coding_standard,
-        code=code.code,
-        description=code.description,
-        object_type=code.object_type,
-        creation_date=code.creation_date,
-        update_date=code.update_date,
-        units=code.units,
+        coding_standard=code_obj.coding_standard,
+        code=code_obj.code,
+        description=code_obj.description,
+        object_type=code_obj.object_type,
+        creation_date=code_obj.creation_date,
+        update_date=code_obj.update_date,
+        units=code_obj.units,
         maps_to=maps_to,
         mapped_by=mapped_by,
     )
