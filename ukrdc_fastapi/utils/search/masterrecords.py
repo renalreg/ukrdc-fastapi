@@ -44,9 +44,10 @@ class SearchSet:
     def add_nhs_number(self, item: str):
         """Add an NHS number string to the search query set.
         If the string cannot be parsed as an NHS number, it will be ignored"""
-
         if nhs.is_valid(item):
             self.nhs_numbers.append(nhs.compact(item))
+        elif nhs.is_valid(item.zfill(10)):
+            self.nhs_numbers.append(nhs.compact(item.zfill(10)))
 
     def add_mrn_number(self, item: str):
         """Add an MRN number formatted string to the search query set.
@@ -111,6 +112,38 @@ class SearchSet:
 
             # Absolutely anything can be a name
             self.add_name(item)
+
+
+def _term_is_exact(item: str) -> bool:
+    """Determine is a search string is intended to be exact,
+    by being wrapped in quotes.
+
+    Args:
+        item (str): Search term
+
+    Returns:
+        bool: Is the term an exact query
+    """
+    return item[0] == '"' and item[-1] == '"'
+
+
+def _convert_query_to_ilike(item: str, double_ended: bool = False) -> str:
+    """Convert a search query into a postgres ilike expression.
+    E.g. a term wrapped in quotes will be matched exactly (but case
+    insensitive), but without quotes will be fuzzy-searched
+
+    Args:
+        item (str): Search term
+        double_ended (bool, optional): Match prefix as well as suffix. Defaults to False.
+
+    Returns:
+        str: Postgres ilike expression string
+    """
+    if _term_is_exact(item):
+        return item.strip('"')
+    if double_ended:
+        return f"%{item}%"
+    return f"{item}%"
 
 
 def masterrecord_ids_from_nhs_no(session: Session, nhs_nos: Iterable[str]):
@@ -179,14 +212,16 @@ def masterrecord_ids_from_ukrdc_no(session: Session, ukrdc_nos: Iterable[str]):
 def masterrecord_ids_from_full_name(session: Session, names: Iterable[str]):
     """Finds Ids from full name"""
     conditions = []
-    # SQLite has no concat func, so skip for tests :(
-    if session.bind.dialect.name != "sqlite":
-        conditions += [
-            concat(MasterRecord.givenname, " ", MasterRecord.surname).ilike(name)
-            for name in names
-        ]
-    conditions += [MasterRecord.givenname.ilike(name) for name in names]
-    conditions += [MasterRecord.surname.ilike(name) for name in names]
+
+    for name in names:
+        query_term: str = _convert_query_to_ilike(name)
+
+        conditions.append(
+            concat(MasterRecord.givenname, " ", MasterRecord.surname).ilike(query_term)
+        )
+        conditions.append(MasterRecord.givenname.ilike(query_term))
+        conditions.append(MasterRecord.surname.ilike(query_term))
+
     masterrecords: list[MasterRecord] = (
         session.query(MasterRecord).filter(or_(*conditions)).all()
     )
