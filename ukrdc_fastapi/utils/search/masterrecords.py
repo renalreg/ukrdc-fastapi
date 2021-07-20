@@ -114,6 +114,39 @@ class SearchSet:
             self.add_name(item)
 
 
+def _term_is_exact(item: str) -> bool:
+    """Determine is a search string is intended to be exact,
+    by being wrapped in quotes.
+
+    Args:
+        item (str): Search term
+
+    Returns:
+        bool: Is the term an exact query
+    """
+    return item[0] == '"' and item[-1] == '"'
+
+
+def _convert_query_to_ilike(item: str, double_ended: bool = False) -> str:
+    """Convert a search query into a postgres ilike expression.
+    E.g. a term wrapped in quotes will be matched exactly (but case
+    insensitive), but without quotes will be fuzzy-searched
+
+    Args:
+        item (str): Search term
+        double_ended (bool, optional): Match prefix as well as suffix. Defaults to False.
+
+    Returns:
+        str: Postgres ilike expression string
+    """
+    if _term_is_exact(item):
+        return item.strip('"')
+    elif double_ended:
+        return f"%{item}%"
+    else:
+        return f"{item}%"
+
+
 def masterrecord_ids_from_nhs_no(session: Session, nhs_nos: Iterable[str]):
     """Finds IDs from NHS number."""
     conditions = [MasterRecord.nationalid.ilike(nhs_no.strip()) for nhs_no in nhs_nos]
@@ -181,12 +214,15 @@ def masterrecord_ids_from_full_name(session: Session, names: Iterable[str]):
     """Finds Ids from full name"""
     conditions = []
 
-    conditions += [
-        concat(MasterRecord.givenname, " ", MasterRecord.surname).ilike(name)
-        for name in names
-    ]
-    conditions += [MasterRecord.givenname.ilike(name) for name in names]
-    conditions += [MasterRecord.surname.ilike(name) for name in names]
+    for name in names:
+        query_term: str = _convert_query_to_ilike(name)
+
+        conditions.append(
+            concat(MasterRecord.givenname, " ", MasterRecord.surname).ilike(query_term)
+        )
+        conditions.append(MasterRecord.givenname.ilike(query_term))
+        conditions.append(MasterRecord.surname.ilike(query_term))
+
     masterrecords: list[MasterRecord] = (
         session.query(MasterRecord).filter(or_(*conditions)).all()
     )
