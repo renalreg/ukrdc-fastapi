@@ -44,9 +44,10 @@ class SearchSet:
     def add_nhs_number(self, item: str):
         """Add an NHS number string to the search query set.
         If the string cannot be parsed as an NHS number, it will be ignored"""
-
         if nhs.is_valid(item):
             self.nhs_numbers.append(nhs.compact(item))
+        elif nhs.is_valid(item.zfill(10)):
+            self.nhs_numbers.append(nhs.compact(item.zfill(10)))
 
     def add_mrn_number(self, item: str):
         """Add an MRN number formatted string to the search query set.
