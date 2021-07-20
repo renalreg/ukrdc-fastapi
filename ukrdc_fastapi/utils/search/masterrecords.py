@@ -143,8 +143,7 @@ def _convert_query_to_ilike(item: str, double_ended: bool = False) -> str:
         return item.strip('"')
     elif double_ended:
         return f"%{item}%"
-    else:
-        return f"{item}%"
+    return f"{item}%"
 
 
 def masterrecord_ids_from_nhs_no(session: Session, nhs_nos: Iterable[str]):
