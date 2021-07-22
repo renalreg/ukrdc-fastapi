@@ -3,7 +3,6 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, Security
 from mirth_client import MirthAPI
-from pydantic import BaseModel
 from redis import Redis
 from sqlalchemy.orm import Session
 
@@ -17,6 +16,7 @@ from ukrdc_fastapi.query.workitems import (
     get_workitem,
     get_workitems_related_to_workitem,
 )
+from ukrdc_fastapi.schemas.base import JSONModel
 from ukrdc_fastapi.schemas.empi import WorkItemSchema
 from ukrdc_fastapi.schemas.errors import MessageSchema
 from ukrdc_fastapi.utils.mirth import MirthMessageResponseSchema
@@ -25,11 +25,11 @@ from ukrdc_fastapi.utils.paginate import Page, paginate
 router = APIRouter(prefix="/{workitem_id}")
 
 
-class CloseWorkItemRequestSchema(BaseModel):
+class CloseWorkItemRequestSchema(JSONModel):
     comment: Optional[str]
 
 
-class UpdateWorkItemRequestSchema(BaseModel):
+class UpdateWorkItemRequestSchema(JSONModel):
     status: Optional[int] = None
     comment: Optional[str] = None
 
