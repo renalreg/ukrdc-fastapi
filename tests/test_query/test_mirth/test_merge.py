@@ -3,6 +3,7 @@ from datetime import datetime
 import pytest
 from ukrdc_sqla.empi import LinkRecord, MasterRecord
 
+from ukrdc_fastapi.query.common import PermissionsError
 from ukrdc_fastapi.query.mirth.merge import (
     merge_master_records,
     merge_person_into_master_record,
@@ -87,3 +88,13 @@ async def test_merge_person_into_master_record(
     # Check we are merging master records 1 and 3
     assert f"<superceding>1</superceding>" in response.message
     assert f"<superceeded>30</superceeded>" in response.message
+
+
+@pytest.mark.asyncio
+async def test_merge_master_records_permission_denied(
+    jtrace_session, redis_session, mirth_session, test_user, httpx_session
+):
+    with pytest.raises(PermissionsError):
+        await merge_master_records(
+            1, 2, test_user, jtrace_session, mirth_session, redis_session
+        )
