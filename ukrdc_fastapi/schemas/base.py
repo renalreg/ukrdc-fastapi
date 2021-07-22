@@ -8,12 +8,14 @@ def _to_camel(snake_str: str) -> str:
     return components[0] + "".join(x.title() for x in components[1:])
 
 
-class OrmModel(HyperModel):
+class JSONModel(HyperModel):
     class Config:
         orm_mode = True
         alias_generator = _to_camel
         allow_population_by_field_name = True
 
+
+class OrmModel(JSONModel):
     @validator("*", pre=True)
     def evaluate_lazy_columns(
         cls, value
