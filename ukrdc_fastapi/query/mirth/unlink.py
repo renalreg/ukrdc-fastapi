@@ -3,10 +3,11 @@ from httpx import Response
 from mirth_client.mirth import MirthAPI
 from redis import Redis
 from sqlalchemy.orm.session import Session
+from ukrdc_sqla.empi import Person
 
 from ukrdc_fastapi.dependencies.auth import UKRDCUser
 from ukrdc_fastapi.query.masterrecords import get_masterrecord
-from ukrdc_fastapi.query.persons import get_person
+from ukrdc_fastapi.query.persons import get_person, get_person_from_pid
 from ukrdc_fastapi.utils.mirth import (
     MirthMessageResponseSchema,
     build_unlink_message,
@@ -41,3 +42,19 @@ async def unlink_person_from_master_record(
         raise HTTPException(500, detail=response.text)
 
     return MirthMessageResponseSchema(status="success", message=message)
+
+
+async def unlink_patient_from_master_record(
+    pid: str,
+    master_id: int,
+    user: UKRDCUser,
+    jtrace: Session,
+    mirth: MirthAPI,
+    redis: Redis,
+):
+    """Unlink a particular PatientRecord from a Master Record"""
+    # Get records to assert user permission
+    person = get_person_from_pid(jtrace, pid, user)
+    return await unlink_person_from_master_record(
+        person.id, master_id, user, jtrace, mirth, redis
+    )
