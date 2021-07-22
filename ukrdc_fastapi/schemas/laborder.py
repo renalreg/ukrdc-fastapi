@@ -35,7 +35,7 @@ class ResultItemSchema(OrmModel):
 
 class ResultItemServiceSchema(OrmModel):
     id: str
-    description: str
+    description: Optional[str]
     standard: str
 
 
