@@ -3,7 +3,6 @@ from httpx import Response
 from mirth_client.mirth import MirthAPI
 from redis import Redis
 from sqlalchemy.orm.session import Session
-from ukrdc_sqla.empi import Person
 
 from ukrdc_fastapi.dependencies.auth import UKRDCUser
 from ukrdc_fastapi.query.masterrecords import get_masterrecord

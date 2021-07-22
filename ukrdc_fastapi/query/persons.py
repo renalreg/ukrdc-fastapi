@@ -59,7 +59,7 @@ def get_person(jtrace: Session, person_id: int, user: UKRDCUser) -> Person:
     return person
 
 
-def get_person_from_pid(jtrace: Session, pid: str, user: UKRDCUser) -> Query:
+def get_person_from_pid(jtrace: Session, pid: str, user: UKRDCUser) -> Person:
     """Get a list of Person records
 
     Args:
