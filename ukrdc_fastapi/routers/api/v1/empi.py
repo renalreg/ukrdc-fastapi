@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, Security
 from mirth_client.mirth import MirthAPI
 from pydantic.fields import Field
-from pydantic.main import BaseModel
 from redis import Redis
 from sqlalchemy.orm import Session
 
