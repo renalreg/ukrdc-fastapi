@@ -63,7 +63,7 @@ async def empi_merge(
     dependencies=[
         Security(
             auth.permission(
-                [auth.permissions.READ_RECORDS, auth.permissions.WRITE_RECORDS]
+                [auth.permissions.WRITE_EMPI, auth.permissions.WRITE_RECORDS]
             )
         )
     ],
@@ -87,7 +87,7 @@ async def empi_unlink(
     dependencies=[
         Security(
             auth.permission(
-                [auth.permissions.READ_RECORDS, auth.permissions.WRITE_RECORDS]
+                [auth.permissions.WRITE_EMPI, auth.permissions.WRITE_RECORDS]
             )
         )
     ],

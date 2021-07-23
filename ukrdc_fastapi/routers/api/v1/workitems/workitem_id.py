@@ -53,7 +53,13 @@ def workitem_detail(
     response_model=MirthMessageResponseSchema,
     dependencies=[
         Security(
-            auth.permission([Permissions.READ_WORKITEMS, Permissions.WRITE_WORKITEMS])
+            auth.permission(
+                [
+                    Permissions.READ_WORKITEMS,
+                    Permissions.WRITE_WORKITEMS,
+                    auth.permissions.WRITE_EMPI,
+                ]
+            )
         )
     ],
 )
@@ -158,7 +164,13 @@ async def workitem_close(
     response_model=MirthMessageResponseSchema,
     dependencies=[
         Security(
-            auth.permission([Permissions.READ_WORKITEMS, Permissions.WRITE_WORKITEMS])
+            auth.permission(
+                [
+                    Permissions.READ_WORKITEMS,
+                    Permissions.WRITE_WORKITEMS,
+                    auth.permissions.WRITE_EMPI,
+                ]
+            )
         )
     ],
 )
@@ -181,7 +193,13 @@ async def workitem_merge(
     response_model=MirthMessageResponseSchema,
     dependencies=[
         Security(
-            auth.permission([Permissions.READ_WORKITEMS, Permissions.WRITE_WORKITEMS])
+            auth.permission(
+                [
+                    Permissions.READ_WORKITEMS,
+                    Permissions.WRITE_WORKITEMS,
+                    auth.permissions.WRITE_EMPI,
+                ]
+            )
         )
     ],
 )

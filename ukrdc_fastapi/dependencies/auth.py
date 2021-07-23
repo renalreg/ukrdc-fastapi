@@ -19,8 +19,7 @@ class Permissions:
     WRITE_RECORDS = "ukrdc:records:write"
     EXPORT_RECORDS = "ukrdc:records:export"
 
-    READ_EMPI = "ukrdc:records:read"  # Deprecated
-    WRITE_EMPI = "ukrdc:records:write"  # Deprecated
+    WRITE_EMPI = "ukrdc:empi:write"
 
     READ_ERRORS = "ukrdc:errors:read"
     WRITE_ERRORS = "ukrdc:errors:write"
@@ -45,13 +44,14 @@ class Permissions:
             cls.READ_ERRORS,
             cls.READ_MIRTH,
             cls.READ_WORKITEMS,
+            cls.READ_CODES,
             cls.WRITE_RECORDS,
             cls.WRITE_ERRORS,
             cls.WRITE_MIRTH,
             cls.WRITE_WORKITEMS,
-            cls.READ_CODES,
             cls.WRITE_CODES,
             cls.EXPORT_RECORDS,
+            cls.WRITE_EMPI,
             cls.UNIT_PREFIX + cls.UNIT_WILDCARD,
         ]
 

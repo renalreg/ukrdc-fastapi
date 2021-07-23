@@ -17,9 +17,7 @@ router = APIRouter(tags=["Search"])
 @router.get(
     "/",
     response_model=Page[MasterRecordSchema],
-    dependencies=[
-        Security(auth.permission([Permissions.READ_EMPI, Permissions.READ_RECORDS]))
-    ],
+    dependencies=[Security(auth.permission([Permissions.READ_RECORDS]))],
 )
 def search_masterrecords(
     nhs_number: list[str] = QueryParam([]),
