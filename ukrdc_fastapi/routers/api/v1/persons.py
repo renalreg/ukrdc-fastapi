@@ -15,7 +15,7 @@ router = APIRouter(tags=["Persons"])
 @router.get(
     "/",
     response_model=Page[PersonSchema],
-    dependencies=[Security(auth.permission(Permissions.READ_EMPI))],
+    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
 def persons(
     user: UKRDCUser = Security(auth.get_user), jtrace: Session = Depends(get_jtrace)
@@ -27,7 +27,7 @@ def persons(
 @router.get(
     "/{person_id}/",
     response_model=PersonSchema,
-    dependencies=[Security(auth.permission(Permissions.READ_EMPI))],
+    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
 def person_detail(
     person_id: int,
@@ -41,7 +41,7 @@ def person_detail(
 @router.get(
     "/{person_id}/masterrecords/",
     response_model=list[MasterRecordSchema],
-    dependencies=[Security(auth.permission(Permissions.READ_EMPI))],
+    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
 def person_masterrecords(
     person_id: int,
