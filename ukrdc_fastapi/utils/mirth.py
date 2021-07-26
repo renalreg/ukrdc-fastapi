@@ -261,12 +261,14 @@ async def get_channel_from_name(
     return mirth.channel(name_map[name].id)
 
 
-def build_merge_message(superceding: int, superceeded: int) -> str:
+def build_merge_message(superseding: int, superseded: int) -> str:
     """Build rawData for two master records be merged.
+    Note: Superseded and superseding are spelt wrong in the
+    Mirth messages. This is known.
 
     Args:
-        superceding (int): MasterRecord.id of first item in merge
-        superceeded (int): MasterRecord.id of second item in merge
+        superseding (int): MasterRecord.id of first item in merge
+        superseded (int): MasterRecord.id of second item in merge
 
     Returns:
         str: XML rawData for Mirth message
@@ -274,10 +276,10 @@ def build_merge_message(superceding: int, superceeded: int) -> str:
     root = Element("request")
 
     superceding_element = SubElement(root, "superceding")
-    superceding_element.text = str(superceding)
+    superceding_element.text = str(superseding)
 
     superceeded_element = SubElement(root, "superceeded")
-    superceeded_element.text = str(superceeded)
+    superceeded_element.text = str(superseded)
 
     return tostring(root, encoding="unicode")
 
