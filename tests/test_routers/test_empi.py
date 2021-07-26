@@ -1,6 +1,6 @@
 def test_merge(client, httpx_session):
     response = client.post(
-        f"/api/v1/empi/merge/", json={"superceding": 1, "superceeded": 2}
+        f"/api/v1/empi/merge/", json={"superseding": 1, "superseded": 2}
     )
     assert response.json().get("status") == "success"
     message = response.json().get("message")

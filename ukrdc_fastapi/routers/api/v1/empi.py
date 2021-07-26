@@ -18,8 +18,8 @@ router = APIRouter(tags=["Patient Index Operations"])
 
 
 class MergeRequestSchema(JSONModel):
-    superceding: int = Field(..., title="Superceding master-record ID")
-    superceeded: int = Field(..., title="Superceeded master-record ID")
+    superseding: int = Field(..., title="Superseding master-record ID")
+    superseded: int = Field(..., title="Superseded master-record ID")
 
 
 class UnlinkRequestSchema(JSONModel):
@@ -53,7 +53,7 @@ async def empi_merge(
     """Merge a pair of MasterRecords"""
 
     return await merge_master_records(
-        args.superceding, args.superceeded, user, jtrace, mirth, redis
+        args.superseding, args.superseded, user, jtrace, mirth, redis
     )
 
 
