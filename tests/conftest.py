@@ -633,8 +633,22 @@ def populate_errorsdb_session(session):
         status="STATUS2",
     )
 
+    message_1 = ErrorMessage(
+        id=3,
+        message_id=3,
+        channel_id="MIRTH-CHANNEL-UUID",
+        received=datetime(2021, 1, 1),
+        msg_status="RECEIVED",
+        ni="999999999",
+        filename="FILENAME_3.XML",
+        facility="TEST_SENDING_FACILITY_1",
+        error=None,
+        status="STATUS3",
+    )
+
     session.add(error_1)
     session.add(error_2)
+    session.add(message_1)
 
     session.commit()
 

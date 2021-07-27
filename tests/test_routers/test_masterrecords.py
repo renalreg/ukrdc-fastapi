@@ -102,6 +102,15 @@ def test_masterrecord_errors(client):
     assert returned_ids == {1}
 
 
+def test_masterrecord_messages(client):
+    response = client.get("/api/v1/masterrecords/1/messages")
+    assert response.status_code == 200
+
+    errors = [MessageSchema(**item) for item in response.json()["items"]]
+    returned_ids = {item.id for item in errors}
+    assert returned_ids == {1, 3}
+
+
 def test_masterrecord_persons(client):
     response = client.get("/api/v1/masterrecords/1/persons")
     assert response.status_code == 200
