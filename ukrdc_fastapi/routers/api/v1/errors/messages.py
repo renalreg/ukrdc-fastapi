@@ -103,7 +103,7 @@ async def error_source(
         message.connector_messages.values()
     )[0]
 
-    message_data: Optional[ConnectorMessageData]
+    message_data: Optional[ConnectorMessageData] = None
 
     # Prioritise encoded message over raw
     if first_connector_message.encoded:
