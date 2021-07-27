@@ -8,7 +8,7 @@ from fastapi.exceptions import HTTPException
 from mirth_client.mirth import MirthAPI
 from mirth_client.models import ConnectorMessageData, ConnectorMessageModel
 from sqlalchemy.orm import Session
-from ukrdc_sqla.empi import MasterRecord, WorkItem
+from ukrdc_sqla.empi import MasterRecord
 
 from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_mirth
 from ukrdc_fastapi.dependencies.auth import UKRDCUser, auth

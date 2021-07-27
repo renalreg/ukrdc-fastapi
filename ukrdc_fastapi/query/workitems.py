@@ -146,6 +146,17 @@ def get_workitems_related_to_workitem(
 def get_workitems_related_to_error(
     jtrace: Session, errorsdb: Session, error_id: str, user: UKRDCUser
 ) -> Query:
+    """Get a list of WorkItems related via the Patient Number to a given Message
+
+    Args:
+        jtrace (Session): JTRACE SQLAlchemy session
+        errorsdb (Session): ERRORSDB SQLAlchemy session
+        error_id (str): Message ID
+        user (UKRDCUser): Logged-in user
+
+    Returns:
+        Query: SQLAlchemy query
+    """
     error = get_error(errorsdb, error_id, user)
 
     # Get masterrecords directly referenced by the error
