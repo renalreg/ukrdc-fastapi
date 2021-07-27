@@ -13,6 +13,7 @@ from ukrdc_sqla.empi import MasterRecord, WorkItem
 from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_mirth
 from ukrdc_fastapi.dependencies.auth import UKRDCUser, auth
 from ukrdc_fastapi.query.errors import ERROR_SORTER, get_error, get_errors
+from ukrdc_fastapi.query.workitems import get_workitems_related_to_error
 from ukrdc_fastapi.schemas.base import OrmModel
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema, WorkItemShortSchema
 from ukrdc_fastapi.schemas.errors import MessageSchema
@@ -134,22 +135,7 @@ async def error_workitems(
     jtrace: Session = Depends(get_jtrace),
 ):
     """Retreive WorkItems associated with a specific error message"""
-    error = get_error(errorsdb, error_id, user)
-
-    # Get masterrecords directly referenced by the error
-    direct_records: list[MasterRecord] = (
-        jtrace.query(MasterRecord).filter(MasterRecord.nationalid == error.ni).all()
-    )
-
-    # Get workitems related to masterrecords directly referenced by the error
-    return (
-        jtrace.query(WorkItem)
-        .filter(
-            WorkItem.master_id.in_([record.id for record in direct_records]),
-            WorkItem.status == 1,
-        )
-        .all()
-    )
+    return get_workitems_related_to_error(jtrace, errorsdb, error_id, user)
 
 
 @router.get(
