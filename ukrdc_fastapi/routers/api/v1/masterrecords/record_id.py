@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, Response, Security
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_204_NO_CONTENT
 from ukrdc_sqla.empi import LinkRecord, MasterRecord, Person
+from ukrdc_sqla.errorsdb import Message
 from ukrdc_sqla.ukrdc import PatientRecord
 
 from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_ukrdc3
@@ -29,6 +30,7 @@ from ukrdc_fastapi.schemas.errors import MessageSchema, MinimalMessageSchema
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordSchema
 from ukrdc_fastapi.utils.links import find_related_ids
 from ukrdc_fastapi.utils.paginate import Page, paginate
+from ukrdc_fastapi.utils.sort import Sorter, make_sorter
 
 
 class MasterRecordStatisticsSchema(OrmModel):
@@ -55,7 +57,7 @@ def master_record_detail(
 
 
 @router.get(
-    "/latest_message",
+    "/latest_message/",
     response_model=MinimalMessageSchema,
     responses={204: {"model": None}},
     dependencies=[Security(auth.permission(auth.permissions.READ_RECORDS))],
@@ -76,7 +78,7 @@ def master_record_latest_message(
 
 
 @router.get(
-    "/statistics",
+    "/statistics/",
     response_model=MasterRecordStatisticsSchema,
     dependencies=[Security(auth.permission(auth.permissions.READ_RECORDS))],
 )
@@ -171,6 +173,36 @@ def master_record_errors(
             errorsdb, jtrace, record_id, user, status, facility, since, until
         )
     )
+
+
+@router.get(
+    "/messages/",
+    response_model=Page[MessageSchema],
+    dependencies=[Security(auth.permission(auth.permissions.READ_RECORDS))],
+)
+def master_record_messages(
+    record_id: int,
+    facility: Optional[str] = None,
+    since: Optional[datetime.datetime] = None,
+    until: Optional[datetime.datetime] = None,
+    status: Optional[str] = None,
+    user: UKRDCUser = Security(auth.get_user),
+    jtrace: Session = Depends(get_jtrace),
+    errorsdb: Session = Depends(get_errorsdb),
+    sorter: Sorter = Depends(
+        make_sorter(
+            [Message.id, Message.received, Message.ni], default_sort_by=Message.received
+        )
+    ),
+):
+    """
+    Retreive a list of errors related to a particular master record.
+    By default returns message created within the last 365 days.
+    """
+    query = get_errors_related_to_masterrecord(
+        errorsdb, jtrace, record_id, user, status, facility, since, until
+    )
+    return paginate(sorter.sort(query))
 
 
 @router.get(
