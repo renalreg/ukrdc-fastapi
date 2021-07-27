@@ -135,7 +135,7 @@ async def error_workitems(
     jtrace: Session = Depends(get_jtrace),
 ):
     """Retreive WorkItems associated with a specific error message"""
-    return get_workitems_related_to_error(jtrace, errorsdb, error_id, user)
+    return get_workitems_related_to_error(jtrace, errorsdb, error_id, user).all()
 
 
 @router.get(

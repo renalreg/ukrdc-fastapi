@@ -145,7 +145,7 @@ def get_workitems_related_to_workitem(
 
 def get_workitems_related_to_error(
     jtrace: Session, errorsdb: Session, error_id: str, user: UKRDCUser
-):
+) -> Query:
     error = get_error(errorsdb, error_id, user)
 
     # Get masterrecords directly referenced by the error
@@ -154,11 +154,7 @@ def get_workitems_related_to_error(
     )
 
     # Get workitems related to masterrecords directly referenced by the error
-    return (
-        jtrace.query(WorkItem)
-        .filter(
-            WorkItem.master_id.in_([record.id for record in direct_records]),
-            WorkItem.status == 1,
-        )
-        .all()
+    return jtrace.query(WorkItem).filter(
+        WorkItem.master_id.in_([record.id for record in direct_records]),
+        WorkItem.status == 1,
     )
