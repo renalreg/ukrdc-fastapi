@@ -28,7 +28,7 @@ async def merge_master_records(
     superseding: MasterRecord = get_masterrecord(jtrace, superseding_id, user)
     superseded: MasterRecord = get_masterrecord(jtrace, superseded_id, user)
 
-    channel = await get_channel_from_name("Merge Patient", mirth, redis)
+    channel = get_channel_from_name("Merge Patient", mirth, redis)
     if not channel:
         raise HTTPException(
             500, detail="ID for Merge Patient channel not found"

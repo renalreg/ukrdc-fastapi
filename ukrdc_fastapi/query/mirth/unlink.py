@@ -27,7 +27,7 @@ async def unlink_person_from_master_record(
     person = get_person(jtrace, person_id, user)
     master = get_masterrecord(jtrace, master_id, user)
 
-    channel = await get_channel_from_name("Unlink", mirth, redis)
+    channel = get_channel_from_name("Unlink", mirth, redis)
     if not channel:
         raise HTTPException(
             500, detail="ID for Unlink channel not found"

@@ -41,7 +41,7 @@ async def update_workitem(
     """
     workitem = get_workitem(jtrace, workitem_id, user)
 
-    channel = await get_channel_from_name("WorkItemUpdate", mirth, redis)
+    channel = get_channel_from_name("WorkItemUpdate", mirth, redis)
 
     if not channel:
         raise HTTPException(
@@ -86,7 +86,7 @@ async def close_workitem(
     """
     workitem = get_workitem(jtrace, workitem_id, user)
 
-    channel = await get_channel_from_name("WorkItemUpdate", mirth, redis)
+    channel = get_channel_from_name("WorkItemUpdate", mirth, redis)
     if not channel:
         raise HTTPException(
             500, detail="ID for WorkItemUpdate channel not found"

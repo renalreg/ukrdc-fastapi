@@ -747,16 +747,28 @@ def errorsdb_session(errorsdb_sessionmaker):
 
 
 @pytest.fixture(scope="function")
-def redis_session():
-    """Create a fresh in-memory Redis database session"""
-    return fakeredis.FakeStrictRedis(decode_responses=True)
-
-
-@pytest.fixture(scope="function")
 async def mirth_session():
     """Create a fresh in-memory Mirth session"""
     async with MirthAPI("mock://mirth.url") as api:
         yield api
+
+
+from ukrdc_fastapi.utils.mirth import (
+    cache_channel_groups,
+    cache_channel_info,
+    cache_channel_statistics,
+)
+
+
+@pytest.fixture(scope="function")
+@pytest.mark.asyncio
+async def redis_session(mirth_session, httpx_session):
+    """Create a fresh in-memory Redis database session"""
+    redis = fakeredis.FakeStrictRedis(decode_responses=True)
+    await cache_channel_info(mirth_session, redis)
+    await cache_channel_groups(mirth_session, redis)
+    await cache_channel_statistics(mirth_session, redis)
+    return redis
 
 
 @pytest.fixture(scope="function")

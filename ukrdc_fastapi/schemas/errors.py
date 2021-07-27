@@ -2,6 +2,7 @@ import datetime
 from typing import Optional
 
 from fastapi_hypermodel import LinkSet, UrlFor
+from pydantic import validator
 
 from .base import OrmModel
 
@@ -24,7 +25,6 @@ class MinimalMessageSchema(OrmModel):
 
 class MessageSchema(MinimalMessageSchema):
     message_id: int
-    channel_id: str
     error: Optional[str]
     status: Optional[str]
     links = LinkSet(
@@ -37,9 +37,46 @@ class MessageSchema(MinimalMessageSchema):
                 "error_source",
                 {"error_id": "<id>"},
             ),
+            "workitems": UrlFor(
+                "error_workitems",
+                {"error_id": "<id>"},
+            ),
+            "masterrecords": UrlFor(
+                "error_masterrecords",
+                {"error_id": "<id>"},
+            ),
             "mirth": UrlFor(
                 "mirth_channel_message",
                 {"channel_id": "<channel_id>", "message_id": "<message_id>"},
             ),
         }
     )
+
+    channel_id: str
+    channel: Optional[str]
+
+    _channel_id_name_map: dict[str, str]
+
+    @classmethod
+    def set_channel_id_name_map(cls, cinm: dict[str, str]):
+        """
+        Set the Mirth Channel ID-Name map.
+        This model inserts a channel name from its channel_id field,
+        when given a map of IDs to names.
+
+        Args:
+            cinm (dict[str, str]): Mirth Channel ID-Name map
+        """
+        cls._channel_id_name_map = cinm
+
+    @validator("channel")
+    def channel_name(cls, _, values):  # pylint: disable=no-self-argument,no-self-use
+        """
+        Dynamically generates the channel name field
+        by reading the class Mirth Channel ID-Name map.
+        """
+        if hasattr(cls, "_channel_id_name_map"):
+            channel_id = values.get("channel_id")
+            if channel_id:
+                return cls._channel_id_name_map.get(channel_id)
+        return None

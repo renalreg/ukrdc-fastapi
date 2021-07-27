@@ -74,37 +74,3 @@ def test_masterrecord_related(jtrace_session, superuser):
 
     # Check MR3 is identified as related to MR1
     assert {record.id for record in records} == {1, 3}
-
-
-def test_get_masterrecord_errors(errorsdb_session, jtrace_session, superuser):
-    errors = masterrecords.get_errors_related_to_masterrecord(
-        errorsdb_session, jtrace_session, 1, superuser
-    ).all()
-    assert {error.id for error in errors} == {1}
-
-
-def test_get_masterrecord_latest(errorsdb_session, jtrace_session, superuser):
-    latest = masterrecords.get_last_message_on_masterrecord(
-        jtrace_session, errorsdb_session, 1, superuser
-    )
-    assert latest.id == 1
-
-    # Create a new master record
-    master_record_3 = MasterRecord(
-        id=3,
-        status=0,
-        last_updated=datetime(2021, 1, 1),
-        date_of_birth=datetime(1980, 12, 12),
-        nationalid="119999999",
-        nationalid_type="UKRDC",
-        effective_date=datetime(2021, 1, 1),
-    )
-
-    # Person 3 now has 2 master records we want to merge
-    jtrace_session.add(master_record_3)
-    jtrace_session.commit()
-
-    latest = masterrecords.get_last_message_on_masterrecord(
-        jtrace_session, errorsdb_session, 3, superuser
-    )
-    assert latest is None

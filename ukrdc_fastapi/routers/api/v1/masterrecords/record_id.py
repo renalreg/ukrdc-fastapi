@@ -5,14 +5,16 @@ from fastapi import APIRouter, Depends, Response, Security
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_204_NO_CONTENT
 from ukrdc_sqla.empi import LinkRecord, MasterRecord, Person
-from ukrdc_sqla.errorsdb import Message
 from ukrdc_sqla.ukrdc import PatientRecord
 
 from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_ukrdc3
 from ukrdc_fastapi.dependencies.auth import UKRDCUser, auth
-from ukrdc_fastapi.query.masterrecords import (
+from ukrdc_fastapi.query.errors import (
+    ERROR_SORTER,
     get_errors_related_to_masterrecord,
     get_last_message_on_masterrecord,
+)
+from ukrdc_fastapi.query.masterrecords import (
     get_masterrecord,
     get_masterrecords_related_to_masterrecord,
 )
@@ -30,7 +32,7 @@ from ukrdc_fastapi.schemas.errors import MessageSchema, MinimalMessageSchema
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordSchema
 from ukrdc_fastapi.utils.links import find_related_ids
 from ukrdc_fastapi.utils.paginate import Page, paginate
-from ukrdc_fastapi.utils.sort import Sorter, make_sorter
+from ukrdc_fastapi.utils.sort import Sorter
 
 
 class MasterRecordStatisticsSchema(OrmModel):
@@ -189,11 +191,7 @@ def master_record_messages(
     user: UKRDCUser = Security(auth.get_user),
     jtrace: Session = Depends(get_jtrace),
     errorsdb: Session = Depends(get_errorsdb),
-    sorter: Sorter = Depends(
-        make_sorter(
-            [Message.id, Message.received, Message.ni], default_sort_by=Message.received
-        )
-    ),
+    sorter: Sorter = Depends(ERROR_SORTER),
 ):
     """
     Retreive a list of errors related to a particular master record.
