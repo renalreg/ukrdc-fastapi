@@ -10,6 +10,11 @@ from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
 from ukrdc_fastapi.query.common import PermissionsError
 from ukrdc_fastapi.schemas.errors import MessageSchema
 from ukrdc_fastapi.utils.errors import ExtendedErrorSchema, make_extended_error
+from ukrdc_fastapi.utils.sort import make_sorter
+
+ERROR_SORTER = make_sorter(
+    [Message.id, Message.received, Message.ni], default_sort_by=Message.received
+)
 
 
 def _apply_query_permissions(query: Query, user: UKRDCUser):

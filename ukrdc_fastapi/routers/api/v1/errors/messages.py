@@ -12,12 +12,12 @@ from ukrdc_sqla.errorsdb import Message
 
 from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_mirth
 from ukrdc_fastapi.dependencies.auth import UKRDCUser, auth
-from ukrdc_fastapi.query.errors import get_error, get_errors
+from ukrdc_fastapi.query.errors import ERROR_SORTER, get_error, get_errors
 from ukrdc_fastapi.schemas.base import OrmModel
 from ukrdc_fastapi.schemas.errors import MessageSchema
 from ukrdc_fastapi.utils.errors import ExtendedErrorSchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
-from ukrdc_fastapi.utils.sort import Sorter, make_sorter
+from ukrdc_fastapi.utils.sort import Sorter
 
 router = APIRouter()
 
@@ -40,11 +40,7 @@ def error_messages(
     ni: Optional[list[str]] = QueryParam([]),
     user: UKRDCUser = Security(auth.get_user),
     errorsdb: Session = Depends(get_errorsdb),
-    sorter: Sorter = Depends(
-        make_sorter(
-            [Message.id, Message.received, Message.ni], default_sort_by=Message.received
-        )
-    ),
+    sorter: Sorter = Depends(ERROR_SORTER),
 ):
     """
     Retreive a list of error messages, optionally filtered by NI, facility, or date.
