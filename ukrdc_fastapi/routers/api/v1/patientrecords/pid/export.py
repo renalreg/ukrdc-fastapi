@@ -26,7 +26,7 @@ async def patient_export_pv(
     pid: str, mirth: MirthAPI = Depends(get_mirth), redis: Redis = Depends(get_redis)
 ):
     """Export a specific patient's data to PV"""
-    channel = await get_channel_from_name("PV Outbound", mirth, redis)
+    channel = get_channel_from_name("PV Outbound", mirth, redis)
     if not channel:
         raise HTTPException(
             500, detail="ID for PV Outbound channel not found"
@@ -51,7 +51,7 @@ async def patient_export_pv_tests(
     pid: str, mirth: MirthAPI = Depends(get_mirth), redis: Redis = Depends(get_redis)
 ):
     """Export a specific patient's test data to PV"""
-    channel = await get_channel_from_name("PV Outbound", mirth, redis)
+    channel = get_channel_from_name("PV Outbound", mirth, redis)
     if not channel:
         raise HTTPException(
             500, detail="ID for PV Outbound channel not found"
@@ -76,7 +76,7 @@ async def patient_export_pv_docs(
     pid: str, mirth: MirthAPI = Depends(get_mirth), redis: Redis = Depends(get_redis)
 ):
     """Export a specific patient's documents data to PV"""
-    channel = await get_channel_from_name("PV Outbound", mirth, redis)
+    channel = get_channel_from_name("PV Outbound", mirth, redis)
     if not channel:
         raise HTTPException(
             500, detail="ID for PV Outbound channel not found"
@@ -101,7 +101,7 @@ async def patient_export_radar(
     pid: str, mirth: MirthAPI = Depends(get_mirth), redis: Redis = Depends(get_redis)
 ):
     """Export a specific patient's data to RaDaR"""
-    channel = await get_channel_from_name("RADAR Outbound", mirth, redis)
+    channel = get_channel_from_name("RADAR Outbound", mirth, redis)
     if not channel:
         raise HTTPException(
             500, detail="ID for RADAR Outbound channel not found"
