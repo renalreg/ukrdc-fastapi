@@ -83,7 +83,7 @@ def get_errors(
 
 
 def get_error(errorsdb: Session, error_id: str, user: UKRDCUser) -> Message:
-    """Get an error by error_id, and convert to an ExtendedError object
+    """Get an error by error_id
 
     Args:
         errorsdb (Session): SQLAlchemy session
@@ -92,7 +92,7 @@ def get_error(errorsdb: Session, error_id: str, user: UKRDCUser) -> Message:
         user (UKRDCUser): Logged-in user
 
     Returns:
-        ExtendedErrorSchema: Error message object
+        Message: Error message object
     """
     error = errorsdb.query(Message).get(error_id)
     if not error:
