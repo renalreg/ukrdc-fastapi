@@ -119,7 +119,13 @@ async def error_source(
 @router.get(
     "/{error_id}/workitems",
     response_model=list[WorkItemShortSchema],
-    dependencies=[Security(auth.permission(auth.permissions.READ_ERRORS))],
+    dependencies=[
+        Security(
+            auth.permission(
+                [auth.permissions.READ_ERRORS, auth.permissions.READ_WORKITEMS]
+            )
+        )
+    ],
 )
 async def error_workitems(
     error_id: str,
@@ -149,7 +155,13 @@ async def error_workitems(
 @router.get(
     "/{error_id}/masterrecords",
     response_model=list[MasterRecordSchema],
-    dependencies=[Security(auth.permission(auth.permissions.READ_ERRORS))],
+    dependencies=[
+        Security(
+            auth.permission(
+                [auth.permissions.READ_ERRORS, auth.permissions.READ_RECORDS]
+            )
+        )
+    ],
 )
 async def error_masterrecords(
     error_id: str,
