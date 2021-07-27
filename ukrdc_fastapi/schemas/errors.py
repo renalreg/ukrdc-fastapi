@@ -2,6 +2,10 @@ import datetime
 from typing import Optional
 
 from fastapi_hypermodel import LinkSet, UrlFor
+from pydantic import validator
+
+from ukrdc_fastapi.dependencies import get_redis
+from ukrdc_fastapi.utils.mirth import get_channel_name
 
 from .base import OrmModel
 
@@ -43,3 +47,16 @@ class MessageSchema(MinimalMessageSchema):
             ),
         }
     )
+
+    channel: Optional[str]
+
+    @validator("channel")
+    def channel_name(cls, _, values):
+        """
+        Dynamically generates the channel name field
+        by reading the Redis-cached channel info.
+        """
+        channel_id = values.get("channel_id")
+        if channel_id:
+            return get_channel_name(channel_id, get_redis())
+        return None
