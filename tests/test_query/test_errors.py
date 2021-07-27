@@ -49,18 +49,18 @@ def test_get_errors_nis(errorsdb_session, superuser):
     assert {error.id for error in all_errors} == {1}
 
 
-def test_get_error_superuser(errorsdb_session, jtrace_session, superuser):
-    error = errors.get_error(errorsdb_session, jtrace_session, 1, superuser)
+def test_get_error_superuser(errorsdb_session, superuser):
+    error = errors.get_error(errorsdb_session, 1, superuser)
     assert error
     assert error.id == 1
 
 
-def test_get_error_user(errorsdb_session, jtrace_session, test_user):
-    error = errors.get_error(errorsdb_session, jtrace_session, 1, test_user)
+def test_get_error_user(errorsdb_session, test_user):
+    error = errors.get_error(errorsdb_session, 1, test_user)
     assert error
     assert error.id == 1
 
 
-def test_get_error_user_denied(errorsdb_session, jtrace_session, test_user):
+def test_get_error_user_denied(errorsdb_session, test_user):
     with pytest.raises(PermissionsError):
-        errors.get_error(errorsdb_session, jtrace_session, 2, test_user)
+        errors.get_error(errorsdb_session, 2, test_user)

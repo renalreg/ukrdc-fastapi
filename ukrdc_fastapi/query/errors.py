@@ -8,8 +8,6 @@ from ukrdc_sqla.errorsdb import Message
 
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
 from ukrdc_fastapi.query.common import PermissionsError
-from ukrdc_fastapi.schemas.errors import MessageSchema
-from ukrdc_fastapi.utils.errors import ExtendedErrorSchema, make_extended_error
 from ukrdc_fastapi.utils.sort import make_sorter
 
 ERROR_SORTER = make_sorter(
@@ -84,9 +82,7 @@ def get_errors(
     return query
 
 
-def get_error(
-    errorsdb: Session, jtrace: Session, error_id: str, user: UKRDCUser
-) -> ExtendedErrorSchema:
+def get_error(errorsdb: Session, error_id: str, user: UKRDCUser) -> Message:
     """Get an error by error_id, and convert to an ExtendedError object
 
     Args:
@@ -103,4 +99,4 @@ def get_error(
         raise HTTPException(404, detail="Error record not found")
     _assert_permission(error, user)
 
-    return make_extended_error(MessageSchema.from_orm(error), jtrace)
+    return error

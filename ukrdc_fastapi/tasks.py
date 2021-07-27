@@ -5,7 +5,7 @@ from mirth_client.mirth import MirthAPI
 from ukrdc_sqla.ukrdc import Code
 
 from ukrdc_fastapi.config import settings
-from ukrdc_fastapi.dependencies import get_mirth, get_redis
+from ukrdc_fastapi.dependencies import get_redis
 from ukrdc_fastapi.dependencies.database import (
     ErrorsSession,
     JtraceSession,
@@ -49,6 +49,7 @@ def cache_dash_stats() -> None:
 
 @repeat_every(seconds=settings.cache_channel_seconds)
 async def cache_mirth_channel_info() -> None:
+    """FastAPI Utils task to refresh Mirth channel info"""
     async with MirthAPI(
         settings.mirth_url, verify_ssl=settings.mirth_verify_ssl, timeout=None
     ) as mirth:
@@ -60,6 +61,7 @@ async def cache_mirth_channel_info() -> None:
 
 @repeat_every(seconds=settings.cache_groups_seconds)
 async def cache_mirth_channel_groups() -> None:
+    """FastAPI Utils task to refresh Mirth channel groups"""
     async with MirthAPI(
         settings.mirth_url, verify_ssl=settings.mirth_verify_ssl, timeout=None
     ) as mirth:
@@ -71,6 +73,7 @@ async def cache_mirth_channel_groups() -> None:
 
 @repeat_every(seconds=settings.cache_statistics_seconds)
 async def cache_mirth_channel_statistics() -> None:
+    """FastAPI Utils task to refresh Mirth channel statistics"""
     async with MirthAPI(
         settings.mirth_url, verify_ssl=settings.mirth_verify_ssl, timeout=None
     ) as mirth:

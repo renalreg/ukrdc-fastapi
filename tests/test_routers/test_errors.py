@@ -1,6 +1,5 @@
 import datetime
 
-from ukrdc_fastapi.routers.api.v1.errors.messages import ExtendedErrorSchema
 from ukrdc_fastapi.schemas.errors import MessageSchema
 
 
@@ -28,12 +27,17 @@ def test_errors_list_facility(client):
 
 def test_errors_detail(client):
     response = client.get("/api/v1/errors/messages/1")
-    error = ExtendedErrorSchema(**response.json())
-    assert error
+    error = MessageSchema(**response.json())
+    assert error.id == 1
 
-    assert len(error.master_records) == 1
-    assert error.master_records[0].id == 1
 
-    assert len(error.work_items) == 2
-    workitem_ids = {item.id for item in error.work_items}
-    assert workitem_ids == {1, 2}
+def test_errors_workitems(client):
+    response = client.get("/api/v1/errors/messages/1/workitems")
+    ids = {item.get("id") for item in response.json()}
+    assert ids == {1, 2}
+
+
+def test_errors_masterrecords(client):
+    response = client.get("/api/v1/errors/messages/1/masterrecords")
+    ids = {item.get("id") for item in response.json()}
+    assert ids == {1}

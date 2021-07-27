@@ -1,4 +1,3 @@
-import asyncio
 from typing import Optional
 from uuid import UUID
 
@@ -10,8 +9,8 @@ from mirth_client.models import ChannelGroup, ChannelModel, ChannelStatistics
 from pydantic import BaseModel
 from redis import Redis
 
-from ukrdc_fastapi.config import settings
 from ukrdc_fastapi.schemas.base import OrmModel
+from ukrdc_fastapi.schemas.errors import MessageSchema
 
 
 class MirthMessageResponseSchema(BaseModel):
@@ -65,6 +64,10 @@ async def cache_channel_info(mirth: MirthAPI, redis: Redis) -> list[ChannelModel
             str(channel.id): channel.json(by_alias=True) for channel in channel_info
         },
     )
+
+    # Some of our models need the ID-name map to function properly
+    id_name_map = {str(channel.id): channel.name for channel in channel_info}
+    MessageSchema.set_channel_id_name_map(id_name_map)
 
     return channel_info
 
