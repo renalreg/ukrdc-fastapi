@@ -5,10 +5,10 @@ from . import (
     codes,
     dashboard,
     empi,
-    errors,
     facilities,
     laborders,
     masterrecords,
+    messages,
     mirth,
     patientrecords,
     persons,
@@ -40,7 +40,6 @@ router.include_router(search.router, prefix="/search")
 router.include_router(facilities.router, prefix="/facilities")
 router.include_router(patientrecords.router, prefix="/patientrecords")
 router.include_router(laborders.router, prefix="/laborders")
-router.include_router(errors.router, prefix="/errors")
 router.include_router(resultitems.router, prefix="/resultitems")
 router.include_router(codes.router, prefix="/codes")
 
@@ -48,3 +47,6 @@ router.include_router(codes.router, prefix="/codes")
 router.include_router(workitems.router, prefix="/workitems")
 router.include_router(persons.router, prefix="/persons")
 router.include_router(masterrecords.router, prefix="/masterrecords")
+
+# ErrorsDB/Message Records
+router.include_router(messages.router, prefix="/messages")

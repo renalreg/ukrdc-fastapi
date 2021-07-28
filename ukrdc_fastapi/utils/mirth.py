@@ -10,7 +10,7 @@ from pydantic import BaseModel
 from redis import Redis
 
 from ukrdc_fastapi.schemas.base import OrmModel
-from ukrdc_fastapi.schemas.errors import MessageSchema
+from ukrdc_fastapi.schemas.message import MessageSchema
 
 
 class MirthMessageResponseSchema(BaseModel):

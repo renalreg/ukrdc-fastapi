@@ -31,19 +31,19 @@ class MessageSchema(MinimalMessageSchema):
         {
             "self": UrlFor(
                 "error_detail",
-                {"error_id": "<id>"},
+                {"message_id": "<id>"},
             ),
             "source": UrlFor(
                 "error_source",
-                {"error_id": "<id>"},
+                {"message_id": "<id>"},
             ),
             "workitems": UrlFor(
                 "error_workitems",
-                {"error_id": "<id>"},
+                {"message_id": "<id>"},
             ),
             "masterrecords": UrlFor(
                 "error_masterrecords",
-                {"error_id": "<id>"},
+                {"message_id": "<id>"},
             ),
             "mirth": UrlFor(
                 "mirth_channel_message",
