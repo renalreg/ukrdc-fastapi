@@ -27,7 +27,6 @@ class MasterRecordSchema(OrmModel):
             ),
             "statistics": UrlFor("master_record_statistics", {"record_id": "<id>"}),
             "related": UrlFor("master_record_related", {"record_id": "<id>"}),
-            "errors": UrlFor("master_record_errors", {"record_id": "<id>"}),
             "messages": UrlFor("master_record_messages", {"record_id": "<id>"}),
             "linkrecords": UrlFor("master_record_linkrecords", {"record_id": "<id>"}),
             "persons": UrlFor("master_record_persons", {"record_id": "<id>"}),

@@ -9,7 +9,7 @@ from ukrdc_sqla.empi import MasterRecord, Person, PidXRef, WorkItem
 
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
 from ukrdc_fastapi.query.common import PermissionsError, person_belongs_to_units
-from ukrdc_fastapi.query.errors import get_message
+from ukrdc_fastapi.query.messages import get_message
 
 
 def _apply_query_permissions(query: Query, user: UKRDCUser):
@@ -143,7 +143,7 @@ def get_workitems_related_to_workitem(
     return _apply_query_permissions(other_workitems, user)
 
 
-def get_workitems_related_to_error(
+def get_workitems_related_to_message(
     jtrace: Session, errorsdb: Session, message_id: str, user: UKRDCUser
 ) -> Query:
     """Get a list of WorkItems related via the Patient Number to a given Message

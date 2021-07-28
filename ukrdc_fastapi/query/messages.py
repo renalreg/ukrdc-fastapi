@@ -107,12 +107,12 @@ def get_message(errorsdb: Session, message_id: str, user: UKRDCUser) -> Message:
     return error
 
 
-def get_errors_related_to_masterrecord(
+def get_messages_related_to_masterrecord(
     errorsdb: Session,
     jtrace: Session,
     record_id: int,
     user: UKRDCUser,
-    status: Optional[str] = "ERROR",
+    status: Optional[str] = None,
     facility: Optional[str] = None,
     since: Optional[datetime.datetime] = None,
     until: Optional[datetime.datetime] = None,
@@ -169,7 +169,7 @@ def get_last_message_on_masterrecord(
     """
     record: MasterRecord = get_masterrecord(jtrace, record_id, user)
 
-    msgs = get_errors_related_to_masterrecord(
+    msgs = get_messages_related_to_masterrecord(
         errorsdb,
         jtrace,
         record.id,

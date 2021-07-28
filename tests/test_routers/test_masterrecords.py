@@ -94,7 +94,7 @@ def test_masterrecord_workitems(client):
 
 
 def test_masterrecord_errors(client):
-    response = client.get("/api/v1/masterrecords/1/errors")
+    response = client.get("/api/v1/masterrecords/1/messages/?status=ERROR")
     assert response.status_code == 200
 
     errors = [MessageSchema(**item) for item in response.json()["items"]]

@@ -12,7 +12,7 @@ from ukrdc_sqla.ukrdc import Code, PatientRecord
 from ukrdc_fastapi.config import settings
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.query.common import PermissionsError
-from ukrdc_fastapi.query.errors import get_messages
+from ukrdc_fastapi.query.messages import get_messages
 from ukrdc_fastapi.query.patientrecords import get_patientrecords
 from ukrdc_fastapi.schemas.base import OrmModel
 from ukrdc_fastapi.schemas.facility import FacilitySchema
