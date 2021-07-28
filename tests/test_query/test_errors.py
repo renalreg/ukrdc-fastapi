@@ -67,9 +67,16 @@ def test_get_error_user_denied(errorsdb_session, test_user):
         messages.get_message(errorsdb_session, 2, test_user)
 
 
-def test_get_masterrecord_errors(errorsdb_session, jtrace_session, superuser):
+def test_get_masterrecord_messages(errorsdb_session, jtrace_session, superuser):
     error_list = messages.get_messages_related_to_masterrecord(
         errorsdb_session, jtrace_session, 1, superuser
+    ).all()
+    assert {error.id for error in error_list} == {1, 3}
+
+
+def test_get_masterrecord_errors(errorsdb_session, jtrace_session, superuser):
+    error_list = messages.get_messages_related_to_masterrecord(
+        errorsdb_session, jtrace_session, 1, superuser, status="ERROR"
     ).all()
     assert {error.id for error in error_list} == {1}
 

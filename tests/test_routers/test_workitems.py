@@ -43,8 +43,17 @@ def test_workitem_related(client):
     assert returned_ids == {2}
 
 
+def test_workitem_messages(client):
+    response = client.get("/api/v1/workitems/1/messages")
+    assert response.status_code == 200
+
+    errors = [MessageSchema(**item) for item in response.json()["items"]]
+    message_ids = {error.id for error in errors}
+    assert message_ids == {1, 3}
+
+
 def test_workitem_errors(client):
-    response = client.get("/api/v1/workitems/1/errors")
+    response = client.get("/api/v1/workitems/1/messages/?status=ERROR")
     assert response.status_code == 200
 
     errors = [MessageSchema(**item) for item in response.json()["items"]]
