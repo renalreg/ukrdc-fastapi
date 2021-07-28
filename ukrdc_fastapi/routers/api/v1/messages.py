@@ -12,7 +12,7 @@ from ukrdc_sqla.empi import MasterRecord
 
 from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_mirth
 from ukrdc_fastapi.dependencies.auth import UKRDCUser, auth
-from ukrdc_fastapi.query.errors import ERROR_SORTER, get_error, get_errors
+from ukrdc_fastapi.query.errors import ERROR_SORTER, get_message, get_messages
 from ukrdc_fastapi.query.workitems import get_workitems_related_to_error
 from ukrdc_fastapi.schemas.base import OrmModel
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema, WorkItemShortSchema
@@ -20,7 +20,7 @@ from ukrdc_fastapi.schemas.errors import MessageSchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
 from ukrdc_fastapi.utils.sort import Sorter
 
-router = APIRouter()
+router = APIRouter(tags=["Messages"])
 
 
 class MessageSourceSchema(OrmModel):
@@ -47,7 +47,7 @@ def error_messages(
     Retreive a list of error messages, optionally filtered by NI, facility, or date.
     By default returns message created within the last 365 days.
     """
-    query = get_errors(
+    query = get_messages(
         errorsdb,
         user,
         status=status,
@@ -60,32 +60,32 @@ def error_messages(
 
 
 @router.get(
-    "/{error_id}/",
+    "/{message_id}/",
     response_model=MessageSchema,
     dependencies=[Security(auth.permission(auth.permissions.READ_ERRORS))],
 )
 def error_detail(
-    error_id: str,
+    message_id: str,
     user: UKRDCUser = Security(auth.get_user),
     errorsdb: Session = Depends(get_errorsdb),
 ):
     """Retreive detailed information about a specific error message"""
-    return get_error(errorsdb, error_id, user)
+    return get_message(errorsdb, message_id, user)
 
 
 @router.get(
-    "/{error_id}/source",
+    "/{message_id}/source",
     response_model=MessageSourceSchema,
     dependencies=[Security(auth.permission(auth.permissions.READ_ERRORS))],
 )
 async def error_source(
-    error_id: str,
+    message_id: str,
     user: UKRDCUser = Security(auth.get_user),
     errorsdb: Session = Depends(get_errorsdb),
     mirth: MirthAPI = Depends(get_mirth),
 ):
     """Retreive detailed information about a specific error message"""
-    error = get_error(errorsdb, error_id, user)
+    error = get_message(errorsdb, message_id, user)
 
     if not error.channel_id:
         raise HTTPException(404, "Channel ID not found")
@@ -118,7 +118,7 @@ async def error_source(
 
 
 @router.get(
-    "/{error_id}/workitems",
+    "/{message_id}/workitems",
     response_model=list[WorkItemShortSchema],
     dependencies=[
         Security(
@@ -129,17 +129,17 @@ async def error_source(
     ],
 )
 async def error_workitems(
-    error_id: str,
+    message_id: str,
     user: UKRDCUser = Security(auth.get_user),
     errorsdb: Session = Depends(get_errorsdb),
     jtrace: Session = Depends(get_jtrace),
 ):
     """Retreive WorkItems associated with a specific error message"""
-    return get_workitems_related_to_error(jtrace, errorsdb, error_id, user).all()
+    return get_workitems_related_to_error(jtrace, errorsdb, message_id, user).all()
 
 
 @router.get(
-    "/{error_id}/masterrecords",
+    "/{message_id}/masterrecords",
     response_model=list[MasterRecordSchema],
     dependencies=[
         Security(
@@ -150,13 +150,13 @@ async def error_workitems(
     ],
 )
 async def error_masterrecords(
-    error_id: str,
+    message_id: str,
     user: UKRDCUser = Security(auth.get_user),
     errorsdb: Session = Depends(get_errorsdb),
     jtrace: Session = Depends(get_jtrace),
 ):
     """Retreive MasterRecords associated with a specific error message"""
-    error = get_error(errorsdb, error_id, user)
+    error = get_message(errorsdb, message_id, user)
 
     # Get masterrecords directly referenced by the error
     return jtrace.query(MasterRecord).filter(MasterRecord.nationalid == error.ni).all()

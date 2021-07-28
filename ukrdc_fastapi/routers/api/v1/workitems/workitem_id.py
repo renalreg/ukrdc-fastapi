@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_mirth, get_redis
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
-from ukrdc_fastapi.query.errors import get_errors
+from ukrdc_fastapi.query.errors import get_messages
 from ukrdc_fastapi.query.mirth.merge import merge_person_into_master_record
 from ukrdc_fastapi.query.mirth.unlink import unlink_person_from_master_record
 from ukrdc_fastapi.query.mirth.workitems import close_workitem, update_workitem
@@ -118,7 +118,7 @@ def workitem_errors(
     workitem_ni: str = workitem.master_record.nationalid
 
     return paginate(
-        get_errors(
+        get_messages(
             errorsdb,
             user,
             status=status,

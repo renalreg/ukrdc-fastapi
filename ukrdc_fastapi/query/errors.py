@@ -37,7 +37,7 @@ def _assert_permission(message: Message, user: UKRDCUser):
         raise PermissionsError()
 
 
-def get_errors(
+def get_messages(
     errorsdb: Session,
     user: UKRDCUser,
     status: Optional[str] = "ERROR",
@@ -87,19 +87,19 @@ def get_errors(
     return query
 
 
-def get_error(errorsdb: Session, error_id: str, user: UKRDCUser) -> Message:
-    """Get an error by error_id
+def get_message(errorsdb: Session, message_id: str, user: UKRDCUser) -> Message:
+    """Get an error by message_id
 
     Args:
         errorsdb (Session): SQLAlchemy session
         jtrace (Session): SQLAlchemy session for the EMPI
-        error_id (str): Error ID to retreive
+        message_id (str): Error ID to retreive
         user (UKRDCUser): Logged-in user
 
     Returns:
         Message: Error message object
     """
-    error = errorsdb.query(Message).get(error_id)
+    error = errorsdb.query(Message).get(message_id)
     if not error:
         raise HTTPException(404, detail="Error record not found")
     _assert_permission(error, user)
@@ -140,7 +140,7 @@ def get_errors_related_to_masterrecord(
         record.nationalid for record in related_master_records.all()
     ]
 
-    return get_errors(
+    return get_messages(
         errorsdb,
         user,
         status=status,

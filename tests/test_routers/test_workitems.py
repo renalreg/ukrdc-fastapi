@@ -48,8 +48,8 @@ def test_workitem_errors(client):
     assert response.status_code == 200
 
     errors = [MessageSchema(**item) for item in response.json()["items"]]
-    error_ids = {error.id for error in errors}
-    assert error_ids == {1}
+    message_ids = {error.id for error in errors}
+    assert message_ids == {1}
 
 
 @pytest.mark.parametrize("workitem_id", [1, 2, 3])

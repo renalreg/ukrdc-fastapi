@@ -9,7 +9,7 @@ from ukrdc_sqla.empi import MasterRecord, Person, PidXRef, WorkItem
 
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
 from ukrdc_fastapi.query.common import PermissionsError, person_belongs_to_units
-from ukrdc_fastapi.query.errors import get_error
+from ukrdc_fastapi.query.errors import get_message
 
 
 def _apply_query_permissions(query: Query, user: UKRDCUser):
@@ -144,20 +144,20 @@ def get_workitems_related_to_workitem(
 
 
 def get_workitems_related_to_error(
-    jtrace: Session, errorsdb: Session, error_id: str, user: UKRDCUser
+    jtrace: Session, errorsdb: Session, message_id: str, user: UKRDCUser
 ) -> Query:
     """Get a list of WorkItems related via the Patient Number to a given Message
 
     Args:
         jtrace (Session): JTRACE SQLAlchemy session
         errorsdb (Session): ERRORSDB SQLAlchemy session
-        error_id (str): Message ID
+        message_id (str): Message ID
         user (UKRDCUser): Logged-in user
 
     Returns:
         Query: SQLAlchemy query
     """
-    error = get_error(errorsdb, error_id, user)
+    error = get_message(errorsdb, message_id, user)
 
     # Get masterrecords directly referenced by the error
     direct_records: list[MasterRecord] = (
