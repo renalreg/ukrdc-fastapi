@@ -31,7 +31,7 @@ class MessageSourceSchema(OrmModel):
 @router.get(
     "/",
     response_model=Page[MessageSchema],
-    dependencies=[Security(auth.permission(auth.permissions.READ_ERRORS))],
+    dependencies=[Security(auth.permission(auth.permissions.READ_MESSAGES))],
 )
 def error_messages(
     facility: Optional[str] = None,
@@ -62,7 +62,7 @@ def error_messages(
 @router.get(
     "/{message_id}/",
     response_model=MessageSchema,
-    dependencies=[Security(auth.permission(auth.permissions.READ_ERRORS))],
+    dependencies=[Security(auth.permission(auth.permissions.READ_MESSAGES))],
 )
 def error_detail(
     message_id: str,
@@ -76,7 +76,7 @@ def error_detail(
 @router.get(
     "/{message_id}/source",
     response_model=MessageSourceSchema,
-    dependencies=[Security(auth.permission(auth.permissions.READ_ERRORS))],
+    dependencies=[Security(auth.permission(auth.permissions.READ_MESSAGES))],
 )
 async def error_source(
     message_id: str,
@@ -123,7 +123,7 @@ async def error_source(
     dependencies=[
         Security(
             auth.permission(
-                [auth.permissions.READ_ERRORS, auth.permissions.READ_WORKITEMS]
+                [auth.permissions.READ_MESSAGES, auth.permissions.READ_WORKITEMS]
             )
         )
     ],
@@ -144,7 +144,7 @@ async def error_workitems(
     dependencies=[
         Security(
             auth.permission(
-                [auth.permissions.READ_ERRORS, auth.permissions.READ_RECORDS]
+                [auth.permissions.READ_MESSAGES, auth.permissions.READ_RECORDS]
             )
         )
     ],
