@@ -18,7 +18,7 @@ from ukrdc_fastapi.query.workitems import (
 )
 from ukrdc_fastapi.schemas.base import JSONModel
 from ukrdc_fastapi.schemas.empi import WorkItemSchema
-from ukrdc_fastapi.schemas.errors import MessageSchema
+from ukrdc_fastapi.schemas.message import MessageSchema
 from ukrdc_fastapi.utils.mirth import MirthMessageResponseSchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
 

@@ -16,7 +16,7 @@ from ukrdc_fastapi.query.messages import ERROR_SORTER, get_message, get_messages
 from ukrdc_fastapi.query.workitems import get_workitems_related_to_message
 from ukrdc_fastapi.schemas.base import OrmModel
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema, WorkItemShortSchema
-from ukrdc_fastapi.schemas.errors import MessageSchema
+from ukrdc_fastapi.schemas.message import MessageSchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
 from ukrdc_fastapi.utils.sort import Sorter
 

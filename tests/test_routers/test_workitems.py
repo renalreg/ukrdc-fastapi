@@ -4,7 +4,7 @@ import pytest
 from ukrdc_sqla.empi import LinkRecord, MasterRecord, WorkItem
 
 from ukrdc_fastapi.schemas.empi import WorkItemSchema
-from ukrdc_fastapi.schemas.errors import MessageSchema
+from ukrdc_fastapi.schemas.message import MessageSchema
 
 
 def test_workitems_list(client):

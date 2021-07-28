@@ -1,6 +1,6 @@
 import datetime
 
-from ukrdc_fastapi.schemas.errors import MessageSchema
+from ukrdc_fastapi.schemas.message import MessageSchema
 
 
 def test_messages_list(client):

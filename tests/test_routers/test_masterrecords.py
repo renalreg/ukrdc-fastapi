@@ -11,7 +11,7 @@ from ukrdc_fastapi.schemas.empi import (
     PersonSchema,
     WorkItemShortSchema,
 )
-from ukrdc_fastapi.schemas.errors import MessageSchema
+from ukrdc_fastapi.schemas.message import MessageSchema
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordSchema
 
 

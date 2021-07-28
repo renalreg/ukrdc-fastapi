@@ -28,7 +28,7 @@ from ukrdc_fastapi.schemas.empi import (
     PersonSchema,
     WorkItemSchema,
 )
-from ukrdc_fastapi.schemas.errors import MessageSchema, MinimalMessageSchema
+from ukrdc_fastapi.schemas.message import MessageSchema, MinimalMessageSchema
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordSchema
 from ukrdc_fastapi.utils.links import find_related_ids
 from ukrdc_fastapi.utils.paginate import Page, paginate
