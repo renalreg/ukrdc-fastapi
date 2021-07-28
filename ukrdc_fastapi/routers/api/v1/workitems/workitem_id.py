@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_mirth, get_redis
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
-from ukrdc_fastapi.query.errors import get_errors
+from ukrdc_fastapi.query.messages import get_messages
 from ukrdc_fastapi.query.mirth.merge import merge_person_into_master_record
 from ukrdc_fastapi.query.mirth.unlink import unlink_person_from_master_record
 from ukrdc_fastapi.query.mirth.workitems import close_workitem, update_workitem
@@ -18,7 +18,7 @@ from ukrdc_fastapi.query.workitems import (
 )
 from ukrdc_fastapi.schemas.base import JSONModel
 from ukrdc_fastapi.schemas.empi import WorkItemSchema
-from ukrdc_fastapi.schemas.errors import MessageSchema
+from ukrdc_fastapi.schemas.message import MessageSchema
 from ukrdc_fastapi.utils.mirth import MirthMessageResponseSchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
 
@@ -99,16 +99,16 @@ def workitem_related(
 
 
 @router.get(
-    "/errors/",
+    "/messages/",
     response_model=Page[MessageSchema],
     dependencies=[Security(auth.permission(Permissions.READ_WORKITEMS))],
 )
-def workitem_errors(
+def workitem_messages(
     workitem_id: int,
     facility: Optional[str] = None,
     since: Optional[datetime.datetime] = None,
     until: Optional[datetime.datetime] = None,
-    status: str = "ERROR",
+    status: Optional[str] = None,
     user: UKRDCUser = Security(auth.get_user),
     jtrace: Session = Depends(get_jtrace),
     errorsdb: Session = Depends(get_errorsdb),
@@ -118,7 +118,7 @@ def workitem_errors(
     workitem_ni: str = workitem.master_record.nationalid
 
     return paginate(
-        get_errors(
+        get_messages(
             errorsdb,
             user,
             status=status,

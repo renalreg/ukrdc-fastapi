@@ -21,8 +21,8 @@ class Permissions:
 
     WRITE_EMPI = "ukrdc:empi:write"
 
-    READ_ERRORS = "ukrdc:errors:read"
-    WRITE_ERRORS = "ukrdc:errors:write"
+    READ_MESSAGES = "ukrdc:messages:read"
+    WRITE_MESSAGES = "ukrdc:messages:write"
 
     READ_WORKITEMS = "ukrdc:workitems:read"
     WRITE_WORKITEMS = "ukrdc:workitems:write"
@@ -41,12 +41,12 @@ class Permissions:
         """Return all permissions for a superuser"""
         return [
             cls.READ_RECORDS,
-            cls.READ_ERRORS,
+            cls.READ_MESSAGES,
             cls.READ_MIRTH,
             cls.READ_WORKITEMS,
             cls.READ_CODES,
             cls.WRITE_RECORDS,
-            cls.WRITE_ERRORS,
+            cls.WRITE_MESSAGES,
             cls.WRITE_MIRTH,
             cls.WRITE_WORKITEMS,
             cls.WRITE_CODES,

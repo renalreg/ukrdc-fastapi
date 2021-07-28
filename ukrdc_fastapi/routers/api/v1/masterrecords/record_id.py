@@ -9,9 +9,9 @@ from ukrdc_sqla.ukrdc import PatientRecord
 
 from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_ukrdc3
 from ukrdc_fastapi.dependencies.auth import UKRDCUser, auth
-from ukrdc_fastapi.query.errors import (
+from ukrdc_fastapi.query.messages import (
     ERROR_SORTER,
-    get_errors_related_to_masterrecord,
+    get_messages_related_to_masterrecord,
     get_last_message_on_masterrecord,
 )
 from ukrdc_fastapi.query.masterrecords import (
@@ -28,7 +28,7 @@ from ukrdc_fastapi.schemas.empi import (
     PersonSchema,
     WorkItemSchema,
 )
-from ukrdc_fastapi.schemas.errors import MessageSchema, MinimalMessageSchema
+from ukrdc_fastapi.schemas.message import MessageSchema, MinimalMessageSchema
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordSchema
 from ukrdc_fastapi.utils.links import find_related_ids
 from ukrdc_fastapi.utils.paginate import Page, paginate
@@ -93,7 +93,9 @@ def master_record_statistics(
     """Retreive a particular master record from the EMPI"""
     record: MasterRecord = get_masterrecord(jtrace, record_id, user)
 
-    errors = get_errors_related_to_masterrecord(errorsdb, jtrace, record.id, user)
+    errors = get_messages_related_to_masterrecord(
+        errorsdb, jtrace, record.id, user, status="ERROR"
+    )
 
     related_ukrdc_records = get_masterrecords_related_to_masterrecord(
         jtrace, record.id, user
@@ -152,32 +154,6 @@ def master_record_related(
 
 
 @router.get(
-    "/errors/",
-    response_model=Page[MessageSchema],
-    dependencies=[Security(auth.permission(auth.permissions.READ_RECORDS))],
-)
-def master_record_errors(
-    record_id: int,
-    user: UKRDCUser = Security(auth.get_user),
-    facility: Optional[str] = None,
-    since: Optional[datetime.datetime] = None,
-    until: Optional[datetime.datetime] = None,
-    status: str = "ERROR",
-    jtrace: Session = Depends(get_jtrace),
-    errorsdb: Session = Depends(get_errorsdb),
-):
-    """
-    Retreive a list of errors related to a particular master record.
-    By default returns message created within the last 365 days.
-    """
-    return paginate(
-        get_errors_related_to_masterrecord(
-            errorsdb, jtrace, record_id, user, status, facility, since, until
-        )
-    )
-
-
-@router.get(
     "/messages/",
     response_model=Page[MessageSchema],
     dependencies=[Security(auth.permission(auth.permissions.READ_RECORDS))],
@@ -197,7 +173,7 @@ def master_record_messages(
     Retreive a list of errors related to a particular master record.
     By default returns message created within the last 365 days.
     """
-    query = get_errors_related_to_masterrecord(
+    query = get_messages_related_to_masterrecord(
         errorsdb, jtrace, record_id, user, status, facility, since, until
     )
     return paginate(sorter.sort(query))

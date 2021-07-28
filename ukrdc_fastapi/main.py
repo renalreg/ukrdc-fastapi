@@ -92,7 +92,7 @@ async def check_connections():
                 raise RuntimeError("Unable to authenticate with Mirth")
         except ConnectError as e:
             raise StartupError(
-                "Unable to connect to Mirth API. Ensure connection is properly configured."
+                f"Unable to connect to Mirth API at {settings.mirth_url}. Ensure connection is properly configured."
             ) from e
 
     logging.info("Checking connection to UKRDC database...")
@@ -117,4 +117,4 @@ async def check_connections():
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run(app, host="127.0.0.1", port=8000)

@@ -3,12 +3,12 @@ from datetime import datetime
 import pytest
 from ukrdc_sqla.empi import MasterRecord
 
-from ukrdc_fastapi.query import errors
+from ukrdc_fastapi.query import messages
 from ukrdc_fastapi.query.common import PermissionsError
 
 
 def test_get_errors_superuser(errorsdb_session, superuser):
-    all_errors = errors.get_errors(
+    all_errors = messages.get_messages(
         errorsdb_session, superuser, since=datetime(1970, 1, 1)
     )
     # Superuser should see all error messages
@@ -16,7 +16,7 @@ def test_get_errors_superuser(errorsdb_session, superuser):
 
 
 def test_get_errors_user(errorsdb_session, test_user):
-    all_errors = errors.get_errors(
+    all_errors = messages.get_messages(
         errorsdb_session, test_user, since=datetime(1970, 1, 1)
     )
     # Test user should see error messages from TEST_SENDING_FACILITY_1
@@ -24,7 +24,7 @@ def test_get_errors_user(errorsdb_session, test_user):
 
 
 def test_get_errors_until(errorsdb_session, superuser):
-    all_errors = errors.get_errors(
+    all_errors = messages.get_messages(
         errorsdb_session,
         superuser,
         since=datetime(1970, 1, 1),
@@ -34,7 +34,7 @@ def test_get_errors_until(errorsdb_session, superuser):
 
 
 def test_get_errors_facility(errorsdb_session, superuser):
-    all_errors = errors.get_errors(
+    all_errors = messages.get_messages(
         errorsdb_session,
         superuser,
         since=datetime(1970, 1, 1),
@@ -44,38 +44,45 @@ def test_get_errors_facility(errorsdb_session, superuser):
 
 
 def test_get_errors_nis(errorsdb_session, superuser):
-    all_errors = errors.get_errors(
+    all_errors = messages.get_messages(
         errorsdb_session, superuser, since=datetime(1970, 1, 1), nis=["999999999"]
     )
     assert {error.id for error in all_errors} == {1}
 
 
 def test_get_error_superuser(errorsdb_session, superuser):
-    error = errors.get_error(errorsdb_session, 1, superuser)
+    error = messages.get_message(errorsdb_session, 1, superuser)
     assert error
     assert error.id == 1
 
 
 def test_get_error_user(errorsdb_session, test_user):
-    error = errors.get_error(errorsdb_session, 1, test_user)
+    error = messages.get_message(errorsdb_session, 1, test_user)
     assert error
     assert error.id == 1
 
 
 def test_get_error_user_denied(errorsdb_session, test_user):
     with pytest.raises(PermissionsError):
-        errors.get_error(errorsdb_session, 2, test_user)
+        messages.get_message(errorsdb_session, 2, test_user)
+
+
+def test_get_masterrecord_messages(errorsdb_session, jtrace_session, superuser):
+    error_list = messages.get_messages_related_to_masterrecord(
+        errorsdb_session, jtrace_session, 1, superuser
+    ).all()
+    assert {error.id for error in error_list} == {1, 3}
 
 
 def test_get_masterrecord_errors(errorsdb_session, jtrace_session, superuser):
-    error_list = errors.get_errors_related_to_masterrecord(
-        errorsdb_session, jtrace_session, 1, superuser
+    error_list = messages.get_messages_related_to_masterrecord(
+        errorsdb_session, jtrace_session, 1, superuser, status="ERROR"
     ).all()
     assert {error.id for error in error_list} == {1}
 
 
 def test_get_masterrecord_latest(errorsdb_session, jtrace_session, superuser):
-    latest = errors.get_last_message_on_masterrecord(
+    latest = messages.get_last_message_on_masterrecord(
         jtrace_session, errorsdb_session, 1, superuser
     )
     assert latest.id == 1
@@ -95,7 +102,7 @@ def test_get_masterrecord_latest(errorsdb_session, jtrace_session, superuser):
     jtrace_session.add(master_record_3)
     jtrace_session.commit()
 
-    latest = errors.get_last_message_on_masterrecord(
+    latest = messages.get_last_message_on_masterrecord(
         jtrace_session, errorsdb_session, 3, superuser
     )
     assert latest is None

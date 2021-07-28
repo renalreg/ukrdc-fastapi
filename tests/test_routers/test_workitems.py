@@ -4,7 +4,7 @@ import pytest
 from ukrdc_sqla.empi import LinkRecord, MasterRecord, WorkItem
 
 from ukrdc_fastapi.schemas.empi import WorkItemSchema
-from ukrdc_fastapi.schemas.errors import MessageSchema
+from ukrdc_fastapi.schemas.message import MessageSchema
 
 
 def test_workitems_list(client):
@@ -43,13 +43,22 @@ def test_workitem_related(client):
     assert returned_ids == {2}
 
 
-def test_workitem_errors(client):
-    response = client.get("/api/v1/workitems/1/errors")
+def test_workitem_messages(client):
+    response = client.get("/api/v1/workitems/1/messages")
     assert response.status_code == 200
 
     errors = [MessageSchema(**item) for item in response.json()["items"]]
-    error_ids = {error.id for error in errors}
-    assert error_ids == {1}
+    message_ids = {error.id for error in errors}
+    assert message_ids == {1, 3}
+
+
+def test_workitem_errors(client):
+    response = client.get("/api/v1/workitems/1/messages/?status=ERROR")
+    assert response.status_code == 200
+
+    errors = [MessageSchema(**item) for item in response.json()["items"]]
+    message_ids = {error.id for error in errors}
+    assert message_ids == {1}
 
 
 @pytest.mark.parametrize("workitem_id", [1, 2, 3])

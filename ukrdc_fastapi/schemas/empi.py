@@ -27,7 +27,6 @@ class MasterRecordSchema(OrmModel):
             ),
             "statistics": UrlFor("master_record_statistics", {"record_id": "<id>"}),
             "related": UrlFor("master_record_related", {"record_id": "<id>"}),
-            "errors": UrlFor("master_record_errors", {"record_id": "<id>"}),
             "messages": UrlFor("master_record_messages", {"record_id": "<id>"}),
             "linkrecords": UrlFor("master_record_linkrecords", {"record_id": "<id>"}),
             "persons": UrlFor("master_record_persons", {"record_id": "<id>"}),
@@ -90,7 +89,7 @@ class WorkItemShortSchema(OrmModel):
         {
             "self": UrlFor("workitem_detail", {"workitem_id": "<id>"}),
             "related": UrlFor("workitem_related", {"workitem_id": "<id>"}),
-            "errors": UrlFor("workitem_errors", {"workitem_id": "<id>"}),
+            "messages": UrlFor("workitem_messages", {"workitem_id": "<id>"}),
             "close": UrlFor("workitem_close", {"workitem_id": "<id>"}),
             "merge": UrlFor("workitem_merge", {"workitem_id": "<id>"}),
             "unlink": UrlFor("workitem_unlink", {"workitem_id": "<id>"}),
