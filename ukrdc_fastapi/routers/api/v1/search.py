@@ -29,6 +29,7 @@ def search_masterrecords(
     search: list[str] = QueryParam([]),
     number_type: list[str] = QueryParam([]),
     include_ukrdc: bool = False,
+    only_ukrdc: bool = False,
     user: UKRDCUser = Security(auth.get_user),
     jtrace: Session = Depends(get_jtrace),
 ):
@@ -45,9 +46,14 @@ def search_masterrecords(
         matched_records = matched_records.filter(
             MasterRecord.nationalid_type.in_(number_type)
         )
+
     if not include_ukrdc:
         matched_records = matched_records.filter(
             MasterRecord.nationalid_type != "UKRDC"
+        )
+    if only_ukrdc:
+        matched_records = matched_records.filter(
+            MasterRecord.nationalid_type == "UKRDC"
         )
 
     return paginate(matched_records)
