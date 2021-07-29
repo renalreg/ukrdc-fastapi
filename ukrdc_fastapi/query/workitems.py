@@ -12,7 +12,7 @@ from ukrdc_fastapi.query.common import PermissionsError, person_belongs_to_units
 from ukrdc_fastapi.query.masterrecords import get_masterrecords_related_to_person
 from ukrdc_fastapi.query.messages import get_message
 from ukrdc_fastapi.query.persons import get_persons_related_to_masterrecord
-from ukrdc_fastapi.schemas.empi import WorkItemExtendedSchema, WorkItemSchema
+from ukrdc_fastapi.schemas.empi import WorkItemExtendedSchema
 
 
 def _apply_query_permissions(query: Query, user: UKRDCUser):

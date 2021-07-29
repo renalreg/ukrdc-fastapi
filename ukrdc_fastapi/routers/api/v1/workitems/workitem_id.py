@@ -9,7 +9,6 @@ from sqlalchemy.orm import Session
 from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_mirth, get_redis
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.query.messages import get_messages
-from ukrdc_fastapi.query.mirth.unlink import unlink_person_from_master_record
 from ukrdc_fastapi.query.mirth.workitems import close_workitem, update_workitem
 from ukrdc_fastapi.query.workitems import (
     get_extended_workitem,

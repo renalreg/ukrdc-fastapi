@@ -6,12 +6,7 @@ from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import MasterRecord
 
 from ukrdc_fastapi.dependencies.auth import UKRDCUser
-from ukrdc_fastapi.query.masterrecords import (
-    get_masterrecord,
-    get_masterrecords_related_to_person,
-)
-from ukrdc_fastapi.query.persons import get_person
-from ukrdc_fastapi.utils.links import PersonMasterLink, find_related_link_records
+from ukrdc_fastapi.query.masterrecords import get_masterrecord
 from ukrdc_fastapi.utils.mirth import (
     MirthMessageResponseSchema,
     build_merge_message,
@@ -47,4 +42,3 @@ async def merge_master_records(
         raise HTTPException(500, detail=response.text)
 
     return MirthMessageResponseSchema(status="success", message=message)
-

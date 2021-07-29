@@ -61,10 +61,11 @@ def get_person(jtrace: Session, person_id: int, user: UKRDCUser) -> Person:
 
 
 def get_person_from_pid(jtrace: Session, pid: str, user: UKRDCUser) -> Person:
-    """Get a list of Person records
+    """Get a list of Person records from a given PID
 
     Args:
         jtrace (Session): SQLAlchemy session
+        pid (str): PID to find records related to
         user (UKRDCUser): Logged-in user object
 
     Returns:
@@ -84,6 +85,19 @@ def get_person_from_pid(jtrace: Session, pid: str, user: UKRDCUser) -> Person:
     _assert_permission(person, user)
     return person
 
-def get_persons_related_to_masterrecord(jtrace: Session, record_id: int, user: UKRDCUser) -> Query:
+
+def get_persons_related_to_masterrecord(
+    jtrace: Session, record_id: int, user: UKRDCUser
+) -> Query:
+    """Get a list of Person records related to a given Master Record
+
+    Args:
+        jtrace (Session): SQLAlchemy session
+        record_id (int): Master Record ID
+        user (UKRDCUser): Logged-in user object
+
+    Returns:
+        Query: SQLAlchemy query of Person records
+    """
     _, related_person_ids = find_related_ids(jtrace, {record_id}, set())
     return get_persons(jtrace, user).filter(Person.id.in_(related_person_ids))

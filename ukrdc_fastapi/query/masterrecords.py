@@ -115,6 +115,17 @@ def get_masterrecords_related_to_person(
     user: UKRDCUser,
     nationalid_type: Optional[str] = None,
 ) -> Query:
+    """Get a query of MasterRecords related via the LinkRecord network to a given Person
+
+    Args:
+        jtrace (Session): JTRACE SQLAlchemy session
+        person_id (int): Person ID
+        user (UKRDCUser): Logged-in user
+        nationalid_type (str, optional): National ID type to filter by. E.g. "UKRDC"
+
+    Returns:
+        Query: SQLAlchemy query
+    """
     person = get_person(jtrace, person_id, user)
 
     # Get a set of related link record (id, person_id, master_id) tuples
