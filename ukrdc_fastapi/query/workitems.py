@@ -148,7 +148,7 @@ def get_extended_workitem(
         "persons": get_persons_related_to_masterrecord(
             jtrace, workitem.master_record.id, user
         )
-        .filter(Person.id != workitem.person.id)
+        .filter(Person.id != (workitem.person.id if workitem.person else None))
         .all(),
     }
 
