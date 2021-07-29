@@ -107,8 +107,6 @@ class WorkItemSchema(OrmModel):
             "related": UrlFor("workitem_related", {"workitem_id": "<id>"}),
             "messages": UrlFor("workitem_messages", {"workitem_id": "<id>"}),
             "close": UrlFor("workitem_close", {"workitem_id": "<id>"}),
-            "merge": UrlFor("workitem_merge", {"workitem_id": "<id>"}),
-            "unlink": UrlFor("workitem_unlink", {"workitem_id": "<id>"}),
         }
     )
 
