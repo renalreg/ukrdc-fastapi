@@ -50,7 +50,7 @@ def find_related_ids(
 
 
 def find_related_link_records(
-    session: Session, master_id: int, person_id: Optional[int] = None
+    session: Session, master_id: Optional[int] = None, person_id: Optional[int] = None
 ) -> set[PersonMasterLink]:
     """
     Return a list of person <-> masterrecord LinkRecord IDs
@@ -67,14 +67,14 @@ def find_related_link_records(
     entries: Query
 
     # If no explicit person_id is give, we'll derive one
+    filters = []
     if person_id:
-        entries = session.query(LinkRecord).filter(
-            LinkRecord.master_id == master_id, LinkRecord.person_id == person_id
-        )
-        new_entries = {(person_id, master_id)}
-    else:
-        entries = session.query(LinkRecord).filter(LinkRecord.master_id == master_id)
-        new_entries = {(entry.person_id, entry.master_id) for entry in entries}
+        filters.append(LinkRecord.person_id == person_id)
+    if master_id:
+        filters.append(LinkRecord.master_id == master_id)
+
+    entries = session.query(LinkRecord).filter(*filters)
+    new_entries = {(entry.person_id, entry.master_id) for entry in entries}
 
     # Add LinkRecord IDs to our output set
     linkrecord_ids |= {

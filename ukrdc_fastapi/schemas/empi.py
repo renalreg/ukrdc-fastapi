@@ -1,5 +1,5 @@
 import datetime
-from typing import Optional
+from typing import Optional, Union
 
 from fastapi_hypermodel import LinkSet, UrlFor
 from pydantic import Json, validator
@@ -73,7 +73,20 @@ class LinkRecordSchema(OrmModel):
     master_record: MasterRecordSchema
 
 
-class WorkItemShortSchema(OrmModel):
+WORKITEM_ATTRIBUTE_MAP: dict[str, str] = {
+    "SE": "sendingExtract",
+    "SF": "sendingFacility",
+    "MRN": "localid",
+    "DOB": "dateOfBirth",
+    "DOD": "dateOfDeath",
+    "Gender": "gender",
+    "name": "givenname",
+    "GivenName": "givenname",
+    "surname": "surname",
+}
+
+
+class WorkItemSchema(OrmModel):
     id: int
 
     type: int
@@ -81,6 +94,9 @@ class WorkItemShortSchema(OrmModel):
     status: int
     last_updated: datetime.datetime
     updated_by: Optional[str]
+
+    attributes: Optional[Union[Json, dict]]
+    update_description: Optional[str]
 
     person: Optional[PersonSchema]
     master_record: Optional[MasterRecordSchema]
@@ -96,24 +112,6 @@ class WorkItemShortSchema(OrmModel):
         }
     )
 
-
-WORKITEM_ATTRIBUTE_MAP: dict[str, str] = {
-    "SE": "sendingExtract",
-    "SF": "sendingFacility",
-    "MRN": "localid",
-    "DOB": "dateOfBirth",
-    "DOD": "dateOfDeath",
-    "Gender": "gender",
-    "name": "givenname",
-    "GivenName": "givenname",
-    "surname": "surname",
-}
-
-
-class WorkItemSchema(WorkItemShortSchema):
-    attributes: Optional[Json]
-    update_description: Optional[str]
-
     @validator("attributes")
     def normalise_attributes(
         cls, value
@@ -127,3 +125,18 @@ class WorkItemSchema(WorkItemShortSchema):
             WORKITEM_ATTRIBUTE_MAP.get(key, key): attribute
             for key, attribute in value.items()
         }
+
+
+class WorkItemIncomingSchema(OrmModel):
+    person: Optional[PersonSchema] = None
+    master_records: list[MasterRecordSchema] = []
+
+
+class WorkItemDestinationSchema(OrmModel):
+    persons: list[PersonSchema] = []
+    master_record: Optional[MasterRecordSchema] = None
+
+
+class WorkItemExtendedSchema(WorkItemSchema):
+    incoming: WorkItemIncomingSchema
+    destination: WorkItemDestinationSchema

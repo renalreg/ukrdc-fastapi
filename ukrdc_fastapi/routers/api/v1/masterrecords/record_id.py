@@ -9,17 +9,17 @@ from ukrdc_sqla.ukrdc import PatientRecord
 
 from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_ukrdc3
 from ukrdc_fastapi.dependencies.auth import UKRDCUser, auth
-from ukrdc_fastapi.query.messages import (
-    ERROR_SORTER,
-    get_messages_related_to_masterrecord,
-    get_last_message_on_masterrecord,
-)
 from ukrdc_fastapi.query.masterrecords import (
     get_masterrecord,
     get_masterrecords_related_to_masterrecord,
 )
+from ukrdc_fastapi.query.messages import (
+    ERROR_SORTER,
+    get_last_message_on_masterrecord,
+    get_messages_related_to_masterrecord,
+)
 from ukrdc_fastapi.query.patientrecords import get_patientrecords
-from ukrdc_fastapi.query.persons import get_persons
+from ukrdc_fastapi.query.persons import get_persons, get_persons_related_to_masterrecord
 from ukrdc_fastapi.query.workitems import get_workitems
 from ukrdc_fastapi.schemas.base import OrmModel
 from ukrdc_fastapi.schemas.empi import (
@@ -209,9 +209,7 @@ def master_record_persons(
     jtrace: Session = Depends(get_jtrace),
 ):
     """Retreive a list of person records related to a particular master record."""
-    # Find all related person record IDs by recursing through link records
-    _, related_person_ids = find_related_ids(jtrace, {record_id}, set())
-    return get_persons(jtrace, user).filter(Person.id.in_(related_person_ids)).all()
+    return get_persons_related_to_masterrecord(jtrace, record_id, user).all()
 
 
 @router.get(

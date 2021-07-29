@@ -9,15 +9,15 @@ from sqlalchemy.orm import Session
 from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_mirth, get_redis
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.query.messages import get_messages
-from ukrdc_fastapi.query.mirth.merge import merge_person_into_master_record
 from ukrdc_fastapi.query.mirth.unlink import unlink_person_from_master_record
 from ukrdc_fastapi.query.mirth.workitems import close_workitem, update_workitem
 from ukrdc_fastapi.query.workitems import (
+    get_extended_workitem,
     get_workitem,
     get_workitems_related_to_workitem,
 )
 from ukrdc_fastapi.schemas.base import JSONModel
-from ukrdc_fastapi.schemas.empi import WorkItemSchema
+from ukrdc_fastapi.schemas.empi import WorkItemExtendedSchema, WorkItemSchema
 from ukrdc_fastapi.schemas.message import MessageSchema
 from ukrdc_fastapi.utils.mirth import MirthMessageResponseSchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
@@ -36,7 +36,7 @@ class UpdateWorkItemRequestSchema(JSONModel):
 
 @router.get(
     "/",
-    response_model=WorkItemSchema,
+    response_model=WorkItemExtendedSchema,
     dependencies=[Security(auth.permission(Permissions.READ_WORKITEMS))],
 )
 def workitem_detail(
@@ -45,7 +45,7 @@ def workitem_detail(
     jtrace: Session = Depends(get_jtrace),
 ):
     """Retreive a particular work item from the EMPI"""
-    return get_workitem(jtrace, workitem_id, user)
+    return get_extended_workitem(jtrace, workitem_id, user)
 
 
 @router.put(
@@ -156,35 +156,6 @@ async def workitem_close(
         mirth,
         redis,
         comment=(args.comment if args else None),
-    )
-
-
-@router.post(
-    "/merge/",
-    response_model=MirthMessageResponseSchema,
-    dependencies=[
-        Security(
-            auth.permission(
-                [
-                    Permissions.READ_WORKITEMS,
-                    Permissions.WRITE_WORKITEMS,
-                    auth.permissions.WRITE_EMPI,
-                ]
-            )
-        )
-    ],
-)
-async def workitem_merge(
-    workitem_id: int,
-    user: UKRDCUser = Security(auth.get_user),
-    jtrace: Session = Depends(get_jtrace),
-    mirth: MirthAPI = Depends(get_mirth),
-    redis: Redis = Depends(get_redis),
-):
-    """Merge a particular work item"""
-    workitem = get_workitem(jtrace, workitem_id, user)
-    return await merge_person_into_master_record(
-        workitem.person_id, workitem.master_id, user, jtrace, mirth, redis
     )
 
 

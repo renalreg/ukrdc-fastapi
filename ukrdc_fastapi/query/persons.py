@@ -6,6 +6,7 @@ from ukrdc_sqla.empi import Person, PidXRef
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
 from ukrdc_fastapi.exceptions import AmbigousQueryError, EmptyQueryError
 from ukrdc_fastapi.query.common import PermissionsError, person_belongs_to_units
+from ukrdc_fastapi.utils.links import find_related_ids
 
 
 def _apply_query_permissions(query: Query, user: UKRDCUser):
@@ -82,3 +83,7 @@ def get_person_from_pid(jtrace: Session, pid: str, user: UKRDCUser) -> Person:
     person = persons[0]
     _assert_permission(person, user)
     return person
+
+def get_persons_related_to_masterrecord(jtrace: Session, record_id: int, user: UKRDCUser) -> Query:
+    _, related_person_ids = find_related_ids(jtrace, {record_id}, set())
+    return get_persons(jtrace, user).filter(Person.id.in_(related_person_ids))
