@@ -157,32 +157,3 @@ async def workitem_close(
         redis,
         comment=(args.comment if args else None),
     )
-
-
-@router.post(
-    "/unlink/",
-    response_model=MirthMessageResponseSchema,
-    dependencies=[
-        Security(
-            auth.permission(
-                [
-                    Permissions.READ_WORKITEMS,
-                    Permissions.WRITE_WORKITEMS,
-                    auth.permissions.WRITE_EMPI,
-                ]
-            )
-        )
-    ],
-)
-async def workitem_unlink(
-    workitem_id: int,
-    user: UKRDCUser = Security(auth.get_user),
-    jtrace: Session = Depends(get_jtrace),
-    mirth: MirthAPI = Depends(get_mirth),
-    redis: Redis = Depends(get_redis),
-):
-    """Unlink the master record and person record in a particular work item"""
-    workitem = get_workitem(jtrace, workitem_id, user)
-    return await unlink_person_from_master_record(
-        workitem.person_id, workitem.master_id, user, jtrace, mirth, redis
-    )
