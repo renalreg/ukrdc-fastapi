@@ -35,6 +35,8 @@ def cache_all_facilities() -> None:
         logging.debug("Caching %s", code.code)
         _get_and_cache_facility(code, ukrdc3, errorsdb, redis)
         _get_and_cache_errors_history(code, errorsdb, redis)
+    ukrdc3.close()
+    errorsdb.close()
 
 
 @repeat_every(seconds=settings.cache_dashboard_seconds)
@@ -45,6 +47,7 @@ def cache_dash_stats() -> None:
     logging.info("Refreshing admin statistics")
     get_workitems_stats(jtrace, redis, refresh=True)
     get_empi_stats(jtrace, redis, refresh=True)
+    jtrace.close()
 
 
 @repeat_every(seconds=settings.cache_channel_seconds)
