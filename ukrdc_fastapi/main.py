@@ -10,11 +10,11 @@ from httpx import ConnectError
 from mirth_client import MirthAPI
 from mirth_client.models import LoginResponse
 
-from ukrdc_fastapi import tasks
 from ukrdc_fastapi.config import settings
 from ukrdc_fastapi.dependencies import get_redis
 from ukrdc_fastapi.dependencies.auth import auth
-from ukrdc_fastapi.dependencies.database import Ukrdc3Session
+from ukrdc_fastapi.dependencies.database import ukrdc3_session
+from ukrdc_fastapi.dependencies.mirth import mirth_session
 from ukrdc_fastapi.dependencies.sentry import add_sentry
 from ukrdc_fastapi.routers import api
 
@@ -61,27 +61,25 @@ HyperModel.init_app(app)
 
 # Attach event handlers
 
-app.router.add_event_handler("startup", tasks.cache_mirth_channel_info)
-app.router.add_event_handler("startup", tasks.cache_mirth_channel_groups)
-app.router.add_event_handler("startup", tasks.cache_mirth_channel_statistics)
-app.router.add_event_handler("startup", tasks.cache_dash_stats)
-app.router.add_event_handler("startup", tasks.cache_all_facilities)
+# app.router.add_event_handler("startup", tasks.cache_mirth_channel_info)
+# app.router.add_event_handler("startup", tasks.cache_mirth_channel_groups)
+# app.router.add_event_handler("startup", tasks.cache_mirth_channel_statistics)
+# app.router.add_event_handler("startup", tasks.cache_dash_stats)
+# app.router.add_event_handler("startup", tasks.cache_all_facilities)
 
 
 class StartupError(RuntimeError):
     pass
 
 
-@app.on_event("startup")
+# @app.on_event("startup")
 async def check_connections():
     """
     Check Mirth, database, and Redis connections
     """
     logging.info("Checking connection to Mirth API...")
     mirth_api: MirthAPI
-    async with MirthAPI(
-        settings.mirth_url, verify_ssl=settings.mirth_verify_ssl, timeout=None
-    ) as mirth_api:
+    async with mirth_session() as mirth_api:
         try:
             # Check we can log in to Mirth
             login_response: LoginResponse = await mirth_api.login(
@@ -96,12 +94,13 @@ async def check_connections():
             ) from e
 
     logging.info("Checking connection to UKRDC database...")
-    try:
-        Ukrdc3Session().connection()
-    except sqlalchemy.exc.OperationalError as e:
-        raise StartupError(
-            "Unable to connect to UKRDC database. Ensure connection is properly configured."
-        ) from e
+    with ukrdc3_session() as ukrdc3:
+        try:
+            ukrdc3.connection()
+        except sqlalchemy.exc.OperationalError as e:
+            raise StartupError(
+                "Unable to connect to UKRDC database. Ensure connection is properly configured."
+            ) from e
 
     logging.info("Checking connection to Redis database...")
     try:
