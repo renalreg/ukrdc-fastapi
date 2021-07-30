@@ -30,7 +30,7 @@ bandit = "^1.7.0"
 black = "^21.7b0"
 coverage = {extras = ["toml"], version = "^5.5"}
 fakeredis = "^1.5.1"
-isort = "^5.9.2"
+isort = "^5.9.3"
 mypy = "^0.910"
 pylint = "^2.9.6"
 pytest = "^6.0"
