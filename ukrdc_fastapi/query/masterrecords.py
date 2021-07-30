@@ -7,7 +7,12 @@ from ukrdc_sqla.empi import LinkRecord, MasterRecord, Person, PidXRef
 
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
 from ukrdc_fastapi.query.common import PermissionsError, person_belongs_to_units
-from ukrdc_fastapi.utils.links import find_related_ids
+from ukrdc_fastapi.query.persons import get_person
+from ukrdc_fastapi.utils.links import (
+    PersonMasterLink,
+    find_related_ids,
+    find_related_link_records,
+)
 
 
 def _apply_query_permissions(query: Query, user: UKRDCUser):
@@ -102,3 +107,40 @@ def get_masterrecords_related_to_masterrecord(
     records = jtrace.query(MasterRecord).filter(MasterRecord.id.in_(related_master_ids))
 
     return _apply_query_permissions(records, user)
+
+
+def get_masterrecords_related_to_person(
+    jtrace: Session,
+    person_id: int,
+    user: UKRDCUser,
+    nationalid_type: Optional[str] = None,
+) -> Query:
+    """Get a query of MasterRecords related via the LinkRecord network to a given Person
+
+    Args:
+        jtrace (Session): JTRACE SQLAlchemy session
+        person_id (int): Person ID
+        user (UKRDCUser): Logged-in user
+        nationalid_type (str, optional): National ID type to filter by. E.g. "UKRDC"
+
+    Returns:
+        Query: SQLAlchemy query
+    """
+    person = get_person(jtrace, person_id, user)
+
+    # Get a set of related link record (id, person_id, master_id) tuples
+    related_person_master_links: set[PersonMasterLink] = find_related_link_records(
+        jtrace, person_id=person.id
+    )
+
+    # Find all related master records within the UKRDC
+    master_with_ukrdc = jtrace.query(MasterRecord).filter(
+        MasterRecord.id.in_([link.master_id for link in related_person_master_links])
+    )
+
+    if nationalid_type:
+        master_with_ukrdc = master_with_ukrdc.filter(
+            MasterRecord.nationalid_type == nationalid_type
+        )
+
+    return master_with_ukrdc

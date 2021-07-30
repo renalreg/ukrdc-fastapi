@@ -15,7 +15,7 @@ from ukrdc_fastapi.dependencies.auth import UKRDCUser, auth
 from ukrdc_fastapi.query.messages import ERROR_SORTER, get_message, get_messages
 from ukrdc_fastapi.query.workitems import get_workitems_related_to_message
 from ukrdc_fastapi.schemas.base import OrmModel
-from ukrdc_fastapi.schemas.empi import MasterRecordSchema, WorkItemShortSchema
+from ukrdc_fastapi.schemas.empi import MasterRecordSchema, WorkItemSchema
 from ukrdc_fastapi.schemas.message import MessageSchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
 from ukrdc_fastapi.utils.sort import Sorter
@@ -119,7 +119,7 @@ async def error_source(
 
 @router.get(
     "/{message_id}/workitems",
-    response_model=list[WorkItemShortSchema],
+    response_model=list[WorkItemSchema],
     dependencies=[
         Security(
             auth.permission(

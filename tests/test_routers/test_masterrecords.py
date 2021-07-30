@@ -9,7 +9,7 @@ from ukrdc_fastapi.schemas.empi import (
     LinkRecordSchema,
     MasterRecordSchema,
     PersonSchema,
-    WorkItemShortSchema,
+    WorkItemSchema,
 )
 from ukrdc_fastapi.schemas.message import MessageSchema
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordSchema
@@ -88,7 +88,7 @@ def test_masterrecord_workitems(client):
     response = client.get("/api/v1/masterrecords/1/workitems")
     assert response.status_code == 200
 
-    witems = [WorkItemShortSchema(**item) for item in response.json()]
+    witems = [WorkItemSchema(**item) for item in response.json()]
     returned_ids = {item.id for item in witems}
     assert returned_ids == {1, 2}
 

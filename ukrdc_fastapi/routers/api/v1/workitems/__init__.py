@@ -9,7 +9,7 @@ from ukrdc_sqla.empi import WorkItem
 from ukrdc_fastapi.dependencies import get_jtrace
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.query.workitems import get_workitems
-from ukrdc_fastapi.schemas.empi import WorkItemShortSchema
+from ukrdc_fastapi.schemas.empi import WorkItemSchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
 from ukrdc_fastapi.utils.sort import Sorter, make_sorter
 
@@ -27,7 +27,7 @@ class UnlinkWorkItemRequestSchema(BaseModel):
 
 @router.get(
     "/",
-    response_model=Page[WorkItemShortSchema],
+    response_model=Page[WorkItemSchema],
     dependencies=[Security(auth.permission(Permissions.READ_WORKITEMS))],
 )
 def workitems_list(

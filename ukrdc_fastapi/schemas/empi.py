@@ -1,5 +1,5 @@
 import datetime
-from typing import Optional
+from typing import Optional, Union
 
 from fastapi_hypermodel import LinkSet, UrlFor
 from pydantic import Json, validator
@@ -73,30 +73,6 @@ class LinkRecordSchema(OrmModel):
     master_record: MasterRecordSchema
 
 
-class WorkItemShortSchema(OrmModel):
-    id: int
-
-    type: int
-    description: str
-    status: int
-    last_updated: datetime.datetime
-    updated_by: Optional[str]
-
-    person: Optional[PersonSchema]
-    master_record: Optional[MasterRecordSchema]
-
-    links = LinkSet(
-        {
-            "self": UrlFor("workitem_detail", {"workitem_id": "<id>"}),
-            "related": UrlFor("workitem_related", {"workitem_id": "<id>"}),
-            "messages": UrlFor("workitem_messages", {"workitem_id": "<id>"}),
-            "close": UrlFor("workitem_close", {"workitem_id": "<id>"}),
-            "merge": UrlFor("workitem_merge", {"workitem_id": "<id>"}),
-            "unlink": UrlFor("workitem_unlink", {"workitem_id": "<id>"}),
-        }
-    )
-
-
 WORKITEM_ATTRIBUTE_MAP: dict[str, str] = {
     "SE": "sendingExtract",
     "SF": "sendingFacility",
@@ -110,9 +86,29 @@ WORKITEM_ATTRIBUTE_MAP: dict[str, str] = {
 }
 
 
-class WorkItemSchema(WorkItemShortSchema):
-    attributes: Optional[Json]
+class WorkItemSchema(OrmModel):
+    id: int
+
+    type: int
+    description: str
+    status: int
+    last_updated: datetime.datetime
+    updated_by: Optional[str]
+
+    attributes: Optional[Union[Json, dict]]
     update_description: Optional[str]
+
+    person: Optional[PersonSchema]
+    master_record: Optional[MasterRecordSchema]
+
+    links = LinkSet(
+        {
+            "self": UrlFor("workitem_detail", {"workitem_id": "<id>"}),
+            "related": UrlFor("workitem_related", {"workitem_id": "<id>"}),
+            "messages": UrlFor("workitem_messages", {"workitem_id": "<id>"}),
+            "close": UrlFor("workitem_close", {"workitem_id": "<id>"}),
+        }
+    )
 
     @validator("attributes")
     def normalise_attributes(
@@ -127,3 +123,18 @@ class WorkItemSchema(WorkItemShortSchema):
             WORKITEM_ATTRIBUTE_MAP.get(key, key): attribute
             for key, attribute in value.items()
         }
+
+
+class WorkItemIncomingSchema(OrmModel):
+    person: Optional[PersonSchema] = None
+    master_records: list[MasterRecordSchema] = []
+
+
+class WorkItemDestinationSchema(OrmModel):
+    persons: list[PersonSchema] = []
+    master_record: Optional[MasterRecordSchema] = None
+
+
+class WorkItemExtendedSchema(WorkItemSchema):
+    incoming: WorkItemIncomingSchema
+    destination: WorkItemDestinationSchema

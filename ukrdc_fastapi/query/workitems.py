@@ -9,7 +9,10 @@ from ukrdc_sqla.empi import MasterRecord, Person, PidXRef, WorkItem
 
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
 from ukrdc_fastapi.query.common import PermissionsError, person_belongs_to_units
+from ukrdc_fastapi.query.masterrecords import get_masterrecords_related_to_person
 from ukrdc_fastapi.query.messages import get_message
+from ukrdc_fastapi.query.persons import get_persons_related_to_masterrecord
+from ukrdc_fastapi.schemas.empi import WorkItemExtendedSchema
 
 
 def _apply_query_permissions(query: Query, user: UKRDCUser):
@@ -110,7 +113,59 @@ def get_workitem(jtrace: Session, workitem_id: int, user: UKRDCUser) -> WorkItem
     if not workitem:
         raise HTTPException(404, detail="Work item not found")
     _assert_permission(workitem, user)
+
     return workitem
+
+
+def get_extended_workitem(
+    jtrace: Session, workitem_id: int, user: UKRDCUser
+) -> WorkItemExtendedSchema:
+    """Return a WorkItem by ID if it exists and the user has permission
+
+    Args:
+        jtrace (Session): JTRACE SQLAlchemy session
+        workitem_id (int): WorkItem ID
+        user (UKRDCUser): User object
+
+    Returns:
+        WorkItem: WorkItem
+    """
+    workitem = get_workitem(jtrace, workitem_id, user)
+
+    incoming = {
+        "person": workitem.person if workitem.person else None,
+        "master_records": get_masterrecords_related_to_person(
+            jtrace, workitem.person.id, user, nationalid_type="UKRDC"
+        )
+        .filter(MasterRecord.id != workitem.master_record.id)
+        .all()
+        if workitem.person
+        else [],
+    }
+
+    destination = {
+        "master_record": workitem.master_record,
+        "persons": get_persons_related_to_masterrecord(
+            jtrace, workitem.master_record.id, user
+        )
+        .filter(Person.id != (workitem.person.id if workitem.person else None))
+        .all(),
+    }
+
+    return WorkItemExtendedSchema(
+        id=workitem.id,
+        type=workitem.type,
+        description=workitem.description,
+        status=workitem.status,
+        last_updated=workitem.last_updated,
+        updated_by=workitem.updated_by,
+        update_description=workitem.update_description,
+        person=workitem.person,
+        master_record=workitem.master_record,
+        attributes=workitem.attributes,
+        incoming=incoming,
+        destination=destination,
+    )
 
 
 def get_workitems_related_to_workitem(
