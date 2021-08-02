@@ -5,6 +5,7 @@ from redis import Redis
 from sqlalchemy.orm.session import Session
 
 from ukrdc_fastapi.dependencies.auth import UKRDCUser
+from ukrdc_fastapi.exceptions import MirthChannelError, MirthPostError
 from ukrdc_fastapi.query.masterrecords import get_masterrecord
 from ukrdc_fastapi.query.persons import get_person, get_person_from_pid
 from ukrdc_fastapi.utils.mirth import (
@@ -29,7 +30,7 @@ async def unlink_person_from_master_record(
 
     channel = get_channel_from_name("Unlink", mirth, redis)
     if not channel:
-        raise HTTPException(
+        raise MirthChannelError(
             500, detail="ID for Unlink channel not found"
         )  # pragma: no cover
 
@@ -38,7 +39,7 @@ async def unlink_person_from_master_record(
     response: Response = await channel.post_message(message)
 
     if response.status_code >= 400:
-        raise HTTPException(500, detail=response.text)
+        raise MirthPostError(detail=response.text)
 
     return MirthMessageResponseSchema(status="success", message=message)
 
