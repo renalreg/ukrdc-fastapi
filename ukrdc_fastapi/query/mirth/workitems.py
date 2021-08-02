@@ -1,6 +1,5 @@
 from typing import Optional
 
-from fastapi.exceptions import HTTPException
 from httpx import Response
 from mirth_client.mirth import MirthAPI
 from redis import Redis
