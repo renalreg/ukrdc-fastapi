@@ -5,6 +5,7 @@ from redis import Redis
 
 from ukrdc_fastapi.dependencies import get_mirth, get_redis
 from ukrdc_fastapi.dependencies.auth import auth
+from ukrdc_fastapi.exceptions import MirthPostError
 from ukrdc_fastapi.utils.mirth import (
     MirthMessageResponseSchema,
     build_export_all_message,
@@ -37,7 +38,7 @@ async def patient_export_pv(
     response: Response = await channel.post_message(message)
 
     if response.status_code >= 400:
-        raise HTTPException(500, detail=response.text)
+        raise MirthPostError(response.text)
 
     return MirthMessageResponseSchema(status="success", message=message)
 
@@ -62,7 +63,7 @@ async def patient_export_pv_tests(
     response: Response = await channel.post_message(message)
 
     if response.status_code >= 400:
-        raise HTTPException(500, detail=response.text)
+        raise MirthPostError(response.text)
 
     return MirthMessageResponseSchema(status="success", message=message)
 
@@ -87,7 +88,7 @@ async def patient_export_pv_docs(
     response: Response = await channel.post_message(message)
 
     if response.status_code >= 400:
-        raise HTTPException(500, detail=response.text)
+        raise MirthPostError(response.text)
 
     return MirthMessageResponseSchema(status="success", message=message)
 
@@ -112,6 +113,6 @@ async def patient_export_radar(
     response: Response = await channel.post_message(message)
 
     if response.status_code >= 400:
-        raise HTTPException(500, detail=response.text)
+        raise MirthPostError(response.text)
 
     return MirthMessageResponseSchema(status="success", message=message)

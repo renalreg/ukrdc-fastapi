@@ -1,4 +1,3 @@
-from fastapi.exceptions import HTTPException
 from httpx import Response
 from mirth_client.mirth import MirthAPI
 from redis import Redis
@@ -6,6 +5,7 @@ from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import MasterRecord
 
 from ukrdc_fastapi.dependencies.auth import UKRDCUser
+from ukrdc_fastapi.exceptions import MirthChannelError, MirthPostError
 from ukrdc_fastapi.query.masterrecords import get_masterrecord
 from ukrdc_fastapi.utils.mirth import (
     MirthMessageResponseSchema,
@@ -28,8 +28,8 @@ async def merge_master_records(
 
     channel = get_channel_from_name("Merge Patient", mirth, redis)
     if not channel:
-        raise HTTPException(
-            500, detail="ID for Merge Patient channel not found"
+        raise MirthChannelError(
+            "ID for Merge Patient channel not found"
         )  # pragma: no cover
 
     message: str = build_merge_message(
@@ -39,6 +39,6 @@ async def merge_master_records(
     response: Response = await channel.post_message(message)
 
     if response.status_code >= 400:
-        raise HTTPException(500, detail=response.text)
+        raise MirthPostError(response.text)
 
     return MirthMessageResponseSchema(status="success", message=message)

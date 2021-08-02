@@ -10,6 +10,7 @@ from httpx import ConnectError
 from mirth_client import MirthAPI
 from mirth_client.models import LoginResponse
 
+from ukrdc_fastapi import tasks
 from ukrdc_fastapi.config import settings
 from ukrdc_fastapi.dependencies import get_redis
 from ukrdc_fastapi.dependencies.auth import auth
@@ -61,11 +62,11 @@ HyperModel.init_app(app)
 
 # Attach event handlers
 
-# app.router.add_event_handler("startup", tasks.cache_mirth_channel_info)
-# app.router.add_event_handler("startup", tasks.cache_mirth_channel_groups)
-# app.router.add_event_handler("startup", tasks.cache_mirth_channel_statistics)
-# app.router.add_event_handler("startup", tasks.cache_dash_stats)
-# app.router.add_event_handler("startup", tasks.cache_all_facilities)
+app.router.add_event_handler("startup", tasks.cache_mirth_channel_info)
+app.router.add_event_handler("startup", tasks.cache_mirth_channel_groups)
+app.router.add_event_handler("startup", tasks.cache_mirth_channel_statistics)
+app.router.add_event_handler("startup", tasks.cache_dash_stats)
+app.router.add_event_handler("startup", tasks.cache_all_facilities)
 
 
 class StartupError(RuntimeError):

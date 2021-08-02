@@ -1,12 +1,12 @@
 from typing import Optional
 
-from fastapi.exceptions import HTTPException
 from httpx import Response
 from mirth_client.mirth import MirthAPI
 from redis import Redis
 from sqlalchemy.orm.session import Session
 
 from ukrdc_fastapi.dependencies.auth import UKRDCUser
+from ukrdc_fastapi.exceptions import MirthChannelError, MirthPostError
 from ukrdc_fastapi.query.workitems import get_workitem
 from ukrdc_fastapi.utils.mirth import (
     MirthMessageResponseSchema,
@@ -44,8 +44,8 @@ async def update_workitem(
     channel = get_channel_from_name("WorkItemUpdate", mirth, redis)
 
     if not channel:
-        raise HTTPException(
-            500, detail="ID for WorkItemUpdate channel not found"
+        raise MirthChannelError(
+            "ID for WorkItemUpdate channel not found"
         )  # pragma: no cover
 
     message: str = build_update_workitem_message(
@@ -58,7 +58,7 @@ async def update_workitem(
     response: Response = await channel.post_message(message)
 
     if response.status_code >= 400:
-        raise HTTPException(500, detail=response.text)
+        raise MirthPostError(response.text)
 
     return MirthMessageResponseSchema(status="success", message=message)
 
@@ -88,8 +88,8 @@ async def close_workitem(
 
     channel = get_channel_from_name("WorkItemUpdate", mirth, redis)
     if not channel:
-        raise HTTPException(
-            500, detail="ID for WorkItemUpdate channel not found"
+        raise MirthChannelError(
+            "ID for WorkItemUpdate channel not found"
         )  # pragma: no cover
 
     message: str = build_close_workitem_message(workitem.id, comment or "", user.email)
@@ -97,6 +97,6 @@ async def close_workitem(
     response: Response = await channel.post_message(message)
 
     if response.status_code >= 400:
-        raise HTTPException(500, detail=response.text)
+        raise MirthPostError(response.text)
 
     return MirthMessageResponseSchema(status="success", message=message)
