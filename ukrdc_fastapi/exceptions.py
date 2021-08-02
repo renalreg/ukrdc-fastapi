@@ -11,6 +11,7 @@ class EmptyQueryError(RuntimeError):
     no possible responses were found.
     """
 
+
 class MirthChannelError(RuntimeError):
     """Error getting Mirth channel info"""
 
