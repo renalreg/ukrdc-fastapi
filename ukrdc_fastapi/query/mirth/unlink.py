@@ -30,16 +30,14 @@ async def unlink_person_from_master_record(
 
     channel = get_channel_from_name("Unlink", mirth, redis)
     if not channel:
-        raise MirthChannelError(
-            500, detail="ID for Unlink channel not found"
-        )  # pragma: no cover
+        raise MirthChannelError("ID for Unlink channel not found")  # pragma: no cover
 
     message: str = build_unlink_message(master.id, person.id, user.email)
 
     response: Response = await channel.post_message(message)
 
     if response.status_code >= 400:
-        raise MirthPostError(detail=response.text)
+        raise MirthPostError(response.text)
 
     return MirthMessageResponseSchema(status="success", message=message)
 
