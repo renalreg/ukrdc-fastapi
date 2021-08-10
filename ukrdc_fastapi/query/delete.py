@@ -85,19 +85,19 @@ def _find_empi_items_to_delete(
             # linked to the Person being deleted, and so can itself be deleted
             if len(link_records_related_to_other_persons) == 0:
                 master_record = jtrace.query(MasterRecord).get(master_id)
-
-                # Find work items related to master record
-                to_delete.work_items.extend(
-                    jtrace.query(WorkItem)
-                    .filter(WorkItem.master_id == master_record.id)
-                    .all()
-                )
+                if master_record:
+                    # Find work items related to master record
+                    to_delete.work_items.extend(
+                        jtrace.query(WorkItem)
+                        .filter(WorkItem.master_id == master_record.id)
+                        .all()
+                    )
 
     open_work_items: list[WorkItem] = [
         work_item for work_item in to_delete.work_items if work_item.status == 1
     ]
     if len(open_work_items) > 0:
-        raise OpenWorkItemError([work_item.id for work_item in open_work_items])
+        raise OpenWorkItemError([str(work_item.id) for work_item in open_work_items])
 
     return to_delete
 
@@ -114,7 +114,8 @@ def _create_delete_pid_summary(
     )
 
     to_delete_json = to_delete_summary.json()
-    to_delete_hash = hashlib.md5(to_delete_json.encode()).hexdigest()
+    # We ignore Bandit warnings here as MD5 is not being used for security purposes
+    to_delete_hash = hashlib.md5(to_delete_json.encode()).hexdigest()  # nosec
 
     return DeletePIDResponseSchema(
         patient_record=record_to_delete_summary,
