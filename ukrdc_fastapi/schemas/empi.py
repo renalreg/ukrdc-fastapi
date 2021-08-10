@@ -67,6 +67,12 @@ class PersonSchema(OrmModel):
     )
 
 
+class LinkRecordSummarySchema(OrmModel):
+    id: int
+    person_id: int
+    master_id: int
+
+
 class LinkRecordSchema(OrmModel):
     id: int
     person: PersonSchema
@@ -84,6 +90,14 @@ WORKITEM_ATTRIBUTE_MAP: dict[str, str] = {
     "GivenName": "givenname",
     "surname": "surname",
 }
+
+
+class WorkItemSummarySchema(OrmModel):
+    id: int
+    person_id: int
+    master_id: int
+    type: int
+    status: int
 
 
 class WorkItemSchema(OrmModel):

@@ -1,0 +1,180 @@
+import hashlib
+from dataclasses import dataclass
+
+from fastapi.exceptions import HTTPException
+from sqlalchemy.orm.session import Session
+from ukrdc_sqla.empi import LinkRecord, MasterRecord, Person, PidXRef, WorkItem
+from ukrdc_sqla.ukrdc import PatientRecord
+
+from ukrdc_fastapi.dependencies.auth import UKRDCUser
+from ukrdc_fastapi.query.patientrecords import get_patientrecord
+from ukrdc_fastapi.schemas.delete import (
+    DeletePIDFromEMPISchema,
+    DeletePIDPreviewSchema,
+    DeletePIDResponseSchema,
+)
+from ukrdc_fastapi.schemas.patientrecord import PatientRecordFullSchema
+
+
+class ConfirmationError(HTTPException):
+    def __init__(self) -> None:
+        super().__init__(400, detail="Incorrect hash provided to delete function.")
+
+
+class OpenWorkItemError(HTTPException):
+    def __init__(self, work_item_ids: list[str]) -> None:
+        super().__init__(
+            400,
+            detail=f"Cannot delete a patient with open Work Items ({', '.join(work_item_ids)}).",
+        )
+
+
+@dataclass
+class EMPIDeleteItems:
+    persons: list[Person]
+    master_records: list[MasterRecord]
+    pidxrefs: list[PidXRef]
+    work_items: list[WorkItem]
+    link_records: list[LinkRecord]
+
+
+def _find_empi_items_to_delete(
+    jtrace: Session, pid: str, delete_from_empi: bool = True
+) -> EMPIDeleteItems:
+    to_delete = EMPIDeleteItems(
+        persons=[], master_records=[], pidxrefs=[], work_items=[], link_records=[]
+    )
+    if not delete_from_empi:
+        return to_delete
+
+    to_delete.pidxrefs = jtrace.query(PidXRef).filter(PidXRef.pid == pid).all()
+    to_delete.persons = jtrace.query(Person).filter(Person.localid == pid).all()
+
+    for person_record in to_delete.persons:
+        # Find work items related to person
+        to_delete.work_items.extend(
+            jtrace.query(WorkItem).filter(WorkItem.person_id == person_record.id).all()
+        )
+
+        # Find link records related to person
+        link_records_related_to_person = (
+            jtrace.query(LinkRecord)
+            .filter(LinkRecord.person_id == person_record.id)
+            .all()
+        )
+        to_delete.link_records.extend(link_records_related_to_person)
+
+        # Find master IDs directly related to Person
+        master_ids = [
+            link_record.master_id for link_record in link_records_related_to_person
+        ]
+
+        for master_id in master_ids:
+            # Find link records related to the Master Record but NOT the Person
+            # currently being deleted
+            link_records_related_to_other_persons = (
+                jtrace.query(LinkRecord)
+                .filter(
+                    LinkRecord.master_id == master_id,
+                    LinkRecord.person_id != person_record.id,
+                )
+                .all()
+            )
+
+            # If the above query comes back empty, the Master Record is ONLY
+            # linked to the Person being deleted, and so can itself be deleted
+            if len(link_records_related_to_other_persons) == 0:
+                master_record = jtrace.query(MasterRecord).get(master_id)
+
+                # Find work items related to master record
+                to_delete.work_items.extend(
+                    jtrace.query(WorkItem)
+                    .filter(WorkItem.master_id == master_record.id)
+                    .all()
+                )
+
+    open_work_items: list[WorkItem] = [
+        work_item for work_item in to_delete.work_items if work_item.status == 1
+    ]
+    if len(open_work_items) > 0:
+        raise OpenWorkItemError([work_item.id for work_item in open_work_items])
+
+    return to_delete
+
+
+def _create_delete_pid_summary(
+    record_to_delete: PatientRecord, empi_to_delete: EMPIDeleteItems
+) -> DeletePIDResponseSchema:
+
+    empi_to_delete_summary = DeletePIDFromEMPISchema.from_orm(empi_to_delete)
+    record_to_delete_summary = PatientRecordFullSchema.from_orm(record_to_delete)
+
+    to_delete_summary = DeletePIDPreviewSchema(
+        patient_record=record_to_delete_summary, empi=empi_to_delete_summary
+    )
+
+    to_delete_json = to_delete_summary.json()
+    to_delete_hash = hashlib.md5(to_delete_json.encode()).hexdigest()
+
+    return DeletePIDResponseSchema(
+        patient_record=record_to_delete_summary,
+        empi=empi_to_delete_summary,
+        hash=to_delete_hash,
+    )
+
+
+def summarise_delete_pid(
+    ukrdc3: Session,
+    jtrace: Session,
+    pid: str,
+    user: UKRDCUser,
+    delete_from_empi: bool = True,
+) -> DeletePIDResponseSchema:
+    record_to_delete = get_patientrecord(ukrdc3, pid, user)
+    empi_to_delete = _find_empi_items_to_delete(
+        jtrace, record_to_delete.pid, delete_from_empi=delete_from_empi
+    )
+
+    return _create_delete_pid_summary(record_to_delete, empi_to_delete)
+
+
+def delete_pid(
+    ukrdc3: Session,
+    jtrace: Session,
+    pid: str,
+    hash_: str,
+    user: UKRDCUser,
+    delete_from_empi: bool = True,
+) -> DeletePIDResponseSchema:
+    record_to_delete = get_patientrecord(ukrdc3, pid, user)
+    empi_to_delete = _find_empi_items_to_delete(
+        jtrace, record_to_delete.pid, delete_from_empi=delete_from_empi
+    )
+
+    summary = _create_delete_pid_summary(record_to_delete, empi_to_delete)
+
+    if hash_ != summary.hash:
+        raise ConfirmationError()
+
+    ukrdc3.delete(record_to_delete)
+
+    if delete_from_empi:
+        for person in empi_to_delete.persons:
+            jtrace.delete(person)
+
+        for master_record in empi_to_delete.master_records:
+            jtrace.delete(master_record)
+
+        for pidxrefs in empi_to_delete.pidxrefs:
+            jtrace.delete(pidxrefs)
+
+        for work_item in empi_to_delete.work_items:
+            jtrace.delete(work_item)
+
+        for link_record in empi_to_delete.link_records:
+            jtrace.delete(link_record)
+
+    ukrdc3.commit()
+    jtrace.commit()
+
+    return summary

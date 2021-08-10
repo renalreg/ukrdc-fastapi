@@ -18,6 +18,7 @@ from ukrdc_fastapi.query.patientrecords import (
 )
 from ukrdc_fastapi.query.resultitems import get_resultitem_services, get_resultitems
 from ukrdc_fastapi.query.surveys import get_surveys
+from ukrdc_fastapi.schemas.delete import DeletePIDRequestSchema, DeletePIDResponseSchema
 from ukrdc_fastapi.schemas.laborder import (
     LabOrderShortSchema,
     ResultItemSchema,
