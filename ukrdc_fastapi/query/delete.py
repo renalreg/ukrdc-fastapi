@@ -98,7 +98,9 @@ def _find_empi_items_to_delete(jtrace: Session, pid: str) -> EMPIDeleteItems:
 
 
 def _create_delete_pid_summary(
-    record_to_delete: PatientRecord, empi_to_delete: EMPIDeleteItems
+    record_to_delete: PatientRecord,
+    empi_to_delete: EMPIDeleteItems,
+    committed: bool = False,
 ) -> DeletePIDResponseSchema:
 
     empi_to_delete_summary = DeletePIDFromEMPISchema.from_orm(empi_to_delete)
@@ -116,6 +118,7 @@ def _create_delete_pid_summary(
         patient_record=record_to_delete_summary,
         empi=empi_to_delete_summary,
         hash=to_delete_hash,
+        committed=committed,
     )
 
 
@@ -160,7 +163,9 @@ def delete_pid(
     record_to_delete = get_patientrecord(ukrdc3, pid, user)
     empi_to_delete = _find_empi_items_to_delete(jtrace, record_to_delete.pid)
 
-    summary = _create_delete_pid_summary(record_to_delete, empi_to_delete)
+    summary = _create_delete_pid_summary(
+        record_to_delete, empi_to_delete, committed=True
+    )
 
     if hash_ != summary.hash:
         raise ConfirmationError()

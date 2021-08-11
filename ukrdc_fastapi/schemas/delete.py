@@ -14,7 +14,6 @@ from .base import OrmModel
 
 class DeletePIDRequestSchema(OrmModel):
     hash: Optional[str]
-    delete_from_empi: bool = True
 
 
 class DeletePIDFromEMPISchema(OrmModel):
@@ -32,3 +31,4 @@ class DeletePIDPreviewSchema(OrmModel):
 
 class DeletePIDResponseSchema(DeletePIDPreviewSchema):
     hash: str
+    committed: bool
