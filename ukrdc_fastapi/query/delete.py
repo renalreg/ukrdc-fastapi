@@ -131,6 +131,18 @@ def summarise_delete_pid(
     user: UKRDCUser,
     delete_from_empi: bool = True,
 ) -> DeletePIDResponseSchema:
+    """Create a summary of the records to be deleted.
+
+    Args:
+        ukrdc3 (Session): UKRDC SQLAlchemy session
+        jtrace (Session): JTRACE SQLAlchemy session
+        pid (str): PatientRecord PID
+        user (UKRDCUser): User object
+        delete_from_empi (bool, optional): Also remove related records from the EMPI. Defaults to True.
+
+    Returns:
+        DeletePIDResponseSchema: Summary of database items to be deleted
+    """
     record_to_delete = get_patientrecord(ukrdc3, pid, user)
     empi_to_delete = _find_empi_items_to_delete(
         jtrace, record_to_delete.pid, delete_from_empi=delete_from_empi
@@ -147,6 +159,22 @@ def delete_pid(
     user: UKRDCUser,
     delete_from_empi: bool = True,
 ) -> DeletePIDResponseSchema:
+    """Delete a patient record and related records from the database.
+
+    Args:
+        ukrdc3 (Session): UKRDC SQLAlchemy session
+        jtrace (Session): JTRACE SQLAlchemy session
+        pid (str): PatientRecord PID
+        hash_ (str): MD5 hash of the JSON summary of the records to be deleted
+        user (UKRDCUser): User object
+        delete_from_empi (bool, optional): Also remove related records from the EMPI. Defaults to True.
+
+    Raises:
+        ConfirmationError: Mismatched MD5 hash provided
+
+    Returns:
+        DeletePIDResponseSchema:  Summary of database items deleted
+    """
     record_to_delete = get_patientrecord(ukrdc3, pid, user)
     empi_to_delete = _find_empi_items_to_delete(
         jtrace, record_to_delete.pid, delete_from_empi=delete_from_empi
