@@ -26,7 +26,7 @@ class DeletePIDFromEMPISchema(OrmModel):
 
 
 class DeletePIDPreviewSchema(OrmModel):
-    patient_record: PatientRecordFullSchema
+    patient_record: Optional[PatientRecordFullSchema]
     empi: Optional[DeletePIDFromEMPISchema]
 
 

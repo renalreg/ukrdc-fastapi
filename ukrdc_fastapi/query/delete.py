@@ -38,15 +38,10 @@ class EMPIDeleteItems:
     link_records: list[LinkRecord]
 
 
-def _find_empi_items_to_delete(
-    jtrace: Session, pid: str, delete_from_empi: bool = True
-) -> EMPIDeleteItems:
+def _find_empi_items_to_delete(jtrace: Session, pid: str) -> EMPIDeleteItems:
     to_delete = EMPIDeleteItems(
         persons=[], master_records=[], pidxrefs=[], work_items=[], link_records=[]
     )
-    if not delete_from_empi:
-        return to_delete
-
     to_delete.pidxrefs = jtrace.query(PidXRef).filter(PidXRef.pid == pid).all()
     to_delete.persons = jtrace.query(Person).filter(Person.localid == pid).all()
 
@@ -125,11 +120,7 @@ def _create_delete_pid_summary(
 
 
 def summarise_delete_pid(
-    ukrdc3: Session,
-    jtrace: Session,
-    pid: str,
-    user: UKRDCUser,
-    delete_from_empi: bool = True,
+    ukrdc3: Session, jtrace: Session, pid: str, user: UKRDCUser
 ) -> DeletePIDResponseSchema:
     """Create a summary of the records to be deleted.
 
@@ -138,26 +129,18 @@ def summarise_delete_pid(
         jtrace (Session): JTRACE SQLAlchemy session
         pid (str): PatientRecord PID
         user (UKRDCUser): User object
-        delete_from_empi (bool, optional): Also remove related records from the EMPI. Defaults to True.
 
     Returns:
         DeletePIDResponseSchema: Summary of database items to be deleted
     """
     record_to_delete = get_patientrecord(ukrdc3, pid, user)
-    empi_to_delete = _find_empi_items_to_delete(
-        jtrace, record_to_delete.pid, delete_from_empi=delete_from_empi
-    )
+    empi_to_delete = _find_empi_items_to_delete(jtrace, record_to_delete.pid)
 
     return _create_delete_pid_summary(record_to_delete, empi_to_delete)
 
 
 def delete_pid(
-    ukrdc3: Session,
-    jtrace: Session,
-    pid: str,
-    hash_: str,
-    user: UKRDCUser,
-    delete_from_empi: bool = True,
+    ukrdc3: Session, jtrace: Session, pid: str, hash_: str, user: UKRDCUser
 ) -> DeletePIDResponseSchema:
     """Delete a patient record and related records from the database.
 
@@ -167,7 +150,6 @@ def delete_pid(
         pid (str): PatientRecord PID
         hash_ (str): MD5 hash of the JSON summary of the records to be deleted
         user (UKRDCUser): User object
-        delete_from_empi (bool, optional): Also remove related records from the EMPI. Defaults to True.
 
     Raises:
         ConfirmationError: Mismatched MD5 hash provided
@@ -176,9 +158,7 @@ def delete_pid(
         DeletePIDResponseSchema:  Summary of database items deleted
     """
     record_to_delete = get_patientrecord(ukrdc3, pid, user)
-    empi_to_delete = _find_empi_items_to_delete(
-        jtrace, record_to_delete.pid, delete_from_empi=delete_from_empi
-    )
+    empi_to_delete = _find_empi_items_to_delete(jtrace, record_to_delete.pid)
 
     summary = _create_delete_pid_summary(record_to_delete, empi_to_delete)
 
@@ -187,21 +167,20 @@ def delete_pid(
 
     ukrdc3.delete(record_to_delete)
 
-    if delete_from_empi:
-        for person in empi_to_delete.persons:
-            jtrace.delete(person)
+    for person in empi_to_delete.persons:
+        jtrace.delete(person)
 
-        for master_record in empi_to_delete.master_records:
-            jtrace.delete(master_record)
+    for master_record in empi_to_delete.master_records:
+        jtrace.delete(master_record)
 
-        for pidxrefs in empi_to_delete.pidxrefs:
-            jtrace.delete(pidxrefs)
+    for pidxrefs in empi_to_delete.pidxrefs:
+        jtrace.delete(pidxrefs)
 
-        for work_item in empi_to_delete.work_items:
-            jtrace.delete(work_item)
+    for work_item in empi_to_delete.work_items:
+        jtrace.delete(work_item)
 
-        for link_record in empi_to_delete.link_records:
-            jtrace.delete(link_record)
+    for link_record in empi_to_delete.link_records:
+        jtrace.delete(link_record)
 
     ukrdc3.commit()
     jtrace.commit()
