@@ -2,6 +2,7 @@ import pytest
 from ukrdc_sqla.empi import LinkRecord, MasterRecord, Person, PidXRef, WorkItem
 from ukrdc_sqla.ukrdc import PatientRecord
 
+from ukrdc_fastapi.query.common import PermissionsError
 from ukrdc_fastapi.query.delete import (
     ConfirmationError,
     delete_pid,
@@ -68,4 +69,25 @@ def test_delete_pid_badhash(ukrdc3_session, jtrace_session, superuser):
             "PYTEST01:PV:00000000A",
             "BADHASH",
             superuser,
+        )
+
+
+def test_summarise_delete_pid_denied(ukrdc3_session, jtrace_session, test_user):
+    with pytest.raises(PermissionsError):
+        summarise_delete_pid(
+            ukrdc3_session,
+            jtrace_session,
+            "PYTEST02:PV:00000000A",
+            test_user,
+        )
+
+
+def test_delete_pid_denied(ukrdc3_session, jtrace_session, test_user):
+    with pytest.raises(PermissionsError):
+        delete_pid(
+            ukrdc3_session,
+            jtrace_session,
+            "PYTEST02:PV:00000000A",
+            "RANDOMHASH",
+            test_user,
         )
