@@ -18,6 +18,7 @@ class Permissions:
     READ_RECORDS = "ukrdc:records:read"
     WRITE_RECORDS = "ukrdc:records:write"
     EXPORT_RECORDS = "ukrdc:records:export"
+    DELETE_RECORDS = "ukrdc:records:delete"
 
     WRITE_EMPI = "ukrdc:empi:write"
 
@@ -51,6 +52,7 @@ class Permissions:
             cls.WRITE_WORKITEMS,
             cls.WRITE_CODES,
             cls.EXPORT_RECORDS,
+            cls.DELETE_RECORDS,
             cls.WRITE_EMPI,
             cls.UNIT_PREFIX + cls.UNIT_WILDCARD,
         ]

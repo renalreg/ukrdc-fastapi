@@ -9,6 +9,7 @@ from ukrdc_sqla.ukrdc import Observation, ResultItem
 
 from ukrdc_fastapi.dependencies import get_jtrace, get_ukrdc3
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
+from ukrdc_fastapi.query.delete import delete_pid, summarise_delete_pid
 from ukrdc_fastapi.query.laborders import get_laborders
 from ukrdc_fastapi.query.medications import get_medications
 from ukrdc_fastapi.query.observations import get_observation_codes, get_observations
@@ -18,6 +19,7 @@ from ukrdc_fastapi.query.patientrecords import (
 )
 from ukrdc_fastapi.query.resultitems import get_resultitem_services, get_resultitems
 from ukrdc_fastapi.query.surveys import get_surveys
+from ukrdc_fastapi.schemas.delete import DeletePIDRequestSchema, DeletePIDResponseSchema
 from ukrdc_fastapi.schemas.laborder import (
     LabOrderShortSchema,
     ResultItemSchema,
@@ -48,6 +50,28 @@ def patient_record(
 ):
     """Retreive a specific patient record"""
     return get_patientrecord(ukrdc3, pid, user)
+
+
+@router.post(
+    "/delete",
+    # response_model=DeletePIDResponseSchema,
+    dependencies=[
+        Security(
+            auth.permission([Permissions.READ_RECORDS, Permissions.DELETE_RECORDS])
+        )
+    ],
+)
+def patient_delete(
+    pid: str,
+    user: UKRDCUser = Security(auth.get_user),
+    ukrdc3: Session = Depends(get_ukrdc3),
+    jtrace: Session = Depends(get_jtrace),
+    args: Optional[DeletePIDRequestSchema] = None,
+):
+    """Delete a specific patient record and all its associated data"""
+    if args and args.hash:
+        return delete_pid(ukrdc3, jtrace, pid, args.hash, user)
+    return summarise_delete_pid(ukrdc3, jtrace, pid, user)
 
 
 @router.get(
