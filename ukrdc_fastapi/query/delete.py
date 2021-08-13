@@ -23,9 +23,10 @@ class ConfirmationError(HTTPException):
 
 class OpenWorkItemError(HTTPException):
     def __init__(self, work_item_ids: list[str]) -> None:
+        _id_strings = ", ".join([f"Work Item ID {id_}" for id_ in work_item_ids])
         super().__init__(
             400,
-            detail=f"Cannot delete a patient with open Work Items ({', '.join(work_item_ids)}).",
+            detail=f"Cannot delete a patient with open Work Items ({_id_strings}).",
         )
 
 
@@ -80,6 +81,7 @@ def _find_empi_items_to_delete(jtrace: Session, pid: str) -> EMPIDeleteItems:
             # linked to the Person being deleted, and so can itself be deleted
             if len(link_records_related_to_other_persons) == 0:
                 master_record = jtrace.query(MasterRecord).get(master_id)
+                to_delete.master_records.append(master_record)
                 if master_record:
                     # Find work items related to master record
                     to_delete.work_items.extend(
