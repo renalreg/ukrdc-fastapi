@@ -81,8 +81,9 @@ def _find_empi_items_to_delete(jtrace: Session, pid: str) -> EMPIDeleteItems:
             # linked to the Person being deleted, and so can itself be deleted
             if len(link_records_related_to_other_persons) == 0:
                 master_record = jtrace.query(MasterRecord).get(master_id)
-                to_delete.master_records.append(master_record)
                 if master_record:
+                    # Add the Master Record to be deleted
+                    to_delete.master_records.append(master_record)
                     # Find work items related to master record
                     to_delete.work_items.extend(
                         jtrace.query(WorkItem)
