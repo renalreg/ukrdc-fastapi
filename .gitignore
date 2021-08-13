@@ -140,6 +140,7 @@ cython_debug/
 
 # Temporary test files
 *.sqlite
+.devcontainers/
 
 # IDE files
 .vscode/
