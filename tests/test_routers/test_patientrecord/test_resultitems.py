@@ -2,7 +2,7 @@ from ukrdc_fastapi.schemas.laborder import ResultItemSchema
 
 
 def test_record_resultitems(client):
-    response = client.get("/api/v1/patientrecords/PYTEST01:PV:00000000A/resultitems")
+    response = client.get("/api/v1/patientrecords/PYTEST01:PV:00000000A/results")
     assert response.status_code == 200
     results = [ResultItemSchema(**item) for item in response.json()["items"]]
     assert {result.id for result in results} == {
@@ -14,7 +14,7 @@ def test_record_resultitems(client):
 def test_resultitems_list_filtered_serviceId(client):
     # Filter by NI
     response = client.get(
-        "/api/v1/patientrecords/PYTEST01:PV:00000000A/resultitems?service_id=SERVICE_ID_2"
+        "/api/v1/patientrecords/PYTEST01:PV:00000000A/results?service_id=SERVICE_ID_2"
     )
     assert response.status_code == 200
     items = [ResultItemSchema(**item) for item in response.json()["items"]]
@@ -24,7 +24,7 @@ def test_resultitems_list_filtered_serviceId(client):
 
 def test_resultitem_detail(client):
     response = client.get(
-        "/api/v1/patientrecords/PYTEST01:PV:00000000A/resultitems/RESULTITEM1"
+        "/api/v1/patientrecords/PYTEST01:PV:00000000A/results/RESULTITEM1"
     )
     assert response.status_code == 200
     item = ResultItemSchema(**response.json())
@@ -33,13 +33,13 @@ def test_resultitem_detail(client):
 
 def test_resultitem_delete(client):
     response = client.delete(
-        "/api/v1/patientrecords/PYTEST01:PV:00000000A/resultitems/RESULTITEM1/"
+        "/api/v1/patientrecords/PYTEST01:PV:00000000A/results/RESULTITEM1/"
     )
     assert response.status_code == 204
 
     # Check the resultitem was deleted
     response = client.get(
-        "/api/v1/patientrecords/PYTEST01:PV:00000000A/resultitems/RESULTITEM1/"
+        "/api/v1/patientrecords/PYTEST01:PV:00000000A/results/RESULTITEM1/"
     )
     assert response.status_code == 404
 
