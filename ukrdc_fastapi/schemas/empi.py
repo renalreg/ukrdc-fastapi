@@ -61,7 +61,7 @@ class PersonSchema(OrmModel):
     links = LinkSet(
         {
             "self": UrlFor("person_detail", {"person_id": "<id>"}),
-            "patientrecord": UrlFor("patient_record", {"pid": "<localid>"}),
+            "patientrecord": UrlFor("patient_get", {"pid": "<localid>"}),
             "masterrecords": UrlFor("person_masterrecords", {"person_id": "<id>"}),
         }
     )

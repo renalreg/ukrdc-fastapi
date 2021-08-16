@@ -6,13 +6,11 @@ from . import (
     dashboard,
     empi,
     facilities,
-    laborders,
     masterrecords,
     messages,
     mirth,
     patientrecords,
     persons,
-    resultitems,
     search,
     user,
     workitems,
@@ -37,10 +35,8 @@ router.include_router(mirth.router, prefix="/mirth")
 router.include_router(search.router, prefix="/search")
 
 # UKRDC Records
-router.include_router(facilities.router, prefix="/facilities")
 router.include_router(patientrecords.router, prefix="/patientrecords")
-router.include_router(laborders.router, prefix="/laborders")
-router.include_router(resultitems.router, prefix="/resultitems")
+router.include_router(facilities.router, prefix="/facilities")
 router.include_router(codes.router, prefix="/codes")
 
 # EMPI Records

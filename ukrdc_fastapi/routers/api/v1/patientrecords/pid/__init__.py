@@ -1,23 +1,22 @@
 import datetime
 from typing import Optional
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi import Query as QueryParam
 from fastapi import Security
 from sqlalchemy.orm import Session
-from ukrdc_sqla.ukrdc import Observation, ResultItem
+from ukrdc_sqla.ukrdc import LabOrder, Observation, PatientRecord, PVDelete, ResultItem
 
 from ukrdc_fastapi.dependencies import get_jtrace, get_ukrdc3
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.query.delete import delete_pid, summarise_delete_pid
-from ukrdc_fastapi.query.laborders import get_laborders
 from ukrdc_fastapi.query.patientrecords import (
     get_patientrecord,
     get_patientrecords_related_to_patientrecord,
 )
-from ukrdc_fastapi.query.resultitems import get_resultitem_services, get_resultitems
 from ukrdc_fastapi.schemas.delete import DeletePIDRequestSchema
 from ukrdc_fastapi.schemas.laborder import (
+    LabOrderSchema,
     LabOrderShortSchema,
     ResultItemSchema,
     ResultItemServiceSchema,
@@ -35,6 +34,16 @@ from . import export
 router = APIRouter(prefix="/{pid}")
 router.include_router(export.router, prefix="/export")
 
+
+def _get_patientrecord(
+    pid: str,
+    user: UKRDCUser = Security(auth.get_user),
+    ukrdc3: Session = Depends(get_ukrdc3),
+) -> PatientRecord:
+    """Simple dependency to turn pid query param and User object into a PatientRecord object."""
+    return get_patientrecord(ukrdc3, pid, user)
+
+
 # Self-resources
 
 
@@ -43,13 +52,9 @@ router.include_router(export.router, prefix="/export")
     response_model=PatientRecordSchema,
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
-def patient_record(
-    pid: str,
-    user: UKRDCUser = Security(auth.get_user),
-    ukrdc3: Session = Depends(get_ukrdc3),
-):
+def patient_get(patient_record: PatientRecord = Depends(_get_patientrecord)):
     """Retreive a specific patient record"""
-    return get_patientrecord(ukrdc3, pid, user)
+    return patient_record
 
 
 @router.post(
@@ -92,15 +97,46 @@ def patient_related(
 
 
 @router.get(
+    "/medications/",
+    response_model=list[MedicationSchema],
+    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
+)
+def patient_medications(patient_record: PatientRecord = Depends(_get_patientrecord)):
+    """Retreive a specific patient's medications"""
+    return patient_record.medications.all()
+
+
+@router.get(
+    "/treatments/",
+    response_model=list[TreatmentSchema],
+    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
+)
+def patient_treatments(patient_record: PatientRecord = Depends(_get_patientrecord)):
+    """Retreive a specific patient's treatments"""
+    return patient_record.treatments.all()
+
+
+@router.get(
+    "/surveys/",
+    response_model=list[SurveySchema],
+    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
+)
+def patient_surveys(patient_record: PatientRecord = Depends(_get_patientrecord)):
+    """Retreive a specific patient's surveys"""
+    return patient_record.surveys.all()
+
+
+# Complex internal resources
+
+
+@router.get(
     "/observations/",
     response_model=Page[ObservationSchema],
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
 def patient_observations(
-    pid: str,
+    patient_record: PatientRecord = Depends(_get_patientrecord),
     code: Optional[list[str]] = QueryParam([]),
-    user: UKRDCUser = Security(auth.get_user),
-    ukrdc3: Session = Depends(get_ukrdc3),
     sorter: Sorter = Depends(
         make_sorter(
             [Observation.observation_time, Observation.updated_on],
@@ -109,74 +145,23 @@ def patient_observations(
     ),
 ):
     """Retreive a specific patient's lab orders"""
-    observations = get_patientrecord(ukrdc3, pid, user).observations
+    observations = patient_record.observations
     if code:
         observations = observations.filter(Observation.observation_code.in_(code))
     return paginate(sorter.sort(observations))
 
 
 @router.get(
-    "/observations/codes",
+    "/observation_codes",
     response_model=list[str],
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
-def patient_observations_codes(
-    pid: str,
-    user: UKRDCUser = Security(auth.get_user),
-    ukrdc3: Session = Depends(get_ukrdc3),
+def patient_observation_codes(
+    patient_record: PatientRecord = Depends(_get_patientrecord),
 ):
     """Retreive a list of observation codes available for a specific patient"""
-    observations = get_patientrecord(ukrdc3, pid, user).observations
-    codes = observations.distinct(Observation.observation_code)
+    codes = patient_record.observations.distinct(Observation.observation_code)
     return {item.observation_code for item in codes.all()}
-
-
-@router.get(
-    "/medications/",
-    response_model=list[MedicationSchema],
-    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
-)
-def patient_medications(
-    pid: str,
-    user: UKRDCUser = Security(auth.get_user),
-    ukrdc3: Session = Depends(get_ukrdc3),
-):
-    """Retreive a specific patient's medications"""
-    record = get_patientrecord(ukrdc3, pid, user)
-    return record.medications.all()
-
-
-@router.get(
-    "/treatments/",
-    response_model=list[TreatmentSchema],
-    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
-)
-def patient_treatments(
-    pid: str,
-    user: UKRDCUser = Security(auth.get_user),
-    ukrdc3: Session = Depends(get_ukrdc3),
-):
-    """Retreive a specific patient's treatments"""
-    record = get_patientrecord(ukrdc3, pid, user)
-    return record.treatments.all()
-
-
-@router.get(
-    "/surveys/",
-    response_model=list[SurveySchema],
-    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
-)
-def patient_surveys(
-    pid: str,
-    user: UKRDCUser = Security(auth.get_user),
-    ukrdc3: Session = Depends(get_ukrdc3),
-):
-    """Retreive a specific patient's surveys"""
-    record = get_patientrecord(ukrdc3, pid, user)
-    return record.surveys.all()
-
-
-# External resources
 
 
 @router.get(
@@ -184,28 +169,66 @@ def patient_surveys(
     response_model=Page[LabOrderShortSchema],
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
-def patient_laborders(
-    pid: str,
-    user: UKRDCUser = Security(auth.get_user),
-    ukrdc3: Session = Depends(get_ukrdc3),
-):
+def patient_laborders(patient_record: PatientRecord = Depends(_get_patientrecord)):
     """Retreive a specific patient's lab orders"""
-    return paginate(get_laborders(ukrdc3, user, pid=pid))
+    return paginate(patient_record.lab_orders)
 
 
 @router.get(
-    "/resultitems/",
+    "/laborders/{order_id}/",
+    response_model=LabOrderSchema,
+    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
+)
+def laborder_get(
+    order_id: str, patient_record: PatientRecord = Depends(_get_patientrecord)
+) -> LabOrder:
+    """Retreive a particular lab order"""
+    order = patient_record.lab_orders.filter(LabOrder.id == order_id).first()
+    if not order:
+        raise HTTPException(404, detail="Lab Order not found")
+    return order
+
+
+@router.delete(
+    "/laborders/{order_id}/",
+    status_code=204,
+    dependencies=[Security(auth.permission(Permissions.WRITE_RECORDS))],
+)
+def laborder_delete(
+    order_id: str,
+    patient_record: PatientRecord = Depends(_get_patientrecord),
+    ukrdc3: Session = Depends(get_ukrdc3),
+) -> None:
+    """Mark a particular lab order for deletion"""
+    order = patient_record.lab_orders.filter(LabOrder.id == order_id).first()
+    if not order:
+        raise HTTPException(404, detail="Lab Order not found")
+
+    deletes = [
+        PVDelete(
+            pid=item.pid,
+            observation_time=item.observation_time,
+            service_id=item.service_id,
+        )
+        for item in order.result_items
+    ]
+    ukrdc3.bulk_save_objects(deletes)
+
+    ukrdc3.delete(order)
+    ukrdc3.commit()
+
+
+@router.get(
+    "/results/",
     response_model=Page[ResultItemSchema],
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
 def patient_resultitems(
-    pid: str,
+    patient_record: PatientRecord = Depends(_get_patientrecord),
     service_id: Optional[list[str]] = QueryParam([]),
     order_id: Optional[list[str]] = QueryParam([]),
     since: Optional[datetime.datetime] = None,
     until: Optional[datetime.datetime] = None,
-    user: UKRDCUser = Security(auth.get_user),
-    ukrdc3: Session = Depends(get_ukrdc3),
     sorter: Sorter = Depends(
         make_sorter(
             [ResultItem.observation_time, ResultItem.entered_on],
@@ -215,27 +238,75 @@ def patient_resultitems(
 ):
     """Retreive a specific patient's lab orders"""
 
-    query = get_resultitems(
-        ukrdc3,
-        user,
-        pid=pid,
-        service_id=service_id,
-        order_id=order_id,
-        since=since,
-        until=until,
-    )
+    query = patient_record.result_items
+
+    if service_id:
+        query = query.filter(ResultItem.service_id.in_(service_id))
+    if order_id:
+        query = query.filter(ResultItem.order_id.in_(order_id))
+    if since:
+        query = query.filter(ResultItem.observation_time >= since)
+    if until:
+        query = query.filter(ResultItem.observation_time <= until)
+
     return paginate(sorter.sort(query))
 
 
 @router.get(
-    "/resultitems/services",
+    "/results/{resultitem_id}/",
+    response_model=ResultItemSchema,
+    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
+)
+def resultitem_get(
+    resultitem_id: str, patient_record: PatientRecord = Depends(_get_patientrecord)
+) -> ResultItem:
+    """Retreive a particular lab result"""
+    item = patient_record.result_items.filter(ResultItem.id == resultitem_id).first()
+    if not item:
+        raise HTTPException(404, detail="Result item not found")
+    return item
+
+
+@router.delete(
+    "/results/{resultitem_id}/",
+    status_code=204,
+    dependencies=[Security(auth.permission(Permissions.WRITE_RECORDS))],
+)
+def resultitem_delete(
+    resultitem_id: str,
+    patient_record: PatientRecord = Depends(_get_patientrecord),
+    ukrdc3: Session = Depends(get_ukrdc3),
+) -> None:
+    """Mark a particular lab result for deletion"""
+    item = patient_record.result_items.filter(ResultItem.id == resultitem_id).first()
+    if not item:
+        raise HTTPException(404, detail="Result item not found")
+
+    order: Optional[LabOrder] = item.order
+
+    ukrdc3.delete(item)
+    ukrdc3.commit()
+
+    if order and order.result_items.count() == 0:
+        ukrdc3.delete(order)
+    ukrdc3.commit()
+
+
+@router.get(
+    "/result_services",
     response_model=list[ResultItemServiceSchema],
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
-def patient_resultitems_services(
-    pid: str,
-    user: UKRDCUser = Security(auth.get_user),
-    ukrdc3: Session = Depends(get_ukrdc3),
+def patient_result_services(
+    patient_record: PatientRecord = Depends(_get_patientrecord),
 ):
     """Retreive a list of resultitem services available for a specific patient"""
-    return get_resultitem_services(ukrdc3, user, pid=pid)
+    services = patient_record.result_items.distinct(ResultItem.service_id)
+    return [
+        ResultItemServiceSchema(
+            id=item.service_id,
+            description=item.service_id_description,
+            standard=item.service_id_std,
+        )
+        for item in services.all()
+    ]
