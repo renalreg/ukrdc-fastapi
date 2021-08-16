@@ -11,15 +11,12 @@ from ukrdc_fastapi.dependencies import get_jtrace, get_ukrdc3
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.query.delete import delete_pid, summarise_delete_pid
 from ukrdc_fastapi.query.laborders import get_laborders
-from ukrdc_fastapi.query.medications import get_medications
-from ukrdc_fastapi.query.observations import get_observation_codes, get_observations
 from ukrdc_fastapi.query.patientrecords import (
     get_patientrecord,
     get_patientrecords_related_to_patientrecord,
 )
 from ukrdc_fastapi.query.resultitems import get_resultitem_services, get_resultitems
-from ukrdc_fastapi.query.surveys import get_surveys
-from ukrdc_fastapi.schemas.delete import DeletePIDRequestSchema, DeletePIDResponseSchema
+from ukrdc_fastapi.schemas.delete import DeletePIDRequestSchema
 from ukrdc_fastapi.schemas.laborder import (
     LabOrderShortSchema,
     ResultItemSchema,
@@ -29,6 +26,7 @@ from ukrdc_fastapi.schemas.medication import MedicationSchema
 from ukrdc_fastapi.schemas.observation import ObservationSchema
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordSchema
 from ukrdc_fastapi.schemas.survey import SurveySchema
+from ukrdc_fastapi.schemas.treatment import TreatmentSchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
 from ukrdc_fastapi.utils.sort import Sorter, make_sorter
 
@@ -36,6 +34,8 @@ from . import export
 
 router = APIRouter(prefix="/{pid}")
 router.include_router(export.router, prefix="/export")
+
+# Self-resources
 
 
 @router.get(
@@ -54,7 +54,6 @@ def patient_record(
 
 @router.post(
     "/delete",
-    # response_model=DeletePIDResponseSchema,
     dependencies=[
         Security(
             auth.permission([Permissions.READ_RECORDS, Permissions.DELETE_RECORDS])
@@ -87,6 +86,97 @@ def patient_related(
 ):
     """Retreive patient records related to a specific patient record"""
     return get_patientrecords_related_to_patientrecord(ukrdc3, jtrace, pid, user).all()
+
+
+# Internal resources
+
+
+@router.get(
+    "/observations/",
+    response_model=Page[ObservationSchema],
+    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
+)
+def patient_observations(
+    pid: str,
+    code: Optional[list[str]] = QueryParam([]),
+    user: UKRDCUser = Security(auth.get_user),
+    ukrdc3: Session = Depends(get_ukrdc3),
+    sorter: Sorter = Depends(
+        make_sorter(
+            [Observation.observation_time, Observation.updated_on],
+            default_sort_by=Observation.observation_time,
+        )
+    ),
+):
+    """Retreive a specific patient's lab orders"""
+    observations = get_patientrecord(ukrdc3, pid, user).observations
+    if code:
+        observations = observations.filter(Observation.observation_code.in_(code))
+    return paginate(sorter.sort(observations))
+
+
+@router.get(
+    "/observations/codes",
+    response_model=list[str],
+    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
+)
+def patient_observations_codes(
+    pid: str,
+    user: UKRDCUser = Security(auth.get_user),
+    ukrdc3: Session = Depends(get_ukrdc3),
+):
+    """Retreive a list of observation codes available for a specific patient"""
+    observations = get_patientrecord(ukrdc3, pid, user).observations
+    codes = observations.distinct(Observation.observation_code)
+    return {item.observation_code for item in codes.all()}
+
+
+@router.get(
+    "/medications/",
+    response_model=list[MedicationSchema],
+    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
+)
+def patient_medications(
+    pid: str,
+    user: UKRDCUser = Security(auth.get_user),
+    ukrdc3: Session = Depends(get_ukrdc3),
+):
+    """Retreive a specific patient's medications"""
+    record = get_patientrecord(ukrdc3, pid, user)
+    return record.medications.all()
+
+
+@router.get(
+    "/treatments/",
+    response_model=list[TreatmentSchema],
+    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
+)
+def patient_treatments(
+    pid: str,
+    user: UKRDCUser = Security(auth.get_user),
+    ukrdc3: Session = Depends(get_ukrdc3),
+):
+    """Retreive a specific patient's treatments"""
+    record = get_patientrecord(ukrdc3, pid, user)
+    return record.treatments.all()
+
+
+@router.get(
+    "/surveys/",
+    response_model=list[SurveySchema],
+    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
+)
+def patient_surveys(
+    pid: str,
+    user: UKRDCUser = Security(auth.get_user),
+    ukrdc3: Session = Depends(get_ukrdc3),
+):
+    """Retreive a specific patient's surveys"""
+    record = get_patientrecord(ukrdc3, pid, user)
+    return record.surveys.all()
+
+
+# External resources
 
 
 @router.get(
@@ -149,67 +239,3 @@ def patient_resultitems_services(
 ):
     """Retreive a list of resultitem services available for a specific patient"""
     return get_resultitem_services(ukrdc3, user, pid=pid)
-
-
-@router.get(
-    "/observations/",
-    response_model=Page[ObservationSchema],
-    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
-)
-def patient_observations(
-    pid: str,
-    code: Optional[list[str]] = QueryParam([]),
-    user: UKRDCUser = Security(auth.get_user),
-    ukrdc3: Session = Depends(get_ukrdc3),
-    sorter: Sorter = Depends(
-        make_sorter(
-            [Observation.observation_time, Observation.updated_on],
-            default_sort_by=Observation.observation_time,
-        )
-    ),
-):
-    """Retreive a specific patient's lab orders"""
-    query = get_observations(ukrdc3, user, pid=pid, codes=code)
-    return paginate(sorter.sort(query))
-
-
-@router.get(
-    "/observations/codes",
-    response_model=list[str],
-    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
-)
-def patient_observations_codes(
-    pid: str,
-    user: UKRDCUser = Security(auth.get_user),
-    ukrdc3: Session = Depends(get_ukrdc3),
-):
-    """Retreive a list of observation codes available for a specific patient"""
-    return get_observation_codes(ukrdc3, user, pid=pid)
-
-
-@router.get(
-    "/medications/",
-    response_model=list[MedicationSchema],
-    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
-)
-def patient_medications(
-    pid: str,
-    user: UKRDCUser = Security(auth.get_user),
-    ukrdc3: Session = Depends(get_ukrdc3),
-):
-    """Retreive a specific patient's medications"""
-    return get_medications(ukrdc3, user, pid=pid).all()
-
-
-@router.get(
-    "/surveys/",
-    response_model=list[SurveySchema],
-    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
-)
-def patient_surveys(
-    pid: str,
-    user: UKRDCUser = Security(auth.get_user),
-    ukrdc3: Session = Depends(get_ukrdc3),
-):
-    """Retreive a specific patient's surveys"""
-    return get_surveys(ukrdc3, user, pid=pid).all()

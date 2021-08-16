@@ -38,6 +38,7 @@ from ukrdc_sqla.ukrdc import (
     ResultItem,
     Score,
     Survey,
+    Treatment,
 )
 
 from ukrdc_fastapi.dependencies import (
@@ -287,6 +288,40 @@ def populate_ukrdc3_session(session):
     session.add(medication_1)
     session.add(medication_2)
     session.add(medication_3)
+
+    treatment_1 = Treatment(
+        id="TREATMENT1",
+        pid=pid_1,
+        from_time=datetime(2019, 3, 16),
+        to_time=None,
+        admit_reason_code=1,
+        admission_source_code_std="CF_RR7_TREATMENT",
+        health_care_facility_code="TEST_SENDING_FACILITY_1",
+        health_care_facility_code_std="ODS",
+    )
+    treatment_2 = Treatment(
+        id="TREATMENT2",
+        pid=pid_1,
+        from_time=datetime(2019, 3, 16),
+        to_time=datetime(9999, 3, 16),
+        admit_reason_code=1,
+        admission_source_code_std="CF_RR7_TREATMENT",
+        health_care_facility_code="TEST_SENDING_FACILITY_1",
+        health_care_facility_code_std="ODS",
+    )
+    treatment_3 = Treatment(
+        id="TREATMENT3",
+        pid=pid_2,
+        from_time=datetime(2019, 3, 16),
+        to_time=datetime(9999, 3, 16),
+        admit_reason_code=1,
+        admission_source_code_std="CF_RR7_TREATMENT",
+        health_care_facility_code="TEST_SENDING_FACILITY_2",
+        health_care_facility_code_std="ODS",
+    )
+    session.add(treatment_1)
+    session.add(treatment_2)
+    session.add(treatment_3)
 
     laborder_1 = LabOrder(
         id="LABORDER1",
