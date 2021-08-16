@@ -52,7 +52,7 @@ def _get_patientrecord(
     response_model=PatientRecordSchema,
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
-def patient_record(patient_record: PatientRecord = Depends(_get_patientrecord)):
+def patient_get(patient_record: PatientRecord = Depends(_get_patientrecord)):
     """Retreive a specific patient record"""
     return patient_record
 

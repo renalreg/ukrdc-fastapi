@@ -135,7 +135,7 @@ class PatientRecordSchema(OrmModel):
     links = LinkSet(
         {
             # Self-resources
-            "self": UrlFor("patient_record", {"pid": "<pid>"}),
+            "self": UrlFor("patient_get", {"pid": "<pid>"}),
             "related": UrlFor("patient_related", {"pid": "<pid>"}),
             # Internal resources
             "medications": UrlFor("patient_medications", {"pid": "<pid>"}),
