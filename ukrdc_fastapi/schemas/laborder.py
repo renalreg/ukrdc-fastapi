@@ -8,15 +8,21 @@ from .base import OrmModel
 
 class LabOrderShortSchema(OrmModel):
     id: str
+    pid: str
+
     entered_at_description: Optional[str]
     entered_at: Optional[str]
     specimen_collected_time: datetime.datetime
 
-    links = LinkSet({"self": UrlFor("laborder_get", {"order_id": "<id>"})})
+    links = LinkSet(
+        {"self": UrlFor("laborder_get", {"pid": "<pid>", "order_id": "<id>"})}
+    )
 
 
 class ResultItemSchema(OrmModel):
     id: str
+    pid: str
+
     order_id: str
     service_id: str
     service_id_description: Optional[str]
@@ -27,8 +33,12 @@ class ResultItemSchema(OrmModel):
 
     links = LinkSet(
         {
-            "self": UrlFor("resultitem_detail", {"resultitem_id": "<id>"}),
-            "laborder": UrlFor("laborder_get", {"order_id": "<order_id>"}),
+            "self": UrlFor(
+                "resultitem_detail", {"pid": "<pid>", "resultitem_id": "<id>"}
+            ),
+            "laborder": UrlFor(
+                "laborder_get", {"pid": "<pid>", "order_id": "<order_id>"}
+            ),
         }
     )
 
