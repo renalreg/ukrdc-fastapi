@@ -143,9 +143,9 @@ class PatientRecordSchema(OrmModel):
             "surveys": UrlFor("patient_surveys", {"pid": "<pid>"}),
             # Complex internal resources
             "observations": UrlFor("patient_observations", {"pid": "<pid>"}),
-            "observationCodes": UrlFor("observation_codes", {"pid": "<pid>"}),
+            "observationCodes": UrlFor("patient_observation_codes", {"pid": "<pid>"}),
             "results": UrlFor("patient_resultitems", {"pid": "<pid>"}),
-            "resultServices": UrlFor("result_services", {"pid": "<pid>"}),
+            "resultServices": UrlFor("patient_result_services", {"pid": "<pid>"}),
             "laborders": UrlFor("patient_laborders", {"pid": "<pid>"}),
             # Exports
             "exportPVTests": UrlFor("patient_export_pv_tests", {"pid": "<pid>"}),

@@ -156,7 +156,7 @@ def patient_observations(
     response_model=list[str],
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
-def patient_observations_codes(
+def patient_observation_codes(
     patient_record: PatientRecord = Depends(_get_patientrecord),
 ):
     """Retreive a list of observation codes available for a specific patient"""
@@ -257,7 +257,7 @@ def patient_resultitems(
     response_model=ResultItemSchema,
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
-def resultitem_detail(
+def resultitem_get(
     resultitem_id: str, patient_record: PatientRecord = Depends(_get_patientrecord)
 ) -> ResultItem:
     """Retreive a particular lab result"""
@@ -297,7 +297,7 @@ def resultitem_delete(
     response_model=list[ResultItemServiceSchema],
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
-def patient_resultitems_services(
+def patient_result_services(
     patient_record: PatientRecord = Depends(_get_patientrecord),
 ):
     """Retreive a list of resultitem services available for a specific patient"""

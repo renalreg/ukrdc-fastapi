@@ -33,9 +33,7 @@ class ResultItemSchema(OrmModel):
 
     links = LinkSet(
         {
-            "self": UrlFor(
-                "resultitem_detail", {"pid": "<pid>", "resultitem_id": "<id>"}
-            ),
+            "self": UrlFor("resultitem_get", {"pid": "<pid>", "resultitem_id": "<id>"}),
             "laborder": UrlFor(
                 "laborder_get", {"pid": "<pid>", "order_id": "<order_id>"}
             ),
