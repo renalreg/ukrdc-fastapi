@@ -134,13 +134,20 @@ class PatientRecordSchema(OrmModel):
 
     links = LinkSet(
         {
+            # Self-resources
             "self": UrlFor("patient_record", {"pid": "<pid>"}),
-            "laborders": UrlFor("patient_laborders", {"pid": "<pid>"}),
-            "results": UrlFor("patient_resultitems", {"pid": "<pid>"}),
-            "observations": UrlFor("patient_observations", {"pid": "<pid>"}),
+            "related": UrlFor("patient_related", {"pid": "<pid>"}),
+            # Internal resources
             "medications": UrlFor("patient_medications", {"pid": "<pid>"}),
+            "treatments": UrlFor("patient_treatments", {"pid": "<pid>"}),
             "surveys": UrlFor("patient_surveys", {"pid": "<pid>"}),
-            "exportPV": UrlFor("patient_export_pv", {"pid": "<pid>"}),
+            # Complex internal resources
+            "observations": UrlFor("patient_observations", {"pid": "<pid>"}),
+            "observationCodes": UrlFor("observation_codes", {"pid": "<pid>"}),
+            "results": UrlFor("patient_resultitems", {"pid": "<pid>"}),
+            "resultServices": UrlFor("result_services", {"pid": "<pid>"}),
+            "laborders": UrlFor("patient_laborders", {"pid": "<pid>"}),
+            # Exports
             "exportPVTests": UrlFor("patient_export_pv_tests", {"pid": "<pid>"}),
             "exportPVDocs": UrlFor("patient_export_pv_docs", {"pid": "<pid>"}),
             "exportRADAR": UrlFor("patient_export_radar", {"pid": "<pid>"}),

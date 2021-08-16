@@ -219,7 +219,7 @@ def laborder_delete(
 
 
 @router.get(
-    "/resultitems/",
+    "/results/",
     response_model=Page[ResultItemSchema],
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
@@ -253,7 +253,7 @@ def patient_resultitems(
 
 
 @router.get(
-    "/resultitems/{resultitem_id}/",
+    "/results/{resultitem_id}/",
     response_model=ResultItemSchema,
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
@@ -268,7 +268,7 @@ def resultitem_detail(
 
 
 @router.delete(
-    "/resultitems/{resultitem_id}/",
+    "/results/{resultitem_id}/",
     status_code=204,
     dependencies=[Security(auth.permission(Permissions.WRITE_RECORDS))],
 )
@@ -293,7 +293,7 @@ def resultitem_delete(
 
 
 @router.get(
-    "/resultitem_services",
+    "/result_services",
     response_model=list[ResultItemServiceSchema],
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
