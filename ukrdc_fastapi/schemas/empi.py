@@ -152,3 +152,4 @@ class WorkItemDestinationSchema(OrmModel):
 class WorkItemExtendedSchema(WorkItemSchema):
     incoming: WorkItemIncomingSchema
     destination: WorkItemDestinationSchema
+    collection: list[WorkItemSchema]

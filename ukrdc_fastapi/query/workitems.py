@@ -152,6 +152,19 @@ def get_extended_workitem(
         .all(),
     }
 
+    # Compute WorkItem collection
+
+    filters = []
+    if workitem.master_record:
+        filters.append(WorkItem.master_id == workitem.master_id)
+    if workitem.person:
+        filters.append(WorkItem.person_id == workitem.person_id)
+
+    collection = jtrace.query(WorkItem).filter(
+        or_(*filters),
+        WorkItem.id != workitem.id,
+    )
+
     return WorkItemExtendedSchema(
         id=workitem.id,
         type=workitem.type,
@@ -165,6 +178,7 @@ def get_extended_workitem(
         attributes=workitem.attributes,
         incoming=incoming,
         destination=destination,
+        collection=collection,
     )
 
 
