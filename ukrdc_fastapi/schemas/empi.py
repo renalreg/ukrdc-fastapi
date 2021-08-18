@@ -88,7 +88,7 @@ WORKITEM_ATTRIBUTE_MAP: dict[str, str] = {
     "Gender": "gender",
     "name": "givenname",
     "GivenName": "givenname",
-    "surname": "surname",
+    "Surname": "surname",
 }
 
 
