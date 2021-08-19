@@ -13,6 +13,7 @@ from ukrdc_fastapi.query.mirth.workitems import close_workitem, update_workitem
 from ukrdc_fastapi.query.workitems import (
     get_extended_workitem,
     get_workitem,
+    get_workitem_collection,
     get_workitems_related_to_workitem,
 )
 from ukrdc_fastapi.schemas.base import JSONModel
@@ -81,6 +82,20 @@ async def workitem_update(
         status=args.status,
         comment=args.comment,
     )
+
+
+@router.get(
+    "/colection/",
+    response_model=list[WorkItemSchema],
+    dependencies=[Security(auth.permission(Permissions.READ_WORKITEMS))],
+)
+def workitem_collection(
+    workitem_id: int,
+    user: UKRDCUser = Security(auth.get_user),
+    jtrace: Session = Depends(get_jtrace),
+):
+    """Retreive a list of other work items related to a particular work item"""
+    return get_workitem_collection(jtrace, workitem_id, user).all()
 
 
 @router.get(

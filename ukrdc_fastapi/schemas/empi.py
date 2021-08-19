@@ -106,6 +106,9 @@ class WorkItemSchema(OrmModel):
     type: int
     description: str
     status: int
+
+    creation_date: datetime.datetime
+
     last_updated: datetime.datetime
     updated_by: Optional[str]
 
@@ -118,6 +121,7 @@ class WorkItemSchema(OrmModel):
     links = LinkSet(
         {
             "self": UrlFor("workitem_detail", {"workitem_id": "<id>"}),
+            "collection": UrlFor("workitem_collection", {"workitem_id": "<id>"}),
             "related": UrlFor("workitem_related", {"workitem_id": "<id>"}),
             "messages": UrlFor("workitem_messages", {"workitem_id": "<id>"}),
             "close": UrlFor("workitem_close", {"workitem_id": "<id>"}),
@@ -152,4 +156,3 @@ class WorkItemDestinationSchema(OrmModel):
 class WorkItemExtendedSchema(WorkItemSchema):
     incoming: WorkItemIncomingSchema
     destination: WorkItemDestinationSchema
-    collection: list[WorkItemSchema]
