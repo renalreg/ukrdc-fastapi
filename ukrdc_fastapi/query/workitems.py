@@ -13,6 +13,7 @@ from ukrdc_fastapi.query.masterrecords import get_masterrecords_related_to_perso
 from ukrdc_fastapi.query.messages import get_message
 from ukrdc_fastapi.query.persons import get_persons_related_to_masterrecord
 from ukrdc_fastapi.schemas.empi import WorkItemExtendedSchema
+from ukrdc_fastapi.utils.links import find_related_ids
 
 
 def _apply_query_permissions(query: Query, user: UKRDCUser):
@@ -197,17 +198,25 @@ def get_workitems_related_to_workitem(
     """
     workitem = get_workitem(jtrace, workitem_id, user)
 
-    filters = []
+    seen_master_ids: set[int] = set()
+    seen_person_ids: set[int] = set()
+
     if workitem.master_record:
-        filters.append(WorkItem.master_id == workitem.master_id)
+        seen_master_ids.add(workitem.master_id)
     if workitem.person:
-        filters.append(WorkItem.person_id == workitem.person_id)
+        seen_person_ids.add(workitem.person_id)
+
+    related_master_ids, related_person_ids = find_related_ids(
+        jtrace, seen_master_ids, seen_person_ids
+    )
 
     other_workitems = jtrace.query(WorkItem).filter(
-        or_(*filters),
-        WorkItem.id != workitem.id,
-        WorkItem.status == 1,
+        or_(
+            WorkItem.master_id.in_(related_master_ids),
+            WorkItem.person_id.in_(related_person_ids),
+        )
     )
+    other_workitems = other_workitems.filter(WorkItem.id != workitem.id)
 
     return _apply_query_permissions(other_workitems, user)
 
