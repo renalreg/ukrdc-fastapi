@@ -256,12 +256,12 @@ typing-extensions = ">=3.7.4,<4.0.0"
 
 [package.extras]
 gino = ["gino[starlette] (>=1.0.1,<2.0.0)", "SQLAlchemy (>=1.3.20,<2.0.0)", "sqlalchemy-stubs (>=0.4,<0.5)"]
-all = ["gino[starlette] (>=1.0.1,<2.0.0)", "SQLAlchemy (>=1.3.20,<2.0.0)", "sqlalchemy-stubs (>=0.4,<0.5)", "databases[sqlite,postgresql,mysql] (>=0.4.0,<0.5.0)", "orm (>=0.1.5,<0.2.0)", "tortoise-orm[asyncpg,aiosqlite,aiomysql] (>=0.16.18,<0.18.0)", "asyncpg (==0.23.0)", "ormar (>=0.10.5,<0.11.0)", "Django (<3.3.0)", "piccolo (>=0.29.0,<0.30.0)"]
+all = ["gino[starlette] (>=1.0.1,<2.0.0)", "SQLAlchemy (>=1.3.20,<2.0.0)", "sqlalchemy-stubs (>=0.4,<0.5)", "databases[sqlite,mysql,postgresql] (>=0.4.0,<0.5.0)", "orm (>=0.1.5,<0.2.0)", "tortoise-orm[asyncpg,aiosqlite,aiomysql] (>=0.16.18,<0.18.0)", "asyncpg (==0.23.0)", "ormar (>=0.10.5,<0.11.0)", "Django (<3.3.0)", "piccolo (>=0.29.0,<0.30.0)"]
 sqlalchemy = ["SQLAlchemy (>=1.3.20,<2.0.0)", "sqlalchemy-stubs (>=0.4,<0.5)"]
 asyncpg = ["SQLAlchemy (>=1.3.20,<2.0.0)", "asyncpg (==0.23.0)"]
-databases = ["databases[sqlite,postgresql,mysql] (>=0.4.0,<0.5.0)"]
-orm = ["databases[sqlite,postgresql,mysql] (>=0.4.0,<0.5.0)", "orm (>=0.1.5,<0.2.0)"]
-django = ["databases[sqlite,postgresql,mysql] (>=0.4.0,<0.5.0)", "Django (<3.3.0)"]
+databases = ["databases[sqlite,mysql,postgresql] (>=0.4.0,<0.5.0)"]
+orm = ["databases[sqlite,mysql,postgresql] (>=0.4.0,<0.5.0)", "orm (>=0.1.5,<0.2.0)"]
+django = ["databases[sqlite,mysql,postgresql] (>=0.4.0,<0.5.0)", "Django (<3.3.0)"]
 tortoise = ["tortoise-orm[asyncpg,aiosqlite,aiomysql] (>=0.16.18,<0.18.0)"]
 ormar = ["ormar (>=0.10.5,<0.11.0)"]
 piccolo = ["piccolo (>=0.29.0,<0.30.0)"]
@@ -1004,7 +1004,7 @@ python-versions = "*"
 
 [[package]]
 name = "ukrdc-sqla"
-version = "1.5.0"
+version = "1.6.0"
 description = "SQLAlchemy models for the UKRDC"
 category = "main"
 optional = false
@@ -1080,7 +1080,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9" 
-content-hash = "f6d0e72b8703a248dd0dbc77be37a8b9a856c04f9d450b3681a062a6a5577203"
+content-hash = "b555fe2ddb092bf2dc75eda0647ed509cf23ec20daec3f209fdf1a839f676ff0"
 
 [metadata.files]
 anyio = [
@@ -1713,8 +1713,8 @@ typing-extensions = [
     {file = "typing_extensions-3.10.0.0.tar.gz", hash = "sha256:50b6f157849174217d0656f99dc82fe932884fb250826c18350e159ec6cdf342"},
 ]
 ukrdc-sqla = [
-    {file = "ukrdc-sqla-1.5.0.tar.gz", hash = "sha256:a704999e58154fc90d6fe6d84b844f398a2d3c9cfc32726a464a433b42eabad3"},
-    {file = "ukrdc_sqla-1.5.0-py3-none-any.whl", hash = "sha256:afd4e738ce8ea9323013314a79e68f816fefdffd50dadb946756c0b2b0b0904a"},
+    {file = "ukrdc-sqla-1.6.0.tar.gz", hash = "sha256:61c04c46c57b0a1413381b4c3e389e833c346d2efb42c4a496152262999fe5f7"},
+    {file = "ukrdc_sqla-1.6.0-py3-none-any.whl", hash = "sha256:c2a5b1c3b604544a311769c5fb56259798fff67a1472ae82fd2aa0836b2014e3"},
 ]
 urllib3 = [
     {file = "urllib3-1.26.6-py2.py3-none-any.whl", hash = "sha256:39fb8672126159acb139a7718dd10806104dec1e2f0f6c88aab05d17df10c8d4"},

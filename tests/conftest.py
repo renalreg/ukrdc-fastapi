@@ -584,6 +584,7 @@ def populate_jtrace_session(session):
         type=9,
         description="DESCRIPTION_1",
         status=1,
+        creation_date=datetime(2020, 3, 16),
         last_updated=datetime(2020, 3, 16),
     )
 
@@ -594,6 +595,7 @@ def populate_jtrace_session(session):
         type=9,
         description="DESCRIPTION_2",
         status=1,
+        creation_date=datetime(2021, 1, 1),
         last_updated=datetime(2021, 1, 1),
     )
 
@@ -604,6 +606,7 @@ def populate_jtrace_session(session):
         type=9,
         description="DESCRIPTION_3",
         status=1,
+        creation_date=datetime(2021, 1, 1),
         last_updated=datetime(2021, 1, 1),
     )
 
@@ -614,6 +617,7 @@ def populate_jtrace_session(session):
         type=9,
         description="DESCRIPTION_CLOSED",
         status=3,
+        creation_date=datetime(2021, 1, 1),
         last_updated=datetime(2021, 1, 1),
     )
 

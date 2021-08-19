@@ -172,7 +172,7 @@ def get_extended_workitem(
 
 def get_workitem_collection(
     jtrace: Session, workitem_id: int, user: UKRDCUser
-) -> list[WorkItemSchema]:
+) -> Query:
     """Get a list of WorkItems related via the LinkRecord network to a given WorkItem,
     raised by the same even as the given WorkItem.
 

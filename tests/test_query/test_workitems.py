@@ -68,4 +68,4 @@ def test_get_workitems_related(jtrace_session, superuser):
     all_items = workitems.get_workitems_related_to_workitem(
         jtrace_session, 1, superuser
     )
-    assert {item.id for item in all_items} == {2}
+    assert {item.id for item in all_items} == {2, 4}
