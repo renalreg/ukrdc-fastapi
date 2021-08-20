@@ -43,8 +43,8 @@ def test_get_masterrecord_denied(jtrace_session, test_user):
 
 def test_masterrecord_related(jtrace_session, superuser):
     # Create a new master record
-    master_record_3 = MasterRecord(
-        id=3,
+    master_record_999 = MasterRecord(
+        id=999,
         status=0,
         last_updated=datetime(2021, 1, 1),
         date_of_birth=datetime(1980, 12, 12),
@@ -54,18 +54,18 @@ def test_masterrecord_related(jtrace_session, superuser):
     )
 
     # Link the new master record to an existing person
-    link_record_3 = LinkRecord(
-        id=3,
+    link_record_999 = LinkRecord(
+        id=999,
         person_id=1,
-        master_id=3,
+        master_id=999,
         link_type=0,
         link_code=0,
         last_updated=datetime(2020, 3, 16),
     )
 
     # Person 3 now has 2 master records we want to merge
-    jtrace_session.add(master_record_3)
-    jtrace_session.add(link_record_3)
+    jtrace_session.add(master_record_999)
+    jtrace_session.add(link_record_999)
     jtrace_session.commit()
 
     records = masterrecords.get_masterrecords_related_to_masterrecord(
@@ -73,4 +73,4 @@ def test_masterrecord_related(jtrace_session, superuser):
     )
 
     # Check MR3 is identified as related to MR1
-    assert {record.id for record in records} == {1, 3}
+    assert {record.id for record in records} == {1, 999}

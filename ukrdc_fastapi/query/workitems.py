@@ -13,6 +13,7 @@ from ukrdc_fastapi.query.masterrecords import get_masterrecords_related_to_perso
 from ukrdc_fastapi.query.messages import get_message
 from ukrdc_fastapi.query.persons import get_persons_related_to_masterrecord
 from ukrdc_fastapi.schemas.empi import WorkItemExtendedSchema
+from ukrdc_fastapi.utils.links import find_related_ids
 
 
 def _apply_query_permissions(query: Query, user: UKRDCUser):
@@ -152,24 +153,12 @@ def get_extended_workitem(
         .all(),
     }
 
-    # Compute WorkItem collection
-
-    filters = []
-    if workitem.master_record:
-        filters.append(WorkItem.master_id == workitem.master_id)
-    if workitem.person:
-        filters.append(WorkItem.person_id == workitem.person_id)
-
-    collection = jtrace.query(WorkItem).filter(
-        or_(*filters),
-        WorkItem.id != workitem.id,
-    )
-
     return WorkItemExtendedSchema(
         id=workitem.id,
         type=workitem.type,
         description=workitem.description,
         status=workitem.status,
+        creation_date=workitem.creation_date,
         last_updated=workitem.last_updated,
         updated_by=workitem.updated_by,
         update_description=workitem.update_description,
@@ -178,8 +167,27 @@ def get_extended_workitem(
         attributes=workitem.attributes,
         incoming=incoming,
         destination=destination,
-        collection=collection,
     )
+
+
+def get_workitem_collection(
+    jtrace: Session, workitem_id: int, user: UKRDCUser
+) -> Query:
+    """Get a list of WorkItems related via the LinkRecord network to a given WorkItem,
+    raised by the same even as the given WorkItem.
+
+    Args:
+        jtrace (Session): JTRACE SQLAlchemy session
+        workitem_id (int): WorkItem ID
+        user (UKRDCUser): Logged-in user
+
+    Returns:
+        Query: SQLAlchemy query
+    """
+    workitem = get_workitem(jtrace, workitem_id, user)
+    related_workitems = get_workitems_related_to_workitem(jtrace, workitem.id, user)
+
+    return related_workitems.filter(WorkItem.creation_date == workitem.creation_date)
 
 
 def get_workitems_related_to_workitem(
@@ -197,17 +205,25 @@ def get_workitems_related_to_workitem(
     """
     workitem = get_workitem(jtrace, workitem_id, user)
 
-    filters = []
+    seen_master_ids: set[int] = set()
+    seen_person_ids: set[int] = set()
+
     if workitem.master_record:
-        filters.append(WorkItem.master_id == workitem.master_id)
+        seen_master_ids.add(workitem.master_id)
     if workitem.person:
-        filters.append(WorkItem.person_id == workitem.person_id)
+        seen_person_ids.add(workitem.person_id)
+
+    related_master_ids, related_person_ids = find_related_ids(
+        jtrace, seen_master_ids, seen_person_ids
+    )
 
     other_workitems = jtrace.query(WorkItem).filter(
-        or_(*filters),
-        WorkItem.id != workitem.id,
-        WorkItem.status == 1,
+        or_(
+            WorkItem.master_id.in_(related_master_ids),
+            WorkItem.person_id.in_(related_person_ids),
+        )
     )
+    other_workitems = other_workitems.filter(WorkItem.id != workitem.id)
 
     return _apply_query_permissions(other_workitems, user)
 
