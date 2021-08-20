@@ -133,24 +133,31 @@ def get_extended_workitem(
     """
     workitem = get_workitem(jtrace, workitem_id, user)
 
+    if workitem.person and workitem.master_record:
+        incoming_master_records = (
+            get_masterrecords_related_to_person(
+                jtrace, workitem.person.id, user, nationalid_type="UKRDC"
+            )
+            .filter(MasterRecord.id != workitem.master_record.id)
+            .all()
+        )
+        destination_persons = (
+            get_persons_related_to_masterrecord(jtrace, workitem.master_record.id, user)
+            .filter(Person.id != (workitem.person.id if workitem.person else None))
+            .all()
+        )
+    else:
+        incoming_master_records = []
+        destination_persons = []
+
     incoming = {
         "person": workitem.person if workitem.person else None,
-        "master_records": get_masterrecords_related_to_person(
-            jtrace, workitem.person.id, user, nationalid_type="UKRDC"
-        )
-        .filter(MasterRecord.id != workitem.master_record.id)
-        .all()
-        if workitem.person
-        else [],
+        "master_records": incoming_master_records,
     }
 
     destination = {
         "master_record": workitem.master_record,
-        "persons": get_persons_related_to_masterrecord(
-            jtrace, workitem.master_record.id, user
-        )
-        .filter(Person.id != (workitem.person.id if workitem.person else None))
-        .all(),
+        "persons": destination_persons,
     }
 
     return WorkItemExtendedSchema(
