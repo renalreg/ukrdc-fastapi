@@ -21,8 +21,8 @@ def test_person_detail(client):
 
 def test_person_masterrecords(client, jtrace_session):
     # Create a new master record
-    master_record_3 = MasterRecord(
-        id=3,
+    master_record_999 = MasterRecord(
+        id=999,
         status=0,
         last_updated=datetime(2021, 1, 1),
         date_of_birth=datetime(1980, 12, 12),
@@ -32,18 +32,18 @@ def test_person_masterrecords(client, jtrace_session):
     )
 
     # Link the new master record to an existing person
-    link_record_3 = LinkRecord(
-        id=3,
+    link_record_999 = LinkRecord(
+        id=999,
         person_id=1,
-        master_id=3,
+        master_id=999,
         link_type=0,
         link_code=0,
         last_updated=datetime(2020, 3, 16),
     )
 
     # Person 3 now has 2 master records we want to merge
-    jtrace_session.add(master_record_3)
-    jtrace_session.add(link_record_3)
+    jtrace_session.add(master_record_999)
+    jtrace_session.add(link_record_999)
     jtrace_session.commit()
 
     response = client.get("/api/v1/persons/1/masterrecords")
@@ -52,4 +52,4 @@ def test_person_masterrecords(client, jtrace_session):
     # Check MR3 is identified as related to MR1
     mrecs = [MasterRecordSchema(**item) for item in response.json()]
     returned_ids = {item.id for item in mrecs}
-    assert returned_ids == {1, 3}
+    assert returned_ids == {1, 999}

@@ -88,8 +88,8 @@ def test_get_masterrecord_latest(errorsdb_session, jtrace_session, superuser):
     assert latest.id == 1
 
     # Create a new master record
-    master_record_3 = MasterRecord(
-        id=3,
+    master_record_999 = MasterRecord(
+        id=999,
         status=0,
         last_updated=datetime(2021, 1, 1),
         date_of_birth=datetime(1980, 12, 12),
@@ -99,10 +99,10 @@ def test_get_masterrecord_latest(errorsdb_session, jtrace_session, superuser):
     )
 
     # Person 3 now has 2 master records we want to merge
-    jtrace_session.add(master_record_3)
+    jtrace_session.add(master_record_999)
     jtrace_session.commit()
 
     latest = messages.get_last_message_on_masterrecord(
-        jtrace_session, errorsdb_session, 3, superuser
+        jtrace_session, errorsdb_session, 999, superuser
     )
     assert latest is None
