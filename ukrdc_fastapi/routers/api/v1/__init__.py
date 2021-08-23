@@ -12,7 +12,7 @@ from . import (
     patientrecords,
     persons,
     search,
-    user,
+    system,
     workitems,
 )
 
@@ -27,7 +27,7 @@ def root():
 
 # Sub-resources
 router.include_router(dashboard.router, prefix="/dash")
-router.include_router(user.router, prefix="/user")
+router.include_router(system.router, prefix="/system")
 router.include_router(empi.router, prefix="/empi")
 router.include_router(mirth.router, prefix="/mirth")
 
