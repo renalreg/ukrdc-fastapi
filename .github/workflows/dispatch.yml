@@ -49,5 +49,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          build-args: GITHUB_SHA=${{ env.GITHUB_SHA }},GITHUB_REF=${{ env.GITHUB_REF }}
+          build-args: |
+            GITHUB_SHA=${{ github.sha }}
+            GITHUB_REF=${{ github.ref }}
           tags: ghcr.io/renalreg/ukrdc-fastapi:${{github.event.inputs.deployment_env}}
