@@ -2,16 +2,17 @@ import re
 import tempfile
 from datetime import datetime
 from pathlib import Path
+from typing import Sequence, Union
 
 import fakeredis
 import pytest
+from fastapi import HTTPException
 from fastapi.testclient import TestClient
 from mirth_client import MirthAPI
 from pytest_httpx import HTTPXMock
 from pytest_postgresql import factories
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import StaticPool
 from ukrdc_sqla.empi import Base as JtraceBase
 from ukrdc_sqla.empi import LinkRecord, MasterRecord, Person, PidXRef, WorkItem
 from ukrdc_sqla.errorsdb import Base as ErrorsBase
@@ -62,18 +63,18 @@ postgresql_my = factories.postgresql("postgresql_my_proc")
 
 class FakeAuth(auth.URKDCAuth):
     def __init__(self, *_) -> None:
-        pass
-
-    def oidc_scheme(self):
-        return
-
-    def get_user(self):
-        return UKRDCUser(
+        self._user = UKRDCUser(
             id="TEST_ID",
             email="TEST@UKRDC_FASTAPI",
             permissions=self.permissions.all(),
             scopes=["openid", "profile", "email", "offline_access"],
         )
+
+    def oidc_scheme(self):
+        return
+
+    def get_user(self):
+        return self._user
 
     def scope(self, *_):
         def scope_dependency():
@@ -81,9 +82,20 @@ class FakeAuth(auth.URKDCAuth):
 
         return scope_dependency
 
-    def permission(self, *_):
+    def permission(self, permission: Union[str, Sequence[str]]):
+        permissions: Sequence[str]
+        if isinstance(permission, str):
+            permissions = [permission]
+        else:
+            permissions = permission
+
         def permission_dependency():
-            return
+            for perm in permissions:
+                if perm not in self._user.permissions:
+                    raise HTTPException(
+                        403,
+                        detail=f'Missing "{perm}" permission',
+                    )
 
         return permission_dependency
 
