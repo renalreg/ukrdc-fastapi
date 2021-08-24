@@ -29,7 +29,7 @@ def test_user(client):
 def test_info(client):
     response = client.get("/api/v1/system/info/")
     assert response.json() == {
-        "githubSha": "Not Available",
-        "githubRef": "Not Available",
+        "githubSha": None,
+        "githubRef": None,
         "deploymentEnv": "development",
     }

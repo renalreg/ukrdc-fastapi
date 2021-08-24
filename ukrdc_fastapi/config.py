@@ -3,12 +3,23 @@ from typing import Optional
 from pydantic import BaseSettings
 
 
-class Settings(BaseSettings):
-    # Used to correct linking when behind a reverse proxy
-    api_base: str = "/api"
+class Configuration(BaseSettings):
+    # Built-time configuration, designed to be read-only
 
     # Deployment environment, used for error logging etc
     deployment_env: str = "development"
+
+    # Sentry
+    sentry_dsn: Optional[str] = None
+
+    # Build
+    github_sha: Optional[str] = None
+    github_ref: Optional[str] = None
+
+
+class Settings(BaseSettings):
+    # Used to correct linking when behind a reverse proxy
+    api_base: str = "/api"
 
     # Messages to display on user dashboards
     motd: list[str] = []
@@ -27,8 +38,6 @@ class Settings(BaseSettings):
     oauth_audience: str = "api://ukrdc"
 
     user_permission_key: str = "org.ukrdc.permissions"
-
-    sentry_dsn: Optional[str] = None
 
     mirth_url: str = "http://localhost:9004"
     mirth_user: str = "webapi"
@@ -67,3 +76,4 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+configuration = Configuration()

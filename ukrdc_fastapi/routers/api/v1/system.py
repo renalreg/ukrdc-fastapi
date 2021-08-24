@@ -1,9 +1,8 @@
-import os
 from typing import Optional
 
 from fastapi import APIRouter, Security
 
-from ukrdc_fastapi.config import settings
+from ukrdc_fastapi.config import configuration
 from ukrdc_fastapi.dependencies.auth import UKRDCUser, auth
 from ukrdc_fastapi.schemas.base import JSONModel
 
@@ -16,9 +15,9 @@ class UserSchema(JSONModel):
 
 
 class SystemInfoSchema(JSONModel):
-    github_sha: str = os.getenv("GITHUB_SHA", "Not Available")
-    github_ref: str = os.getenv("GITHUB_REF", "Not Available")
-    deployment_env: str = settings.deployment_env
+    github_sha: str = configuration.github_sha
+    github_ref: str = configuration.github_ref
+    deployment_env: str = configuration.deployment_env
 
 
 @router.get("/user/", response_model=UserSchema)

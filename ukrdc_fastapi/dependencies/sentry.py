@@ -1,5 +1,4 @@
 import logging
-import os
 
 import sentry_sdk
 from fastapi import FastAPI
@@ -7,7 +6,7 @@ from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
 from sentry_sdk.integrations.redis import RedisIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
-from ukrdc_fastapi.config import settings
+from ukrdc_fastapi.config import configuration
 
 
 def add_sentry(app: FastAPI):
@@ -16,14 +15,14 @@ def add_sentry(app: FastAPI):
     Args:
         app (FastAPI): App to attach Sentry to
     """
-    if settings.sentry_dsn:
+    if configuration.sentry_dsn:
         logging.warning("Sentry reporting is enabled")
         sentry_sdk.init(  # pylint: disable=abstract-class-instantiated
-            dsn=settings.sentry_dsn,
+            dsn=configuration.sentry_dsn,
             integrations=[RedisIntegration(), SqlalchemyIntegration()],
             traces_sample_rate=1.0,
-            environment=settings.deployment_env,
-            release=os.getenv("GITHUB_SHA", None),
+            environment=configuration.deployment_env,
+            release=configuration.github_sha,
         )
         app.add_middleware(SentryAsgiMiddleware)
     else:
