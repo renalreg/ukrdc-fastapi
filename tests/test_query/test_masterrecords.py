@@ -74,3 +74,10 @@ def test_masterrecord_related(jtrace_session, superuser):
 
     # Check MR3 is identified as related to MR1
     assert {record.id for record in records} == {1, 999}
+
+    records_excl_self = masterrecords.get_masterrecords_related_to_masterrecord(
+        jtrace_session, 1, superuser, exclude_self=True
+    )
+
+    # Check MR3 is identified as related to MR1
+    assert {record.id for record in records_excl_self} == {999}
