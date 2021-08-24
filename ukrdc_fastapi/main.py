@@ -4,6 +4,7 @@ import redis
 import sqlalchemy
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security.oauth2 import OAuth2AuthorizationCodeBearer
 from fastapi_hypermodel import HyperModel
 from fastapi_pagination import add_pagination
 from httpx import ConnectError
@@ -26,14 +27,20 @@ app = FastAPI(
     title="UKRDC API v2",
     description="Early test version of an updated, simpler UKRDC API",
     version="0.0.0",
-    dependencies=[Depends(auth.oidc_scheme)],
+    dependencies=[
+        Depends(
+            OAuth2AuthorizationCodeBearer(
+                authorizationUrl=f"{auth.issuer}/v1/authorize",
+                tokenUrl=f"{auth.issuer}/v1/token",
+            )
+        )
+    ],
     openapi_url=f"{settings.api_base.rstrip('/')}/openapi.json",
     docs_url=f"{settings.api_base.rstrip('/')}/docs",
     redoc_url=f"{settings.api_base.rstrip('/')}/redoc",
     swagger_ui_init_oauth={
         "usePkceWithAuthorizationCodeGrant": True,
         "clientId": settings.swagger_client_id,
-        "additionalQueryStringParams": {"nonce": "132456"},
         "scopes": ["openid", "profile", "email", "offline_access"],
     },
 )
