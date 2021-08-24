@@ -15,8 +15,8 @@ class UserSchema(JSONModel):
 
 
 class SystemInfoSchema(JSONModel):
-    github_sha: str = configuration.github_sha
-    github_ref: str = configuration.github_ref
+    github_sha: Optional[str] = configuration.github_sha
+    github_ref: Optional[str] = configuration.github_ref
     deployment_env: str = configuration.deployment_env
 
 
