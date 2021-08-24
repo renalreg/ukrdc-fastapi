@@ -37,9 +37,6 @@ class Permissions:
     UNIT_PREFIX = "ukrdc:unit:"
     UNIT_WILDCARD = "*"
 
-    # Rarely assigned. If assigned, only temporary.
-    RAISE_EXCEPTIONS = "ukrdc:exceptions:raise"
-
     @classmethod
     def all(cls):
         """Return all permissions for a superuser"""

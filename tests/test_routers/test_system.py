@@ -33,15 +33,3 @@ def test_info(client):
         "githubRef": "Not Available",
         "deploymentEnv": "development",
     }
-
-
-def test_raise(client):
-    from ukrdc_fastapi.dependencies import auth
-
-    response = client.post("/api/v1/system/raise/")
-    assert response.status_code == 403
-
-    auth.auth._user.permissions.append("ukrdc:exceptions:raise")
-    with pytest.raises(system.TestException):
-        system.system_raise(test_user)
-    auth.auth._user.permissions.remove("ukrdc:exceptions:raise")
