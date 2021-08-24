@@ -150,7 +150,9 @@ def master_record_related(
     jtrace: Session = Depends(get_jtrace),
 ):
     """Retreive a list of other master records related to a particular master record"""
-    return get_masterrecords_related_to_masterrecord(jtrace, record_id, user).all()
+    return get_masterrecords_related_to_masterrecord(
+        jtrace, record_id, user, exclude_self=True
+    ).all()
 
 
 @router.get(

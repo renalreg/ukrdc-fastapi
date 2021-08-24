@@ -89,7 +89,7 @@ def get_masterrecord(jtrace: Session, record_id: int, user: UKRDCUser) -> Master
 
 
 def get_masterrecords_related_to_masterrecord(
-    jtrace: Session, record_id: int, user: UKRDCUser
+    jtrace: Session, record_id: int, user: UKRDCUser, exclude_self: bool = False
 ) -> Query:
     """Get a query of MasterRecords related via the LinkRecord network to a given MasterRecord
 
@@ -105,6 +105,10 @@ def get_masterrecords_related_to_masterrecord(
     related_master_ids, _ = find_related_ids(jtrace, {record_id}, set())
     # Return a jtrace query of the matched master records
     records = jtrace.query(MasterRecord).filter(MasterRecord.id.in_(related_master_ids))
+
+    # Exclude self from related items
+    if exclude_self:
+        records = records.filter(MasterRecord.id != record_id)
 
     return _apply_query_permissions(records, user)
 

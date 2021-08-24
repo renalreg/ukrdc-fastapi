@@ -56,13 +56,21 @@ def test_masterrecord_related(client, jtrace_session):
     jtrace_session.add(link_record_999)
     jtrace_session.commit()
 
+    # Check expected link
+
     response = client.get("/api/v1/masterrecords/1/related")
     assert response.status_code == 200
-
-    # Check MR3 is identified as related to MR1
     mrecs = [MasterRecordSchema(**item) for item in response.json()]
     returned_ids = {item.id for item in mrecs}
-    assert returned_ids == {1, 999}
+    assert returned_ids == {999}
+
+    # Test reciprocal link
+
+    response_reciprocal = client.get("/api/v1/masterrecords/999/related")
+    assert response_reciprocal.status_code == 200
+    mrecs = [MasterRecordSchema(**item) for item in response_reciprocal.json()]
+    returned_ids = {item.id for item in mrecs}
+    assert returned_ids == {1}
 
 
 def test_masterrecord_statistics(client):
