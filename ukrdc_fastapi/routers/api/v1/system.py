@@ -44,6 +44,6 @@ def system_info():
     status_code=204,
     dependencies=[Security(auth.permission(Permissions.RAISE_EXCEPTIONS))],
 )
-def system_info(user: UKRDCUser = Security(auth.get_user)):
+def system_raise(user: UKRDCUser = Security(auth.get_user)):
     """Raise a test exception"""
     raise TestException(f"A test exception was raised by {user.email}")
