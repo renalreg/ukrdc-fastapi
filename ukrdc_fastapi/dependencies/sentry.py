@@ -1,4 +1,5 @@
 import logging
+import os
 
 import sentry_sdk
 from fastapi import FastAPI
@@ -22,6 +23,7 @@ def add_sentry(app: FastAPI):
             integrations=[RedisIntegration(), SqlalchemyIntegration()],
             traces_sample_rate=1.0,
             environment=settings.deployment_env,
+            release=os.getenv("GITHUB_SHA", None),
         )
         app.add_middleware(SentryAsgiMiddleware)
     else:
