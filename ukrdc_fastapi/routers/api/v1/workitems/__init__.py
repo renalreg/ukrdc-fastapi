@@ -35,7 +35,7 @@ def workitems_list(
     until: Optional[datetime.datetime] = None,
     status: Optional[list[int]] = Query([1]),
     facility: Optional[str] = None,
-    user: UKRDCUser = Security(auth.get_user),
+    user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
     sorter: Sorter = Depends(
         make_sorter(

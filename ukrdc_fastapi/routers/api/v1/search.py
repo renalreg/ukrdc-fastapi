@@ -30,7 +30,7 @@ def search_masterrecords(
     number_type: list[str] = QueryParam([]),
     include_ukrdc: bool = False,
     only_ukrdc: bool = False,
-    user: UKRDCUser = Security(auth.get_user),
+    user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
 ):
     """Search the EMPI for a particular master record"""

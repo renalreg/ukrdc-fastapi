@@ -23,7 +23,7 @@ router = APIRouter(tags=["Facilities"])
 def facility_list(
     ukrdc3: Session = Depends(get_ukrdc3),
     redis: Redis = Depends(get_redis),
-    user: UKRDCUser = Security(auth.get_user),
+    user: UKRDCUser = Security(auth.get_user()),
 ):
     """Retreive a list of on-record facilities"""
     return get_facilities(ukrdc3, redis, user)
@@ -35,7 +35,7 @@ def facility(
     ukrdc3: Session = Depends(get_ukrdc3),
     errorsdb: Session = Depends(get_errorsdb),
     redis: Redis = Depends(get_redis),
-    user: UKRDCUser = Security(auth.get_user),
+    user: UKRDCUser = Security(auth.get_user()),
 ):
     """Retreive a list of on-record facilities"""
     return get_facility(ukrdc3, errorsdb, redis, code, user)
@@ -49,7 +49,7 @@ def facility_errrors_history(
     ukrdc3: Session = Depends(get_ukrdc3),
     errorsdb: Session = Depends(get_errorsdb),
     redis: Redis = Depends(get_redis),
-    user: UKRDCUser = Security(auth.get_user),
+    user: UKRDCUser = Security(auth.get_user()),
 ):
     """Retreive a list of on-record facilities"""
     return get_errors_history(

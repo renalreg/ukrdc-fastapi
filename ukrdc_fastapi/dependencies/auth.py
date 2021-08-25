@@ -1,14 +1,11 @@
-from typing import Sequence
+from typing import Callable, Sequence, Union
 
-from fastapi import Depends
-from fastapi.security.http import HTTPAuthorizationCredentials, HTTPBearer
-from pydantic import Field
+from fastapi import Depends, HTTPException
+from pydantic.main import BaseModel
 
 from ukrdc_fastapi.config import settings
 
-from .okta import OktaAccessToken, OktaAuth, OktaUserModel
-
-__all__ = ["OktaAccessToken", "OktaAuth", "auth", "Permissions"]
+from .okta import OktaJWTBearer
 
 
 class Permissions:
@@ -74,34 +71,30 @@ class Permissions:
         return units
 
 
-class UKRDCAccessToken(OktaAccessToken):
-    permission: list[str] = Field([], alias=settings.user_permission_key)
+class UKRDCUser(BaseModel):
+    id: str
+    email: str
+    scopes: list[str]
+    permissions: list[str]
 
 
-class UKRDCUser(OktaUserModel):
-    pass
+class URKDCAuth:
+    def __init__(
+        self,
+        issuer: str,
+        audience: str,
+        client_ids: list[str],
+        scope_key: str = "scope",
+        permission_key: str = "permission",
+    ) -> None:
+        self.issuer = issuer.rstrip("/")
+        self.audience = audience
+        self.client_ids = client_ids
 
+        self.okta_jwt_scheme = OktaJWTBearer(issuer, audience, client_ids)
 
-class URKDCAuth(OktaAuth):
-    permissions = Permissions
-
-    async def get_units(
-        self, creds: HTTPAuthorizationCredentials = Depends(HTTPBearer())
-    ) -> list[str]:
-        """
-        Get a list of unit codes the current user is authorized to access
-
-        There are two distinct special cases: No units will return an empty list,
-        all units will return the Permissions.UNIT_ALL object
-        """
-        token = await self.get_token(creds)
-        available_permissions: Sequence[str] = getattr(token, self.permission_key, [])
-        unit_permissions: list[str] = [
-            perm
-            for perm in available_permissions
-            if perm.startswith(Permissions.UNIT_PREFIX)
-        ]
-        return [perm.split(":")[-1] for perm in unit_permissions]
+        self.scope_key = scope_key
+        self.permission_key = permission_key
 
     @property
     def superuser(self):
@@ -113,15 +106,69 @@ class URKDCAuth(OktaAuth):
         return UKRDCUser(
             id="SUPERUSER",
             email="SUPERUSER@UKRDC_FASTAPI",
-            permissions=self.permissions.all(),
+            permissions=Permissions.all(),
             scopes=["openid", "profile", "email", "offline_access"],
         )
+
+    def get_user(self):
+        """
+        Dependency factory to extract basic user info from a validated access token,
+        and return a user object
+
+        Returns:
+            Callable: FastAPI Depends callable returning an OktaUserModel user object
+        """
+
+        async def get_user_dependency(token=Depends(self.okta_jwt_scheme)) -> UKRDCUser:
+            return UKRDCUser(
+                id=token.get("uid"),
+                email=token.get("sub"),
+                scopes=token.get("scp", []),
+                permissions=token.get(self.permission_key, []),
+            )
+
+        return get_user_dependency
+
+    def permission(self, permission: Union[str, Sequence[str]]) -> Callable:
+        """
+        Dependency factory to check for the presence of a permission or set of permissions.
+        Permissions are obtained from the token key set by self.permission_key, since this is
+        non-standard functionality
+
+        E.g.
+        ```
+        dependencies=[
+            Security(auth.permission("items:read")),
+        ],
+        ```
+
+        Args:
+            permission (Union[str, Sequence[str]]): Permission or list of permission strings
+
+        Returns:
+            Callable: FastAPI Depends callable
+        """
+        permissions: Sequence[str]
+        if isinstance(permission, str):
+            permissions = [permission]
+        else:
+            permissions = permission
+
+        async def permission_dependency(token=Depends(self.okta_jwt_scheme)):
+            available_permissions: Sequence[str] = token.get(self.permission_key, [])
+            for perm in permissions:
+                if perm not in available_permissions:
+                    raise HTTPException(
+                        403,
+                        detail=f'Missing "{perm}" permission',
+                    )
+
+        return permission_dependency
 
 
 auth = URKDCAuth(
     settings.oauth_issuer,
     settings.oauth_audience,
     [settings.app_client_id, settings.swagger_client_id],
-    token_model=UKRDCAccessToken,
-    user_model=UKRDCUser,
+    permission_key=settings.user_permission_key,
 )

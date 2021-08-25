@@ -8,7 +8,7 @@ from ukrdc_sqla.empi import LinkRecord, MasterRecord, Person
 from ukrdc_sqla.ukrdc import PatientRecord
 
 from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_ukrdc3
-from ukrdc_fastapi.dependencies.auth import UKRDCUser, auth
+from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.query.masterrecords import (
     get_masterrecord,
     get_masterrecords_related_to_masterrecord,
@@ -47,11 +47,11 @@ router = APIRouter(prefix="/{record_id}")
 @router.get(
     "/",
     response_model=MasterRecordSchema,
-    dependencies=[Security(auth.permission(auth.permissions.READ_RECORDS))],
+    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
 def master_record_detail(
     record_id: int,
-    user: UKRDCUser = Security(auth.get_user),
+    user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
 ):
     """Retreive a particular master record from the EMPI"""
@@ -62,11 +62,11 @@ def master_record_detail(
     "/latest_message/",
     response_model=MinimalMessageSchema,
     responses={204: {"model": None}},
-    dependencies=[Security(auth.permission(auth.permissions.READ_RECORDS))],
+    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
 def master_record_latest_message(
     record_id: int,
-    user: UKRDCUser = Security(auth.get_user),
+    user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
     errorsdb: Session = Depends(get_errorsdb),
 ):
@@ -82,11 +82,11 @@ def master_record_latest_message(
 @router.get(
     "/statistics/",
     response_model=MasterRecordStatisticsSchema,
-    dependencies=[Security(auth.permission(auth.permissions.READ_RECORDS))],
+    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
 def master_record_statistics(
     record_id: int,
-    user: UKRDCUser = Security(auth.get_user),
+    user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
     errorsdb: Session = Depends(get_errorsdb),
 ):
@@ -123,11 +123,11 @@ def master_record_statistics(
 @router.get(
     "/linkrecords/",
     response_model=list[LinkRecordSchema],
-    dependencies=[Security(auth.permission(auth.permissions.READ_RECORDS))],
+    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
 def master_record_linkrecords(
     record_id: int,
-    user: UKRDCUser = Security(auth.get_user),
+    user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
 ):
     """Retreive a list of link records related to a particular master record"""
@@ -142,11 +142,11 @@ def master_record_linkrecords(
 @router.get(
     "/related/",
     response_model=list[MasterRecordSchema],
-    dependencies=[Security(auth.permission(auth.permissions.READ_RECORDS))],
+    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
 def master_record_related(
     record_id: int,
-    user: UKRDCUser = Security(auth.get_user),
+    user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
 ):
     """Retreive a list of other master records related to a particular master record"""
@@ -158,7 +158,7 @@ def master_record_related(
 @router.get(
     "/messages/",
     response_model=Page[MessageSchema],
-    dependencies=[Security(auth.permission(auth.permissions.READ_RECORDS))],
+    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
 def master_record_messages(
     record_id: int,
@@ -166,7 +166,7 @@ def master_record_messages(
     since: Optional[datetime.datetime] = None,
     until: Optional[datetime.datetime] = None,
     status: Optional[str] = None,
-    user: UKRDCUser = Security(auth.get_user),
+    user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
     errorsdb: Session = Depends(get_errorsdb),
     sorter: Sorter = Depends(ERROR_SORTER),
@@ -184,11 +184,11 @@ def master_record_messages(
 @router.get(
     "/workitems/",
     response_model=list[WorkItemSchema],
-    dependencies=[Security(auth.permission(auth.permissions.READ_RECORDS))],
+    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
 def master_record_workitems(
     record_id: int,
-    user: UKRDCUser = Security(auth.get_user),
+    user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
 ):
     """Retreive a list of work items related to a particular master record."""
@@ -203,11 +203,11 @@ def master_record_workitems(
 @router.get(
     "/persons/",
     response_model=list[PersonSchema],
-    dependencies=[Security(auth.permission(auth.permissions.READ_RECORDS))],
+    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
 def master_record_persons(
     record_id: int,
-    user: UKRDCUser = Security(auth.get_user),
+    user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
 ):
     """Retreive a list of person records related to a particular master record."""
@@ -217,11 +217,11 @@ def master_record_persons(
 @router.get(
     "/patientrecords/",
     response_model=list[PatientRecordSchema],
-    dependencies=[Security(auth.permission(auth.permissions.READ_RECORDS))],
+    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
 def master_record_patientrecords(
     record_id: int,
-    user: UKRDCUser = Security(auth.get_user),
+    user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
     ukrdc3: Session = Depends(get_ukrdc3),
 ):

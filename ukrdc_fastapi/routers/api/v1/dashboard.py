@@ -30,7 +30,7 @@ def dashboard(
     refresh: bool = False,
     jtrace: Session = Depends(get_jtrace),
     redis: Redis = Depends(get_redis),
-    user: UKRDCUser = Security(auth.get_user),
+    user: UKRDCUser = Security(auth.get_user()),
 ):
     """Retreive basic statistics about recent records"""
     dash = DashboardSchema(messages=settings.motd, warnings=settings.wotd)
