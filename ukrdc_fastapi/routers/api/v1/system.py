@@ -21,14 +21,12 @@ class SystemInfoSchema(JSONModel):
 
 
 @router.get("/user/", response_model=UserSchema)
-def system_user(user: UKRDCUser = Security(auth.get_user)):
+def system_user(user: UKRDCUser = Security(auth.get_user())):
     """Retreive basic user info"""
     return UserSchema(email=user.email, permissions=user.permissions)
 
 
-@router.get(
-    "/info/", response_model=SystemInfoSchema, dependencies=[Security(auth.get_user)]
-)
+@router.get("/info/", response_model=SystemInfoSchema)
 def system_info():
     """Retreive basic system info"""
     return SystemInfoSchema()

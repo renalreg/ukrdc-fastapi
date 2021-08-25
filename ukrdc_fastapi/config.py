@@ -16,6 +16,17 @@ class Configuration(BaseSettings):
     github_sha: Optional[str] = None
     github_ref: Optional[str] = None
 
+    @property
+    def version(self) -> str:
+        """Generate a short version string for documentation
+
+        Returns:
+            str: Version, in the form ref/sha
+        """
+        prefix: str = self.github_ref.split("/")[-1] if self.github_ref else "dev"
+        postfix: str = self.github_sha[0:7] if self.github_sha else "dev"
+        return f"{prefix}/{postfix}"
+
 
 class Settings(BaseSettings):
     # Used to correct linking when behind a reverse proxy

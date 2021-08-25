@@ -37,7 +37,7 @@ router.include_router(export.router, prefix="/export")
 
 def _get_patientrecord(
     pid: str,
-    user: UKRDCUser = Security(auth.get_user),
+    user: UKRDCUser = Security(auth.get_user()),
     ukrdc3: Session = Depends(get_ukrdc3),
 ) -> PatientRecord:
     """Simple dependency to turn pid query param and User object into a PatientRecord object."""
@@ -67,7 +67,7 @@ def patient_get(patient_record: PatientRecord = Depends(_get_patientrecord)):
 )
 def patient_delete(
     pid: str,
-    user: UKRDCUser = Security(auth.get_user),
+    user: UKRDCUser = Security(auth.get_user()),
     ukrdc3: Session = Depends(get_ukrdc3),
     jtrace: Session = Depends(get_jtrace),
     args: Optional[DeletePIDRequestSchema] = None,
@@ -85,7 +85,7 @@ def patient_delete(
 )
 def patient_related(
     pid: str,
-    user: UKRDCUser = Security(auth.get_user),
+    user: UKRDCUser = Security(auth.get_user()),
     ukrdc3: Session = Depends(get_ukrdc3),
     jtrace: Session = Depends(get_jtrace),
 ):

@@ -41,7 +41,7 @@ class UpdateWorkItemRequestSchema(JSONModel):
 )
 def workitem_detail(
     workitem_id: int,
-    user: UKRDCUser = Security(auth.get_user),
+    user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
 ):
     """Retreive a particular work item from the EMPI"""
@@ -57,7 +57,7 @@ def workitem_detail(
                 [
                     Permissions.READ_WORKITEMS,
                     Permissions.WRITE_WORKITEMS,
-                    auth.permissions.WRITE_EMPI,
+                    Permissions.WRITE_EMPI,
                 ]
             )
         )
@@ -66,7 +66,7 @@ def workitem_detail(
 async def workitem_update(
     workitem_id: int,
     args: UpdateWorkItemRequestSchema,
-    user: UKRDCUser = Security(auth.get_user),
+    user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
@@ -91,7 +91,7 @@ async def workitem_update(
 )
 def workitem_collection(
     workitem_id: int,
-    user: UKRDCUser = Security(auth.get_user),
+    user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
 ):
     """Retreive a list of other work items related to a particular work item"""
@@ -105,7 +105,7 @@ def workitem_collection(
 )
 def workitem_related(
     workitem_id: int,
-    user: UKRDCUser = Security(auth.get_user),
+    user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
 ):
     """Retreive a list of other work items related to a particular work item"""
@@ -123,7 +123,7 @@ def workitem_messages(
     since: Optional[datetime.datetime] = None,
     until: Optional[datetime.datetime] = None,
     status: Optional[str] = None,
-    user: UKRDCUser = Security(auth.get_user),
+    user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
     errorsdb: Session = Depends(get_errorsdb),
 ):
@@ -157,7 +157,7 @@ async def workitem_close(
     workitem_id: int,
     args: Optional[CloseWorkItemRequestSchema],
     jtrace: Session = Depends(get_jtrace),
-    user: UKRDCUser = Security(auth.get_user),
+    user: UKRDCUser = Security(auth.get_user()),
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
 ):

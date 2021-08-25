@@ -19,7 +19,7 @@ router.include_router(pid.router)
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
 def patient_records(
-    user: UKRDCUser = Security(auth.get_user), ukrdc3: Session = Depends(get_ukrdc3)
+    user: UKRDCUser = Security(auth.get_user()), ukrdc3: Session = Depends(get_ukrdc3)
 ):
     """Retrieve a list of patient records"""
     return paginate(get_patientrecords(ukrdc3, user))

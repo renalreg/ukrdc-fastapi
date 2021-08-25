@@ -18,7 +18,7 @@ router = APIRouter(tags=["Persons"])
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
 def persons(
-    user: UKRDCUser = Security(auth.get_user), jtrace: Session = Depends(get_jtrace)
+    user: UKRDCUser = Security(auth.get_user()), jtrace: Session = Depends(get_jtrace)
 ):
     """Retreive a list of Person records from the EMPI"""
     return paginate(get_persons(jtrace, user))
@@ -31,7 +31,7 @@ def persons(
 )
 def person_detail(
     person_id: int,
-    user: UKRDCUser = Security(auth.get_user),
+    user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
 ):
     """Retreive a particular Person record from the EMPI"""
@@ -45,7 +45,7 @@ def person_detail(
 )
 def person_masterrecords(
     person_id: int,
-    user: UKRDCUser = Security(auth.get_user),
+    user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
 ):
     """Retreive MasterRecords directly linked to a particular Person record"""

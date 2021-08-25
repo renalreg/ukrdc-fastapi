@@ -5,7 +5,7 @@ from redis import Redis
 from sqlalchemy.orm import Session
 
 from ukrdc_fastapi.dependencies import get_jtrace, get_mirth, get_redis
-from ukrdc_fastapi.dependencies.auth import UKRDCUser, auth
+from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.query.mirth.merge import merge_master_records
 from ukrdc_fastapi.query.mirth.unlink import (
     unlink_patient_from_master_record,
@@ -36,16 +36,12 @@ class UnlinkPatientRequestSchema(JSONModel):
     "/merge/",
     response_model=MirthMessageResponseSchema,
     dependencies=[
-        Security(
-            auth.permission(
-                [auth.permissions.READ_RECORDS, auth.permissions.WRITE_RECORDS]
-            )
-        )
+        Security(auth.permission([Permissions.READ_RECORDS, Permissions.WRITE_RECORDS]))
     ],
 )
 async def empi_merge(
     args: MergeRequestSchema,
-    user: UKRDCUser = Security(auth.get_user),
+    user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
@@ -61,16 +57,12 @@ async def empi_merge(
     "/unlink/",
     response_model=MirthMessageResponseSchema,
     dependencies=[
-        Security(
-            auth.permission(
-                [auth.permissions.WRITE_EMPI, auth.permissions.WRITE_RECORDS]
-            )
-        )
+        Security(auth.permission([Permissions.WRITE_EMPI, Permissions.WRITE_RECORDS]))
     ],
 )
 async def empi_unlink(
     args: UnlinkRequestSchema,
-    user: UKRDCUser = Security(auth.get_user),
+    user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
@@ -85,16 +77,12 @@ async def empi_unlink(
     "/unlink-patient/",
     response_model=MirthMessageResponseSchema,
     dependencies=[
-        Security(
-            auth.permission(
-                [auth.permissions.WRITE_EMPI, auth.permissions.WRITE_RECORDS]
-            )
-        )
+        Security(auth.permission([Permissions.WRITE_EMPI, Permissions.WRITE_RECORDS]))
     ],
 )
 async def empi_unlink_patient(
     args: UnlinkPatientRequestSchema,
-    user: UKRDCUser = Security(auth.get_user),
+    user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),

@@ -2,11 +2,9 @@ import re
 import tempfile
 from datetime import datetime
 from pathlib import Path
-from typing import Sequence, Union
 
 import fakeredis
 import pytest
-from fastapi import HTTPException
 from fastapi.testclient import TestClient
 from mirth_client import MirthAPI
 from pytest_httpx import HTTPXMock
@@ -42,6 +40,7 @@ from ukrdc_sqla.ukrdc import (
     Treatment,
 )
 
+from ukrdc_fastapi.config import settings
 from ukrdc_fastapi.dependencies import (
     auth,
     get_errorsdb,
@@ -56,51 +55,6 @@ from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
 socket_dir = tempfile.TemporaryDirectory()
 postgresql_my_proc = factories.postgresql_proc(port=None, unixsocketdir=socket_dir.name)
 postgresql_my = factories.postgresql("postgresql_my_proc")
-
-# FastAPI dependency override gets confused by some of our auth stuff,
-# so we'll do a dirty patch for testing
-
-
-class FakeAuth(auth.URKDCAuth):
-    def __init__(self, *_) -> None:
-        self._user = UKRDCUser(
-            id="TEST_ID",
-            email="TEST@UKRDC_FASTAPI",
-            permissions=self.permissions.all(),
-            scopes=["openid", "profile", "email", "offline_access"],
-        )
-
-    def oidc_scheme(self):
-        return
-
-    def get_user(self):
-        return self._user
-
-    def scope(self, *_):
-        def scope_dependency():
-            return
-
-        return scope_dependency
-
-    def permission(self, permission: Union[str, Sequence[str]]):
-        permissions: Sequence[str]
-        if isinstance(permission, str):
-            permissions = [permission]
-        else:
-            permissions = permission
-
-        def permission_dependency():
-            for perm in permissions:
-                if perm not in self._user.permissions:
-                    raise HTTPException(
-                        403,
-                        detail=f'Missing "{perm}" permission',
-                    )
-
-        return permission_dependency
-
-
-auth.auth = FakeAuth()
 
 
 def populate_ukrdc3_session(session):
@@ -842,12 +796,21 @@ def app(jtrace_session, ukrdc3_session, errorsdb_session, redis_session):
     def _get_errorsdb():
         return errorsdb_session
 
+    def _get_token():
+        return {
+            "uid": "TEST_ID",
+            "sub": "TEST@UKRDC_FASTAPI",
+            "scp": ["openid", "profile", "email", "offline_access"],
+            settings.user_permission_key: auth.Permissions.all(),
+        }
+
     # Override FastAPI dependencies to point to function-scoped sessions
     app.dependency_overrides[get_mirth] = _get_mirth
     app.dependency_overrides[get_redis] = _get_redis
     app.dependency_overrides[get_ukrdc3] = _get_ukrdc3
     app.dependency_overrides[get_jtrace] = _get_jtrace
     app.dependency_overrides[get_errorsdb] = _get_errorsdb
+    app.dependency_overrides[auth.auth.okta_jwt_scheme] = _get_token
 
     return app
 

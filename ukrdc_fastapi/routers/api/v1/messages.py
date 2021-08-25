@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import MasterRecord
 
 from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_mirth
-from ukrdc_fastapi.dependencies.auth import UKRDCUser, auth
+from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.query.messages import ERROR_SORTER, get_message, get_messages
 from ukrdc_fastapi.query.workitems import get_workitems_related_to_message
 from ukrdc_fastapi.schemas.base import OrmModel
@@ -31,7 +31,7 @@ class MessageSourceSchema(OrmModel):
 @router.get(
     "/",
     response_model=Page[MessageSchema],
-    dependencies=[Security(auth.permission(auth.permissions.READ_MESSAGES))],
+    dependencies=[Security(auth.permission(Permissions.READ_MESSAGES))],
 )
 def error_messages(
     facility: Optional[str] = None,
@@ -39,7 +39,7 @@ def error_messages(
     until: Optional[datetime.datetime] = None,
     status: Optional[str] = None,
     ni: Optional[list[str]] = QueryParam([]),
-    user: UKRDCUser = Security(auth.get_user),
+    user: UKRDCUser = Security(auth.get_user()),
     errorsdb: Session = Depends(get_errorsdb),
     sorter: Sorter = Depends(ERROR_SORTER),
 ):
@@ -62,11 +62,11 @@ def error_messages(
 @router.get(
     "/{message_id}/",
     response_model=MessageSchema,
-    dependencies=[Security(auth.permission(auth.permissions.READ_MESSAGES))],
+    dependencies=[Security(auth.permission(Permissions.READ_MESSAGES))],
 )
 def error_detail(
     message_id: str,
-    user: UKRDCUser = Security(auth.get_user),
+    user: UKRDCUser = Security(auth.get_user()),
     errorsdb: Session = Depends(get_errorsdb),
 ):
     """Retreive detailed information about a specific error message"""
@@ -76,11 +76,11 @@ def error_detail(
 @router.get(
     "/{message_id}/source",
     response_model=MessageSourceSchema,
-    dependencies=[Security(auth.permission(auth.permissions.READ_MESSAGES))],
+    dependencies=[Security(auth.permission(Permissions.READ_MESSAGES))],
 )
 async def error_source(
     message_id: str,
-    user: UKRDCUser = Security(auth.get_user),
+    user: UKRDCUser = Security(auth.get_user()),
     errorsdb: Session = Depends(get_errorsdb),
     mirth: MirthAPI = Depends(get_mirth),
 ):
@@ -122,15 +122,13 @@ async def error_source(
     response_model=list[WorkItemSchema],
     dependencies=[
         Security(
-            auth.permission(
-                [auth.permissions.READ_MESSAGES, auth.permissions.READ_WORKITEMS]
-            )
+            auth.permission([Permissions.READ_MESSAGES, Permissions.READ_WORKITEMS])
         )
     ],
 )
 async def error_workitems(
     message_id: str,
-    user: UKRDCUser = Security(auth.get_user),
+    user: UKRDCUser = Security(auth.get_user()),
     errorsdb: Session = Depends(get_errorsdb),
     jtrace: Session = Depends(get_jtrace),
 ):
@@ -142,16 +140,12 @@ async def error_workitems(
     "/{message_id}/masterrecords",
     response_model=list[MasterRecordSchema],
     dependencies=[
-        Security(
-            auth.permission(
-                [auth.permissions.READ_MESSAGES, auth.permissions.READ_RECORDS]
-            )
-        )
+        Security(auth.permission([Permissions.READ_MESSAGES, Permissions.READ_RECORDS]))
     ],
 )
 async def error_masterrecords(
     message_id: str,
-    user: UKRDCUser = Security(auth.get_user),
+    user: UKRDCUser = Security(auth.get_user()),
     errorsdb: Session = Depends(get_errorsdb),
     jtrace: Session = Depends(get_jtrace),
 ):
