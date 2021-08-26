@@ -97,12 +97,14 @@ def master_record_statistics(
         errorsdb, jtrace, record.id, user, status="ERROR"
     )
 
-    related_ukrdc_records = get_masterrecords_related_to_masterrecord(
-        jtrace, record.id, user
-    ).filter(MasterRecord.nationalid_type == "UKRDC")
+    related_records = get_masterrecords_related_to_masterrecord(jtrace, record.id, user)
+
+    related_ukrdc_records = related_records.filter(
+        MasterRecord.nationalid_type == "UKRDC"
+    )
 
     workitems = get_workitems(
-        jtrace, user, master_id=[record.id for record in related_ukrdc_records.all()]
+        jtrace, user, master_id=[record.id for record in related_records.all()]
     )
 
     return MasterRecordStatisticsSchema(
