@@ -1,3 +1,5 @@
+from typing import Optional
+
 from fastapi import APIRouter, Depends, Security
 from mirth_client.mirth import MirthAPI
 from pydantic.fields import Field
@@ -7,10 +9,7 @@ from sqlalchemy.orm import Session
 from ukrdc_fastapi.dependencies import get_jtrace, get_mirth, get_redis
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.query.mirth.merge import merge_master_records
-from ukrdc_fastapi.query.mirth.unlink import (
-    unlink_patient_from_master_record,
-    unlink_person_from_master_record,
-)
+from ukrdc_fastapi.query.mirth.unlink import unlink_person_from_master_record
 from ukrdc_fastapi.schemas.base import JSONModel
 from ukrdc_fastapi.utils.mirth import MirthMessageResponseSchema
 
@@ -25,6 +24,7 @@ class MergeRequestSchema(JSONModel):
 class UnlinkRequestSchema(JSONModel):
     person_id: int = Field(..., title="ID of the person-record to be unlinked")
     master_id: int = Field(..., title="ID of the master-record to unlink from")
+    comment: Optional[str] = None
 
 
 class UnlinkPatientRequestSchema(JSONModel):
@@ -69,25 +69,5 @@ async def empi_unlink(
 ):
     """Unlink a Person from a specified MasterRecord"""
     return await unlink_person_from_master_record(
-        args.person_id, args.master_id, user, jtrace, mirth, redis
-    )
-
-
-@router.post(
-    "/unlink-patient/",
-    response_model=MirthMessageResponseSchema,
-    dependencies=[
-        Security(auth.permission([Permissions.WRITE_EMPI, Permissions.WRITE_RECORDS]))
-    ],
-)
-async def empi_unlink_patient(
-    args: UnlinkPatientRequestSchema,
-    user: UKRDCUser = Security(auth.get_user()),
-    jtrace: Session = Depends(get_jtrace),
-    mirth: MirthAPI = Depends(get_mirth),
-    redis: Redis = Depends(get_redis),
-):
-    """Unlink a PatientRecord from a specified MasterRecord"""
-    return await unlink_patient_from_master_record(
-        args.pid, args.master_id, user, jtrace, mirth, redis
+        args.person_id, args.master_id, args.comment, user, jtrace, mirth, redis
     )

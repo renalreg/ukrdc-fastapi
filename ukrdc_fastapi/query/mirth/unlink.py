@@ -1,3 +1,5 @@
+from typing import Optional
+
 from httpx import Response
 from mirth_client.mirth import MirthAPI
 from redis import Redis
@@ -17,6 +19,7 @@ from ukrdc_fastapi.utils.mirth import (
 async def unlink_person_from_master_record(
     person_id: int,
     master_id: int,
+    comment: Optional[str],
     user: UKRDCUser,
     jtrace: Session,
     mirth: MirthAPI,
@@ -31,7 +34,9 @@ async def unlink_person_from_master_record(
     if not channel:
         raise MirthChannelError("ID for Unlink channel not found")  # pragma: no cover
 
-    message: str = build_unlink_message(master.id, person.id, user.email)
+    message: str = build_unlink_message(
+        master.id, person.id, user.email, description=comment
+    )
 
     response: Response = await channel.post_message(message)
 
@@ -39,19 +44,3 @@ async def unlink_person_from_master_record(
         raise MirthPostError(response.text)
 
     return MirthMessageResponseSchema(status="success", message=message)
-
-
-async def unlink_patient_from_master_record(
-    pid: str,
-    master_id: int,
-    user: UKRDCUser,
-    jtrace: Session,
-    mirth: MirthAPI,
-    redis: Redis,
-):
-    """Unlink a particular PatientRecord from a Master Record"""
-    # Get records to assert user permission
-    person = get_person_from_pid(jtrace, pid, user)
-    return await unlink_person_from_master_record(
-        person.id, master_id, user, jtrace, mirth, redis
-    )
