@@ -837,6 +837,8 @@ def httpx_session(httpx_mock: HTTPXMock):
         channel_statistics_response: str = f.read()
     with open(responses_path.joinpath("channelGroups.xml"), "r") as f:
         channel_groups_response: str = f.read()
+    with open(responses_path.joinpath("messageResponse.xml"), "r") as f:
+        message_999_response: str = f.read()
 
     httpx_mock.add_response(
         url=re.compile(r"mock:\/\/mirth.url\/channels"), data=channels_response
@@ -848,6 +850,18 @@ def httpx_session(httpx_mock: HTTPXMock):
     httpx_mock.add_response(
         url=re.compile(r"mock:\/\/mirth.url\/channelgroups"),
         data=channel_groups_response,
+    )
+
+    httpx_mock.add_response(
+        method="POST",
+        data="<long>999</long>",
+        url=re.compile(r"mock:\/\/mirth.url\/channels\/.*\/messages"),
+    )
+
+    httpx_mock.add_response(
+        method="GET",
+        data=message_999_response,
+        url=re.compile(r"mock:\/\/mirth.url\/channels\/.*\/messages\/999"),
     )
 
     httpx_mock.add_response(
