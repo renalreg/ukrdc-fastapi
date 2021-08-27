@@ -2,6 +2,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, Security
 from mirth_client.mirth import MirthAPI
+from pydantic import constr
 from pydantic.fields import Field
 from redis import Redis
 from sqlalchemy.orm import Session
@@ -24,7 +25,7 @@ class MergeRequestSchema(JSONModel):
 class UnlinkRequestSchema(JSONModel):
     person_id: int = Field(..., title="ID of the person-record to be unlinked")
     master_id: int = Field(..., title="ID of the master-record to unlink from")
-    comment: Optional[str] = None
+    comment: Optional[constr(max_length=100)] = None
 
 
 class UnlinkPatientRequestSchema(JSONModel):
