@@ -39,6 +39,6 @@ async def merge_master_records(
     try:
         await channel.post_message(message)
     except MirthPostError as e:
-        raise HTTPException(500, str(e))  # pragma: no cover
+        raise HTTPException(500, str(e)) from e  # pragma: no cover
 
     return MirthMessageResponseSchema(status="success", message=message)

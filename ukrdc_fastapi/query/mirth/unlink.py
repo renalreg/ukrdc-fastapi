@@ -41,7 +41,7 @@ async def unlink_person_from_master_record(
     try:
         await channel.post_message(message)
     except MirthPostError as e:
-        raise HTTPException(500, str(e))  # pragma: no cover
+        raise HTTPException(500, str(e)) from e  # pragma: no cover
 
     # Find the new Master Record
     first_link_related_to_person = (

@@ -36,7 +36,7 @@ async def patient_export_pv(
     try:
         await channel.post_message(message)
     except MirthPostError as e:
-        raise HTTPException(500, str(e))  # pragma: no cover
+        raise HTTPException(500, str(e)) from e  # pragma: no cover
 
     return MirthMessageResponseSchema(status="success", message=message)
 
@@ -60,7 +60,7 @@ async def patient_export_pv_tests(
     try:
         await channel.post_message(message)
     except MirthPostError as e:
-        raise HTTPException(500, str(e))  # pragma: no cover
+        raise HTTPException(500, str(e)) from e  # pragma: no cover
 
     return MirthMessageResponseSchema(status="success", message=message)
 
@@ -84,7 +84,7 @@ async def patient_export_pv_docs(
     try:
         await channel.post_message(message)
     except MirthPostError as e:
-        raise HTTPException(500, str(e))  # pragma: no cover
+        raise HTTPException(500, str(e)) from e  # pragma: no cover
 
     return MirthMessageResponseSchema(status="success", message=message)
 
@@ -108,6 +108,6 @@ async def patient_export_radar(
     try:
         await channel.post_message(message)
     except MirthPostError as e:
-        raise HTTPException(500, str(e))  # pragma: no cover
+        raise HTTPException(500, str(e)) from e  # pragma: no cover
 
     return MirthMessageResponseSchema(status="success", message=message)
