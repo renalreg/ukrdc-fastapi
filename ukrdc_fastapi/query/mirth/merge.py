@@ -1,11 +1,12 @@
-from httpx import Response
+from fastapi.exceptions import HTTPException
+from mirth_client.exceptions import MirthPostError
 from mirth_client.mirth import MirthAPI
 from redis import Redis
 from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import MasterRecord
 
 from ukrdc_fastapi.dependencies.auth import UKRDCUser
-from ukrdc_fastapi.exceptions import MirthChannelError, MirthPostError
+from ukrdc_fastapi.exceptions import MirthChannelError
 from ukrdc_fastapi.query.masterrecords import get_masterrecord
 from ukrdc_fastapi.utils.mirth import (
     MirthMessageResponseSchema,
@@ -35,10 +36,9 @@ async def merge_master_records(
     message: str = build_merge_message(
         superseding=superseding.id, superseded=superseded.id
     )
-
-    response: Response = await channel.post_message(message)
-
-    if response.status_code >= 400:
-        raise MirthPostError(response.text)
+    try:
+        await channel.post_message(message)
+    except MirthPostError as e:
+        raise HTTPException(500, str(e))  # pragma: no cover
 
     return MirthMessageResponseSchema(status="success", message=message)

@@ -1,12 +1,13 @@
 from typing import Optional
 
-from httpx import Response
+from fastapi.exceptions import HTTPException
+from mirth_client.exceptions import MirthPostError
 from mirth_client.mirth import MirthAPI
 from redis import Redis
 from sqlalchemy.orm.session import Session
 
 from ukrdc_fastapi.dependencies.auth import UKRDCUser
-from ukrdc_fastapi.exceptions import MirthChannelError, MirthPostError
+from ukrdc_fastapi.exceptions import MirthChannelError
 from ukrdc_fastapi.query.workitems import get_workitem
 from ukrdc_fastapi.utils.mirth import (
     MirthMessageResponseSchema,
@@ -54,11 +55,10 @@ async def update_workitem(
         comment or workitem.description,
         user.email,
     )
-
-    response: Response = await channel.post_message(message)
-
-    if response.status_code >= 400:
-        raise MirthPostError(response.text)
+    try:
+        await channel.post_message(message)
+    except MirthPostError as e:
+        raise HTTPException(500, str(e))  # pragma: no cover
 
     return MirthMessageResponseSchema(status="success", message=message)
 
@@ -93,10 +93,9 @@ async def close_workitem(
         )  # pragma: no cover
 
     message: str = build_close_workitem_message(workitem.id, comment or "", user.email)
-
-    response: Response = await channel.post_message(message)
-
-    if response.status_code >= 400:
-        raise MirthPostError(response.text)
+    try:
+        await channel.post_message(message)
+    except MirthPostError as e:
+        raise HTTPException(500, str(e))  # pragma: no cover
 
     return MirthMessageResponseSchema(status="success", message=message)
