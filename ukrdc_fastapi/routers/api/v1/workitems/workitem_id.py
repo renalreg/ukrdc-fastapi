@@ -27,12 +27,12 @@ router = APIRouter(prefix="/{workitem_id}")
 
 
 class CloseWorkItemRequestSchema(JSONModel):
-    comment: Optional[str] = Field(..., max_length=100)
+    comment: Optional[str] = Field(None, max_length=100)
 
 
 class UpdateWorkItemRequestSchema(JSONModel):
     status: Optional[int] = None
-    comment: Optional[str] = Field(..., max_length=100)
+    comment: Optional[str] = Field(None, max_length=100)
 
 
 @router.get(

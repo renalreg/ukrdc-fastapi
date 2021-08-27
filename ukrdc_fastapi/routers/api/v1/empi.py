@@ -25,7 +25,7 @@ class MergeRequestSchema(JSONModel):
 class UnlinkRequestSchema(JSONModel):
     person_id: int = Field(..., title="ID of the person-record to be unlinked")
     master_id: int = Field(..., title="ID of the master-record to unlink from")
-    comment: Optional[str] = Field(..., max_length=100)
+    comment: Optional[str] = Field(None, max_length=100)
 
 
 class UnlinkPatientRequestSchema(JSONModel):
