@@ -1,27 +1,29 @@
-from httpx import Response
+from typing import Optional
+
+from fastapi.exceptions import HTTPException
+from mirth_client.exceptions import MirthPostError
 from mirth_client.mirth import MirthAPI
 from redis import Redis
 from sqlalchemy.orm.session import Session
+from ukrdc_sqla.empi import LinkRecord
 
 from ukrdc_fastapi.dependencies.auth import UKRDCUser
-from ukrdc_fastapi.exceptions import MirthChannelError, MirthPostError
+from ukrdc_fastapi.exceptions import MirthChannelError
 from ukrdc_fastapi.query.masterrecords import get_masterrecord
-from ukrdc_fastapi.query.persons import get_person, get_person_from_pid
-from ukrdc_fastapi.utils.mirth import (
-    MirthMessageResponseSchema,
-    build_unlink_message,
-    get_channel_from_name,
-)
+from ukrdc_fastapi.query.persons import get_person
+from ukrdc_fastapi.schemas.empi import LinkRecordSchema
+from ukrdc_fastapi.utils.mirth import build_unlink_message, get_channel_from_name
 
 
 async def unlink_person_from_master_record(
     person_id: int,
     master_id: int,
+    comment: Optional[str],
     user: UKRDCUser,
     jtrace: Session,
     mirth: MirthAPI,
     redis: Redis,
-):
+) -> LinkRecordSchema:
     """Unlink a particular Person record from a Master Record"""
     # Get records to assert user permission
     person = get_person(jtrace, person_id, user)
@@ -31,27 +33,19 @@ async def unlink_person_from_master_record(
     if not channel:
         raise MirthChannelError("ID for Unlink channel not found")  # pragma: no cover
 
-    message: str = build_unlink_message(master.id, person.id, user.email)
+    # Build and send the unlink message
 
-    response: Response = await channel.post_message(message)
-
-    if response.status_code >= 400:
-        raise MirthPostError(response.text)
-
-    return MirthMessageResponseSchema(status="success", message=message)
-
-
-async def unlink_patient_from_master_record(
-    pid: str,
-    master_id: int,
-    user: UKRDCUser,
-    jtrace: Session,
-    mirth: MirthAPI,
-    redis: Redis,
-):
-    """Unlink a particular PatientRecord from a Master Record"""
-    # Get records to assert user permission
-    person = get_person_from_pid(jtrace, pid, user)
-    return await unlink_person_from_master_record(
-        person.id, master_id, user, jtrace, mirth, redis
+    message: str = build_unlink_message(
+        master.id, person.id, user.email, description=comment
     )
+    try:
+        await channel.post_message(message)
+    except MirthPostError as e:
+        raise HTTPException(500, str(e)) from e  # pragma: no cover
+
+    # Find the new Master Record
+    first_link_related_to_person = (
+        jtrace.query(LinkRecord).filter(LinkRecord.person_id == person.id).first()
+    )
+
+    return LinkRecordSchema.from_orm(first_link_related_to_person)

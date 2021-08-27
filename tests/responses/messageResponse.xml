@@ -1,0 +1,8 @@
+<message>
+    <messageId>999</messageId>
+    <channelId>00000000-0000-0000-0000-000000000000</channelId>
+    <serverId>00000000-0000-0000-0000-000000000000</serverId>
+    <processed>true</processed>
+    <receivedDate><time>1630061717352</time></receivedDate>
+    <connectorMessages></connectorMessages>
+</message>

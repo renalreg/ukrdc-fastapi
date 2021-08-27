@@ -1,11 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, Security
-from httpx import Response
+from mirth_client.exceptions import MirthPostError
 from mirth_client.mirth import MirthAPI
 from redis import Redis
 
 from ukrdc_fastapi.dependencies import get_mirth, get_redis
 from ukrdc_fastapi.dependencies.auth import Permissions, auth
-from ukrdc_fastapi.exceptions import MirthPostError
 from ukrdc_fastapi.utils.mirth import (
     MirthMessageResponseSchema,
     build_export_all_message,
@@ -34,11 +33,10 @@ async def patient_export_pv(
         )  # pragma: no cover
 
     message: str = build_export_all_message(pid)
-
-    response: Response = await channel.post_message(message)
-
-    if response.status_code >= 400:
-        raise MirthPostError(response.text)
+    try:
+        await channel.post_message(message)
+    except MirthPostError as e:
+        raise HTTPException(500, str(e)) from e  # pragma: no cover
 
     return MirthMessageResponseSchema(status="success", message=message)
 
@@ -59,11 +57,10 @@ async def patient_export_pv_tests(
         )  # pragma: no cover
 
     message: str = build_export_tests_message(pid)
-
-    response: Response = await channel.post_message(message)
-
-    if response.status_code >= 400:
-        raise MirthPostError(response.text)
+    try:
+        await channel.post_message(message)
+    except MirthPostError as e:
+        raise HTTPException(500, str(e)) from e  # pragma: no cover
 
     return MirthMessageResponseSchema(status="success", message=message)
 
@@ -84,11 +81,10 @@ async def patient_export_pv_docs(
         )  # pragma: no cover
 
     message: str = build_export_docs_message(pid)
-
-    response: Response = await channel.post_message(message)
-
-    if response.status_code >= 400:
-        raise MirthPostError(response.text)
+    try:
+        await channel.post_message(message)
+    except MirthPostError as e:
+        raise HTTPException(500, str(e)) from e  # pragma: no cover
 
     return MirthMessageResponseSchema(status="success", message=message)
 
@@ -109,10 +105,9 @@ async def patient_export_radar(
         )  # pragma: no cover
 
     message: str = build_export_radar_message(pid)
-
-    response: Response = await channel.post_message(message)
-
-    if response.status_code >= 400:
-        raise MirthPostError(response.text)
+    try:
+        await channel.post_message(message)
+    except MirthPostError as e:
+        raise HTTPException(500, str(e)) from e  # pragma: no cover
 
     return MirthMessageResponseSchema(status="success", message=message)

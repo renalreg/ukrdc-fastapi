@@ -14,7 +14,3 @@ class EmptyQueryError(RuntimeError):
 
 class MirthChannelError(RuntimeError):
     """Error getting Mirth channel info"""
-
-
-class MirthPostError(RuntimeError):
-    """Error POSTing Mirth message"""
