@@ -3,7 +3,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, Security
 from mirth_client import MirthAPI
-from pydantic.types import constr
+from pydantic.fields import Field
 from redis import Redis
 from sqlalchemy.orm import Session
 
@@ -27,12 +27,12 @@ router = APIRouter(prefix="/{workitem_id}")
 
 
 class CloseWorkItemRequestSchema(JSONModel):
-    comment: Optional[constr(max_length=100)] = None
+    comment: Optional[str] = Field(..., max_length=100)
 
 
 class UpdateWorkItemRequestSchema(JSONModel):
     status: Optional[int] = None
-    comment: Optional[constr(max_length=100)] = None
+    comment: Optional[str] = Field(..., max_length=100)
 
 
 @router.get(
