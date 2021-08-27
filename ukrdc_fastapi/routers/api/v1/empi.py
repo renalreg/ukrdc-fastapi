@@ -12,6 +12,7 @@ from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.query.mirth.merge import merge_master_records
 from ukrdc_fastapi.query.mirth.unlink import unlink_person_from_master_record
 from ukrdc_fastapi.schemas.base import JSONModel
+from ukrdc_fastapi.schemas.empi import LinkRecordSchema
 from ukrdc_fastapi.utils.mirth import MirthMessageResponseSchema
 
 router = APIRouter(tags=["Patient Index Operations"])
@@ -56,7 +57,7 @@ async def empi_merge(
 
 @router.post(
     "/unlink/",
-    response_model=MirthMessageResponseSchema,
+    response_model=LinkRecordSchema,
     dependencies=[
         Security(auth.permission([Permissions.WRITE_EMPI, Permissions.WRITE_RECORDS]))
     ],
@@ -70,5 +71,11 @@ async def empi_unlink(
 ):
     """Unlink a Person from a specified MasterRecord"""
     return await unlink_person_from_master_record(
-        args.person_id, args.master_id, args.comment, user, jtrace, mirth, redis
+        args.person_id,
+        args.master_id,
+        args.comment,
+        user,
+        jtrace,
+        mirth,
+        redis,
     )
