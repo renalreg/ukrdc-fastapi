@@ -137,6 +137,7 @@ class PatientRecordSchema(OrmModel):
             # Self-resources
             "self": UrlFor("patient_get", {"pid": "<pid>"}),
             "related": UrlFor("patient_related", {"pid": "<pid>"}),
+            "delete": UrlFor("patient_delete", {"pid": "<pid>"}),
             # Internal resources
             "medications": UrlFor("patient_medications", {"pid": "<pid>"}),
             "treatments": UrlFor("patient_treatments", {"pid": "<pid>"}),
