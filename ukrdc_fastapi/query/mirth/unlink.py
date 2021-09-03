@@ -1,3 +1,4 @@
+from asyncio import sleep
 from typing import Optional
 
 from fastapi.exceptions import HTTPException
@@ -42,6 +43,8 @@ async def unlink_person_from_master_record(
         await channel.post_message(message)
     except MirthPostError as e:
         raise HTTPException(500, str(e)) from e  # pragma: no cover
+
+    await sleep(0.5)  # Wait for the message to be processed (complete guess)
 
     # Find the new Master Record
     first_link_related_to_person = (
