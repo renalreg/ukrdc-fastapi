@@ -171,7 +171,9 @@ def patient_observation_codes(
 )
 def patient_laborders(patient_record: PatientRecord = Depends(_get_patientrecord)):
     """Retreive a specific patient's lab orders"""
-    return paginate(patient_record.lab_orders)
+    return paginate(
+        patient_record.lab_orders.order_by(LabOrder.specimen_collected_time.desc())
+    )
 
 
 @router.get(
