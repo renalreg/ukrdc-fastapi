@@ -10,7 +10,6 @@ from stdnum.util import isdigits
 from ukrdc_sqla.empi import LinkRecord, MasterRecord, Person, PidXRef
 
 from ukrdc_fastapi.utils import parse_date
-from ukrdc_fastapi.utils.links import find_related_ids
 
 
 class SearchSet:
