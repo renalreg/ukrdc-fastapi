@@ -1,4 +1,5 @@
 import datetime
+import re
 from typing import Iterable, Optional, Union
 
 from sqlalchemy.orm import Session
@@ -6,10 +7,9 @@ from sqlalchemy.sql.expression import or_
 from sqlalchemy.sql.functions import concat
 from stdnum.gb import nhs
 from stdnum.util import isdigits
-from ukrdc_sqla.empi import MasterRecord, Person, PidXRef
+from ukrdc_sqla.empi import LinkRecord, MasterRecord, Person, PidXRef
 
 from ukrdc_fastapi.utils import parse_date
-from ukrdc_fastapi.utils.links import find_related_ids
 
 
 class SearchSet:
@@ -17,14 +17,12 @@ class SearchSet:
         # Dates
         self.dates: list[datetime.date] = []  # DoB, DoD etc
 
-        # String IDs
-        self.nhs_numbers: list[str] = []  # NHS, CHI, or HSC
-        self.mrn_numbers: list[str] = []  # Any unit-specific local ID
+        # External IDs
+        self.mrn_numbers: list[str] = []
 
-        # Integer IDs
+        # Internal IDs
         self.ukrdc_numbers: list[str] = []  # UKRDCID
         self.pids: list[str] = []  # Internal PIDs
-        self.empi_ids: list[str] = []  # MasterRecord or Person IDs
 
         # Chars
         self.names: list[str] = []  # Patient names
@@ -41,19 +39,16 @@ class SearchSet:
         if parsed_date:
             self.dates.append(parsed_date.date())
 
-    def add_nhs_number(self, item: str):
-        """Add an NHS number string to the search query set.
-        If the string cannot be parsed as an NHS number, it will be ignored"""
-        if nhs.is_valid(item):
-            self.nhs_numbers.append(nhs.compact(item))
-        elif nhs.is_valid(item.zfill(10)):
-            self.nhs_numbers.append(nhs.compact(item.zfill(10)))
-
     def add_mrn_number(self, item: str):
         """Add an MRN number formatted string to the search query set.
         If the string cannot be parsed as an MRN number, it will be ignored"""
-
-        if len(item) <= 17:
+        # Compact NHS numbers before searching
+        if nhs.is_valid(item):
+            self.mrn_numbers.append(nhs.compact(item))
+        elif nhs.is_valid(item.zfill(10)):
+            self.mrn_numbers.append(nhs.compact(item.zfill(10)))
+        # Search anything else as-is
+        elif len(item) <= 17:
             self.mrn_numbers.append(item)
 
     def add_ukrdc_number(self, item: str):
@@ -70,18 +65,11 @@ class SearchSet:
         if isdigits(item) and (1000000000 <= int(item) <= 10000000000):
             self.pids.append(item)
 
-    def add_empi_id(self, item: str):
-        """Add an EMPI ID formatted string to the search query set.
-        If the string cannot be parsed as an EMPI ID, it will be ignored"""
-
-        # Extract EMPI IDs (by int4 type)
-        if isdigits(item) and (-2147483648 <= int(item) <= 2147483647):
-            self.empi_ids.append(item)
-
     def add_name(self, item: str):
         """Add a name string to the search query set."""
-
-        self.names.append(item)
+        # Exclude strings containing only 0-9, -, _, ., or /
+        if not re.match(r"^[0-9-/_.]*$", item):
+            self.names.append(item)
 
     def add_terms(self, terms: list[str]):
         """
@@ -95,9 +83,6 @@ class SearchSet:
             # Extract dates
             self.add_date(item)
 
-            # Extract NHS numbers
-            self.add_nhs_number(item)
-
             # Extract MRN numbers
             self.add_mrn_number(item)
 
@@ -106,9 +91,6 @@ class SearchSet:
 
             # Extract PIDs (by range)
             self.add_pid(item)
-
-            # Extract EMPI IDs (by int4 type)
-            self.add_empi_id(item)
 
             # Absolutely anything can be a name
             self.add_name(item)
@@ -127,44 +109,25 @@ def _term_is_exact(item: str) -> bool:
     return item[0] == '"' and item[-1] == '"'
 
 
-def _convert_query_to_ilike(item: str, double_ended: bool = False) -> str:
-    """Convert a search query into a postgres ilike expression.
+def _convert_query_to_pg_like(item: str) -> str:
+    """Convert a search query into a postgres LIKE expression.
     E.g. a term wrapped in quotes will be matched exactly (but case
     insensitive), but without quotes will be fuzzy-searched
 
     Args:
         item (str): Search term
-        double_ended (bool, optional): Match prefix as well as suffix. Defaults to False.
 
     Returns:
         str: Postgres ilike expression string
     """
     if _term_is_exact(item):
         return item.strip('"')
-    if double_ended:
-        return f"%{item}%"
     return f"{item}%"
-
-
-def masterrecord_ids_from_nhs_no(session: Session, nhs_nos: Iterable[str]):
-    """Finds IDs from NHS number."""
-    conditions = [MasterRecord.nationalid.ilike(nhs_no.strip()) for nhs_no in nhs_nos]
-    matched_ids = {
-        record.id
-        for record in session.query(MasterRecord)
-        .filter(
-            or_(*conditions),
-            MasterRecord.nationalid_type.in_(["NHS", "HSC", "CHI"]),
-        )
-        .all()
-    }
-
-    return matched_ids
 
 
 def masterrecord_ids_from_mrn_no(session: Session, mrn_nos: Iterable[str]):
     """
-    Finds Master Record IDs from MRN number.
+    Finds Master Record IDs from MRN/NHS/HSC/CHI/RADAR number.
 
     Naievely we would just match Person.localid, however the EMPI has
     an extra step to work around MRNs (local IDs) changing.
@@ -177,13 +140,28 @@ def masterrecord_ids_from_mrn_no(session: Session, mrn_nos: Iterable[str]):
     """
     conditions = [PidXRef.localid.like(mrn_no) for mrn_no in mrn_nos]
     matched_persons = session.query(Person).join(PidXRef).filter(or_(*conditions)).all()
+    matched_ids = {
+        link.master_id
+        for link in session.query(LinkRecord).filter(
+            LinkRecord.person_id.in_({person.id for person in matched_persons})
+        )
+    }
+    return matched_ids
 
-    # Find all related master record IDs by recursing through link records
-    related_master_ids, _ = find_related_ids(
-        session, set(), {person.localid for person in matched_persons}
-    )
 
-    return related_master_ids
+def masterrecord_ids_from_pid(session: Session, pid_nos: Iterable[str]):
+    """
+    Finds Master Record IDs from PIDs
+    """
+    conditions = [Person.localid.like(pid_no) for pid_no in pid_nos]
+    matched_persons: list[Person] = session.query(Person).filter(or_(*conditions)).all()
+    matched_ids = {
+        link.master_id
+        for link in session.query(LinkRecord).filter(
+            LinkRecord.person_id.in_({person.id for person in matched_persons})
+        )
+    }
+    return matched_ids
 
 
 def masterrecord_ids_from_ukrdc_no(session: Session, ukrdc_nos: Iterable[str]):
@@ -214,13 +192,13 @@ def masterrecord_ids_from_full_name(session: Session, names: Iterable[str]):
     conditions = []
 
     for name in names:
-        query_term: str = _convert_query_to_ilike(name)
+        query_term: str = _convert_query_to_pg_like(name).upper()
 
         conditions.append(
-            concat(MasterRecord.givenname, " ", MasterRecord.surname).ilike(query_term)
+            concat(MasterRecord.givenname, " ", MasterRecord.surname).like(query_term)
         )
-        conditions.append(MasterRecord.givenname.ilike(query_term))
-        conditions.append(MasterRecord.surname.ilike(query_term))
+        conditions.append(MasterRecord.givenname.like(query_term))
+        conditions.append(MasterRecord.surname.like(query_term))
 
     masterrecords: list[MasterRecord] = (
         session.query(MasterRecord).filter(or_(*conditions)).all()
@@ -242,29 +220,11 @@ def masterrecord_ids_from_dob(
     return matched_ids
 
 
-def masterrecord_ids_from_pidxref_no(session: Session, pid_nos: Iterable[str]):
-    """Finds Ids from pidxref"""
-    # We're searching for PidXRef entries, so we only care about Person.localid
-    # if it's a CLPID (i.e. the ID type corresponding to a PidXRef lookup)
-    query = session.query(Person).filter(Person.localid_type == "CLPID")
-
-    conditions = [Person.localid.like(pid_no) for pid_no in pid_nos]
-    matched_persons: list[Person] = query.filter(or_(*conditions)).all()
-
-    # Find all related master record IDs by recursing through link records
-    related_master_ids, _ = find_related_ids(
-        session, set(), {person.id for person in matched_persons}
-    )
-
-    return related_master_ids
-
-
 def search_masterrecord_ids(  # pylint: disable=too-many-branches
-    nhs_number: list[str],
     mrn_number: list[str],
     ukrdc_number: list[str],
     full_name: list[str],
-    pidx: list[str],
+    pids: list[str],
     dob: list[str],
     search: list[str],
     jtrace: Session,
@@ -274,34 +234,18 @@ def search_masterrecord_ids(  # pylint: disable=too-many-branches
 
     searchset = SearchSet()
 
-    for item in nhs_number:
-        searchset.add_nhs_number(item)
     for item in mrn_number:
         searchset.add_mrn_number(item)
     for item in ukrdc_number:
         searchset.add_ukrdc_number(item)
     for item in full_name:
         searchset.add_name(item)
-    for item in pidx:
+    for item in pids:
         searchset.add_pid(item)
     for item in dob:
         searchset.add_date(item)
 
     searchset.add_terms(search)
-
-    # Check if the search query contains MasterRecord IDs
-    match_sets.append(
-        {
-            record.id
-            for record in (
-                jtrace.query(MasterRecord).get(id_) for id_ in searchset.empi_ids
-            )
-            if record
-        }
-    )
-
-    if searchset.nhs_numbers:
-        match_sets.append(masterrecord_ids_from_nhs_no(jtrace, searchset.nhs_numbers))
 
     if searchset.mrn_numbers:
         match_sets.append(masterrecord_ids_from_mrn_no(jtrace, searchset.mrn_numbers))
@@ -318,7 +262,7 @@ def search_masterrecord_ids(  # pylint: disable=too-many-branches
         match_sets.append(masterrecord_ids_from_dob(jtrace, searchset.dates))
 
     if searchset.pids:
-        match_sets.append(masterrecord_ids_from_pidxref_no(jtrace, searchset.pids))
+        match_sets.append(masterrecord_ids_from_pid(jtrace, searchset.pids))
 
     non_empty_sets: list[set[int]] = [
         match_set for match_set in match_sets if match_set

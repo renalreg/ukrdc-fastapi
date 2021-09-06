@@ -20,22 +20,20 @@ router = APIRouter(tags=["Search"])
     dependencies=[Security(auth.permission([Permissions.READ_RECORDS]))],
 )
 def search_masterrecords(
-    nhs_number: list[str] = QueryParam([]),
+    pid: list[str] = QueryParam([]),
     mrn_number: list[str] = QueryParam([]),
     ukrdc_number: list[str] = QueryParam([]),
     full_name: list[str] = QueryParam([]),
-    pidx: list[str] = QueryParam([]),
     dob: list[str] = QueryParam([]),
     search: list[str] = QueryParam([]),
     number_type: list[str] = QueryParam([]),
     include_ukrdc: bool = False,
-    only_ukrdc: bool = False,
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
 ):
     """Search the EMPI for a particular master record"""
     matched_ids = search_masterrecord_ids(
-        nhs_number, mrn_number, ukrdc_number, full_name, pidx, dob, search, jtrace
+        mrn_number, ukrdc_number, full_name, pid, dob, search, jtrace
     )
 
     matched_records = get_masterrecords(jtrace, user).filter(
@@ -50,10 +48,6 @@ def search_masterrecords(
     if not include_ukrdc:
         matched_records = matched_records.filter(
             MasterRecord.nationalid_type != "UKRDC"
-        )
-    if only_ukrdc:
-        matched_records = matched_records.filter(
-            MasterRecord.nationalid_type == "UKRDC"
         )
 
     return paginate(matched_records)

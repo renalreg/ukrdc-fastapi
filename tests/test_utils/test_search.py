@@ -26,21 +26,21 @@ def test_term_is_exact(term, expected):
         ('t"er"m', 't"er"m%'),
     ],
 )
-def test_convert_query_to_ilike(term, expected):
-    assert search._convert_query_to_ilike(term) == expected
+def test_convert_query_to_pg_like(term, expected):
+    assert search._convert_query_to_pg_like(term) == expected
 
 
 @pytest.mark.parametrize(
     "term,expected",
     [
         ('"term"', "term"),
-        ("term", "%term%"),
-        ('"term', '%"term%'),
-        ('t"er"m', '%t"er"m%'),
+        ("term", "term%"),
+        ('"term', '"term%'),
+        ('t"er"m', 't"er"m%'),
     ],
 )
-def test_convert_query_to_ilike_double_ended(term, expected):
-    assert search._convert_query_to_ilike(term, double_ended=True) == expected
+def test_convert_query_to_pg_like_double_ended(term, expected):
+    assert search._convert_query_to_pg_like(term) == expected
 
 
 @pytest.mark.parametrize(
@@ -52,16 +52,13 @@ def test_convert_query_to_ilike_double_ended(term, expected):
         ("632 189 2009", "6321892009"),
         ("632-189-2009", "6321892009"),
         ("632 - 189 - 2009", "6321892009"),
-        ("1234", None),
-        ("1234567890", None),
+        ("1234", "1234"),
+        ("1234567890", "1234567890"),
     ],
 )
-def test_implicit_nhs_number(term, expected):
+def test_nhs_number_normalization(term, expected):
     s = search.SearchSet()
-    s.add_nhs_number(term)
+    s.add_mrn_number(term)
 
-    if expected:
-        assert len(s.nhs_numbers) == 1
-        assert s.nhs_numbers[0] == expected
-    else:
-        assert len(s.nhs_numbers) == 0
+    assert len(s.mrn_numbers) == 1
+    assert s.mrn_numbers[0] == expected
