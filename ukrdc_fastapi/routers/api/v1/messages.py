@@ -70,7 +70,10 @@ def error_detail(
     errorsdb: Session = Depends(get_errorsdb),
 ):
     """Retreive detailed information about a specific error message"""
-    return get_message(errorsdb, message_id, user)
+    # For some reason the fastAPI response_model doesn't call our channel_name
+    # validator, meaning we don't get a populated channel name unless we explicitly
+    # call it here.
+    return MessageSchema.from_orm(get_message(errorsdb, message_id, user))
 
 
 @router.get(
