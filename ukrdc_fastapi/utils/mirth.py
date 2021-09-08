@@ -244,6 +244,30 @@ def get_cached_all(redis: Redis) -> list[ChannelGroupModel]:
         for group in groups
     ]
 
+    # The Mirth API unhelpfully doesn't include the [Default Group] group in its
+    # groups API response, so we have to build it ourselves. We first find all channels
+    # that are already in a group, and use that to find any channels NOT in a group, which
+    # corresponds to the [Default Group] group. Group.
+    channel_ids_in_groups: set[UUID] = {
+        channel.id for group in groups for channel in group.channels
+    }
+    channels_not_in_groups: list[ChannelFullModel] = [
+        channel for channel in channels if channel.id not in channel_ids_in_groups
+    ]
+    groups_with_statistics.append(
+        ChannelGroupModel(
+            id="00000000-00000000-00000000-00000000",
+            name="Default Group",
+            description="Channels not part of a group will appear here",
+            revision="--",
+            channels=[
+                channel_with_statistics_map.get(channel.id)
+                for channel in channels_not_in_groups
+                if channel.id in channel_with_statistics_map
+            ],
+        )
+    )
+
     return groups_with_statistics
 
 
