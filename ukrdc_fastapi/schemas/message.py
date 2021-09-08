@@ -29,22 +29,10 @@ class MessageSchema(MinimalMessageSchema):
     status: Optional[str]
     links = LinkSet(
         {
-            "self": UrlFor(
-                "error_detail",
-                {"message_id": "<id>"},
-            ),
-            "source": UrlFor(
-                "error_source",
-                {"message_id": "<id>"},
-            ),
-            "workitems": UrlFor(
-                "error_workitems",
-                {"message_id": "<id>"},
-            ),
-            "masterrecords": UrlFor(
-                "error_masterrecords",
-                {"message_id": "<id>"},
-            ),
+            "self": UrlFor("error_detail", {"message_id": "<id>"}),
+            "source": UrlFor("error_source", {"message_id": "<id>"}),
+            "workitems": UrlFor("error_workitems", {"message_id": "<id>"}),
+            "masterrecords": UrlFor("error_masterrecords", {"message_id": "<id>"}),
             "mirth": UrlFor(
                 "mirth_channel_message",
                 {"channel_id": "<channel_id>", "message_id": "<message_id>"},
@@ -75,6 +63,7 @@ class MessageSchema(MinimalMessageSchema):
         Dynamically generates the channel name field
         by reading the class Mirth Channel ID-Name map.
         """
+        # TODO: Replace with computed_fields once available: https://github.com/samuelcolvin/pydantic/pull/2625
         if hasattr(cls, "_channel_id_name_map"):
             channel_id = values.get("channel_id")
             if channel_id:
