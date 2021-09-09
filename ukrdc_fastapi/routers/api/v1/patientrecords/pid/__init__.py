@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi import Query as QueryParam
 from fastapi import Security
 from fastapi.responses import Response
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, defer
 from ukrdc_sqla.ukrdc import (
     Document,
     LabOrder,
@@ -153,7 +153,9 @@ def patient_documents(
     ),
 ):
     """Retreive a specific patient's documents"""
-    return paginate(sorter.sort(patient_record.documents))
+    # NOTE: We defer the 'stream' column to avoid sending the full PDF file content
+    # when we're just querying the list of documents.
+    return paginate(sorter.sort(patient_record.documents.options(defer("stream"))))
 
 
 @router.get(
@@ -175,7 +177,7 @@ def document_get(
     "/documents/{document_id}/download",
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
-def document_get(
+def document_download(
     document_id: str, patient_record: PatientRecord = Depends(_get_patientrecord)
 ):
     """Retreive a specific patient's document file"""

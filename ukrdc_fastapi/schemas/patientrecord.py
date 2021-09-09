@@ -79,6 +79,9 @@ class DocumentSummarySchema(OrmModel):
     links = LinkSet(
         {
             "self": UrlFor("document_get", {"pid": "<pid>", "document_id": "<id>"}),
+            "download": UrlFor(
+                "document_download", {"pid": "<pid>", "document_id": "<id>"}
+            ),
         }
     )
 
@@ -156,6 +159,7 @@ class PatientRecordSchema(OrmModel):
             "medications": UrlFor("patient_medications", {"pid": "<pid>"}),
             "treatments": UrlFor("patient_treatments", {"pid": "<pid>"}),
             "surveys": UrlFor("patient_surveys", {"pid": "<pid>"}),
+            "documents": UrlFor("patient_documents", {"pid": "<pid>"}),
             # Complex internal resources
             "observations": UrlFor("patient_observations", {"pid": "<pid>"}),
             "observationCodes": UrlFor("patient_observation_codes", {"pid": "<pid>"}),
