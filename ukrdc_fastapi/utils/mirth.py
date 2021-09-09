@@ -195,16 +195,19 @@ def get_cached_channels_with_statistics(redis: Redis) -> list[ChannelFullModel]:
         str(stats.channel_id): stats for stats in statistics
     }
 
-    return [
-        ChannelFullModel(
-            id=channel.id,
-            name=channel.name,
-            description=channel.description,
-            revision=channel.revision,
-            statistics=statistics_map.get(str(channel.id)),
-        )
-        for channel in channels
-    ]
+    return sorted(
+        [
+            ChannelFullModel(
+                id=channel.id,
+                name=channel.name,
+                description=channel.description,
+                revision=channel.revision,
+                statistics=statistics_map.get(str(channel.id)),
+            )
+            for channel in channels
+        ],
+        key=lambda channel: channel.name,
+    )
 
 
 def get_cached_all(redis: Redis) -> list[ChannelGroupModel]:
@@ -244,6 +247,9 @@ def get_cached_all(redis: Redis) -> list[ChannelGroupModel]:
         for group in groups
     ]
 
+    # Sort the groups by name
+    groups_with_statistics.sort(key=lambda group: group.name)
+
     # The Mirth API unhelpfully doesn't include the [Default Group] group in its
     # groups API response, so we have to build it ourselves. We first find all channels
     # that are already in a group, and use that to find any channels NOT in a group, which
@@ -254,7 +260,8 @@ def get_cached_all(redis: Redis) -> list[ChannelGroupModel]:
     channels_not_in_groups: list[ChannelFullModel] = [
         channel for channel in channels if channel.id not in channel_ids_in_groups
     ]
-    groups_with_statistics.append(
+    groups_with_statistics.insert(
+        0,
         ChannelGroupModel(
             id="00000000-00000000-00000000-00000000",
             name="Default Group",
@@ -265,8 +272,12 @@ def get_cached_all(redis: Redis) -> list[ChannelGroupModel]:
                 for channel in channels_not_in_groups
                 if channel.id in channel_with_statistics_map
             ],
-        )
+        ),
     )
+
+    # Sort channels within groups by name
+    for group in groups_with_statistics:
+        group.channels.sort(key=lambda channel: channel.name)
 
     return groups_with_statistics
 
