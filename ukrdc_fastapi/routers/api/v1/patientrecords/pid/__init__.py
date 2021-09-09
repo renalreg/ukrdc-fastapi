@@ -4,8 +4,16 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi import Query as QueryParam
 from fastapi import Security
+from fastapi.responses import Response
 from sqlalchemy.orm import Session
-from ukrdc_sqla.ukrdc import LabOrder, Observation, PatientRecord, PVDelete, ResultItem
+from ukrdc_sqla.ukrdc import (
+    Document,
+    LabOrder,
+    Observation,
+    PatientRecord,
+    PVDelete,
+    ResultItem,
+)
 
 from ukrdc_fastapi.dependencies import get_jtrace, get_ukrdc3
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
@@ -23,7 +31,11 @@ from ukrdc_fastapi.schemas.laborder import (
 )
 from ukrdc_fastapi.schemas.medication import MedicationSchema
 from ukrdc_fastapi.schemas.observation import ObservationSchema
-from ukrdc_fastapi.schemas.patientrecord import PatientRecordSchema
+from ukrdc_fastapi.schemas.patientrecord import (
+    DocumentSchema,
+    DocumentSummarySchema,
+    PatientRecordSchema,
+)
 from ukrdc_fastapi.schemas.survey import SurveySchema
 from ukrdc_fastapi.schemas.treatment import TreatmentSchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
@@ -124,6 +136,70 @@ def patient_treatments(patient_record: PatientRecord = Depends(_get_patientrecor
 def patient_surveys(patient_record: PatientRecord = Depends(_get_patientrecord)):
     """Retreive a specific patient's surveys"""
     return patient_record.surveys.all()
+
+
+@router.get(
+    "/documents/",
+    response_model=Page[DocumentSummarySchema],
+    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
+)
+def patient_documents(
+    patient_record: PatientRecord = Depends(_get_patientrecord),
+    sorter: Sorter = Depends(
+        make_sorter(
+            [Document.documenttime, Document.updatedon],
+            default_sort_by=Document.documenttime,
+        )
+    ),
+):
+    """Retreive a specific patient's documents"""
+    return paginate(sorter.sort(patient_record.documents))
+
+
+@router.get(
+    "/documents/{document_id}/",
+    response_model=DocumentSchema,
+    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
+)
+def document_get(
+    document_id: str, patient_record: PatientRecord = Depends(_get_patientrecord)
+):
+    """Retreive a specific patient's document information"""
+    document = patient_record.documents.filter(Document.id == document_id).first()
+    if not document:
+        raise HTTPException(404, detail="Document not found")
+    return document
+
+
+@router.get(
+    "/documents/{document_id}/download",
+    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
+)
+def document_get(
+    document_id: str, patient_record: PatientRecord = Depends(_get_patientrecord)
+):
+    """Retreive a specific patient's document file"""
+    document: Optional[Document] = patient_record.documents.filter(
+        Document.id == document_id
+    ).first()
+    if not document:
+        raise HTTPException(404, detail="Document not found")
+
+    media_type: str
+    stream: bytes
+    filename: str
+    if not document.filetype:
+        media_type = "text/csv"
+        stream = document.notetext.encode()
+        filename = f"{document.documentname}.txt"
+    else:
+        media_type = document.filetype
+        stream = document.stream
+        filename = document.filename
+
+    response = Response(content=stream, media_type=media_type)
+    response.headers["Content-Disposition"] = f"attachment; filename={filename}"
+    return response
 
 
 # Complex internal resources

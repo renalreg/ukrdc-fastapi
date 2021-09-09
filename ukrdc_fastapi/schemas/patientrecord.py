@@ -64,11 +64,28 @@ class ProcedureSchema(OrmModel):
     pid: str
 
 
-class DocumentSchema(OrmModel):
+class DocumentSummarySchema(OrmModel):
     id: str
     pid: str
-    idx: Optional[int]
     documenttime: Optional[datetime.datetime]
+    documentname: Optional[str]
+
+    filetype: Optional[str]
+    filename: Optional[str]
+
+    enteredbydesc: Optional[str]
+    enteredatcode: Optional[str]
+
+    links = LinkSet(
+        {
+            "self": UrlFor("document_get", {"pid": "<pid>", "document_id": "<id>"}),
+        }
+    )
+
+
+class DocumentSchema(DocumentSummarySchema):
+    idx: Optional[int]
+
     notetext: Optional[str]
     documenttypecode: Optional[str]
     documenttypecodestd: Optional[str]
@@ -77,18 +94,15 @@ class DocumentSchema(OrmModel):
     cliniciancode: Optional[str]
     cliniciancodestd: Optional[str]
     cliniciandesc: Optional[str]
-    documentname: Optional[str]
+
     statuscode: Optional[str]
     statuscodestd: Optional[str]
     statusdesc: Optional[str]
     enteredbycode: Optional[str]
     enteredbycodestd: Optional[str]
-    enteredbydesc: Optional[str]
-    enteredatcode: Optional[str]
+
     enteredatcodestd: Optional[str]
     enteredatdesc: Optional[str]
-    filetype: Optional[str]
-    filename: Optional[str]
 
     documenturl: Optional[str]
     updatedon: Optional[datetime.datetime]
