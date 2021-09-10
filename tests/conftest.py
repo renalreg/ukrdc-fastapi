@@ -56,6 +56,22 @@ socket_dir = tempfile.TemporaryDirectory()
 postgresql_my_proc = factories.postgresql_proc(port=None, unixsocketdir=socket_dir.name)
 postgresql_my = factories.postgresql("postgresql_my_proc")
 
+MINIMAL_PDF_BYTES = (
+    b"%PDF-1.0\n\n"
+    + b"1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj 2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj 3 0 obj<</Type/Page/+ MediaBox[0 0 3 3]>>endobj\n"
+    + b"xref\n"
+    + b"0 4\n"
+    + b"0000000000 65535 f\n"
+    + b"0000000010 00000 n\n"
+    + b"0000000053 00000 n\n"
+    + b"0000000102 00000 n\n"
+    + b"trailer<</Size 4/Root 1 0 R>>\n"
+    + b"startxref\n"
+    + b"149\n"
+    + b"%%EOF"
+)
+
+
 
 def populate_ukrdc3_session(session):
 
@@ -418,25 +434,17 @@ def populate_ukrdc3_session(session):
     session.add(level)
 
     document_pdf = Document(
-        id="DOCUMENT_PDF", pid=pid_1, documenttime=datetime(2020, 3, 16)
+        id="DOCUMENT_PDF",
+        documentname="DOCUMENT_PDF_NAME",
+        filename="DOCUMENT_PDF_FILENAME.pdf",
+        pid=pid_1,
+        documenttime=datetime(2020, 3, 16),
     )
-    document_pdf.stream = (
-        b"%PDF-1.0\n\n"
-        + b"1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj 2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj 3 0 obj<</Type/Page/+ MediaBox[0 0 3 3]>>endobj\n"
-        + b"xref\n"
-        + b"0 4\n"
-        + b"0000000000 65535 f\n"
-        + b"0000000010 00000 n\n"
-        + b"0000000053 00000 n\n"
-        + b"0000000102 00000 n\n"
-        + b"trailer<</Size 4/Root 1 0 R>>\n"
-        + b"startxref\n"
-        + b"149\n"
-        + b"%%EOF"
-    )
+    document_pdf.stream = MINIMAL_PDF_BYTES
     document_pdf.filetype = "application/pdf"
     document_txt = Document(
         id="DOCUMENT_TXT",
+        documentname="DOCUMENT_TXT_NAME",
         pid=pid_1,
         documenttime=datetime(2020, 3, 16),
         notetext="DOCUMENT_TXT_NOTETEXT",
@@ -887,3 +895,7 @@ def test_user():
         permissions=[*Permissions.all()[:-1], "ukrdc:unit:TEST_SENDING_FACILITY_1"],
         scopes=["openid", "profile", "email", "offline_access"],
     )
+
+@pytest.fixture()
+def minimal_pdf():
+    return MINIMAL_PDF_BYTES
