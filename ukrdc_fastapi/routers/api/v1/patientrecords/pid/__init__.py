@@ -192,12 +192,12 @@ def document_download(
     filename: str
     if not document.filetype:
         media_type = "text/csv"
-        stream = document.notetext.encode()
+        stream = (document.notetext or "").encode()
         filename = f"{document.documentname}.txt"
     else:
         media_type = document.filetype
-        stream = document.stream
-        filename = document.filename
+        stream = document.stream or b""
+        filename = document.filename or document.documentname or "NoFileName"
 
     response = Response(content=stream, media_type=media_type)
     response.headers["Content-Disposition"] = f"attachment; filename={filename}"
