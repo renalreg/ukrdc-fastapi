@@ -1,11 +1,12 @@
 from fastapi.exceptions import HTTPException
 from sqlalchemy.orm.query import Query
 from sqlalchemy.orm.session import Session
-from ukrdc_sqla.empi import Person
+from ukrdc_sqla.empi import MasterRecord, Person
 from ukrdc_sqla.ukrdc import PatientRecord
 
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
 from ukrdc_fastapi.query.common import PermissionsError
+from ukrdc_fastapi.query.masterrecords import get_masterrecords_related_to_masterrecord
 from ukrdc_fastapi.utils.links import find_related_ids
 
 
@@ -90,6 +91,39 @@ def get_patientrecords_related_to_patientrecord(
     # Find all Patient records in the list of related Patient IDs
     related_records = ukrdc3.query(PatientRecord).filter(
         PatientRecord.pid.in_(related_patient_ids)
+    )
+
+    return _apply_query_permissions(related_records, user)
+
+
+def get_patientrecords_related_to_masterrecord(
+    ukrdc3: Session, jtrace: Session, record_id: int, user: UKRDCUser
+) -> Query:
+    """
+    Get a list of patient records related to a Master Record.
+
+    First finds all UKRDC Master Records linked to the given record ID via
+    the LinkRecord tree. Then returns a list of all Patient Records with a
+    UKRDC ID in that list.
+
+    Args:
+        ukrdc3 (Session): UKRDC SQLAlchemy session
+        jtrace (Session): JTRACE SQLAlchemy session
+        record_id (str): MasterRecord ID
+        user (UKRDCUser): User object
+
+    Returns:
+        Query: SQLAlchemy query
+    """
+    related_ukrdc_records = get_masterrecords_related_to_masterrecord(
+        jtrace, record_id, user, exclude_self=False
+    ).filter(MasterRecord.nationalid_type == "UKRDC")
+
+    # Strip whitespace. Needed until we fix the issue with fixed-length nationalid column
+    related_ukrdcids = [record.nationalid.strip() for record in related_ukrdc_records]
+
+    related_records = get_patientrecords(ukrdc3, user).filter(
+        PatientRecord.ukrdcid.in_(related_ukrdcids)
     )
 
     return _apply_query_permissions(related_records, user)
