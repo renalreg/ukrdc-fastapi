@@ -4,8 +4,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, Response, Security
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_204_NO_CONTENT
-from ukrdc_sqla.empi import LinkRecord, MasterRecord, Person
-from ukrdc_sqla.ukrdc import PatientRecord
+from ukrdc_sqla.empi import LinkRecord, MasterRecord
 
 from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_ukrdc3
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
@@ -19,10 +18,9 @@ from ukrdc_fastapi.query.messages import (
     get_messages_related_to_masterrecord,
 )
 from ukrdc_fastapi.query.patientrecords import (
-    get_patientrecords,
     get_patientrecords_related_to_masterrecord,
 )
-from ukrdc_fastapi.query.persons import get_persons, get_persons_related_to_masterrecord
+from ukrdc_fastapi.query.persons import get_persons_related_to_masterrecord
 from ukrdc_fastapi.query.workitems import get_workitems
 from ukrdc_fastapi.schemas.base import OrmModel
 from ukrdc_fastapi.schemas.empi import (
@@ -33,7 +31,6 @@ from ukrdc_fastapi.schemas.empi import (
 )
 from ukrdc_fastapi.schemas.message import MessageSchema, MinimalMessageSchema
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordSchema
-from ukrdc_fastapi.utils.links import find_related_ids
 from ukrdc_fastapi.utils.paginate import Page, paginate
 from ukrdc_fastapi.utils.sort import Sorter
 
