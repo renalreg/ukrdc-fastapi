@@ -18,7 +18,10 @@ from ukrdc_fastapi.query.messages import (
     get_last_message_on_masterrecord,
     get_messages_related_to_masterrecord,
 )
-from ukrdc_fastapi.query.patientrecords import get_patientrecords
+from ukrdc_fastapi.query.patientrecords import (
+    get_patientrecords,
+    get_patientrecords_related_to_masterrecord,
+)
 from ukrdc_fastapi.query.persons import get_persons, get_persons_related_to_masterrecord
 from ukrdc_fastapi.query.workitems import get_workitems
 from ukrdc_fastapi.schemas.base import OrmModel
@@ -228,17 +231,6 @@ def master_record_patientrecords(
     ukrdc3: Session = Depends(get_ukrdc3),
 ):
     """Retreive a list of patient records related to a particular master record."""
-    _, related_person_ids = find_related_ids(jtrace, {record_id}, set())
-    related_persons = get_persons(jtrace, user).filter(
-        Person.id.in_(related_person_ids)
-    )
-
-    related_patient_ids = set()
-    for person in related_persons:
-        related_patient_ids.add(person.localid)
-
-    records = get_patientrecords(ukrdc3, user).filter(
-        PatientRecord.pid.in_(related_patient_ids)
-    )
-
-    return records.all()
+    return get_patientrecords_related_to_masterrecord(
+        ukrdc3, jtrace, record_id, user
+    ).all()
