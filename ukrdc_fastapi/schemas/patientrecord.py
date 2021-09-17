@@ -2,7 +2,11 @@ import datetime
 from typing import Optional
 
 from fastapi_hypermodel import LinkSet, UrlFor
+from pydantic import validator
+from ukrdc_sqla.empi import MasterRecord
 
+from ukrdc_fastapi.dependencies.database import jtrace_session
+from ukrdc_fastapi.schemas.empi import MasterRecordSchema
 from ukrdc_fastapi.schemas.medication import MedicationSchema
 from ukrdc_fastapi.schemas.observation import ObservationSchema
 from ukrdc_fastapi.schemas.patient import PatientSchema
@@ -137,7 +141,9 @@ class PVDeleteSchema(OrmModel):
     service_id: Optional[str]
 
 
-class PatientRecordSchema(OrmModel):
+class PatientRecordSummarySchema(OrmModel):
+    """Schema for lists of PatientRecords"""
+
     pid: str
     sendingfacility: str
     sendingextract: str
@@ -175,7 +181,32 @@ class PatientRecordSchema(OrmModel):
     )
 
 
-class PatientRecordFullSchema(PatientRecordSchema):
+class PatientRecordSchema(PatientRecordSummarySchema):
+    """Schema for PatientRecord resources"""
+
+    master_record: Optional[MasterRecordSchema]
+
+    @validator("master_record")
+    def master_record_compute(
+        cls, value, values
+    ):  # pylint: disable=no-self-argument,no-self-use
+        # TODO: Replace with computed_fields once available: https://github.com/samuelcolvin/pydantic/pull/2625
+        if not value:
+            with jtrace_session() as jtrace:
+                value = (
+                    jtrace.query(MasterRecord)
+                    .filter(
+                        MasterRecord.nationalid_type == "UKRDC",
+                        MasterRecord.nationalid == values.get("ukrdcid"),
+                    )
+                    .first()
+                )
+        return value
+
+
+class PatientRecordFullSchema(PatientRecordSummarySchema):
+    """Schema for hashing all PatientRecord data"""
+
     social_histories: list[SocialHistorySchema]
     family_histories: list[FamilyHistorySchema]
     observations: list[ObservationSchema]

@@ -35,6 +35,7 @@ from ukrdc_fastapi.schemas.patientrecord import (
     DocumentSchema,
     DocumentSummarySchema,
     PatientRecordSchema,
+    PatientRecordSummarySchema,
 )
 from ukrdc_fastapi.schemas.survey import SurveySchema
 from ukrdc_fastapi.schemas.treatment import TreatmentSchema
@@ -66,7 +67,10 @@ def _get_patientrecord(
 )
 def patient_get(patient_record: PatientRecord = Depends(_get_patientrecord)):
     """Retreive a specific patient record"""
-    return patient_record
+    # For some reason the fastAPI response_model doesn't call our master_record_compute
+    # validator, meaning we don't get a populated master record unless we explicitly
+    # call it here.
+    return PatientRecordSchema.from_orm(patient_record)
 
 
 @router.post(
@@ -92,7 +96,7 @@ def patient_delete(
 
 @router.get(
     "/related/",
-    response_model=list[PatientRecordSchema],
+    response_model=list[PatientRecordSummarySchema],
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
 def patient_related(
