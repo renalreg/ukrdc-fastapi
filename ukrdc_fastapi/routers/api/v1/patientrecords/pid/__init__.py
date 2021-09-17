@@ -65,12 +65,15 @@ def _get_patientrecord(
     response_model=PatientRecordSchema,
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
-def patient_get(patient_record: PatientRecord = Depends(_get_patientrecord)):
+def patient_get(
+    patient_record: PatientRecord = Depends(_get_patientrecord),
+    jtrace: Session = Depends(get_jtrace),
+):
     """Retreive a specific patient record"""
     # For some reason the fastAPI response_model doesn't call our master_record_compute
     # validator, meaning we don't get a populated master record unless we explicitly
     # call it here.
-    return PatientRecordSchema.from_orm(patient_record)
+    return PatientRecordSchema.from_orm_with_master_record(patient_record, jtrace)
 
 
 @router.post(

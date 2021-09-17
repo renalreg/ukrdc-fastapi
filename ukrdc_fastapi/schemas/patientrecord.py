@@ -3,7 +3,9 @@ from typing import Optional
 
 from fastapi_hypermodel import LinkSet, UrlFor
 from pydantic import validator
+from sqlalchemy.orm.session import Session
 from ukrdc_sqla.empi import MasterRecord
+from ukrdc_sqla.ukrdc import PatientRecord
 
 from ukrdc_fastapi.dependencies.database import jtrace_session
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema
@@ -186,28 +188,28 @@ class PatientRecordSchema(PatientRecordSummarySchema):
 
     master_record: Optional[MasterRecordSchema]
 
-    @validator("master_record")
-    def master_record_compute(
-        cls, value, values
-    ):  # pylint: disable=no-self-argument,no-self-use
+    @classmethod
+    def from_orm_with_master_record(
+        cls, patient_record: PatientRecord, jtrace: Session
+    ):
         """
         Find the PatientRecord's nearest matching UKRDC MasterRecord,
-        and inject it into the master_record field
+        and inject it into the master_record field before returning
+        a validated PatientRecordSchema object.
         """
-        # TODO: Replace with computed_fields once available: https://github.com/samuelcolvin/pydantic/pull/2625
-        if not value:
-            with jtrace_session() as jtrace:
-                record = (
-                    jtrace.query(MasterRecord)
-                    .filter(
-                        MasterRecord.nationalid_type == "UKRDC",
-                        MasterRecord.nationalid == values.get("ukrdcid"),
-                    )
-                    .first()
+        record_dict = cls.from_orm(patient_record).dict()
+        if not record_dict.get("masterRecord"):
+            master_record = (
+                jtrace.query(MasterRecord)
+                .filter(
+                    MasterRecord.nationalid_type == "UKRDC",
+                    MasterRecord.nationalid == record_dict.get("ukrdcid"),
                 )
-                if record:
-                    return MasterRecordSchema.from_orm(record)
-        return value
+                .first()
+            )
+            if master_record:
+                record_dict["masterRecord"] = MasterRecordSchema.from_orm(master_record)
+        return cls(**record_dict)
 
 
 class PatientRecordFullSchema(PatientRecordSummarySchema):
