@@ -193,7 +193,7 @@ class PatientRecordSchema(PatientRecordSummarySchema):
         # TODO: Replace with computed_fields once available: https://github.com/samuelcolvin/pydantic/pull/2625
         if not value:
             with jtrace_session() as jtrace:
-                value = (
+                record = (
                     jtrace.query(MasterRecord)
                     .filter(
                         MasterRecord.nationalid_type == "UKRDC",
@@ -201,6 +201,8 @@ class PatientRecordSchema(PatientRecordSummarySchema):
                     )
                     .first()
                 )
+                if record:
+                    return MasterRecordSchema.from_orm(record)
         return value
 
 
