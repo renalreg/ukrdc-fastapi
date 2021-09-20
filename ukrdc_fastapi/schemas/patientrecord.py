@@ -2,7 +2,11 @@ import datetime
 from typing import Optional
 
 from fastapi_hypermodel import LinkSet, UrlFor
+from sqlalchemy.orm.session import Session
+from ukrdc_sqla.empi import MasterRecord
+from ukrdc_sqla.ukrdc import PatientRecord
 
+from ukrdc_fastapi.schemas.empi import MasterRecordSchema
 from ukrdc_fastapi.schemas.medication import MedicationSchema
 from ukrdc_fastapi.schemas.observation import ObservationSchema
 from ukrdc_fastapi.schemas.patient import PatientSchema
@@ -137,7 +141,9 @@ class PVDeleteSchema(OrmModel):
     service_id: Optional[str]
 
 
-class PatientRecordSchema(OrmModel):
+class PatientRecordSummarySchema(OrmModel):
+    """Schema for lists of PatientRecords"""
+
     pid: str
     sendingfacility: str
     sendingextract: str
@@ -175,7 +181,38 @@ class PatientRecordSchema(OrmModel):
     )
 
 
-class PatientRecordFullSchema(PatientRecordSchema):
+class PatientRecordSchema(PatientRecordSummarySchema):
+    """Schema for PatientRecord resources"""
+
+    master_record: Optional[MasterRecordSchema]
+
+    @classmethod
+    def from_orm_with_master_record(
+        cls, patient_record: PatientRecord, jtrace: Session
+    ):
+        """
+        Find the PatientRecord's nearest matching UKRDC MasterRecord,
+        and inject it into the master_record field before returning
+        a validated PatientRecordSchema object.
+        """
+        record_dict = cls.from_orm(patient_record).dict()
+        if not record_dict.get("masterRecord"):
+            master_record = (
+                jtrace.query(MasterRecord)
+                .filter(
+                    MasterRecord.nationalid_type == "UKRDC",
+                    MasterRecord.nationalid == record_dict.get("ukrdcid"),
+                )
+                .first()
+            )
+            if master_record:
+                record_dict["masterRecord"] = MasterRecordSchema.from_orm(master_record)
+        return cls(**record_dict)
+
+
+class PatientRecordFullSchema(PatientRecordSummarySchema):
+    """Schema for hashing all PatientRecord data"""
+
     social_histories: list[SocialHistorySchema]
     family_histories: list[FamilyHistorySchema]
     observations: list[ObservationSchema]

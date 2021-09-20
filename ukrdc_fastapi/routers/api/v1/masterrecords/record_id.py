@@ -30,7 +30,7 @@ from ukrdc_fastapi.schemas.empi import (
     WorkItemSchema,
 )
 from ukrdc_fastapi.schemas.message import MessageSchema, MinimalMessageSchema
-from ukrdc_fastapi.schemas.patientrecord import PatientRecordSchema
+from ukrdc_fastapi.schemas.patientrecord import PatientRecordSummarySchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
 from ukrdc_fastapi.utils.sort import Sorter
 
@@ -218,7 +218,7 @@ def master_record_persons(
 
 @router.get(
     "/patientrecords/",
-    response_model=list[PatientRecordSchema],
+    response_model=list[PatientRecordSummarySchema],
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
 def master_record_patientrecords(
