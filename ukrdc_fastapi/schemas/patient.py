@@ -61,6 +61,9 @@ class PatientSchema(OrmModel):
     death_time: Optional[datetime.date]
     gender: str
 
+    ethnic_group_code: Optional[str]
+    ethnic_group_description: Optional[str]
+
 
 class PatientFullSchema(PatientSchema):
     family_doctor: Optional[FamilyDoctorSchema]
