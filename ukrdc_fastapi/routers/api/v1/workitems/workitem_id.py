@@ -129,15 +129,21 @@ def workitem_messages(
     errorsdb: Session = Depends(get_errorsdb),
 ):
     """Retreive a list of other work items related to a particular work item"""
-    workitem = get_workitem(jtrace, workitem_id, user)
-    workitem_ni: str = workitem.master_record.nationalid
+    workitem = get_extended_workitem(jtrace, workitem_id, user)
+
+    workitem_nis: list[str] = [
+        record.nationalid for record in workitem.incoming.master_records
+    ]
+
+    if workitem.master_record:
+        workitem_nis.append(workitem.master_record.nationalid)
 
     return paginate(
         get_messages(
             errorsdb,
             user,
             status=status,
-            nis=[workitem_ni],
+            nis=workitem_nis,
             facility=facility,
             since=since,
             until=until,
