@@ -136,9 +136,9 @@ def get_extended_workitem(
     incoming = {
         "person": workitem.person if workitem.person else None,
         "master_records": get_masterrecords_related_to_person(
-            jtrace, workitem.person.id, user, nationalid_type="UKRDC"
+            jtrace, workitem.person_id, user, nationalid_type="UKRDC"
         )
-        .filter(MasterRecord.id != workitem.master_record.id)
+        .filter(MasterRecord.id != workitem.master_id)
         .all()
         if workitem.person
         else [],
@@ -146,10 +146,8 @@ def get_extended_workitem(
 
     destination = {
         "master_record": workitem.master_record,
-        "persons": get_persons_related_to_masterrecord(
-            jtrace, workitem.master_record.id, user
-        )
-        .filter(Person.id != (workitem.person.id if workitem.person else None))
+        "persons": get_persons_related_to_masterrecord(jtrace, workitem.master_id, user)
+        .filter(Person.id != workitem.person_id)
         .all(),
     }
 
