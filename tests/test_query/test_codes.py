@@ -32,6 +32,23 @@ def test_get_codes_filter_standard(ukrdc3_session):
     }
 
 
+def test_get_codes_search(ukrdc3_session):
+    code_list = codes.get_codes(ukrdc3_session, search="CODE_").all()
+    assert {code.code for code in code_list} == {
+        "CODE_1",
+        "CODE_2",
+    }
+
+
+def test_get_codes_filter_standard_and_search(ukrdc3_session):
+    code_list = codes.get_codes(
+        ukrdc3_session, coding_standard=["RR1+"], search="1"
+    ).all()
+    assert {code.code for code in code_list} == {
+        "TEST_SENDING_FACILITY_1",
+    }
+
+
 def test_get_coding_standards(ukrdc3_session):
     standards = codes.get_coding_standards(ukrdc3_session)
     assert standards == ["CODING_STANDARD_1", "CODING_STANDARD_2", "RR1+"]
