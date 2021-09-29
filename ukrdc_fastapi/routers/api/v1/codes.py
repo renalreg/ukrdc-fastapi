@@ -26,9 +26,10 @@ router = APIRouter(tags=["Codes"])
 def code_list(
     ukrdc3: Session = Depends(get_ukrdc3),
     coding_standard: Optional[list[str]] = Query(None),
+    search: Optional[str] = Query(None),
 ):
     """Retreive a list of internal codes"""
-    return paginate(get_codes(ukrdc3, coding_standard))
+    return paginate(get_codes(ukrdc3, coding_standard, search))
 
 
 @router.get(

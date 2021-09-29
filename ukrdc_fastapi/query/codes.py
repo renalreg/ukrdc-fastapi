@@ -13,7 +13,11 @@ class ExtendedCodeSchema(CodeSchema):
     mapped_by: list[CodeMapSchema]
 
 
-def get_codes(ukrdc3: Session, coding_standard: Optional[list[str]] = None) -> Query:
+def get_codes(
+    ukrdc3: Session,
+    coding_standard: Optional[list[str]] = None,
+    search: Optional[str] = None,
+) -> Query:
     """Get the list of codes from the code list
 
     Args:
@@ -27,6 +31,9 @@ def get_codes(ukrdc3: Session, coding_standard: Optional[list[str]] = None) -> Q
 
     if coding_standard:
         query = query.filter(Code.coding_standard.in_(coding_standard))
+
+    if search:
+        query = query.filter(Code.code.ilike(f"%{search}%"))
 
     return query
 
