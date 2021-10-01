@@ -31,11 +31,25 @@ class ContactDetailSchema(OrmModel):
     commenttext: Optional[str]
 
 
+class GPInfo(OrmModel):
+    code: str
+    gpname: Optional[str]
+    street: Optional[str]
+    postcode: Optional[str]
+    contactvalue: Optional[str]
+    type: Optional[str]
+
+
 class FamilyDoctorSchema(OrmModel):
     id: str
     gpname: Optional[str]
+
     gpid: Optional[str]
+    gp_info: Optional[GPInfo]
+
     gppracticeid: Optional[str]
+    gp_practice_info: Optional[GPInfo]
+
     addressuse: Optional[str]
     fromtime: Optional[datetime.datetime]
     totime: Optional[datetime.datetime]
@@ -56,6 +70,9 @@ class PatientSchema(OrmModel):
     names: list[NameSchema]
     numbers: list[NumberSchema]
     addresses: list[AddressSchema]
+    contact_details: list[ContactDetailSchema]
+
+    familydoctor: Optional[FamilyDoctorSchema]
 
     birth_time: datetime.date
     death_time: Optional[datetime.date]
@@ -63,11 +80,3 @@ class PatientSchema(OrmModel):
 
     ethnic_group_code: Optional[str]
     ethnic_group_description: Optional[str]
-
-
-class PatientFullSchema(PatientSchema):
-    family_doctor: Optional[FamilyDoctorSchema]
-    names: list[NameSchema]
-    numbers: list[NumberSchema]
-    addresses: list[AddressSchema]
-    contact_details: list[ContactDetailSchema]
