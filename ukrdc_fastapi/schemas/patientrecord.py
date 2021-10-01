@@ -13,7 +13,6 @@ from ukrdc_fastapi.schemas.patient import PatientSchema
 from ukrdc_fastapi.schemas.survey import SurveySchema
 
 from .base import OrmModel
-from .patient import PatientFullSchema, PatientSchema
 
 
 class ProgramMembershipSchema(OrmModel):
@@ -228,4 +227,4 @@ class PatientRecordFullSchema(PatientRecordSummarySchema):
     surveys: list[SurveySchema]
     pvdelete: list[PVDeleteSchema]
 
-    patient: Optional[PatientFullSchema]
+    patient: Optional[PatientSchema]
