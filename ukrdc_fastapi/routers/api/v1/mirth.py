@@ -101,4 +101,9 @@ async def mirth_channel_message(
     mirth: MirthAPI = Depends(get_mirth),
 ):
     """Retreive a specific message from a specific Mirth channel"""
-    return await mirth.channel(channel_id).get_message(message_id, include_content=True)
+    message = await mirth.channel(channel_id).get_message(
+        message_id, include_content=True
+    )
+    if not message:
+        raise HTTPException(404, detail="Message not found in Mirth")
+    return message

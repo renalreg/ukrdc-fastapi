@@ -91,13 +91,13 @@ async def error_source(
     error = get_message(errorsdb, message_id, user)
 
     if not error.channel_id:
-        raise HTTPException(404, "Channel ID not found")
+        raise HTTPException(404, "Channel ID not found in Mirth")
 
     message = await mirth.channel(error.channel_id).get_message(
         str(error.message_id), include_content=True
     )
     if not message:
-        raise HTTPException(404, "Mirth message not found")
+        raise HTTPException(404, "Message not found in Mirth")
 
     first_connector_message: ConnectorMessageModel = list(
         message.connector_messages.values()
