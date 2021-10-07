@@ -9,7 +9,7 @@ version = "0.1.0"
 
 [tool.poetry.dependencies]
 SQLAlchemy = "^1.4.25" 
-fastapi = "^0.68.1" 
+fastapi = "^0.68.2" 
 fastapi-hypermodel = "^0.2.8" 
 fastapi-pagination = {extras = ["sqlalchemy"], version = "^0.9.0"} 
 httpx = "^0.19" 
