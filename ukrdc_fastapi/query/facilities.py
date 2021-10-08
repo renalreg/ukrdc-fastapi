@@ -1,5 +1,4 @@
 import datetime
-import json
 from typing import Optional
 
 from fastapi.exceptions import HTTPException
@@ -33,7 +32,9 @@ class ErrorHistoryPoint(OrmModel):
 class ErrorHistory(OrmModel):
     __root__: list[ErrorHistoryPoint]
 
+
 # Facility list
+
 
 def get_facilities(ukrdc3: Session, user: UKRDCUser) -> list[FacilitySchema]:
     """Get a list of all unit/facility codes available to the current user
@@ -59,7 +60,9 @@ def get_facilities(ukrdc3: Session, user: UKRDCUser) -> list[FacilitySchema]:
         for code in codes.all()
     ]
 
+
 # Facility error statistics
+
 
 def _get_message_sumary(
     errorsdb: Session,
@@ -175,7 +178,9 @@ def get_facility(
     # Get cached statistics
     return _get_cached_facility_details(code, redis)
 
+
 # Facility error history
+
 
 def cache_facility_error_history(
     code: Code, errorsdb: Session, redis: Redis
