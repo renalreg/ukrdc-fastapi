@@ -22,11 +22,10 @@ router = APIRouter(tags=["Facilities"])
 @router.get("/", response_model=list[FacilitySchema])
 def facility_list(
     ukrdc3: Session = Depends(get_ukrdc3),
-    redis: Redis = Depends(get_redis),
     user: UKRDCUser = Security(auth.get_user()),
 ):
     """Retreive a list of on-record facilities"""
-    return get_facilities(ukrdc3, redis, user)
+    return get_facilities(ukrdc3, user)
 
 
 @router.get("/{code}", response_model=FacilityDetailsSchema)
