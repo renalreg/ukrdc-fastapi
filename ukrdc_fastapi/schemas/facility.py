@@ -1,9 +1,9 @@
 from typing import Optional
 
-from pydantic import BaseModel
+from .base import OrmModel
 
 
-class FacilityMessageSummarySchema(BaseModel):
+class FacilityMessageSummarySchema(OrmModel):
     total_IDs_count: Optional[int] = None
     success_IDs_count: Optional[int] = None
     error_IDs_count: Optional[int] = None
@@ -19,6 +19,6 @@ class FacilityMessageSummarySchema(BaseModel):
         )
 
 
-class FacilitySchema(BaseModel):
+class FacilitySchema(OrmModel):
     id: str
     description: Optional[str]
