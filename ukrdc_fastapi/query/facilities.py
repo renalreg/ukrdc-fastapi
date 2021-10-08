@@ -1,6 +1,5 @@
 import datetime
 import json
-import logging
 from typing import Optional
 
 from fastapi.exceptions import HTTPException
@@ -42,23 +41,16 @@ def _get_message_sumary(
     """
     Generate a summary of message success and errors for a facility.
     """
-    logging.debug(f"Getting message summary for facility {facility}")
     query = (
         errorsdb.query(Message.ni, Message.received, Message.msg_status)
         .filter(Message.facility == facility)
-        .filter(Message.ni != None)
+        .filter(Message.ni is not None)
         .order_by(Message.ni, Message.received.desc())
         .distinct(Message.ni)
     )
 
-    logging.debug(f"Processing message summary for facility {facility}")
-
     all_nis = query.all()
     err_nis = [m.ni for m in all_nis if m.msg_status == "ERROR"]
-
-    logging.debug(
-        f"Finished processing message summary for facility {facility}. {len(err_nis)}/{len(all_nis)} failing."
-    )
 
     return FacilityMessageSummarySchema(
         total_IDs_count=len(all_nis),
@@ -235,7 +227,7 @@ def _get_cached_facility_error_history(code: Code, redis: Redis) -> ErrorHistory
     if redis.exists(redis_key):
         counts_json: str = redis.get(redis_key)  # type: ignore
         return ErrorHistory.parse_raw(counts_json)
-    return []
+    return ErrorHistory.parse_obj([])
 
 
 def get_errors_history(

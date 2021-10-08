@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, Security
 from redis import Redis
 from sqlalchemy.orm import Session
 
-from ukrdc_fastapi.dependencies import get_errorsdb, get_redis, get_ukrdc3
+from ukrdc_fastapi.dependencies import get_redis, get_ukrdc3
 from ukrdc_fastapi.dependencies.auth import UKRDCUser, auth
 from ukrdc_fastapi.query.facilities import (
     ErrorHistoryPoint,

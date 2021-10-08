@@ -13,6 +13,9 @@ class FacilityMessageSummarySchema(OrmModel):
 
     @classmethod
     def empty(cls):
+        """
+        Build an empty FacilityMessageSummarySchema object
+        """
         return cls(
             total_IDs_count=None,
             success_IDs_count=None,
