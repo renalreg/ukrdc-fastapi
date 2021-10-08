@@ -20,7 +20,7 @@ Ukrdc3Session = sessionmaker(
             settings.ukrdc_pass,
             settings.ukrdc_name,
         ),
-        connect_args={"application_name": "ukrdc-fastapi"},
+        connect_args={"application_name": settings.application_name},
     ),
 )
 
@@ -51,7 +51,7 @@ JtraceSession = sessionmaker(
             settings.jtrace_pass,
             settings.jtrace_name,
         ),
-        connect_args={"application_name": "ukrdc-fastapi"},
+        connect_args={"application_name": settings.application_name},
     ),
 )
 
@@ -82,7 +82,7 @@ ErrorsSession = sessionmaker(
             settings.errors_pass,
             settings.errors_name,
         ),
-        connect_args={"application_name": "ukrdc-fastapi"},
+        connect_args={"application_name": settings.application_name},
     ),
 )
 

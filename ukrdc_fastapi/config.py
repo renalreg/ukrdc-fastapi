@@ -29,6 +29,9 @@ class Configuration(BaseSettings):
 
 
 class Settings(BaseSettings):
+    # Application name used in database connections
+    application_name: str = "ukrdc_fastapi"
+
     # Used to correct linking when behind a reverse proxy
     api_base: str = "/api"
 
