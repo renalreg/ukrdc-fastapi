@@ -1,5 +1,6 @@
 import datetime
 import json
+import logging
 from typing import Optional
 
 from fastapi.exceptions import HTTPException
@@ -9,121 +10,106 @@ from sqlalchemy.sql.functions import func
 from ukrdc_sqla.errorsdb import Message
 from ukrdc_sqla.ukrdc import Code, PatientRecord
 
-from ukrdc_fastapi.config import settings
-from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
+from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
 from ukrdc_fastapi.query.common import PermissionsError
-from ukrdc_fastapi.query.messages import get_messages
-from ukrdc_fastapi.query.patientrecords import get_patientrecords
 from ukrdc_fastapi.schemas.base import OrmModel
-from ukrdc_fastapi.schemas.facility import FacilitySchema
-from ukrdc_fastapi.utils.statistics import TotalDayPrev, total_day_prev
+from ukrdc_fastapi.schemas.facility import FacilityMessageSummarySchema, FacilitySchema
 
 
 class FacilityStatisticsSchema(OrmModel):
-    records_with_errors: int
-    patient_records: TotalDayPrev
-    errors: TotalDayPrev
+    patient_records: Optional[int]
+    messages: FacilityMessageSummarySchema
+    last_updated: Optional[datetime.datetime]
 
 
 class FacilityDetailsSchema(FacilitySchema):
     statistics: FacilityStatisticsSchema
 
 
-def _get_error_stats(
+class ErrorHistoryPoint(OrmModel):
+    time: datetime.date
+    count: int
+
+
+class ErrorHistory(OrmModel):
+    __root__: list[ErrorHistoryPoint]
+
+
+def _get_message_sumary(
     errorsdb: Session,
-    user: UKRDCUser,
     facility: Optional[str] = None,
-) -> TotalDayPrev:
-    """Get total, today, and yesterday error message counts for a facility.
-    Total gives the total messages from all time (since 1/1/1970), not just last year.
-
-    Args:
-        errorsdb (Session): SQLAlchemy session
-        user (UKRDCUser): Logged-in user
-        facility (Optional[str], optional): Facility code to filter by. Defaults to None.
-
-    Returns:
-        TotalDayPrev: Error statistics
+) -> FacilityMessageSummarySchema:
     """
-    errors_query = get_messages(
-        errorsdb,
-        user,
-        facility=facility,
-        since=datetime.datetime(1970, 1, 1, 0, 0, 0),
-    )
-    return total_day_prev(errors_query, Message, "received")
-
-
-def _get_error_ni_count(
-    errorsdb: Session,
-    user: UKRDCUser,
-    facility: Optional[str] = None,
-) -> int:
-    """Get the number of unique national identifiers appearing in the errorsdb for a facility
-
-    Args:
-        errorsdb (Session): SQLAlchemy session
-        user (UKRDCUser): Logged-in user
-        facility (Optional[str], optional): Facility code to filter by. Defaults to None.
-
-    Returns:
-        int: Number of unique NIs with error messages
+    Generate a summary of message success and errors for a facility.
     """
-    errors_query = get_messages(
-        errorsdb,
-        user,
-        facility=facility,
-        since=datetime.datetime(1970, 1, 1, 0, 0, 0),
+    logging.debug(f"Getting message summary for facility {facility}")
+    query = (
+        errorsdb.query(Message.ni, Message.received, Message.msg_status)
+        .filter(Message.facility == facility)
+        .filter(Message.ni != None)
+        .order_by(Message.ni, Message.received.desc())
+        .distinct(Message.ni)
     )
-    errors_set = errors_query.distinct(Message.ni)
-    return errors_set.count()
 
+    logging.debug(f"Processing message summary for facility {facility}")
 
-def _get_record_stats(
-    ukrdc3: Session, user: UKRDCUser, facility: Optional[str] = None
-) -> TotalDayPrev:
-    """Get total, today, and yesterday PatientRecord counts for a facility.
+    all_nis = query.all()
+    err_nis = [m.ni for m in all_nis if m.msg_status == "ERROR"]
 
-    Args:
-        ukrdc3 (Session): SQLAlchemy session
-        user (UKRDCUser): Logged-in user
-        facility (Optional[str], optional): Facility code to filter by. Defaults to None.
-
-    Returns:
-        TotalDayPrev: PatientRecord statistics
-    """
-    query = get_patientrecords(ukrdc3, user).filter(
-        PatientRecord.sendingfacility == facility
+    logging.debug(
+        f"Finished processing message summary for facility {facility}. {len(err_nis)}/{len(all_nis)} failing."
     )
-    return total_day_prev(query, PatientRecord, "creation_date")
+
+    return FacilityMessageSummarySchema(
+        total_IDs_count=len(all_nis),
+        success_IDs_count=len(all_nis) - len(err_nis),
+        error_IDs_count=len(err_nis),
+        error_IDs=err_nis,
+    )
 
 
-def _get_and_cache_facility(
+def cache_facility_statistics(
     code: Code,
     ukrdc3: Session,
     errorsdb: Session,
     redis: Redis,
 ) -> FacilityDetailsSchema:
     """
-    Retrieve, or generate and cache, facility statistics.
-    Data is retreieved as the internal superuser to ensure all requests
-    end up with the same counts. Permissions are handled downstream, in
-    `get_facility(...)`
+    Generate and cache facility statistics. Only ever called as a background task.
+    """
+    redis_key: str = f"ukrdc3:facilities:{code.code}:statistics"
+
+    statistics_dict = {
+        "patient_records": ukrdc3.query(PatientRecord)
+        .filter(PatientRecord.sendingfacility == code.code)
+        .count(),
+        "messages": _get_message_sumary(errorsdb, code.code),
+        "last_updated": datetime.datetime.now(),
+    }
+    statistics = FacilityStatisticsSchema(**statistics_dict)
+    redis.set(redis_key, statistics.json())  # type: ignore
+
+    facility_details = FacilityDetailsSchema(
+        id=code.code,
+        description=code.description,
+        statistics=statistics,
+    )
+
+    return facility_details
+
+
+def _get_cached_facility_details(code: Code, redis: Redis) -> FacilityDetailsSchema:
+    """
+    Retrieve cached facility statistics, if they exist.
     """
     # Check for cached statistics
     redis_key: str = f"ukrdc3:facilities:{code.code}:statistics"
     if not redis.exists(redis_key):
         statistics = FacilityStatisticsSchema(
-            records_with_errors=_get_error_ni_count(
-                errorsdb, auth.superuser, facility=code.code
-            ),
-            patient_records=_get_record_stats(
-                ukrdc3, auth.superuser, facility=code.code
-            ),
-            errors=_get_error_stats(errorsdb, auth.superuser, facility=code.code),
+            patient_records=None,
+            messages=FacilityMessageSummarySchema.empty(),
+            last_updated=None,
         )
-        redis.set(redis_key, statistics.json())  # type: ignore
-        redis.expire(redis_key, settings.cache_statistics_seconds)
     else:
         statistics_json: str = redis.get(redis_key)  # type: ignore
         statistics = FacilityStatisticsSchema.parse_raw(statistics_json)
@@ -180,7 +166,6 @@ def get_facilities(
 
 def get_facility(
     ukrdc3: Session,
-    errorsdb: Session,
     redis: Redis,
     facility_code: str,
     user: UKRDCUser,
@@ -210,58 +195,51 @@ def get_facility(
         raise PermissionsError()
 
     # Get cached statistics
-    return _get_and_cache_facility(code, ukrdc3, errorsdb, redis)
+    return _get_cached_facility_details(code, redis)
 
 
-class ErrorHistoryPoint(OrmModel):
-    time: datetime.date
-    count: int
-
-
-class ErrorHistory(OrmModel):
-    __root__: list[ErrorHistoryPoint]
-
-
-def _get_and_cache_errors_history(
-    code: Code,
-    errorsdb: Session,
-    redis: Redis,
+def cache_facility_error_history(
+    code: Code, errorsdb: Session, redis: Redis
 ) -> ErrorHistory:
-    # Check for cached statistics
+    """
+    Generate and cache facility error history. Only ever called as a background task.
+    """
     redis_key: str = f"ukrdc3:facilities:{code.code}:errorhistory"
-    if not redis.exists(redis_key):
-        trunc_func = func.date_trunc("day", Message.received)
-        query = (
-            errorsdb.query(
-                trunc_func,
-                Message.facility,
-                Message.msg_status,
-                func.count(Message.received),
-            )
-            .filter(Message.facility == code.code)
-            .filter(Message.msg_status == "ERROR")
-            .filter(
-                trunc_func >= datetime.datetime.utcnow() - datetime.timedelta(days=365)
-            )
-        )
-        query = query.group_by(trunc_func, Message.facility, Message.msg_status)
 
-        counts: ErrorHistory = ErrorHistory(
-            __root__=[ErrorHistoryPoint(time=item[0], count=item[-1]) for item in query]
+    trunc_func = func.date_trunc("day", Message.received)
+    query = (
+        errorsdb.query(
+            trunc_func,
+            Message.facility,
+            Message.msg_status,
+            func.count(Message.received),
         )
-        counts_json = counts.json()
-        redis.set(redis_key, counts_json)  # type: ignore
-        redis.expire(redis_key, settings.cache_statistics_seconds)
-    else:
-        counts_json: str = redis.get(redis_key)  # type: ignore
-        counts = ErrorHistory.parse_raw(counts_json)
+        .filter(Message.facility == code.code)
+        .filter(Message.msg_status == "ERROR")
+        .filter(trunc_func >= datetime.datetime.utcnow() - datetime.timedelta(days=365))
+    )
+    query = query.group_by(trunc_func, Message.facility, Message.msg_status)
+
+    counts: ErrorHistory = ErrorHistory(
+        __root__=[ErrorHistoryPoint(time=item[0], count=item[-1]) for item in query]
+    )
+    counts_json = counts.json()
+    redis.set(redis_key, counts_json)  # type: ignore
 
     return counts
 
 
+def _get_cached_facility_error_history(code: Code, redis: Redis) -> ErrorHistory:
+    # Check for cached statistics
+    redis_key: str = f"ukrdc3:facilities:{code.code}:errorhistory"
+    if redis.exists(redis_key):
+        counts_json: str = redis.get(redis_key)  # type: ignore
+        return ErrorHistory.parse_raw(counts_json)
+    return []
+
+
 def get_errors_history(
     ukrdc3: Session,
-    errorsdb: Session,
     redis: Redis,
     facility_code: str,
     user: UKRDCUser,
@@ -297,7 +275,7 @@ def get_errors_history(
         raise PermissionsError()
 
     # Get cached statistics
-    history = _get_and_cache_errors_history(code, errorsdb, redis).__root__
+    history = _get_cached_facility_error_history(code, redis).__root__
 
     if since:
         history = [point for point in history if point.time >= since]

@@ -33,12 +33,11 @@ def facility_list(
 def facility(
     code: str,
     ukrdc3: Session = Depends(get_ukrdc3),
-    errorsdb: Session = Depends(get_errorsdb),
     redis: Redis = Depends(get_redis),
     user: UKRDCUser = Security(auth.get_user()),
 ):
     """Retreive a list of on-record facilities"""
-    return get_facility(ukrdc3, errorsdb, redis, code, user)
+    return get_facility(ukrdc3, redis, code, user)
 
 
 @router.get("/{code}/error_history", response_model=list[ErrorHistoryPoint])

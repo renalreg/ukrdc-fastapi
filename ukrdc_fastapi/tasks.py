@@ -13,8 +13,8 @@ from ukrdc_fastapi.dependencies.database import (
 from ukrdc_fastapi.dependencies.mirth import mirth_session
 from ukrdc_fastapi.query.dashboard import get_empi_stats, get_workitems_stats
 from ukrdc_fastapi.query.facilities import (
-    _get_and_cache_errors_history,
-    _get_and_cache_facility,
+    cache_facility_error_history,
+    cache_facility_statistics,
 )
 from ukrdc_fastapi.utils.mirth import (
     cache_channel_groups,
@@ -23,7 +23,7 @@ from ukrdc_fastapi.utils.mirth import (
 )
 
 
-@repeat_every(seconds=settings.cache_statistics_seconds)
+@repeat_every(seconds=settings.cache_statistics_seconds, raise_exceptions=True)
 def cache_all_facilities() -> None:
     """FastAPI Utils task to refresh statistics for each facility"""
     with ukrdc3_session() as ukrdc3, errors_session() as errorsdb:
@@ -31,9 +31,22 @@ def cache_all_facilities() -> None:
         logging.info("Refreshing facility statistics")
         codes = ukrdc3.query(Code).filter(Code.coding_standard == "RR1+").all()
         for code in codes:
-            logging.debug("Caching %s", code.code)
-            _get_and_cache_facility(code, ukrdc3, errorsdb, redis)
-            _get_and_cache_errors_history(code, errorsdb, redis)
+            logging.info("Caching %s", code.code)
+            cache_facility_statistics(code, ukrdc3, errorsdb, redis)
+    logging.info("Done refreshing facility statistics")
+
+
+@repeat_every(seconds=settings.cache_statistics_seconds, raise_exceptions=True)
+def cache_all_facilities_history() -> None:
+    """FastAPI Utils task to refresh error history for each facility"""
+    with ukrdc3_session() as ukrdc3, errors_session() as errorsdb:
+        redis = get_redis()
+        logging.info("Refreshing facility message history")
+        codes = ukrdc3.query(Code).filter(Code.coding_standard == "RR1+").all()
+        for code in codes:
+            logging.debug("Caching %s history", code.code)
+            cache_facility_error_history(code, errorsdb, redis)
+    logging.info("Done refreshing facility message history")
 
 
 @repeat_every(seconds=settings.cache_dashboard_seconds)
