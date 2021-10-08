@@ -46,11 +46,8 @@ def facility_errrors_history(
     since: Optional[datetime.date] = None,
     until: Optional[datetime.date] = None,
     ukrdc3: Session = Depends(get_ukrdc3),
-    errorsdb: Session = Depends(get_errorsdb),
     redis: Redis = Depends(get_redis),
     user: UKRDCUser = Security(auth.get_user()),
 ):
     """Retreive a list of on-record facilities"""
-    return get_errors_history(
-        ukrdc3, errorsdb, redis, code, user, since=since, until=until
-    )
+    return get_errors_history(ukrdc3, redis, code, user, since=since, until=until)
