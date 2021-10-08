@@ -80,7 +80,7 @@ def _get_message_sumary(
     )
 
     all_nis = query.all()
-    err_nis = [m.ni for m in all_nis if m.msg_status == "ERROR"]
+    err_nis = [m.ni for m in all_nis if m.ni and m.msg_status == "ERROR"]
 
     return FacilityMessageSummarySchema(
         total_IDs_count=len(all_nis),
