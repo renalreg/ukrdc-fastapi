@@ -74,7 +74,7 @@ def _get_message_sumary(
     query = (
         errorsdb.query(Message.ni, Message.received, Message.msg_status)
         .filter(Message.facility == facility)
-        .filter(Message.ni is not None)
+        .filter(Message.ni.is_not(None))
         .order_by(Message.ni, Message.received.desc())
         .distinct(Message.ni)
     )
