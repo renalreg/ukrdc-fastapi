@@ -1,5 +1,7 @@
 from typing import Optional
 
+from fastapi_hypermodel import LinkSet, UrlFor
+
 from .base import OrmModel
 
 
@@ -22,3 +24,10 @@ class FacilityMessageSummarySchema(OrmModel):
 class FacilitySchema(OrmModel):
     id: str
     description: Optional[str]
+
+    links = LinkSet(
+        {
+            "self": UrlFor("facility", {"code": "<id>"}),
+            "errorsHistory": UrlFor("facility_errrors_history", {"code": "<id>"}),
+        }
+    )
