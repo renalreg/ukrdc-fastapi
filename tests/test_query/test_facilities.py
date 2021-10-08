@@ -1,6 +1,7 @@
 import datetime
 
 import pytest
+from ukrdc_sqla.ukrdc import Code
 
 from ukrdc_fastapi.query import facilities
 from ukrdc_fastapi.query.common import PermissionsError
@@ -21,63 +22,46 @@ def test_get_facilities_user(ukrdc3_session, redis_session, test_user):
     assert {facil.id for facil in all_facils} == {"TEST_SENDING_FACILITY_1"}
 
 
-def test_get_facilities_caching(ukrdc3_session, redis_session, superuser):
+def test_get_facilities_auto_caching(ukrdc3_session, redis_session, superuser):
     redis_session.delete("ukrdc3:facilities")
 
+    # First request builds the cache
     all_facils_1 = facilities.get_facilities(ukrdc3_session, redis_session, superuser)
+    # Second request finds cached data and retrieves from cache
     all_facils_2 = facilities.get_facilities(ukrdc3_session, redis_session, superuser)
 
     assert all_facils_1 == all_facils_2
 
 
 def test_get_facilities_empty_cache(ukrdc3_session, redis_session, superuser):
+    # Cache key is present but empty, so get_facilities should return empty list
     redis_session.set("ukrdc3:facilities", "")
     all_facils = facilities.get_facilities(ukrdc3_session, redis_session, superuser)
     assert all_facils == []
 
 
 def test_get_facility(ukrdc3_session, errorsdb_session, redis_session, superuser):
+    test_code = Code(
+        code="TEST_SENDING_FACILITY_1", description="Test sending facility 1"
+    )
+    facilities.cache_facility_statistics(
+        test_code, ukrdc3_session, errorsdb_session, redis_session
+    )
+
     facility = facilities.get_facility(
         ukrdc3_session,
-        errorsdb_session,
         redis_session,
-        "TEST_SENDING_FACILITY_1",
+        test_code.code,
         superuser,
     )
     assert facility.id == "TEST_SENDING_FACILITY_1"
+    assert facility.statistics.last_updated
 
 
-def test_get_facility_caching(
-    ukrdc3_session, errorsdb_session, redis_session, superuser
-):
-    redis_session.delete("ukrdc3:facilities:TEST_SENDING_FACILITY_1:statistics")
-
-    facility_1 = facilities.get_facility(
-        ukrdc3_session,
-        errorsdb_session,
-        redis_session,
-        "TEST_SENDING_FACILITY_1",
-        superuser,
-    )
-
-    facility_2 = facilities.get_facility(
-        ukrdc3_session,
-        errorsdb_session,
-        redis_session,
-        "TEST_SENDING_FACILITY_1",
-        superuser,
-    )
-
-    assert facility_1.statistics == facility_2.statistics
-
-
-def test_get_facility_denied(
-    ukrdc3_session, errorsdb_session, redis_session, test_user
-):
+def test_get_facility_denied(ukrdc3_session, redis_session, test_user):
     with pytest.raises(PermissionsError):
         facilities.get_facility(
             ukrdc3_session,
-            errorsdb_session,
             redis_session,
             "TEST_SENDING_FACILITY_2",
             test_user,
@@ -87,11 +71,15 @@ def test_get_facility_denied(
 def test_get_facility_history(
     ukrdc3_session, errorsdb_session, redis_session, superuser
 ):
+    test_code = Code(
+        code="TEST_SENDING_FACILITY_1", description="Test sending facility 1"
+    )
+    facilities.cache_facility_error_history(test_code, errorsdb_session, redis_session)
+
     history = facilities.get_errors_history(
         ukrdc3_session,
-        errorsdb_session,
         redis_session,
-        "TEST_SENDING_FACILITY_1",
+        test_code.code,
         superuser,
     )
     assert len(history) == 1
@@ -99,38 +87,18 @@ def test_get_facility_history(
     assert history[0].count == 1
 
 
-def test_get_facility_history_caching(
-    ukrdc3_session, errorsdb_session, redis_session, superuser
-):
-    redis_session.delete("ukrdc3:facilities:TEST_SENDING_FACILITY_1:errorhistory")
-
-    history_1 = facilities.get_errors_history(
-        ukrdc3_session,
-        errorsdb_session,
-        redis_session,
-        "TEST_SENDING_FACILITY_1",
-        superuser,
-    )
-
-    history_2 = facilities.get_errors_history(
-        ukrdc3_session,
-        errorsdb_session,
-        redis_session,
-        "TEST_SENDING_FACILITY_1",
-        superuser,
-    )
-
-    assert history_1 == history_2
-
-
 def test_get_facility_history_range(
     ukrdc3_session, errorsdb_session, redis_session, superuser
 ):
+    test_code = Code(
+        code="TEST_SENDING_FACILITY_1", description="Test sending facility 1"
+    )
+    facilities.cache_facility_error_history(test_code, errorsdb_session, redis_session)
+
     history = facilities.get_errors_history(
         ukrdc3_session,
-        errorsdb_session,
         redis_session,
-        "TEST_SENDING_FACILITY_1",
+        test_code.code,
         superuser,
         since=datetime.date(2021, 1, 2),
     )
@@ -138,9 +106,8 @@ def test_get_facility_history_range(
 
     history = facilities.get_errors_history(
         ukrdc3_session,
-        errorsdb_session,
         redis_session,
-        "TEST_SENDING_FACILITY_1",
+        test_code.code,
         superuser,
         until=datetime.date(2020, 12, 31),
     )
@@ -148,9 +115,8 @@ def test_get_facility_history_range(
 
     history = facilities.get_errors_history(
         ukrdc3_session,
-        errorsdb_session,
         redis_session,
-        "TEST_SENDING_FACILITY_1",
+        test_code.code,
         superuser,
         since=datetime.date(2020, 12, 31),
         until=datetime.date(2021, 1, 2),
@@ -158,13 +124,10 @@ def test_get_facility_history_range(
     assert len(history) == 1
 
 
-def test_get_facility_history_denied(
-    ukrdc3_session, errorsdb_session, redis_session, test_user
-):
+def test_get_facility_history_denied(ukrdc3_session, redis_session, test_user):
     with pytest.raises(PermissionsError):
         facilities.get_errors_history(
             ukrdc3_session,
-            errorsdb_session,
             redis_session,
             "TEST_SENDING_FACILITY_2",
             test_user,
