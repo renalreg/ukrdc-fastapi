@@ -72,7 +72,7 @@ def _get_message_sumary(
     Generate a summary of message success and errors for a facility.
     """
     query = (
-        errorsdb.query(Message.ni, Message.received, Message.msg_status)
+        errorsdb.query(Message)
         .filter(Message.facility == facility)
         .filter(Message.ni.isnot(None))
         .order_by(Message.ni, Message.received.desc())
@@ -80,13 +80,15 @@ def _get_message_sumary(
     )
 
     all_nis = query.all()
-    err_nis = [m.ni for m in all_nis if m.ni and m.msg_status == "ERROR"]
+    error_nis_messages = [m for m in all_nis if m.ni and m.msg_status == "ERROR"]
+
+    print(f"Done caching {facility}")
 
     return FacilityMessageSummarySchema(
         total_IDs_count=len(all_nis),
-        success_IDs_count=len(all_nis) - len(err_nis),
-        error_IDs_count=len(err_nis),
-        error_IDs=err_nis,
+        success_IDs_count=len(all_nis) - len(error_nis_messages),
+        error_IDs_count=len(error_nis_messages),
+        error_IDs_messages=error_nis_messages,
     )
 
 
