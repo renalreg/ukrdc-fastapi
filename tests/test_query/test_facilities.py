@@ -32,6 +32,7 @@ def test_get_facility(ukrdc3_session, errorsdb_session, redis_session, superuser
 
     facility = facilities.get_facility(
         ukrdc3_session,
+        errorsdb_session,
         redis_session,
         test_code.code,
         superuser,
@@ -40,10 +41,13 @@ def test_get_facility(ukrdc3_session, errorsdb_session, redis_session, superuser
     assert facility.statistics.last_updated
 
 
-def test_get_facility_denied(ukrdc3_session, redis_session, test_user):
+def test_get_facility_denied(
+    ukrdc3_session, errorsdb_session, redis_session, test_user
+):
     with pytest.raises(PermissionsError):
         facilities.get_facility(
             ukrdc3_session,
+            errorsdb_session,
             redis_session,
             "TEST_SENDING_FACILITY_2",
             test_user,
