@@ -82,8 +82,6 @@ def _get_message_sumary(
     all_nis = query.all()
     error_nis_messages = [m for m in all_nis if m.ni and m.msg_status == "ERROR"]
 
-    print(f"Done caching {facility}")
-
     return FacilityMessageSummarySchema(
         total_IDs_count=len(all_nis),
         success_IDs_count=len(all_nis) - len(error_nis_messages),
