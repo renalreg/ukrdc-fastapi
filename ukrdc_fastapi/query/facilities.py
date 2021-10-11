@@ -21,7 +21,7 @@ class CachedFacilityMessageSummarySchema(BaseModel):
     all_nis: int
 
 
-class CachedFacilityStatisticsSchema(OrmModel):
+class CachedFacilityStatisticsSchema(BaseModel):
     patient_records: Optional[int]
     messages: CachedFacilityMessageSummarySchema
     last_updated: Optional[datetime.datetime]
