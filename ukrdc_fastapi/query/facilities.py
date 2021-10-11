@@ -164,8 +164,10 @@ def _expand_cached_facility_statistics(
             error_IDs_count=len(cached_statistics.messages.error_nis_message_ids),
             # Build an array of Message objects from the cached message IDs
             error_IDs_messages=[
-                MessageSchema.from_orm(errorsdb.query(Message).get(id))
-                for id in cached_statistics.messages.error_nis_message_ids
+                MessageSchema.from_orm(m)
+                for m in errorsdb.query(Message).filter(
+                    Message.id.in_(cached_statistics.messages.error_nis_message_ids)
+                )
             ],
         ),
         last_updated=cached_statistics.last_updated,
