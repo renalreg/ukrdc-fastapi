@@ -32,6 +32,9 @@ class Settings(BaseSettings):
     # Application name used in database connections
     application_name: str = "ukrdc_fastapi"
 
+    # Optionally skip data caching on startup
+    skip_cache: bool = False
+
     # Used to correct linking when behind a reverse proxy
     api_base: str = "/api"
 
