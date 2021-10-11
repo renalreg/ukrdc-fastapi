@@ -35,7 +35,7 @@ def facility(
     redis: Redis = Depends(get_redis),
     user: UKRDCUser = Security(auth.get_user()),
 ):
-    """Retreive a list of on-record facilities"""
+    """Retreive information and current status of a particular facility"""
     return get_facility(ukrdc3, redis, code, user)
 
 
@@ -48,5 +48,5 @@ def facility_errrors_history(
     redis: Redis = Depends(get_redis),
     user: UKRDCUser = Security(auth.get_user()),
 ):
-    """Retreive a list of on-record facilities"""
+    """Retreive time-series new error counts for the last year for a particular facility"""
     return get_errors_history(ukrdc3, redis, code, user, since=since, until=until)
