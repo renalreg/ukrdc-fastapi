@@ -165,9 +165,11 @@ def _expand_cached_facility_statistics(
             # Build an array of Message objects from the cached message IDs
             error_IDs_messages=[
                 MessageSchema.from_orm(m)
-                for m in errorsdb.query(Message).filter(
+                for m in errorsdb.query(Message)
+                .filter(
                     Message.id.in_(cached_statistics.messages.error_nis_message_ids)
                 )
+                .order_by(Message.received.desc())
             ],
         ),
         last_updated=cached_statistics.last_updated,
@@ -233,7 +235,7 @@ def cache_facility_error_history(
             func.count(Message.received),
         )
         .filter(Message.facility == code.code)
-        .filter(Message.msg_status == "ERROR")
+        .filter(Message.msg_status.in_(["ERROR", "RESOLVED"]))
         .filter(trunc_func >= datetime.datetime.utcnow() - datetime.timedelta(days=365))
     )
     query = query.group_by(trunc_func, Message.facility, Message.msg_status)
