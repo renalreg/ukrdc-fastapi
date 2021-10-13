@@ -40,7 +40,7 @@ def _assert_permission(message: Message, user: UKRDCUser):
 def get_messages(
     errorsdb: Session,
     user: UKRDCUser,
-    statuses: Optional[list[str]] = ["ERROR"],
+    statuses: Optional[list[str]] = None,
     nis: Optional[list[str]] = None,
     facility: Optional[str] = None,
     since: Optional[datetime.datetime] = None,
@@ -77,7 +77,7 @@ def get_messages(
         query = query.filter(Message.facility == facility)
 
     # Optionally filter by message status
-    if statuses:
+    if statuses is not None:
         query = query.filter(Message.msg_status.in_(statuses))
 
     if nis:

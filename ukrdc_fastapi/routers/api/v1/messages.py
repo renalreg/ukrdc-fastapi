@@ -37,7 +37,7 @@ def error_messages(
     facility: Optional[str] = None,
     since: Optional[datetime.datetime] = None,
     until: Optional[datetime.datetime] = None,
-    status: Optional[list[str]] = QueryParam(["ERROR"]),
+    status: Optional[list[str]] = QueryParam(None),
     ni: Optional[list[str]] = QueryParam([]),
     user: UKRDCUser = Security(auth.get_user()),
     errorsdb: Session = Depends(get_errorsdb),
