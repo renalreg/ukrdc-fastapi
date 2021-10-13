@@ -7,17 +7,33 @@ from ukrdc_fastapi.query import messages
 from ukrdc_fastapi.query.common import PermissionsError
 
 
-def test_get_errors_superuser(errorsdb_session, superuser):
-    all_errors = messages.get_messages(
+def test_get_messages_superuser(errorsdb_session, superuser):
+    all_msgs = messages.get_messages(
         errorsdb_session, superuser, since=datetime(1970, 1, 1)
     )
     # Superuser should see all error messages
-    assert {error.id for error in all_errors} == {1, 2}
+    assert {error.id for error in all_msgs} == {1, 2, 3}
+
+
+def test_get_errors_superuser(errorsdb_session, superuser):
+    all_msgs = messages.get_messages(
+        errorsdb_session, superuser, statuses=["ERROR"], since=datetime(1970, 1, 1)
+    )
+    # Superuser should see all error messages
+    assert {error.id for error in all_msgs} == {1, 2}
+
+
+def test_get_messages_user(errorsdb_session, test_user):
+    all_msgs = messages.get_messages(
+        errorsdb_session, test_user, since=datetime(1970, 1, 1)
+    )
+    # Test user should see error messages from TEST_SENDING_FACILITY_1
+    assert {error.id for error in all_msgs} == {1, 3}
 
 
 def test_get_errors_user(errorsdb_session, test_user):
     all_errors = messages.get_messages(
-        errorsdb_session, test_user, since=datetime(1970, 1, 1)
+        errorsdb_session, test_user, statuses=["ERROR"], since=datetime(1970, 1, 1)
     )
     # Test user should see error messages from TEST_SENDING_FACILITY_1
     assert {error.id for error in all_errors} == {1}
@@ -43,11 +59,11 @@ def test_get_errors_facility(errorsdb_session, superuser):
     assert {error.id for error in all_errors} == {2}
 
 
-def test_get_errors_nis(errorsdb_session, superuser):
-    all_errors = messages.get_messages(
+def test_get_messages_nis(errorsdb_session, superuser):
+    all_msgs = messages.get_messages(
         errorsdb_session, superuser, since=datetime(1970, 1, 1), nis=["999999999"]
     )
-    assert {error.id for error in all_errors} == {1}
+    assert {error.id for error in all_msgs} == {1, 3}
 
 
 def test_get_error_superuser(errorsdb_session, superuser):
@@ -76,7 +92,7 @@ def test_get_masterrecord_messages(errorsdb_session, jtrace_session, superuser):
 
 def test_get_masterrecord_errors(errorsdb_session, jtrace_session, superuser):
     error_list = messages.get_messages_related_to_masterrecord(
-        errorsdb_session, jtrace_session, 1, superuser, status="ERROR"
+        errorsdb_session, jtrace_session, 1, superuser, statuses=["ERROR"]
     ).all()
     assert {error.id for error in error_list} == {1}
 

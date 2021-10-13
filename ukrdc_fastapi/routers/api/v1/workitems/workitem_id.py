@@ -1,7 +1,9 @@
 import datetime
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Security
+from fastapi import APIRouter, Depends
+from fastapi import Query as QueryParam
+from fastapi import Security
 from mirth_client import MirthAPI
 from pydantic.fields import Field
 from redis import Redis
@@ -123,7 +125,7 @@ def workitem_messages(
     facility: Optional[str] = None,
     since: Optional[datetime.datetime] = None,
     until: Optional[datetime.datetime] = None,
-    status: Optional[str] = None,
+    status: Optional[list[str]] = QueryParam(None),
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
     errorsdb: Session = Depends(get_errorsdb),
@@ -142,7 +144,7 @@ def workitem_messages(
         get_messages(
             errorsdb,
             user,
-            status=status,
+            statuses=status,
             nis=workitem_nis,
             facility=facility,
             since=since,

@@ -1,7 +1,9 @@
 import datetime
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Response, Security
+from fastapi import APIRouter, Depends
+from fastapi import Query as QueryParam
+from fastapi import Response, Security
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_204_NO_CONTENT
 from ukrdc_sqla.empi import LinkRecord, MasterRecord
@@ -94,7 +96,7 @@ def master_record_statistics(
     record: MasterRecord = get_masterrecord(jtrace, record_id, user)
 
     errors = get_messages_related_to_masterrecord(
-        errorsdb, jtrace, record.id, user, status="ERROR"
+        errorsdb, jtrace, record.id, user, statuses=["ERROR"]
     )
 
     related_records = get_masterrecords_related_to_masterrecord(jtrace, record.id, user)
@@ -167,7 +169,7 @@ def master_record_messages(
     facility: Optional[str] = None,
     since: Optional[datetime.datetime] = None,
     until: Optional[datetime.datetime] = None,
-    status: Optional[str] = None,
+    status: Optional[list[str]] = QueryParam(None),
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
     errorsdb: Session = Depends(get_errorsdb),

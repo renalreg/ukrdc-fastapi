@@ -37,7 +37,7 @@ def error_messages(
     facility: Optional[str] = None,
     since: Optional[datetime.datetime] = None,
     until: Optional[datetime.datetime] = None,
-    status: Optional[str] = None,
+    status: Optional[list[str]] = QueryParam(None),
     ni: Optional[list[str]] = QueryParam([]),
     user: UKRDCUser = Security(auth.get_user()),
     errorsdb: Session = Depends(get_errorsdb),
@@ -50,7 +50,7 @@ def error_messages(
     query = get_messages(
         errorsdb,
         user,
-        status=status,
+        statuses=status,
         nis=ni,
         facility=facility,
         since=since,

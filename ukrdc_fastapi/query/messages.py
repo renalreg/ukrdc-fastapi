@@ -40,7 +40,7 @@ def _assert_permission(message: Message, user: UKRDCUser):
 def get_messages(
     errorsdb: Session,
     user: UKRDCUser,
-    status: Optional[str] = "ERROR",
+    statuses: Optional[list[str]] = None,
     nis: Optional[list[str]] = None,
     facility: Optional[str] = None,
     since: Optional[datetime.datetime] = None,
@@ -51,7 +51,7 @@ def get_messages(
     Args:
         errorsdb (Session): SQLAlchemy session
         user (UKRDCUser): Logged-in user
-        status (str, optional): Status code to filter by. Defaults to "ERROR".
+        status (Optional[list[str]], optional: Status code to filter by. Defaults to "ERROR".
         nis (Optional[list[str]], optional): List of pateint NIs to filer by. Defaults to None.
         facility (Optional[str], optional): Unit/facility code to filter by. Defaults to None.
         since (Optional[datetime.datetime], optional): Show records since datetime. Defaults to 365 days ago.
@@ -77,8 +77,8 @@ def get_messages(
         query = query.filter(Message.facility == facility)
 
     # Optionally filter by message status
-    if status:
-        query = query.filter(Message.msg_status == status)
+    if statuses is not None:
+        query = query.filter(Message.msg_status.in_(statuses))
 
     if nis:
         query = query.filter(Message.ni.in_(nis))
@@ -112,7 +112,7 @@ def get_messages_related_to_masterrecord(
     jtrace: Session,
     record_id: int,
     user: UKRDCUser,
-    status: Optional[str] = None,
+    statuses: Optional[list[str]] = None,
     facility: Optional[str] = None,
     since: Optional[datetime.datetime] = None,
     until: Optional[datetime.datetime] = None,
@@ -124,7 +124,7 @@ def get_messages_related_to_masterrecord(
         jtrace (Session): JTRACE SQLAlchemy session
         user (UKRDCUser): Logged-in user
         record_id (int): MasterRecord ID
-        status (str, optional): Status code to filter by. Defaults to "ERROR".
+        status (str, optional): Status code to filter by. Defaults to all.
         facility (Optional[str], optional): Unit/facility code to filter by. Defaults to None.
         since (Optional[datetime.datetime], optional): Show records since datetime. Defaults to 365 days ago.
         until (Optional[datetime.datetime], optional): Show records until datetime. Defaults to None.
@@ -143,7 +143,7 @@ def get_messages_related_to_masterrecord(
     return get_messages(
         errorsdb,
         user,
-        status=status,
+        statuses=statuses,
         nis=related_national_ids,
         facility=facility,
         since=since,
@@ -175,7 +175,7 @@ def get_last_message_on_masterrecord(
             jtrace,
             record.id,
             user,
-            status=None,
+            statuses=None,
             since=datetime.datetime.utcnow() - datetime.timedelta(days=365),
         )
         .filter(Message.facility != "TRACING")
