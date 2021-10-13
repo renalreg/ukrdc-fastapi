@@ -169,12 +169,16 @@ def get_last_message_on_masterrecord(
     """
     record: MasterRecord = get_masterrecord(jtrace, record_id, user)
 
-    msgs = get_messages_related_to_masterrecord(
-        errorsdb,
-        jtrace,
-        record.id,
-        user,
-        status=None,
-        since=datetime.datetime.utcnow() - datetime.timedelta(days=365),
-    ).filter(Message.facility != "TRACING")
+    msgs = (
+        get_messages_related_to_masterrecord(
+            errorsdb,
+            jtrace,
+            record.id,
+            user,
+            status=None,
+            since=datetime.datetime.utcnow() - datetime.timedelta(days=365),
+        )
+        .filter(Message.facility != "TRACING")
+        .filter(Message.filename.isnot(None))
+    )
     return msgs.order_by(Message.received.desc()).first()
