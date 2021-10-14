@@ -134,10 +134,10 @@ class ObjectSorter:
         Returns:
             items (list[Any]): Sorted list of objects
         """
-        sort_attr: Optional[str] = self.sort_by.name or self.default_sort_by
-
-        if not sort_attr:
+        if not (self.sort_by or self.default_sort_by):
             return items
+
+        sort_attr: Optional[str] = self.sort_by.name or self.default_sort_by
 
         if sort_attr not in self.columns:
             raise HTTPException(400, f"Invalid sort key '{self.sort_by}'")
