@@ -181,8 +181,11 @@ def _expand_cached_facility_statistics(
         last_updated=cached_statistics.last_updated,
         patient_records=cached_statistics.patient_records,
         total_IDs_count=cached_statistics.all_nis,
-        success_IDs_count=cached_statistics.all_nis
-        - len(cached_statistics.error_nis_message_ids),
+        success_IDs_count=(
+            cached_statistics.all_nis - len(cached_statistics.error_nis_message_ids)
+            if cached_statistics.all_nis
+            else None
+        ),
         error_IDs_count=len(cached_statistics.error_nis_message_ids),
         # Build an array of Message objects from the cached message IDs
         error_IDs_messages=[

@@ -7,8 +7,10 @@ from ukrdc_fastapi.query import facilities
 from ukrdc_fastapi.query.common import PermissionsError
 
 
-def test_get_facilities_superuser(ukrdc3_session, superuser):
-    all_facils = facilities.get_facilities(ukrdc3_session, superuser)
+def test_get_facilities_superuser(ukrdc3_session, redis_session, superuser):
+    all_facils = facilities.get_facilities(
+        ukrdc3_session, redis_session, superuser, include_empty=True
+    )
     # Superuser should see all facilities
     assert {facil.id for facil in all_facils} == {
         "TEST_SENDING_FACILITY_1",
@@ -16,8 +18,10 @@ def test_get_facilities_superuser(ukrdc3_session, superuser):
     }
 
 
-def test_get_facilities_user(ukrdc3_session, test_user):
-    all_facils = facilities.get_facilities(ukrdc3_session, test_user)
+def test_get_facilities_user(ukrdc3_session, redis_session, test_user):
+    all_facils = facilities.get_facilities(
+        ukrdc3_session, redis_session, test_user, include_empty=True
+    )
     # Test user should see only TEST_SENDING_FACILITY_1
     assert {facil.id for facil in all_facils} == {"TEST_SENDING_FACILITY_1"}
 

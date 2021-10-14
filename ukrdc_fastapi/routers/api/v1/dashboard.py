@@ -4,10 +4,9 @@ from fastapi import APIRouter, Depends, Security
 from pydantic import BaseModel
 from redis import Redis
 from sqlalchemy.orm import Session
-from ukrdc_sqla.ukrdc import Code
 
 from ukrdc_fastapi.config import settings
-from ukrdc_fastapi.dependencies import get_jtrace, get_redis, get_ukrdc3
+from ukrdc_fastapi.dependencies import get_jtrace, get_redis
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.query.dashboard import (
     UKRDCRecordsDashSchema,
@@ -15,7 +14,6 @@ from ukrdc_fastapi.query.dashboard import (
     get_empi_stats,
     get_workitems_stats,
 )
-from ukrdc_fastapi.query.facilities import _get_cached_facility_statistics
 
 router = APIRouter(tags=["Dashboard"])
 

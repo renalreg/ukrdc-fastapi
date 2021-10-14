@@ -15,7 +15,6 @@ from ukrdc_fastapi.query.facilities import (
     get_facilities,
     get_facility,
 )
-from ukrdc_fastapi.schemas.facility import FacilitySchema
 from ukrdc_fastapi.utils.sort import ObjectSorter, make_object_sorter
 
 router = APIRouter(tags=["Facilities"])

@@ -1,6 +1,5 @@
 import enum
 import functools
-import operator
 from typing import Any, Optional, Union
 
 from fastapi import HTTPException
@@ -9,6 +8,13 @@ from sqlalchemy.orm import Query as ORMQuery
 
 
 def rgetattr(obj, attr, *args):
+    """Recursive getattr, i.e. when passed a . separated attribute name, gets the value from nested objects.
+
+    Args:
+        obj (Any): Target object
+        attr (str): Attribute name(s)
+    """
+
     def _getattr(obj, attr):
         return getattr(obj, attr, *args)
 
@@ -134,10 +140,12 @@ class ObjectSorter:
         Returns:
             items (list[Any]): Sorted list of objects
         """
-        if not (self.sort_by or self.default_sort_by):
-            return items
 
-        sort_attr: Optional[str] = self.sort_by.name or self.default_sort_by
+        sort_attr: Optional[str] = (
+            self.sort_by.name if self.sort_by else self.default_sort_by
+        )
+        if not sort_attr:
+            return items
 
         if sort_attr not in self.columns:
             raise HTTPException(400, f"Invalid sort key '{self.sort_by}'")

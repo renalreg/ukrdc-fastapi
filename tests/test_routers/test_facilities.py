@@ -7,7 +7,7 @@ from ukrdc_fastapi.query.facilities import (
 
 
 def test_facilities(client):
-    response = client.get("/api/v1/facilities")
+    response = client.get("/api/v1/facilities/?include_empty=true")
     ids = {item.get("id") for item in response.json()}
     assert ids == {
         "TEST_SENDING_FACILITY_1",
