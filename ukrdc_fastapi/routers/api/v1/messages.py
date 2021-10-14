@@ -18,7 +18,7 @@ from ukrdc_fastapi.schemas.base import OrmModel
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema, WorkItemSchema
 from ukrdc_fastapi.schemas.message import MessageSchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
-from ukrdc_fastapi.utils.sort import Sorter
+from ukrdc_fastapi.utils.sort import SQLASorter
 
 router = APIRouter(tags=["Messages"])
 
@@ -41,7 +41,7 @@ def error_messages(
     ni: Optional[list[str]] = QueryParam([]),
     user: UKRDCUser = Security(auth.get_user()),
     errorsdb: Session = Depends(get_errorsdb),
-    sorter: Sorter = Depends(ERROR_SORTER),
+    sorter: SQLASorter = Depends(ERROR_SORTER),
 ):
     """
     Retreive a list of error messages, optionally filtered by NI, facility, or date.

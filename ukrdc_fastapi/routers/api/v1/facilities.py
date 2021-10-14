@@ -10,22 +10,33 @@ from ukrdc_fastapi.dependencies.auth import UKRDCUser, auth
 from ukrdc_fastapi.query.facilities import (
     ErrorHistoryPoint,
     FacilityDetailsSchema,
+    FacilitySummarySchema,
     get_errors_history,
     get_facilities,
     get_facility,
 )
-from ukrdc_fastapi.schemas.facility import FacilitySchema
+from ukrdc_fastapi.utils.sort import ObjectSorter, make_object_sorter
 
 router = APIRouter(tags=["Facilities"])
 
 
-@router.get("/", response_model=list[FacilitySchema])
+@router.get("/", response_model=list[FacilitySummarySchema])
 def facility_list(
+    include_empty: bool = False,
+    sorter: ObjectSorter = Depends(
+        make_object_sorter(
+            "FacilityEnum",
+            ["id", "statistics.patient_records", "statistics.error_IDs_count"],
+        )
+    ),
     ukrdc3: Session = Depends(get_ukrdc3),
+    redis: Redis = Depends(get_redis),
     user: UKRDCUser = Security(auth.get_user()),
 ):
     """Retreive a list of on-record facilities"""
-    return get_facilities(ukrdc3, user)
+    facilities = get_facilities(ukrdc3, redis, user, include_empty=include_empty)
+
+    return sorter.sort(facilities)
 
 
 @router.get("/{code}", response_model=FacilityDetailsSchema)

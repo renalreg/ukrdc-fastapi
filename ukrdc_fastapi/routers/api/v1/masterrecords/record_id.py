@@ -34,7 +34,7 @@ from ukrdc_fastapi.schemas.empi import (
 from ukrdc_fastapi.schemas.message import MessageSchema, MinimalMessageSchema
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordSummarySchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
-from ukrdc_fastapi.utils.sort import Sorter
+from ukrdc_fastapi.utils.sort import SQLASorter
 
 
 class MasterRecordStatisticsSchema(OrmModel):
@@ -173,7 +173,7 @@ def master_record_messages(
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
     errorsdb: Session = Depends(get_errorsdb),
-    sorter: Sorter = Depends(ERROR_SORTER),
+    sorter: SQLASorter = Depends(ERROR_SORTER),
 ):
     """
     Retreive a list of errors related to a particular master record.
