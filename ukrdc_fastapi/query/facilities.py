@@ -94,7 +94,9 @@ def get_facilities(
                     statistics=FacilityStatisticsSummarySchema(
                         last_updated=cached_statistics.last_updated,
                         patient_records=cached_statistics.patient_records,
-                        error_IDs_count=len(cached_statistics.error_nis_message_ids),
+                        error_IDs_count=len(cached_statistics.error_nis_message_ids)
+                        if cached_statistics.last_updated
+                        else None,
                     ),
                 )
             )
