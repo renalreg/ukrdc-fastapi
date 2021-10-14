@@ -57,29 +57,6 @@ class ErrorHistory(OrmModel):
 # Facility list
 
 
-def get_facility_codes(ukrdc3: Session, user: UKRDCUser) -> list[FacilitySchema]:
-    """Get a list of all unit/facility codes available to the current user
-    Args:
-        ukrdc3 (Session): SQLALchemy session
-        redis (Redis): Redis session
-        user (UKRDCUser): Logged-in user object
-    Returns:
-        list[FacilitySchema]: List of unit codes
-    """
-
-    codes = ukrdc3.query(Code).filter(Code.coding_standard == "RR1+")
-
-    # Filter results by unit permissions
-    units = Permissions.unit_codes(user.permissions)
-    if Permissions.UNIT_WILDCARD not in units:
-        codes = codes.filter(Code.code.in_(units))
-
-    return [
-        FacilitySchema(id=code.code, description=code.description)
-        for code in codes.all()
-    ]
-
-
 def get_facilities(
     ukrdc3: Session, redis: Redis, user: UKRDCUser, include_empty: bool = False
 ) -> list[FacilitySummarySchema]:
@@ -105,7 +82,11 @@ def get_facilities(
 
     for code in codes.all():
         cached_statistics = _get_cached_facility_statistics(code.code, redis)
-        if include_empty or cached_statistics.patient_records:
+        if (
+            include_empty
+            or (cached_statistics.patient_records or 0) > 0
+            or cached_statistics.patient_records is None
+        ):
             facility_list.append(
                 FacilitySummarySchema(
                     id=code.code,
