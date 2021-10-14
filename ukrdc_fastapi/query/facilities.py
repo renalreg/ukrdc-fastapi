@@ -16,41 +16,29 @@ from ukrdc_fastapi.schemas.facility import FacilitySchema
 from ukrdc_fastapi.schemas.message import MessageSchema
 
 
-class CachedFacilityMessageSummarySchema(BaseModel):
-    error_nis_message_ids: list[int]
-    all_nis: int
-
-
 class CachedFacilityStatisticsSchema(BaseModel):
-    patient_records: Optional[int]
-    messages: CachedFacilityMessageSummarySchema
     last_updated: Optional[datetime.datetime]
-
-
-class FacilityMessageSummarySchema(OrmModel):
-    total_IDs_count: Optional[int] = None
-    success_IDs_count: Optional[int] = None
-    error_IDs_count: Optional[int] = None
-
-    error_IDs_messages: Optional[list[MessageSchema]] = None
-
-    @classmethod
-    def empty(cls):
-        """
-        Build an empty FacilityMessageSummarySchema object
-        """
-        return cls(
-            total_IDs_count=None,
-            success_IDs_count=None,
-            error_IDs_count=None,
-            error_IDs=None,
-        )
-
-
-class FacilityStatisticsSchema(OrmModel):
     patient_records: Optional[int]
-    messages: FacilityMessageSummarySchema
+    error_nis_message_ids: list[int]
+    all_nis: Optional[int]
+
+
+class FacilityStatisticsSummarySchema(OrmModel):
     last_updated: Optional[datetime.datetime]
+    patient_records: Optional[int]
+
+    error_IDs_count: Optional[int]
+
+
+class FacilityStatisticsSchema(FacilityStatisticsSummarySchema):
+    total_IDs_count: Optional[int]
+    success_IDs_count: Optional[int]
+
+    error_IDs_messages: list[MessageSchema]
+
+
+class FacilitySummarySchema(FacilitySchema):
+    statistics: FacilityStatisticsSummarySchema
 
 
 class FacilityDetailsSchema(FacilitySchema):
@@ -69,14 +57,12 @@ class ErrorHistory(OrmModel):
 # Facility list
 
 
-def get_facilities(ukrdc3: Session, user: UKRDCUser) -> list[FacilitySchema]:
+def get_facility_codes(ukrdc3: Session, user: UKRDCUser) -> list[FacilitySchema]:
     """Get a list of all unit/facility codes available to the current user
-
     Args:
         ukrdc3 (Session): SQLALchemy session
         redis (Redis): Redis session
         user (UKRDCUser): Logged-in user object
-
     Returns:
         list[FacilitySchema]: List of unit codes
     """
@@ -94,31 +80,48 @@ def get_facilities(ukrdc3: Session, user: UKRDCUser) -> list[FacilitySchema]:
     ]
 
 
+def get_facilities(
+    ukrdc3: Session, redis: Redis, user: UKRDCUser, include_empty: bool = False
+) -> list[FacilitySummarySchema]:
+    """Get a list of all unit/facility summaries available to the current user
+
+    Args:
+        ukrdc3 (Session): SQLALchemy session
+        redis (Redis): Redis session
+        user (UKRDCUser): Logged-in user object
+
+    Returns:
+        list[FacilitySummarySchema]: List of units/facilities
+    """
+
+    codes = ukrdc3.query(Code).filter(Code.coding_standard == "RR1+")
+
+    # Filter results by unit permissions
+    units = Permissions.unit_codes(user.permissions)
+    if Permissions.UNIT_WILDCARD not in units:
+        codes = codes.filter(Code.code.in_(units))
+
+    facility_list: list[FacilitySummarySchema] = []
+
+    for code in codes.all():
+        cached_statistics = _get_cached_facility_statistics(code.code, redis)
+        if include_empty or cached_statistics.patient_records:
+            facility_list.append(
+                FacilitySummarySchema(
+                    id=code.code,
+                    description=code.description,
+                    statistics=FacilityStatisticsSummarySchema(
+                        last_updated=cached_statistics.last_updated,
+                        patient_records=cached_statistics.patient_records,
+                        error_IDs_count=len(cached_statistics.error_nis_message_ids),
+                    ),
+                )
+            )
+
+    return facility_list
+
+
 # Facility error statistics
-
-
-def _get_message_sumary(
-    errorsdb: Session,
-    facility: Optional[str] = None,
-) -> CachedFacilityMessageSummarySchema:
-    """
-    Generate a summary of message success and errors for a facility.
-    """
-    query = (
-        errorsdb.query(Message)
-        .filter(Message.facility == facility)
-        .filter(Message.ni.isnot(None))
-        .order_by(Message.ni, Message.received.desc())
-        .distinct(Message.ni)
-    )
-
-    all_nis = query.all()
-    error_nis_message_ids = [m.id for m in all_nis if m.ni and m.msg_status == "ERROR"]
-
-    return CachedFacilityMessageSummarySchema(
-        error_nis_message_ids=error_nis_message_ids,
-        all_nis=len(all_nis),
-    )
 
 
 def cache_facility_statistics(
@@ -127,52 +130,67 @@ def cache_facility_statistics(
     """
     Generate and cache facility statistics. Only ever called as a background task.
     """
+    print(code.code)
     redis_key: str = f"ukrdc3:facilities:{code.code}:statistics"
 
-    statistics_dict = {
-        "patient_records": ukrdc3.query(PatientRecord)
+    query = (
+        errorsdb.query(Message)
+        .filter(Message.facility == code.code)
+        .filter(Message.ni.isnot(None))
+        .order_by(Message.ni, Message.received.desc())
+        .distinct(Message.ni)
+    )
+
+    all_nis = query.all()
+    error_nis_message_ids = [m.id for m in all_nis if m.ni and m.msg_status == "ERROR"]
+
+    statistics = CachedFacilityStatisticsSchema(
+        last_updated=datetime.datetime.now(),
+        patient_records=ukrdc3.query(PatientRecord)
         .filter(PatientRecord.sendingfacility == code.code)
         .count(),
-        "messages": _get_message_sumary(errorsdb, code.code),
-        "last_updated": datetime.datetime.now(),
-    }
-    statistics = CachedFacilityStatisticsSchema(**statistics_dict)
+        error_nis_message_ids=error_nis_message_ids,
+        all_nis=len(all_nis),
+    )
     redis.set(redis_key, statistics.json())  # type: ignore
 
 
-def _expand_cached_facility_statistics(
-    code: Code, errorsdb: Session, redis: Redis
-) -> FacilityStatisticsSchema:
-    redis_key: str = f"ukrdc3:facilities:{code.code}:statistics"
+def _get_cached_facility_statistics(
+    facility_code: str, redis: Redis
+) -> CachedFacilityStatisticsSchema:
+    redis_key: str = f"ukrdc3:facilities:{facility_code}:statistics"
     # Return empty stats if no cached data is found
     if not redis.exists(redis_key):
-        return FacilityStatisticsSchema(
-            patient_records=None,
-            messages=FacilityMessageSummarySchema.empty(),
+        return CachedFacilityStatisticsSchema(
             last_updated=None,
+            patient_records=None,
+            error_nis_message_ids=[],
+            all_nis=None,
         )
 
     cached_statistics_json: str = redis.get(redis_key)  # type: ignore
-    cached_statistics = CachedFacilityStatisticsSchema.parse_raw(cached_statistics_json)
+    return CachedFacilityStatisticsSchema.parse_raw(cached_statistics_json)
+
+
+def _expand_cached_facility_statistics(
+    facility_code: str, errorsdb: Session, redis: Redis
+) -> FacilityStatisticsSchema:
+    cached_statistics = _get_cached_facility_statistics(facility_code, redis)
 
     return FacilityStatisticsSchema(
-        patient_records=cached_statistics.patient_records,
-        messages=FacilityMessageSummarySchema(
-            total_IDs_count=cached_statistics.messages.all_nis,
-            success_IDs_count=cached_statistics.messages.all_nis
-            - len(cached_statistics.messages.error_nis_message_ids),
-            error_IDs_count=len(cached_statistics.messages.error_nis_message_ids),
-            # Build an array of Message objects from the cached message IDs
-            error_IDs_messages=[
-                MessageSchema.from_orm(m)
-                for m in errorsdb.query(Message)
-                .filter(
-                    Message.id.in_(cached_statistics.messages.error_nis_message_ids)
-                )
-                .order_by(Message.received.desc())
-            ],
-        ),
         last_updated=cached_statistics.last_updated,
+        patient_records=cached_statistics.patient_records,
+        total_IDs_count=cached_statistics.all_nis,
+        success_IDs_count=cached_statistics.all_nis
+        - len(cached_statistics.error_nis_message_ids),
+        error_IDs_count=len(cached_statistics.error_nis_message_ids),
+        # Build an array of Message objects from the cached message IDs
+        error_IDs_messages=[
+            MessageSchema.from_orm(m)
+            for m in errorsdb.query(Message)
+            .filter(Message.id.in_(cached_statistics.error_nis_message_ids))
+            .order_by(Message.received.desc())
+        ],
     )
 
 
@@ -211,7 +229,7 @@ def get_facility(
     return FacilityDetailsSchema(
         id=code.code,
         description=code.description,
-        statistics=_expand_cached_facility_statistics(code, errorsdb, redis),
+        statistics=_expand_cached_facility_statistics(code.code, errorsdb, redis),
     )
 
 
@@ -249,9 +267,11 @@ def cache_facility_error_history(
     return counts
 
 
-def _get_cached_facility_error_history(code: Code, redis: Redis) -> ErrorHistory:
+def _get_cached_facility_error_history(
+    facility_code: str, redis: Redis
+) -> ErrorHistory:
     # Check for cached statistics
-    redis_key: str = f"ukrdc3:facilities:{code.code}:errorhistory"
+    redis_key: str = f"ukrdc3:facilities:{facility_code}:errorhistory"
     if redis.exists(redis_key):
         counts_json: str = redis.get(redis_key)  # type: ignore
         return ErrorHistory.parse_raw(counts_json)
@@ -295,7 +315,7 @@ def get_errors_history(
         raise PermissionsError()
 
     # Get cached statistics
-    history = _get_cached_facility_error_history(code, redis).__root__
+    history = _get_cached_facility_error_history(code.code, redis).__root__
 
     if since:
         history = [point for point in history if point.time >= since]

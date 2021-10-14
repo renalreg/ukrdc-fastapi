@@ -40,7 +40,7 @@ from ukrdc_fastapi.schemas.patientrecord import (
 from ukrdc_fastapi.schemas.survey import SurveySchema
 from ukrdc_fastapi.schemas.treatment import TreatmentSchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
-from ukrdc_fastapi.utils.sort import Sorter, make_sorter
+from ukrdc_fastapi.utils.sort import SQLASorter, make_sqla_sorter
 
 from . import export
 
@@ -152,8 +152,8 @@ def patient_surveys(patient_record: PatientRecord = Depends(_get_patientrecord))
 )
 def patient_documents(
     patient_record: PatientRecord = Depends(_get_patientrecord),
-    sorter: Sorter = Depends(
-        make_sorter(
+    sorter: SQLASorter = Depends(
+        make_sqla_sorter(
             [Document.documenttime, Document.updatedon],
             default_sort_by=Document.documenttime,
         )
@@ -222,8 +222,8 @@ def document_download(
 def patient_observations(
     patient_record: PatientRecord = Depends(_get_patientrecord),
     code: Optional[list[str]] = QueryParam([]),
-    sorter: Sorter = Depends(
-        make_sorter(
+    sorter: SQLASorter = Depends(
+        make_sqla_sorter(
             [Observation.observation_time, Observation.updated_on],
             default_sort_by=Observation.observation_time,
         )
@@ -316,8 +316,8 @@ def patient_resultitems(
     order_id: Optional[list[str]] = QueryParam([]),
     since: Optional[datetime.datetime] = None,
     until: Optional[datetime.datetime] = None,
-    sorter: Sorter = Depends(
-        make_sorter(
+    sorter: SQLASorter = Depends(
+        make_sqla_sorter(
             [ResultItem.observation_time, ResultItem.entered_on],
             default_sort_by=ResultItem.observation_time,
         )

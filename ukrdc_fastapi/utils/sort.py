@@ -1,9 +1,18 @@
 import enum
-from typing import Optional
+import functools
+import operator
+from typing import Any, Optional, Union
 
 from fastapi import HTTPException
 from sqlalchemy import Column
 from sqlalchemy.orm import Query as ORMQuery
+
+
+def rgetattr(obj, attr, *args):
+    def _getattr(obj, attr):
+        return getattr(obj, attr, *args)
+
+    return functools.reduce(_getattr, [obj] + attr.split("."))
 
 
 class OrderBy(str, enum.Enum):
@@ -11,7 +20,7 @@ class OrderBy(str, enum.Enum):
     DESC = "desc"
 
 
-class Sorter:
+class SQLASorter:
     def __init__(
         self,
         column_map: dict[str, Column],
@@ -59,7 +68,7 @@ class Sorter:
         return query.order_by(sort_func())
 
 
-def _make_sorter_enum_name(columns: list[Column]) -> str:
+def _make_sorter_enum_name(columns: list[Union[Column, str]]) -> str:
     modelnames = set()
     for col in columns:
         cls = str(col).split(".", maxsplit=1)[0]
@@ -67,7 +76,7 @@ def _make_sorter_enum_name(columns: list[Column]) -> str:
     return "".join(modelnames) + "Enum"
 
 
-def make_sorter(
+def make_sqla_sorter(
     columns: list[Column],
     default_sort_by: Optional[Column] = None,
     default_order_by: OrderBy = OrderBy.DESC,
@@ -80,7 +89,7 @@ def make_sorter(
         default_order_by (OrderBy, optional): Default sort direction. Defaults to OrderBy.DESC.
 
     Returns:
-        [function]: FastAPI dependency function returning a Sorter instance
+        [function]: FastAPI dependency function returning a SQLASorter instance
     """
     column_map: dict[str, Column] = {col.key: col for col in columns}
     sort_enum = enum.Enum(  # type: ignore
@@ -90,8 +99,79 @@ def make_sorter(
     def sort_parameters(
         sort_by: Optional[sort_enum] = None, order_by: Optional[OrderBy] = None
     ):
-        return Sorter(
+        return SQLASorter(
             column_map,
+            sort_by,
+            order_by,
+            default_sort_by=default_sort_by,
+            default_order_by=default_order_by,
+        )
+
+    return sort_parameters
+
+
+class ObjectSorter:
+    def __init__(
+        self,
+        columns: list[str],
+        sort_by: Optional[enum.Enum] = None,
+        order_by: Optional[OrderBy] = None,
+        default_sort_by: Optional[str] = None,
+        default_order_by: OrderBy = OrderBy.DESC,
+    ) -> None:
+        self.columns = columns
+        self.sort_by = sort_by
+        self.order_by = order_by
+        self.default_sort_by = default_sort_by
+        self.default_order_by = default_order_by
+
+    def sort(self, items: list[Any]):
+        """Sort a list of objects by the paremeters obtained from FastAPI
+
+        Args:
+            items (list[Any]): Unsorted list of objects
+
+        Returns:
+            items (list[Any]): Sorted list of objects
+        """
+        sort_attr: Optional[str] = self.sort_by.name or self.default_sort_by
+
+        if not sort_attr:
+            return items
+
+        if sort_attr not in self.columns:
+            raise HTTPException(400, f"Invalid sort key '{self.sort_by}'")
+
+        return sorted(
+            items,
+            key=lambda item: rgetattr(item, sort_attr),
+            reverse=(self.order_by or self.default_order_by) == OrderBy.DESC,
+        )
+
+
+def make_object_sorter(
+    name: str,
+    columns: list[str],
+    default_sort_by: Optional[str] = None,
+    default_order_by: OrderBy = OrderBy.DESC,
+):
+    """Generate a sorter FastAPI dependency function
+
+    Args:
+        columns (list[str]): Attribute names to allow sorting by
+        default_sort_by (Optional[str]): Default sort attribute. Defaults to None.
+        default_order_by (OrderBy, optional): Default sort direction. Defaults to OrderBy.DESC.
+
+    Returns:
+        [function]: FastAPI dependency function returning an ObjectSorter instance
+    """
+    sort_enum = enum.Enum(name, {col: col for col in columns})  # type: ignore
+
+    def sort_parameters(
+        sort_by: Optional[sort_enum] = None, order_by: Optional[OrderBy] = None
+    ):
+        return ObjectSorter(
+            columns,
             sort_by,
             order_by,
             default_sort_by=default_sort_by,

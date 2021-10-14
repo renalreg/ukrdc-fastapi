@@ -13,9 +13,9 @@ from ukrdc_fastapi.query.masterrecords import (
     get_masterrecord,
     get_masterrecords_related_to_masterrecord,
 )
-from ukrdc_fastapi.utils.sort import make_sorter
+from ukrdc_fastapi.utils.sort import make_sqla_sorter
 
-ERROR_SORTER = make_sorter(
+ERROR_SORTER = make_sqla_sorter(
     [Message.id, Message.received, Message.ni], default_sort_by=Message.received
 )
 
