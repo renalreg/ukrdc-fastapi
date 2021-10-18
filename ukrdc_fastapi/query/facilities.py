@@ -113,7 +113,6 @@ def cache_facility_statistics(
     """
     Generate and cache facility statistics. Only ever called as a background task.
     """
-    print(code.code)
     redis_key: str = f"ukrdc3:facilities:{code.code}:statistics"
 
     query = (
