@@ -2,7 +2,7 @@ import datetime
 from typing import Optional
 
 from fastapi.exceptions import HTTPException
-from pydantic.main import BaseModel
+from pydantic import BaseModel, Field
 from redis import Redis
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.functions import func
@@ -18,23 +18,49 @@ from ukrdc_fastapi.schemas.message import MessageSchema
 
 class CachedFacilityStatisticsSchema(BaseModel):
     last_updated: Optional[datetime.datetime]
-    patient_records: Optional[int]
-    error_nis_message_ids: list[int]
-    all_nis: Optional[int]
+    total_patients: Optional[int]
+
+    # List of IDs of messages that are the
+    # most recent message for a patient AND are an error
+    patients_latest_errors: list[int]
+
+    # Total number of patients receiving messages,
+    # whether erroring or not
+    patients_receiving_messages: Optional[int]
+
+    @classmethod
+    def empty(cls):
+        return cls(
+            last_updated=None,
+            total_patients=None,
+            patients_latest_errors=[],
+            patients_receiving_messages=None,
+        )
 
 
 class FacilityStatisticsSummarySchema(OrmModel):
     last_updated: Optional[datetime.datetime]
-    patient_records: Optional[int]
 
-    error_IDs_count: Optional[int]
+    # Total number of patients we've ever had on record
+    total_patients: Optional[int]
+
+    # Total number of patients receiving messages,
+    # whether erroring or not
+    patients_receiving_messages: Optional[int]
+
+    # Number of patients receiving messages that
+    # are most recently succeeding
+    patients_receiving_message_success: Optional[int]
+
+    # Number of patients receiving messages that
+    # are most recently erroring
+    patients_receiving_message_errors: Optional[int]
 
 
 class FacilityStatisticsSchema(FacilityStatisticsSummarySchema):
-    total_IDs_count: Optional[int]
-    success_IDs_count: Optional[int]
-
-    error_IDs_messages: list[MessageSchema]
+    # Error message resources for patients receiving
+    # messages that are most recently erroring
+    patients_latest_errors: list[MessageSchema]
 
 
 class FacilitySummarySchema(FacilitySchema):
@@ -84,8 +110,8 @@ def get_facilities(
         cached_statistics = _get_cached_facility_statistics(code.code, redis)
         if (
             include_empty
-            or (cached_statistics.patient_records or 0) > 0
-            or cached_statistics.patient_records is None
+            or (cached_statistics.total_patients or 0) > 0
+            or cached_statistics.total_patients is None
         ):
             facility_list.append(
                 FacilitySummarySchema(
@@ -93,8 +119,8 @@ def get_facilities(
                     description=code.description,
                     statistics=FacilityStatisticsSummarySchema(
                         last_updated=cached_statistics.last_updated,
-                        patient_records=cached_statistics.patient_records,
-                        error_IDs_count=len(cached_statistics.error_nis_message_ids)
+                        total_patients=cached_statistics.total_patients,
+                        error_IDs_count=len(cached_statistics.patients_latest_errors)
                         if cached_statistics.last_updated
                         else None,
                     ),
@@ -119,21 +145,28 @@ def cache_facility_statistics(
         errorsdb.query(Message)
         .filter(Message.facility == code.code)
         .filter(Message.ni.isnot(None))
+        .filter(Message.filename.isnot(None))
         .order_by(Message.ni, Message.received.desc())
         .distinct(Message.ni)
     )
 
-    all_nis = query.all()
-    error_nis_message_ids = [m.id for m in all_nis if m.ni and m.msg_status == "ERROR"]
+    patients_latest_messages = query.all()
+    patients_latest_errors = [
+        m.id for m in patients_latest_messages if m.ni and m.msg_status == "ERROR"
+    ]
 
     statistics = CachedFacilityStatisticsSchema(
         last_updated=datetime.datetime.now(),
-        patient_records=ukrdc3.query(PatientRecord)
+        total_patients=ukrdc3.query(
+            PatientRecord.sendingfacility, PatientRecord.ukrdcid
+        )
         .filter(PatientRecord.sendingfacility == code.code)
+        .distinct()
         .count(),
-        error_nis_message_ids=error_nis_message_ids,
-        all_nis=len(all_nis),
+        patients_latest_errors=patients_latest_errors,
+        patients_receiving_messages=len(patients_latest_messages),
     )
+    print(code.code)
     redis.set(redis_key, statistics.json())  # type: ignore
 
 
@@ -143,12 +176,7 @@ def _get_cached_facility_statistics(
     redis_key: str = f"ukrdc3:facilities:{facility_code}:statistics"
     # Return empty stats if no cached data is found
     if not redis.exists(redis_key):
-        return CachedFacilityStatisticsSchema(
-            last_updated=None,
-            patient_records=None,
-            error_nis_message_ids=[],
-            all_nis=None,
-        )
+        return CachedFacilityStatisticsSchema.empty()
 
     cached_statistics_json: str = redis.get(redis_key)  # type: ignore
     return CachedFacilityStatisticsSchema.parse_raw(cached_statistics_json)
@@ -161,19 +189,20 @@ def _expand_cached_facility_statistics(
 
     return FacilityStatisticsSchema(
         last_updated=cached_statistics.last_updated,
-        patient_records=cached_statistics.patient_records,
-        total_IDs_count=cached_statistics.all_nis,
-        success_IDs_count=(
-            cached_statistics.all_nis - len(cached_statistics.error_nis_message_ids)
-            if cached_statistics.all_nis
+        total_patients=cached_statistics.total_patients,
+        patients_receiving_messages=cached_statistics.patients_receiving_messages,
+        patients_receiving_message_success=(
+            cached_statistics.patients_receiving_messages
+            - len(cached_statistics.patients_latest_errors)
+            if cached_statistics.patients_receiving_messages
             else None
         ),
-        error_IDs_count=len(cached_statistics.error_nis_message_ids),
+        patients_receiving_message_errors=len(cached_statistics.patients_latest_errors),
         # Build an array of Message objects from the cached message IDs
-        error_IDs_messages=[
+        patients_latest_errors=[
             MessageSchema.from_orm(m)
             for m in errorsdb.query(Message)
-            .filter(Message.id.in_(cached_statistics.error_nis_message_ids))
+            .filter(Message.id.in_(cached_statistics.patients_latest_errors))
             .order_by(Message.received.desc())
         ],
     )
