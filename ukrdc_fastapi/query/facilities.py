@@ -54,7 +54,7 @@ class FacilityStatisticsSummarySchema(OrmModel):
 
     # Number of patients receiving messages that
     # are most recently erroring
-    patients_receiving_message_errors: Optional[int]
+    patients_receiving_message_error: Optional[int]
 
 
 class FacilityStatisticsSchema(FacilityStatisticsSummarySchema):
@@ -117,12 +117,20 @@ def get_facilities(
                 FacilitySummarySchema(
                     id=code.code,
                     description=code.description,
+                    # TODO: Remove duplicate code here and _expand_cached_facility_statistics
                     statistics=FacilityStatisticsSummarySchema(
                         last_updated=cached_statistics.last_updated,
                         total_patients=cached_statistics.total_patients,
-                        error_IDs_count=len(cached_statistics.patients_latest_errors)
-                        if cached_statistics.last_updated
-                        else None,
+                        patients_receiving_messages=cached_statistics.patients_receiving_messages,
+                        patients_receiving_message_success=(
+                            cached_statistics.patients_receiving_messages
+                            - len(cached_statistics.patients_latest_errors)
+                            if cached_statistics.last_updated
+                            else None
+                        ),
+                        patients_receiving_message_error=len(
+                            cached_statistics.patients_latest_errors
+                        ),
                     ),
                 )
             )
@@ -166,7 +174,6 @@ def cache_facility_statistics(
         patients_latest_errors=patients_latest_errors,
         patients_receiving_messages=len(patients_latest_messages),
     )
-    print(code.code)
     redis.set(redis_key, statistics.json())  # type: ignore
 
 
@@ -197,7 +204,7 @@ def _expand_cached_facility_statistics(
             if cached_statistics.patients_receiving_messages
             else None
         ),
-        patients_receiving_message_errors=len(cached_statistics.patients_latest_errors),
+        patients_receiving_message_error=len(cached_statistics.patients_latest_errors),
         # Build an array of Message objects from the cached message IDs
         patients_latest_errors=[
             MessageSchema.from_orm(m)
