@@ -125,7 +125,7 @@ def get_facilities(
                         patients_receiving_message_success=(
                             cached_statistics.patients_receiving_messages
                             - len(cached_statistics.patients_latest_errors)
-                            if cached_statistics.last_updated
+                            if cached_statistics.patients_receiving_messages is not None
                             else None
                         ),
                         patients_receiving_message_error=len(
