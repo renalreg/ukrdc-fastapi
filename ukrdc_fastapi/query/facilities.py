@@ -2,7 +2,7 @@ import datetime
 from typing import Optional
 
 from fastapi.exceptions import HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from redis import Redis
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.functions import func
@@ -30,6 +30,7 @@ class CachedFacilityStatisticsSchema(BaseModel):
 
     @classmethod
     def empty(cls):
+        """Pre-populated empty instance, used for facilities missing cached stats."""
         return cls(
             last_updated=None,
             total_patients=None,
