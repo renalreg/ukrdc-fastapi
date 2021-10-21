@@ -26,7 +26,11 @@ def facility_list(
     sorter: ObjectSorter = Depends(
         make_object_sorter(
             "FacilityEnum",
-            ["id", "statistics.patient_records", "statistics.error_IDs_count"],
+            [
+                "id",
+                "statistics.total_patients",
+                "statistics.patients_receiving_message_error",
+            ],
         )
     ),
     ukrdc3: Session = Depends(get_ukrdc3),
