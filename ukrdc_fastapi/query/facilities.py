@@ -78,17 +78,26 @@ def get_facilities(
     """
 
     codes = ukrdc3.query(Code).filter(Code.coding_standard == "RR1+")
-    all_stats_dict = {row.facility: row for row in statsdb.query(FacilityStats).all()}
 
     # Filter results by unit permissions
     units = Permissions.unit_codes(user.permissions)
     if Permissions.UNIT_WILDCARD not in units:
         codes = codes.filter(Code.code.in_(units))
+    facility_codes = codes.all()
 
+    # Create a list to store our response
     facility_list: list[FacilitySummarySchema] = []
 
-    for code in codes.all():
-        stats = all_stats_dict.get(code.code)
+    # Fetch stats for facilities we're listing
+    facility_stats_dict = {
+        row.facility: row
+        for row in statsdb.query(FacilityStats)
+        .filter(FacilityStats.facility.in_([code.code for code in facility_codes]))
+        .all()
+    }
+
+    for code in facility_codes:
+        stats = facility_stats_dict.get(code.code)
         if stats and (
             include_empty  # Always include all facilities if requested
             or (stats.total_patients or 0) > 0  # Include facilities with patients
