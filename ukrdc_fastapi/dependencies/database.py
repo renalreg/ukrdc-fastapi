@@ -99,3 +99,34 @@ def errors_session() -> Generator[Session, None, None]:
         yield session
     finally:
         session.close()
+
+
+StatsSession = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=create_engine(
+        build_db_uri(
+            settings.stats_driver,
+            settings.stats_host,
+            settings.stats_port,
+            settings.stats_user,
+            settings.stats_pass,
+            settings.stats_name,
+        ),
+        connect_args={"application_name": settings.application_name},
+    ),
+)
+
+
+@contextmanager
+def stats_session() -> Generator[Session, None, None]:
+    """Yeild a new STATSDB database session
+
+    Yields:
+        [Session]: STATSDB database session
+    """
+    session = StatsSession()
+    try:
+        yield session
+    finally:
+        session.close()

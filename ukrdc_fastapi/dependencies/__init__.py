@@ -1,15 +1,12 @@
 from typing import AsyncGenerator, Generator
 
 import redis
-from fastapi import HTTPException
 from mirth_client import MirthAPI
-from mirth_client.exceptions import MirthLoginError
-from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 
 from ukrdc_fastapi.config import settings
 
-from .database import errors_session, jtrace_session, ukrdc3_session
+from .database import errors_session, jtrace_session, stats_session, ukrdc3_session
 from .mirth import mirth_session
 
 JTRACE_FRIENDLY_ERROR_CODES = {"e3q8": "Error connecting to JTRACE database."}
@@ -55,6 +52,16 @@ def get_errorsdb() -> Generator[Session, None, None]:
     """
     with errors_session() as errorsdb:
         yield errorsdb
+
+
+def get_statssdb() -> Generator[Session, None, None]:
+    """Yeild a new statsdb database session
+
+    Yields:
+        Generator[Session]: statsdb database session
+    """
+    with stats_session() as statsdb:
+        yield statsdb
 
 
 def get_redis() -> redis.Redis:

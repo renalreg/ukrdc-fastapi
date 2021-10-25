@@ -66,8 +66,6 @@ if not settings.skip_cache:
     app.router.add_event_handler("startup", tasks.cache_mirth_channel_groups)
     app.router.add_event_handler("startup", tasks.cache_mirth_channel_statistics)
     app.router.add_event_handler("startup", tasks.cache_dash_stats)
-    app.router.add_event_handler("startup", tasks.cache_all_facilities)
-    app.router.add_event_handler("startup", tasks.cache_all_facilities_history)
 else:
     logging.warning("Skipping cache startup tasks")
 

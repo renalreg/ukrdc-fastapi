@@ -86,6 +86,13 @@ class Settings(BaseSettings):
     errors_name: str = "errorsdb"
     errors_driver: str = "postgresql+psycopg2"
 
+    stats_host: str = "localhost"
+    stats_port: int = 5432
+    stats_user: str = "ukrdc"
+    stats_pass: str = "****"
+    stats_name: str = "statsdb"
+    stats_driver: str = "postgresql+psycopg2"
+
     allowed_origins: list[str] = []
 
     class Config:
