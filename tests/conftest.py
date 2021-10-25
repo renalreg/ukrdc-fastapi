@@ -17,6 +17,8 @@ from ukrdc_sqla.errorsdb import Base as ErrorsBase
 from ukrdc_sqla.errorsdb import Channel
 from ukrdc_sqla.errorsdb import Message as ErrorMessage
 from ukrdc_sqla.pkb import PKBLink
+from ukrdc_sqla.stats import Base as StatsBase
+from ukrdc_sqla.stats import ErrorHistory, FacilityStats, PatientsLatestErrors
 from ukrdc_sqla.ukrdc import Address
 from ukrdc_sqla.ukrdc import Base as UKRDC3Base
 from ukrdc_sqla.ukrdc import (
@@ -47,6 +49,7 @@ from ukrdc_fastapi.dependencies import (
     get_jtrace,
     get_mirth,
     get_redis,
+    get_statssdb,
     get_ukrdc3,
 )
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
@@ -667,6 +670,41 @@ def populate_errorsdb_session(session):
     session.commit()
 
 
+def populate_stats_session(session):
+    stats_1 = FacilityStats(
+        facility="TEST_SENDING_FACILITY_1",
+        total_patients=1,
+        patients_receiving_messages=1,
+        patients_receiving_errors=1,
+        last_updated=datetime(2021, 10, 1),
+    )
+    stats_2 = FacilityStats(
+        facility="TEST_SENDING_FACILITY_2",
+        total_patients=1,
+        patients_receiving_messages=1,
+        patients_receiving_errors=0,
+        last_updated=datetime(2021, 10, 1),
+    )
+
+    latest_1 = PatientsLatestErrors(
+        ni=UKRDCID_1,
+        facility="TEST_SENDING_FACILITY_1",
+        id=3,
+        last_updated=datetime(2021, 10, 1),
+    )
+
+    history_1 = ErrorHistory(
+        facility="TEST_SENDING_FACILITY_1", date=datetime(2021, 1, 1), count=1
+    )
+
+    session.add(stats_1)
+    session.add(stats_2)
+    session.add(latest_1)
+    session.add(history_1)
+
+    session.commit()
+
+
 @pytest.fixture(scope="function")
 def jtrace_sessionmaker(postgresql_my):
     """
@@ -731,6 +769,27 @@ def errorsdb_sessionmaker(postgresql_my):
 
 
 @pytest.fixture(scope="function")
+def statsdb_sessionmaker(postgresql_my):
+    """
+    Create a new function-scoped in-memory STATS database,
+    populate with test data, and return the session class
+    """
+
+    def dbcreator():
+        return postgresql_my.cursor().connection
+
+    engine = create_engine("postgresql+psycopg2://", creator=dbcreator)
+    StatsTestSession = sessionmaker(
+        autocommit=False,
+        autoflush=False,
+        bind=engine,
+    )
+    StatsBase.metadata.create_all(bind=engine)
+    populate_stats_session(StatsTestSession())
+    return StatsTestSession
+
+
+@pytest.fixture(scope="function")
 def ukrdc3_session(ukrdc3_sessionmaker):
     """Create and yield a fresh in-memory test UKRDC3 database session"""
     db = ukrdc3_sessionmaker()
@@ -754,6 +813,16 @@ def jtrace_session(jtrace_sessionmaker):
 def errorsdb_session(errorsdb_sessionmaker):
     """Create and yield a fresh in-memory test ERRORS database session"""
     db = errorsdb_sessionmaker()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+@pytest.fixture(scope="function")
+def stats_session(statsdb_sessionmaker):
+    """Create and yield a fresh in-memory test STATSDB database session"""
+    db = statsdb_sessionmaker()
     try:
         yield db
     finally:
@@ -786,7 +855,7 @@ async def redis_session(mirth_session, httpx_session):
 
 
 @pytest.fixture(scope="function")
-def app(jtrace_session, ukrdc3_session, errorsdb_session, redis_session):
+def app(jtrace_session, ukrdc3_session, errorsdb_session, stats_session, redis_session):
     from ukrdc_fastapi.main import app
 
     async def _get_mirth():
@@ -805,6 +874,9 @@ def app(jtrace_session, ukrdc3_session, errorsdb_session, redis_session):
     def _get_errorsdb():
         return errorsdb_session
 
+    def _get_statsdb():
+        return stats_session
+
     def _get_token():
         return {
             "uid": "TEST_ID",
@@ -819,6 +891,7 @@ def app(jtrace_session, ukrdc3_session, errorsdb_session, redis_session):
     app.dependency_overrides[get_ukrdc3] = _get_ukrdc3
     app.dependency_overrides[get_jtrace] = _get_jtrace
     app.dependency_overrides[get_errorsdb] = _get_errorsdb
+    app.dependency_overrides[get_statssdb] = _get_statsdb
     app.dependency_overrides[auth.auth.okta_jwt_scheme] = _get_token
 
     return app
