@@ -5,10 +5,12 @@ from fastapi.exceptions import HTTPException
 from sqlalchemy.orm.query import Query
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.expression import or_
+from sqlalchemy.sql.functions import func
 from ukrdc_sqla.empi import MasterRecord, Person, PidXRef, WorkItem
 
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
 from ukrdc_fastapi.query.common import PermissionsError, person_belongs_to_units
+from ukrdc_fastapi.query.facilities import ErrorHistoryPoint
 from ukrdc_fastapi.query.masterrecords import get_masterrecords_related_to_person
 from ukrdc_fastapi.query.messages import get_message
 from ukrdc_fastapi.query.persons import get_persons_related_to_masterrecord
@@ -252,3 +254,33 @@ def get_workitems_related_to_message(
         WorkItem.master_id.in_([record.id for record in direct_records]),
         WorkItem.status == 1,
     )
+
+
+def get_full_workitem_history(
+    jtrace: Session,
+    since: Optional[datetime.date] = None,
+    until: Optional[datetime.date] = None,
+):
+    trunc_func = func.date_trunc("day", WorkItem.creation_date)
+    history = (
+        jtrace.query(trunc_func, func.count(trunc_func))
+        .filter(
+            trunc_func
+            >= (since or (datetime.datetime.utcnow() - datetime.timedelta(days=365)))
+        )
+        .group_by(trunc_func)
+        .order_by(trunc_func)
+    )
+
+    if until:
+        history = history.filter(trunc_func <= until)
+
+    points = [
+        ErrorHistoryPoint(
+            time=point[0],
+            count=point[-1],
+        )
+        for point in history.all()
+    ]
+
+    return points

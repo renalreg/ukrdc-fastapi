@@ -250,11 +250,7 @@ def get_errors_history(
         history = history.filter(ErrorHistory.date <= until)
 
     points = [
-        ErrorHistoryPoint(
-            time=point.date,
-            count=point.count,
-        )
-        for point in history.all()
+        ErrorHistoryPoint(time=point.date, count=point.count) for point in history.all()
     ]
 
     return points
