@@ -89,7 +89,7 @@ def get_facilities(
     facility_list: list[FacilitySummarySchema] = []
 
     # Fetch stats for facilities we're listing
-    facility_stats_dict = {
+    facility_stats_dict: dict[str, FacilityStats] = {
         row.facility: row
         for row in statsdb.query(FacilityStats)
         .filter(FacilityStats.facility.in_([code.code for code in facility_codes]))
@@ -142,13 +142,17 @@ def _expand_cached_facility_statistics(
     ]
 
     return FacilityStatisticsSchema(
-        last_updated=stats.last_updated,
-        total_patients=stats.total_patients,
-        patients_receiving_messages=stats.patients_receiving_messages,
-        patients_receiving_message_success=_get_patients_receiving_message_success(
-            stats
+        last_updated=(stats.last_updated if stats else None),
+        total_patients=(stats.total_patients if stats else None),
+        patients_receiving_messages=(
+            stats.patients_receiving_messages if stats else None
         ),
-        patients_receiving_message_error=stats.patients_receiving_errors,
+        patients_receiving_message_success=(
+            _get_patients_receiving_message_success(stats) if stats else None
+        ),
+        patients_receiving_message_error=(
+            stats.patients_receiving_errors if stats else None
+        ),
         # Build an array of Message objects from the cached message IDs
         patients_latest_errors=[
             MessageSchema.from_orm(m)
