@@ -261,6 +261,16 @@ def get_full_workitem_history(
     since: Optional[datetime.date] = None,
     until: Optional[datetime.date] = None,
 ):
+    """Get a combined workitem history by grouping and counting workitems by creation date.
+
+    Args:
+        jtrace (Session): SQLAlchemy session to the JTRACE database.
+        since (Optional[datetime.date], optional): Start date. Defaults to last 365 days.
+        until (Optional[datetime.date], optional): End date. Defaults to None.
+
+    Returns:
+        list[ErrorHistoryPoint]: Error history points.
+    """
     trunc_func = func.date_trunc("day", WorkItem.creation_date)
     history = (
         jtrace.query(trunc_func, func.count(trunc_func))
