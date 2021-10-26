@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import MasterRecord
 from ukrdc_sqla.stats import PatientsLatestErrors
 
-from ukrdc_fastapi.dependencies import get_jtrace, get_statssdb, get_ukrdc3
+from ukrdc_fastapi.dependencies import get_jtrace, get_statssdb
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.query.stats import get_full_errors_history
 from ukrdc_fastapi.query.workitems import get_full_workitem_history, get_workitems
@@ -96,6 +96,6 @@ def admin_counts(
 
     return AdminCountsSchema(
         open_workitems=open_workitems_count,
-        ukrdc_records=ukrdc_records_count,
+        UKRDC_records=ukrdc_records_count,
         patients_receiving_errors=patients_receiving_errors_count,
     )

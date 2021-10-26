@@ -4,24 +4,12 @@ from fastapi_utils.tasks import repeat_every
 
 from ukrdc_fastapi.config import settings
 from ukrdc_fastapi.dependencies import get_redis
-from ukrdc_fastapi.dependencies.database import jtrace_session
 from ukrdc_fastapi.dependencies.mirth import mirth_session
-from ukrdc_fastapi.query.dashboard import get_empi_stats, get_workitems_stats
 from ukrdc_fastapi.utils.mirth import (
     cache_channel_groups,
     cache_channel_info,
     cache_channel_statistics,
 )
-
-
-@repeat_every(seconds=settings.cache_dashboard_seconds)
-def cache_dash_stats() -> None:
-    """FastAPI Utils task to refresh statistics for the admin dashboard"""
-    with jtrace_session() as jtrace:
-        redis = get_redis()
-        logging.info("Refreshing admin statistics")
-        get_workitems_stats(jtrace, redis, refresh=True)
-        get_empi_stats(jtrace, redis, refresh=True)
 
 
 @repeat_every(seconds=settings.cache_channel_seconds)
