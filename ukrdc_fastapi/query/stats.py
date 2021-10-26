@@ -15,14 +15,14 @@ def get_full_errors_history(
     """Get a combined error history by merging each facilities histories from the stats database.
 
     Args:
-        statsdb (Session): [description]
-        since (Optional[datetime.date], optional): [description]. Defaults to None.
-        until (Optional[datetime.date], optional): [description]. Defaults to None.
+        statsdb (Session): SQLAlchemy session to the stats database.
+        since (Optional[datetime.date], optional): Start date. Defaults to last 365 days.
+        until (Optional[datetime.date], optional): End date. Defaults to None.
 
     Returns:
-        list[ErrorHistoryPoint]: [description]
+        list[ErrorHistoryPoint]: Error history points.
     """
-    combined_history: dict[datetime.datetime, int] = {}
+    combined_history: dict[datetime.date, int] = {}
 
     history = statsdb.query(ErrorHistory).filter(
         ErrorHistory.date
@@ -33,10 +33,11 @@ def get_full_errors_history(
         history = history.filter(ErrorHistory.date <= until)
 
     for point in history:
-        if point.date not in combined_history:
-            combined_history[point.date] = point.count
-        else:
-            combined_history[point.date] += point.count
+        if point.count:
+            if point.date not in combined_history:
+                combined_history[point.date] = point.count
+            else:
+                combined_history[point.date] += point.count
 
     points = [
         ErrorHistoryPoint(time=date, count=count)
