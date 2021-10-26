@@ -6,16 +6,16 @@ from sqlalchemy.orm import Session
 
 from ukrdc_fastapi.dependencies import get_jtrace, get_statssdb
 from ukrdc_fastapi.dependencies.auth import Permissions, auth
-from ukrdc_fastapi.query.facilities import ErrorHistoryPoint
 from ukrdc_fastapi.query.stats import get_full_errors_history
 from ukrdc_fastapi.query.workitems import get_full_workitem_history
+from ukrdc_fastapi.schemas.common import HistoryPoint
 
 router = APIRouter(tags=["Admin"])
 
 
 @router.get(
     "/workitems_history",
-    response_model=list[ErrorHistoryPoint],
+    response_model=list[HistoryPoint],
     dependencies=[
         Security(
             auth.permission(
@@ -38,7 +38,7 @@ def full_workitem_history(
 
 @router.get(
     "/errors_history",
-    response_model=list[ErrorHistoryPoint],
+    response_model=list[HistoryPoint],
     dependencies=[
         Security(
             auth.permission(

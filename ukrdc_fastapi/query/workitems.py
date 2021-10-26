@@ -10,10 +10,10 @@ from ukrdc_sqla.empi import MasterRecord, Person, PidXRef, WorkItem
 
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
 from ukrdc_fastapi.query.common import PermissionsError, person_belongs_to_units
-from ukrdc_fastapi.query.facilities import ErrorHistoryPoint
 from ukrdc_fastapi.query.masterrecords import get_masterrecords_related_to_person
 from ukrdc_fastapi.query.messages import get_message
 from ukrdc_fastapi.query.persons import get_persons_related_to_masterrecord
+from ukrdc_fastapi.schemas.common import HistoryPoint
 from ukrdc_fastapi.schemas.empi import WorkItemExtendedSchema
 from ukrdc_fastapi.utils.links import find_related_ids
 
@@ -269,7 +269,7 @@ def get_full_workitem_history(
         until (Optional[datetime.date], optional): End date. Defaults to None.
 
     Returns:
-        list[ErrorHistoryPoint]: Error history points.
+        list[HistoryPoint]: Error history points.
     """
     trunc_func = func.date_trunc("day", WorkItem.creation_date)
     history = (
@@ -286,7 +286,7 @@ def get_full_workitem_history(
         history = history.filter(trunc_func <= until)
 
     points = [
-        ErrorHistoryPoint(
+        HistoryPoint(
             time=point[0],
             count=point[-1],
         )

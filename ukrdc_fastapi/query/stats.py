@@ -4,14 +4,14 @@ from typing import Optional
 from sqlalchemy.orm.session import Session
 from ukrdc_sqla.stats import ErrorHistory
 
-from ukrdc_fastapi.query.facilities import ErrorHistoryPoint
+from ukrdc_fastapi.query.facilities import HistoryPoint
 
 
 def get_full_errors_history(
     statsdb: Session,
     since: Optional[datetime.date] = None,
     until: Optional[datetime.date] = None,
-) -> list[ErrorHistoryPoint]:
+) -> list[HistoryPoint]:
     """Get a combined error history by merging each facilities histories from the stats database.
 
     Args:
@@ -20,7 +20,7 @@ def get_full_errors_history(
         until (Optional[datetime.date], optional): End date. Defaults to None.
 
     Returns:
-        list[ErrorHistoryPoint]: Error history points.
+        list[HistoryPoint]: Error history points.
     """
     combined_history: dict[datetime.date, int] = {}
 
@@ -40,8 +40,7 @@ def get_full_errors_history(
                 combined_history[point.date] += point.count
 
     points = [
-        ErrorHistoryPoint(time=date, count=count)
-        for date, count in combined_history.items()
+        HistoryPoint(time=date, count=count) for date, count in combined_history.items()
     ]
 
     return points

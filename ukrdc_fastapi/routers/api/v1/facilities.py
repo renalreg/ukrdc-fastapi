@@ -7,13 +7,13 @@ from sqlalchemy.orm import Session
 from ukrdc_fastapi.dependencies import get_errorsdb, get_statssdb, get_ukrdc3
 from ukrdc_fastapi.dependencies.auth import UKRDCUser, auth
 from ukrdc_fastapi.query.facilities import (
-    ErrorHistoryPoint,
     FacilityDetailsSchema,
     FacilitySummarySchema,
     get_errors_history,
     get_facilities,
     get_facility,
 )
+from ukrdc_fastapi.schemas.common import HistoryPoint
 from ukrdc_fastapi.utils.sort import ObjectSorter, make_object_sorter
 
 router = APIRouter(tags=["Facilities"])
@@ -54,7 +54,7 @@ def facility(
     return get_facility(ukrdc3, errorsdb, statsdb, code, user)
 
 
-@router.get("/{code}/error_history", response_model=list[ErrorHistoryPoint])
+@router.get("/{code}/error_history", response_model=list[HistoryPoint])
 def facility_errrors_history(
     code: str,
     since: Optional[datetime.date] = None,
