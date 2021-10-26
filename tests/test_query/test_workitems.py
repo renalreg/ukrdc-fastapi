@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 
 import pytest
 from ukrdc_sqla.empi import LinkRecord, MasterRecord
@@ -128,3 +128,18 @@ def test_get_workitems_related_to_message(jtrace_session, errorsdb_session, supe
         jtrace_session, errorsdb_session, 1, superuser
     )
     assert {item.id for item in related} == {1, 2}
+
+
+def test_get_full_workitem_history_default(jtrace_session):
+    history = workitems.get_full_workitem_history(jtrace_session)
+    d = {point.time: point.count for point in history}
+    assert d[date(2021, 1, 1)] == 3
+
+
+def test_get_full_workitem_history_all_time(jtrace_session):
+    history = workitems.get_full_workitem_history(
+        jtrace_session, since=date(1970, 1, 1)
+    )
+    d = {point.time: point.count for point in history}
+    assert d[date(2020, 3, 16)] == 1
+    assert d[date(2021, 1, 1)] == 3

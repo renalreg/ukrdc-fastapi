@@ -2,6 +2,7 @@ from fastapi import APIRouter
 from starlette.responses import RedirectResponse
 
 from . import (
+    admin,
     codes,
     dashboard,
     empi,
@@ -26,6 +27,7 @@ def root():
 
 
 # Sub-resources
+router.include_router(admin.router, prefix="/admin")
 router.include_router(dashboard.router, prefix="/dash")
 router.include_router(system.router, prefix="/system")
 router.include_router(empi.router, prefix="/empi")

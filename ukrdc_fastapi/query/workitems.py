@@ -5,6 +5,7 @@ from fastapi.exceptions import HTTPException
 from sqlalchemy.orm.query import Query
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.expression import or_
+from sqlalchemy.sql.functions import func
 from ukrdc_sqla.empi import MasterRecord, Person, PidXRef, WorkItem
 
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
@@ -12,6 +13,7 @@ from ukrdc_fastapi.query.common import PermissionsError, person_belongs_to_units
 from ukrdc_fastapi.query.masterrecords import get_masterrecords_related_to_person
 from ukrdc_fastapi.query.messages import get_message
 from ukrdc_fastapi.query.persons import get_persons_related_to_masterrecord
+from ukrdc_fastapi.schemas.common import HistoryPoint
 from ukrdc_fastapi.schemas.empi import WorkItemExtendedSchema
 from ukrdc_fastapi.utils.links import find_related_ids
 
@@ -252,3 +254,43 @@ def get_workitems_related_to_message(
         WorkItem.master_id.in_([record.id for record in direct_records]),
         WorkItem.status == 1,
     )
+
+
+def get_full_workitem_history(
+    jtrace: Session,
+    since: Optional[datetime.date] = None,
+    until: Optional[datetime.date] = None,
+):
+    """Get a combined workitem history by grouping and counting workitems by creation date.
+
+    Args:
+        jtrace (Session): SQLAlchemy session to the JTRACE database.
+        since (Optional[datetime.date], optional): Start date. Defaults to last 365 days.
+        until (Optional[datetime.date], optional): End date. Defaults to None.
+
+    Returns:
+        list[HistoryPoint]: Error history points.
+    """
+    trunc_func = func.date_trunc("day", WorkItem.creation_date)
+    history = (
+        jtrace.query(trunc_func, func.count(trunc_func))
+        .filter(
+            trunc_func
+            >= (since or (datetime.datetime.utcnow() - datetime.timedelta(days=365)))
+        )
+        .group_by(trunc_func)
+        .order_by(trunc_func)
+    )
+
+    if until:
+        history = history.filter(trunc_func <= until)
+
+    points = [
+        HistoryPoint(
+            time=point[0],
+            count=point[-1],
+        )
+        for point in history.all()
+    ]
+
+    return points

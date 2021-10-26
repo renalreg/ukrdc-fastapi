@@ -10,6 +10,7 @@ from ukrdc_sqla.ukrdc import Code
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
 from ukrdc_fastapi.query.common import PermissionsError
 from ukrdc_fastapi.schemas.base import OrmModel
+from ukrdc_fastapi.schemas.common import HistoryPoint
 from ukrdc_fastapi.schemas.facility import FacilitySchema
 from ukrdc_fastapi.schemas.message import MessageSchema
 
@@ -45,11 +46,6 @@ class FacilitySummarySchema(FacilitySchema):
 
 class FacilityDetailsSchema(FacilitySchema):
     statistics: FacilityStatisticsSchema
-
-
-class ErrorHistoryPoint(OrmModel):
-    time: datetime.date
-    count: int
 
 
 # Facility list
@@ -212,7 +208,7 @@ def get_errors_history(
     user: UKRDCUser,
     since: Optional[datetime.date] = None,
     until: Optional[datetime.date] = None,
-) -> list[ErrorHistoryPoint]:
+) -> list[HistoryPoint]:
     """Get a day-by-day error count for a particular facility/unit
 
     Args:
@@ -225,7 +221,7 @@ def get_errors_history(
         until (Optional[datetime.date]): Filter end date. Defaults to None.
 
     Returns:
-        list[ErrorHistoryPoint]: Time-series error data
+        list[HistoryPoint]: Time-series error data
     """
     code = (
         ukrdc3.query(Code)
@@ -250,11 +246,7 @@ def get_errors_history(
         history = history.filter(ErrorHistory.date <= until)
 
     points = [
-        ErrorHistoryPoint(
-            time=point.date,
-            count=point.count,
-        )
-        for point in history.all()
+        HistoryPoint(time=point.date, count=point.count) for point in history.all()
     ]
 
     return points
