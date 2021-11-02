@@ -278,14 +278,13 @@ def laborder_get(
 
 @router.delete(
     "/laborders/{order_id}/",
-    status_code=204,
     dependencies=[Security(auth.permission(Permissions.WRITE_RECORDS))],
 )
 def laborder_delete(
     order_id: str,
     patient_record: PatientRecord = Depends(_get_patientrecord),
     ukrdc3: Session = Depends(get_ukrdc3),
-) -> None:
+) -> Response:
     """Mark a particular lab order for deletion"""
     order = patient_record.lab_orders.filter(LabOrder.id == order_id).first()
     if not order:
@@ -303,6 +302,8 @@ def laborder_delete(
 
     ukrdc3.delete(order)
     ukrdc3.commit()
+
+    return Response(status_code=204)
 
 
 @router.get(
@@ -356,14 +357,13 @@ def resultitem_get(
 
 @router.delete(
     "/results/{resultitem_id}/",
-    status_code=204,
     dependencies=[Security(auth.permission(Permissions.WRITE_RECORDS))],
 )
 def resultitem_delete(
     resultitem_id: str,
     patient_record: PatientRecord = Depends(_get_patientrecord),
     ukrdc3: Session = Depends(get_ukrdc3),
-) -> None:
+) -> Response:
     """Mark a particular lab result for deletion"""
     item = patient_record.result_items.filter(ResultItem.id == resultitem_id).first()
     if not item:
@@ -377,6 +377,8 @@ def resultitem_delete(
     if order and order.result_items.count() == 0:
         ukrdc3.delete(order)
     ukrdc3.commit()
+
+    return Response(status_code=204)
 
 
 @router.get(
