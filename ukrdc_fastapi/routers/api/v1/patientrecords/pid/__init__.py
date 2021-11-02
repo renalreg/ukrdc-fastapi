@@ -278,7 +278,6 @@ def laborder_get(
 
 @router.delete(
     "/laborders/{order_id}/",
-    status_code=204,
     dependencies=[Security(auth.permission(Permissions.WRITE_RECORDS))],
 )
 def laborder_delete(
@@ -303,6 +302,8 @@ def laborder_delete(
 
     ukrdc3.delete(order)
     ukrdc3.commit()
+
+    return Response(status_code=204)
 
 
 @router.get(
@@ -356,7 +357,6 @@ def resultitem_get(
 
 @router.delete(
     "/results/{resultitem_id}/",
-    status_code=204,
     dependencies=[Security(auth.permission(Permissions.WRITE_RECORDS))],
 )
 def resultitem_delete(
@@ -377,6 +377,8 @@ def resultitem_delete(
     if order and order.result_items.count() == 0:
         ukrdc3.delete(order)
     ukrdc3.commit()
+
+    return Response(status_code=204)
 
 
 @router.get(
