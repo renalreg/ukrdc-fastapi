@@ -284,7 +284,7 @@ def laborder_delete(
     order_id: str,
     patient_record: PatientRecord = Depends(_get_patientrecord),
     ukrdc3: Session = Depends(get_ukrdc3),
-) -> None:
+) -> Response:
     """Mark a particular lab order for deletion"""
     order = patient_record.lab_orders.filter(LabOrder.id == order_id).first()
     if not order:
@@ -363,7 +363,7 @@ def resultitem_delete(
     resultitem_id: str,
     patient_record: PatientRecord = Depends(_get_patientrecord),
     ukrdc3: Session = Depends(get_ukrdc3),
-) -> None:
+) -> Response:
     """Mark a particular lab result for deletion"""
     item = patient_record.result_items.filter(ResultItem.id == resultitem_id).first()
     if not item:
