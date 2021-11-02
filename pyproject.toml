@@ -28,7 +28,7 @@ ukrdc-sqla = "^1.8.2"
 [tool.poetry.dev-dependencies]
 bandit = "^1.7.0"
 black = "^21.10b0"
-coverage = {extras = ["toml"], version = "^6.0"}
+coverage = {extras = ["toml"], version = "^6.1"}
 fakeredis = "^1.6.1"
 isort = "^5.9.3"
 mypy = "^0.910"
