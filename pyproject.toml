@@ -23,7 +23,7 @@ sentry-sdk = "^1.4.3"
 uvicorn = "^0.15.0" 
 fastapi-utils = "^0.2.1"
 mirth-client = "^2.0.2"
-ukrdc-sqla = "^1.8.2"
+ukrdc-sqla = "^1.9.1"
 
 [tool.poetry.dev-dependencies]
 bandit = "^1.7.0"
