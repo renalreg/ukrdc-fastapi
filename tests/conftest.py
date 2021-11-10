@@ -26,6 +26,7 @@ from ukrdc_sqla.ukrdc import (
     CodeMap,
     Diagnosis,
     Document,
+    Facility,
     LabOrder,
     Level,
     Medication,
@@ -126,6 +127,23 @@ def populate_ukrdc3_session(session):
     session.add(code4)
     session.add(codemap1)
     session.add(codemap2)
+
+    facility_1 = Facility(
+        code="TEST_SENDING_FACILITY_1",
+        pkb_in=False,
+        pkb_out=True,
+        pkb_msg_exclusions=["MDM_T02_CP"],
+    )
+
+    facility_2 = Facility(
+        code="TEST_SENDING_FACILITY_2",
+        pkb_in=False,
+        pkb_out=False,
+        pkb_msg_exclusions=None,
+    )
+
+    session.add(facility_1)
+    session.add(facility_2)
 
     patient_record_1 = PatientRecord(
         pid=PID_1,
