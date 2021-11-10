@@ -24,11 +24,13 @@ def get_full_errors_history(
     """
     combined_history: dict[datetime.date, int] = {}
 
+    # Default to last year
     history = statsdb.query(ErrorHistory).filter(
         ErrorHistory.date
         >= (since or (datetime.datetime.utcnow() - datetime.timedelta(days=365)))
     )
 
+    # Optionally filter by end date
     if until:
         history = history.filter(ErrorHistory.date <= until)
 

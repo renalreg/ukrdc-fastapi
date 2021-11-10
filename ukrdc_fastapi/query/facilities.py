@@ -271,8 +271,13 @@ def get_errors_history(
     # Get cached statistics
     history = statsdb.query(ErrorHistory).filter(ErrorHistory.facility == facility_code)
 
-    if since:
-        history = history.filter(ErrorHistory.date >= since)
+    # Default to last year
+    history = history.filter(
+        ErrorHistory.date
+        >= (since or (datetime.datetime.utcnow() - datetime.timedelta(days=365)))
+    )
+
+    # Optionally filter by end date
     if until:
         history = history.filter(ErrorHistory.date <= until)
 
