@@ -10,25 +10,26 @@ def test_facilities(client):
     }
 
 
-def test_facility_detail(client, ukrdc3_session, errorsdb_session):
-    # Cache the error statistics for the facility
-    test_code = Code(
-        code="TEST_SENDING_FACILITY_1", description="Test sending facility 1"
-    )
-
-    response = client.get(f"/api/v1/facilities/{test_code.code}/")
+def test_facility_detail(client):
+    response = client.get("/api/v1/facilities/TEST_SENDING_FACILITY_1/")
     json = response.json()
     assert json["id"] == "TEST_SENDING_FACILITY_1"
     assert json["statistics"]["lastUpdated"]
 
 
-def test_facility_error_history(client, errorsdb_session):
-    # Cache the error history for the facility
-    test_code = Code(
-        code="TEST_SENDING_FACILITY_1", description="Test sending facility 1"
-    )
-
-    response = client.get(f"/api/v1/facilities/{test_code.code}/error_history/")
+def test_facility_error_history(client):
+    response = client.get("/api/v1/facilities/TEST_SENDING_FACILITY_1/error_history/")
     json = response.json()
     assert len(json) == 1
     assert json[0].get("time") == "2021-01-01"
+
+
+def test_facility_patients_latest_errors(client):
+    response = client.get(
+        "/api/v1/facilities/TEST_SENDING_FACILITY_1/patients_latest_errors/"
+    )
+    json = response.json()
+    messages = json.get("items")
+
+    assert len(messages) == 1
+    assert messages[0].get("id") == 3

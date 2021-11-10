@@ -13,5 +13,8 @@ class FacilitySchema(OrmModel):
         {
             "self": UrlFor("facility", {"code": "<id>"}),
             "errorsHistory": UrlFor("facility_errrors_history", {"code": "<id>"}),
+            "patientsLatestErrors": UrlFor(
+                "facility_patients_latest_errors", {"code": "<id>"}
+            ),
         }
     )

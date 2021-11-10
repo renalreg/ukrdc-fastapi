@@ -26,38 +26,31 @@ def test_get_facilities_user(ukrdc3_session, stats_session, test_user):
     assert {facil.id for facil in all_facils} == {"TEST_SENDING_FACILITY_1"}
 
 
-def test_get_facility(ukrdc3_session, errorsdb_session, stats_session, superuser):
-    test_code = Code(
-        code="TEST_SENDING_FACILITY_1", description="Test sending facility 1"
-    )
-
+def test_get_facility(ukrdc3_session, stats_session, superuser):
     facility = facilities.get_facility(
         ukrdc3_session,
-        errorsdb_session,
         stats_session,
-        test_code.code,
+        "TEST_SENDING_FACILITY_1",
         superuser,
     )
     assert facility.id == "TEST_SENDING_FACILITY_1"
+    assert facility.description == "TEST_SENDING_FACILITY_1_DESCRIPTION"
+    assert facility.data_flow.pkb_message_exclusions == ["MDM_T02_CP"]
+
     assert facility.statistics.last_updated
 
 
-def test_get_facility_denied(
-    ukrdc3_session, errorsdb_session, stats_session, test_user
-):
+def test_get_facility_denied(ukrdc3_session, stats_session, test_user):
     with pytest.raises(PermissionsError):
         facilities.get_facility(
             ukrdc3_session,
-            errorsdb_session,
             stats_session,
             "TEST_SENDING_FACILITY_2",
             test_user,
         )
 
 
-def test_get_facility_history(
-    ukrdc3_session, errorsdb_session, stats_session, superuser
-):
+def test_get_facility_history(ukrdc3_session, stats_session, superuser):
     test_code = Code(
         code="TEST_SENDING_FACILITY_1", description="Test sending facility 1"
     )
@@ -73,9 +66,7 @@ def test_get_facility_history(
     assert history[0].count == 1
 
 
-def test_get_facility_history_range(
-    ukrdc3_session, errorsdb_session, stats_session, superuser
-):
+def test_get_facility_history_range(ukrdc3_session, stats_session, superuser):
     test_code = Code(
         code="TEST_SENDING_FACILITY_1", description="Test sending facility 1"
     )
@@ -117,3 +108,17 @@ def test_get_facility_history_denied(ukrdc3_session, stats_session, test_user):
             "TEST_SENDING_FACILITY_2",
             test_user,
         )
+
+
+def test_get_patients_latest_errors(
+    ukrdc3_session, stats_session, errorsdb_session, test_user
+):
+    messages = facilities.get_patients_latest_errors(
+        ukrdc3_session,
+        errorsdb_session,
+        stats_session,
+        "TEST_SENDING_FACILITY_1",
+        test_user,
+    ).all()
+    assert len(messages) == 1
+    assert messages[0].id == 3
