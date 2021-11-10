@@ -44,5 +44,6 @@ def get_full_errors_history(
     points = [
         HistoryPoint(time=date, count=count) for date, count in combined_history.items()
     ]
+    points.sort(key=lambda p: p.time)
 
     return points
