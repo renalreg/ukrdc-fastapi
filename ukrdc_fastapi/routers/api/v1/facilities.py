@@ -8,7 +8,6 @@ from ukrdc_fastapi.dependencies import get_errorsdb, get_statssdb, get_ukrdc3
 from ukrdc_fastapi.dependencies.auth import UKRDCUser, auth
 from ukrdc_fastapi.query.facilities import (
     FacilityDetailsSchema,
-    FacilitySummarySchema,
     get_errors_history,
     get_facilities,
     get_facility,
@@ -23,7 +22,7 @@ from ukrdc_fastapi.utils.sort import ObjectSorter, SQLASorter, make_object_sorte
 router = APIRouter(tags=["Facilities"])
 
 
-@router.get("/", response_model=list[FacilitySummarySchema])
+@router.get("/", response_model=list[FacilityDetailsSchema])
 def facility_list(
     include_empty: bool = False,
     sorter: ObjectSorter = Depends(
@@ -33,6 +32,7 @@ def facility_list(
                 "id",
                 "statistics.total_patients",
                 "statistics.patients_receiving_message_error",
+                "data_flow.pkb_out",
             ],
         )
     ),

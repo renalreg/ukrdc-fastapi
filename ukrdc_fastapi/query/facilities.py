@@ -40,10 +40,6 @@ class FacilityStatisticsSchema(OrmModel):
     patients_receiving_message_error: Optional[int]
 
 
-class FacilitySummarySchema(FacilitySchema):
-    statistics: FacilityStatisticsSchema
-
-
 class FacilityDetailsSchema(FacilitySchema):
     statistics: FacilityStatisticsSchema
     data_flow: FacilityDataFlowSchema
@@ -83,7 +79,7 @@ def _expand_facility_statistics(
 
 def get_facilities(
     ukrdc3: Session, statsdb: Session, user: UKRDCUser, include_empty: bool = False
-) -> list[FacilitySummarySchema]:
+) -> list[FacilityDetailsSchema]:
     """Get a list of all unit/facility summaries available to the current user
 
     Args:
@@ -92,7 +88,7 @@ def get_facilities(
         user (UKRDCUser): Logged-in user object
 
     Returns:
-        list[FacilitySummarySchema]: List of units/facilities
+        list[FacilityDetailsSchema]: List of units/facilities
     """
 
     facilities = ukrdc3.query(Facility)
@@ -106,7 +102,7 @@ def get_facilities(
     available_facilities = facilities.all()
 
     # Create a list to store our response
-    facility_list: list[FacilitySummarySchema] = []
+    facility_list: list[FacilityDetailsSchema] = []
 
     # Fetch stats for facilities we're listing
     facility_stats_dict: dict[str, FacilityStats] = {
@@ -129,10 +125,15 @@ def get_facilities(
         # Otherwise, only include facilities with patients
         if include_empty or (stats and (stats.total_patients or 0) > 0):
             facility_list.append(
-                FacilitySummarySchema(
+                FacilityDetailsSchema(
                     id=facility.code,
                     description=facility.description,
                     statistics=_expand_facility_statistics(stats),
+                    data_flow=FacilityDataFlowSchema(
+                        pkb_in=facility.pkb_in,
+                        pkb_out=facility.pkb_out,
+                        pkb_message_exclusions=facility.pkb_msg_exclusions or [],
+                    ),
                 )
             )
 
