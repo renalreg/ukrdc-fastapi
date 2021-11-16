@@ -3,7 +3,7 @@ from typing import Optional
 from fastapi.exceptions import HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.query import Query
-from ukrdc_sqla.ukrdc import Code, CodeMap
+from ukrdc_sqla.ukrdc import Code, CodeExclusion, CodeMap
 
 from ukrdc_fastapi.schemas.code import CodeMapSchema, CodeSchema
 
@@ -109,6 +109,37 @@ def get_code_maps(
 
     if destination_code:
         query = query.filter(CodeMap.destination_code == destination_code)
+
+    return query
+
+
+def get_code_exclusions(
+    ukrdc3: Session,
+    coding_standard: Optional[list[str]] = None,
+    code: Optional[str] = None,
+    system: Optional[list[str]] = None,
+) -> Query:
+    """Get the list of code exclusions
+
+    Args:
+        ukrdc3 (Session): SQLAlchemy session
+        coding_standard (Optional[list[str]]): Coding standards to filter by. Defaults to None.
+        code (Optional[str]): Source code to filter by. Defaults to None.
+        system (Optional[list[str]]): Excluded systems to filter by. Defaults to None.
+
+    Returns:
+        Query: Code exclusions
+    """
+    query = ukrdc3.query(CodeExclusion)
+
+    if coding_standard:
+        query = query.filter(CodeExclusion.coding_standard.in_(coding_standard))
+
+    if code:
+        query = query.filter(CodeExclusion.code == code)
+
+    if system:
+        query = query.filter(CodeExclusion.system.in_(system))
 
     return query
 
