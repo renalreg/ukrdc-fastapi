@@ -36,3 +36,9 @@ class CodeMapSchema(OrmModel):
 
     creation_date: datetime.datetime
     update_date: Optional[datetime.datetime]
+
+
+class CodeExclusionSchema(OrmModel):
+    coding_standard: str
+    code: str
+    system: str

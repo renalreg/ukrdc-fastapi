@@ -23,6 +23,7 @@ from ukrdc_sqla.ukrdc import Address
 from ukrdc_sqla.ukrdc import Base as UKRDC3Base
 from ukrdc_sqla.ukrdc import (
     Code,
+    CodeExclusion,
     CodeMap,
     Diagnosis,
     Document,
@@ -107,6 +108,12 @@ def populate_ukrdc3_session(session):
         description="DESCRIPTION_2",
         creation_date=datetime(2020, 3, 16),
     )
+    code5 = Code(
+        coding_standard="CODING_STANDARD_2",
+        code="CODE_3",
+        description="DESCRIPTION_3",
+        creation_date=datetime(2020, 3, 16),
+    )
     codemap1 = CodeMap(
         source_coding_standard="CODING_STANDARD_1",
         destination_coding_standard="CODING_STANDARD_2",
@@ -121,12 +128,25 @@ def populate_ukrdc3_session(session):
         destination_code="CODE_1",
         creation_date=datetime(2020, 3, 16),
     )
+    codeexc1 = CodeExclusion(
+        coding_standard="CODING_STANDARD_1", code="CODE_1", system="SYSTEM_1"
+    )
+    codeexc2 = CodeExclusion(
+        coding_standard="CODING_STANDARD_2", code="CODE_2", system="SYSTEM_1"
+    )
+    codeexc3 = CodeExclusion(
+        coding_standard="CODING_STANDARD_2", code="CODE_2", system="SYSTEM_2"
+    )
     session.add(code1)
     session.add(code2)
     session.add(code3)
     session.add(code4)
+    session.add(code5)
     session.add(codemap1)
     session.add(codemap2)
+    session.add(codeexc1)
+    session.add(codeexc2)
+    session.add(codeexc3)
 
     facility_1 = Facility(
         code="TEST_SENDING_FACILITY_1",
