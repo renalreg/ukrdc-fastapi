@@ -116,7 +116,7 @@ def get_code_maps(
 def get_code_exclusions(
     ukrdc3: Session,
     coding_standard: Optional[list[str]] = None,
-    code: Optional[str] = None,
+    code: Optional[list[str]] = None,
     system: Optional[list[str]] = None,
 ) -> Query:
     """Get the list of code exclusions
@@ -124,7 +124,7 @@ def get_code_exclusions(
     Args:
         ukrdc3 (Session): SQLAlchemy session
         coding_standard (Optional[list[str]]): Coding standards to filter by. Defaults to None.
-        code (Optional[str]): Source code to filter by. Defaults to None.
+        code (Optional[list[str]]): Source code to filter by. Defaults to None.
         system (Optional[list[str]]): Excluded systems to filter by. Defaults to None.
 
     Returns:
@@ -136,7 +136,7 @@ def get_code_exclusions(
         query = query.filter(CodeExclusion.coding_standard.in_(coding_standard))
 
     if code:
-        query = query.filter(CodeExclusion.code == code)
+        query = query.filter(CodeExclusion.code.in_(code))
 
     if system:
         query = query.filter(CodeExclusion.system.in_(system))

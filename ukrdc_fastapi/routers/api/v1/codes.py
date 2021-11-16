@@ -130,7 +130,7 @@ def code_list_export(
     response_class=CSVResponse,
     dependencies=[Security(auth.permission(Permissions.READ_CODES))],
 )
-def code_list_export(
+def code_maps_export(
     ukrdc3: Session = Depends(get_ukrdc3),
     source_coding_standard: Optional[list[str]] = Query(None),
     destination_coding_standard: Optional[list[str]] = Query(None),
@@ -149,13 +149,13 @@ def code_list_export(
     output = io.StringIO()
     writer = csv.writer(output, quoting=csv.QUOTE_NONNUMERIC)
 
-    for map in selected_maps:
+    for codemap in selected_maps:
         writer.writerow(
             [
-                map.source_coding_standard,
-                map.source_code,
-                map.destination_coding_standard,
-                map.destination_code,
+                codemap.source_coding_standard,
+                codemap.source_code,
+                codemap.destination_coding_standard,
+                codemap.destination_code,
             ]
         )
 
@@ -167,7 +167,7 @@ def code_list_export(
     response_class=CSVResponse,
     dependencies=[Security(auth.permission(Permissions.READ_CODES))],
 )
-def code_list_export(
+def code_exclusions_export(
     ukrdc3: Session = Depends(get_ukrdc3),
     coding_standard: Optional[list[str]] = Query(None),
     code: Optional[list[str]] = Query(None),
