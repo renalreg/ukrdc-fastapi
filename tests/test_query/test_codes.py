@@ -13,6 +13,7 @@ def test_get_codes(ukrdc3_session):
         "TEST_SENDING_FACILITY_2",
         "CODE_1",
         "CODE_2",
+        "CODE_3",
     }
 
 
@@ -29,6 +30,7 @@ def test_get_codes_filter_standard(ukrdc3_session):
     assert {code.code for code in code_list} == {
         "CODE_1",
         "CODE_2",
+        "CODE_3",
     }
 
 
@@ -37,6 +39,7 @@ def test_get_codes_search(ukrdc3_session):
     assert {code.code for code in code_list} == {
         "CODE_1",
         "CODE_2",
+        "CODE_3",
     }
 
 
@@ -130,3 +133,34 @@ def test_get_code(ukrdc3_session):
             update_date=None,
         )
     ]
+
+
+def test_get_code_exclusions(ukrdc3_session):
+    exclusions = codes.get_code_exclusions(ukrdc3_session).all()
+    assert {codeexc.code for codeexc in exclusions} == {
+        "CODE_1",
+        "CODE_2",
+        "CODE_2",
+    }
+    assert {codeexc.system for codeexc in exclusions} == {
+        "SYSTEM_1",
+        "SYSTEM_1",
+        "SYSTEM_2",
+    }
+
+
+def test_get_code_exclusions_filter_standard(ukrdc3_session):
+    exclusions = codes.get_code_exclusions(
+        ukrdc3_session, coding_standard=["CODING_STANDARD_1"]
+    ).all()
+    assert {codeexc.code for codeexc in exclusions} == {
+        "CODE_1",
+    }
+
+
+def test_get_code_exclusions_filter_system(ukrdc3_session):
+    exclusions = codes.get_code_exclusions(ukrdc3_session, system=["SYSTEM_1"]).all()
+    assert {codeexc.code for codeexc in exclusions} == {
+        "CODE_1",
+        "CODE_2",
+    }

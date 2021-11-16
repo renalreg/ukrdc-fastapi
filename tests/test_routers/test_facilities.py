@@ -1,6 +1,3 @@
-from ukrdc_sqla.ukrdc import Code
-
-
 def test_facilities(client):
     response = client.get("/api/v1/facilities/?include_empty=true")
     ids = {item.get("id") for item in response.json()}
