@@ -2,13 +2,7 @@ name: Test and Publish
 
 on:
   push:
-    branches:
-      - "main"
-    tags:
-      - "v*"
   pull_request:
-    branches:
-      - "main"
 
 jobs:
   test:
@@ -70,7 +64,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v2
         with:
-          push: true
+          push: ${{ github.event_name != 'pull_request' }}
           build-args: |
             GITHUB_SHA=${{ github.sha }}
             GITHUB_REF=${{ github.ref }}
