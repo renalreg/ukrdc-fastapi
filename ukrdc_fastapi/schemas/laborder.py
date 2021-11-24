@@ -12,7 +12,7 @@ class LabOrderShortSchema(OrmModel):
 
     entered_at_description: Optional[str]
     entered_at: Optional[str]
-    specimen_collected_time: datetime.datetime
+    specimen_collected_time: Optional[datetime.datetime]
 
     links = LinkSet(
         {"self": UrlFor("laborder_get", {"pid": "<pid>", "order_id": "<id>"})}
