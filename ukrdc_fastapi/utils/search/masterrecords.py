@@ -8,6 +8,7 @@ from sqlalchemy.sql.functions import concat
 from stdnum.gb import nhs
 from stdnum.util import isdigits
 from ukrdc_sqla.empi import LinkRecord, MasterRecord, Person, PidXRef
+from ukrdc_sqla.ukrdc import Name, Patient, PatientNumber, PatientRecord
 
 from ukrdc_fastapi.utils import parse_date
 
@@ -125,96 +126,53 @@ def _convert_query_to_pg_like(item: str) -> str:
     return f"{item}%"
 
 
-def masterrecord_ids_from_mrn_no(session: Session, mrn_nos: Iterable[str]):
+def ukrdcids_from_mrn_no(ukrdc3: Session, mrn_nos: Iterable[str]) -> set[str]:
     """
-    Finds Master Record IDs from MRN/NHS/HSC/CHI/RADAR number.
-
-    Naievely we would just match Person.localid, however the EMPI has
-    an extra step to work around MRNs (local IDs) changing.
-    We actually want to look up the MRN in our PidXRef table, then
-    work backwards to find the Person/MasterRecord associated with it.
-
-    The actual MRN will be in PidXRef.localid. The associated PidXRef.pid
-    will match to a corresponding Person.localid, and from there we can
-    obtain the associated MasterRecords.
+    UKRDC IDs from MRN/NHS/HSC/CHI/RADAR number.
     """
-    conditions = [PidXRef.localid.like(mrn_no) for mrn_no in mrn_nos]
-    matched_persons = session.query(Person).join(PidXRef).filter(or_(*conditions)).all()
-    matched_ids = {
-        link.master_id
-        for link in session.query(LinkRecord).filter(
-            LinkRecord.person_id.in_({person.id for person in matched_persons})
-        )
-    }
-    return matched_ids
+    query = (
+        ukrdc3.query(PatientRecord)
+        .join(Patient)
+        .join(PatientNumber)
+        .filter(PatientNumber.patientid.in_(mrn_nos))
+    )
+    ukrdc_ids = {item.ukrdcid for item in query}
+    return ukrdc_ids
 
 
-def masterrecord_ids_from_pid(session: Session, pid_nos: Iterable[str]):
+def ukrdcids_from_pid(ukrdc3: Session, pid_nos: Iterable[str]):
     """
     Finds Master Record IDs from PIDs
     """
-    conditions = [Person.localid.like(pid_no) for pid_no in pid_nos]
-    matched_persons: list[Person] = session.query(Person).filter(or_(*conditions)).all()
-    matched_ids = {
-        link.master_id
-        for link in session.query(LinkRecord).filter(
-            LinkRecord.person_id.in_({person.id for person in matched_persons})
-        )
-    }
-    return matched_ids
+    query = ukrdc3.query(PatientRecord).filter(PatientNumber.pid.in_(pid_nos))
+    ukrdc_ids = {item.ukrdcid for item in query}
+    return ukrdc_ids
 
 
-def masterrecord_ids_from_ukrdc_no(session: Session, ukrdc_nos: Iterable[str]):
-    """
-    Finds Master Record IDs from UKRDC number
-
-    Note: We use the pattern {nhs_no}_ since our nationalid field seems
-    to have trailing spaces. This has a side-effect of allowing partial matching.
-    """
-    conditions = [
-        MasterRecord.nationalid.like(f"{ukrdc_no.strip()}_") for ukrdc_no in ukrdc_nos
-    ]
-    masterrecords: list[MasterRecord] = (
-        session.query(MasterRecord)
-        .filter(
-            or_(*conditions),
-            MasterRecord.nationalid_type.in_(["UKRDC"]),
-        )
-        .all()
-    )
-    matched_ids = {mr.id for mr in masterrecords}
-
-    return matched_ids
-
-
-def masterrecord_ids_from_full_name(session: Session, names: Iterable[str]):
+def ukrdcids_from_full_name(ukrdc3: Session, names: Iterable[str]):
     """Finds Ids from full name"""
     conditions = []
 
     for name in names:
         query_term: str = _convert_query_to_pg_like(name).upper()
 
-        conditions.append(
-            concat(MasterRecord.givenname, " ", MasterRecord.surname).like(query_term)
-        )
-        conditions.append(MasterRecord.givenname.like(query_term))
-        conditions.append(MasterRecord.surname.like(query_term))
+        conditions.append(concat(Name.given, " ", Name.family).like(query_term))
+        conditions.append(Name.given.like(query_term))
+        conditions.append(Name.family.like(query_term))
 
-    masterrecords: list[MasterRecord] = (
-        session.query(MasterRecord).filter(or_(*conditions)).all()
+    query = (
+        ukrdc3.query(PatientRecord).join(Patient).join(Name).filter(or_(*conditions))
     )
-    matched_ids = {mr.id for mr in masterrecords}
+    ukrdc_ids = {item.ukrdcid for item in query}
+    return ukrdc_ids
 
-    return matched_ids
 
-
-def masterrecord_ids_from_dob(
-    session: Session, dobs: Iterable[Union[str, datetime.date]]
-):
+def ukrdcids_from_dob(ukrdc3: Session, dobs: Iterable[Union[str, datetime.date]]):
     """Finds Ids from date of birth"""
-    conditions = [MasterRecord.date_of_birth == dob for dob in dobs]
+    conditions = [Patient.birth_time == dob for dob in dobs]
     matched_ids = {
-        mr.id for mr in session.query(MasterRecord).filter(or_(*conditions)).all()
+        item.ukrdcid
+        for item in ukrdc3.query(PatientRecord, Patient).filter(or_(*conditions)).all()
     }
 
     return matched_ids
@@ -227,13 +185,14 @@ def search_masterrecord_ids(  # pylint: disable=too-many-branches
     pids: list[str],
     dob: list[str],
     search: list[str],
-    jtrace: Session,
+    ukrdc3: Session,
 ):
-    """Search the EMPI for a particular master record"""
+    """Search the UKRDC for a set of search items, and return a set of matching UKRDC IDs"""
     match_sets: list[set[int]] = []
 
     searchset = SearchSet()
 
+    # Add all explicit search terms to the search set
     for item in mrn_number:
         searchset.add_mrn_number(item)
     for item in ukrdc_number:
@@ -245,24 +204,23 @@ def search_masterrecord_ids(  # pylint: disable=too-many-branches
     for item in dob:
         searchset.add_date(item)
 
+    # Add all implicit search terms to the search set
     searchset.add_terms(search)
 
-    if searchset.mrn_numbers:
-        match_sets.append(masterrecord_ids_from_mrn_no(jtrace, searchset.mrn_numbers))
-
     if searchset.ukrdc_numbers:
-        match_sets.append(
-            masterrecord_ids_from_ukrdc_no(jtrace, searchset.ukrdc_numbers)
-        )
+        match_sets.append(searchset.ukrdc_numbers)
+
+    if searchset.mrn_numbers:
+        match_sets.append(ukrdcids_from_mrn_no(ukrdc3, searchset.mrn_numbers))
 
     if searchset.names:
-        match_sets.append(masterrecord_ids_from_full_name(jtrace, searchset.names))
+        match_sets.append(ukrdcids_from_full_name(ukrdc3, searchset.names))
 
     if searchset.dates:
-        match_sets.append(masterrecord_ids_from_dob(jtrace, searchset.dates))
+        match_sets.append(ukrdcids_from_dob(ukrdc3, searchset.dates))
 
     if searchset.pids:
-        match_sets.append(masterrecord_ids_from_pid(jtrace, searchset.pids))
+        match_sets.append(ukrdcids_from_pid(ukrdc3, searchset.pids))
 
     non_empty_sets: list[set[int]] = [
         match_set for match_set in match_sets if match_set
