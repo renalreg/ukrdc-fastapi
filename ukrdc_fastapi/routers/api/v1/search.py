@@ -25,6 +25,7 @@ def search_masterrecords(
     ukrdc_number: list[str] = QueryParam([]),
     full_name: list[str] = QueryParam([]),
     dob: list[str] = QueryParam([]),
+    facility: list[str] = QueryParam([]),
     search: list[str] = QueryParam([]),
     number_type: list[str] = QueryParam([]),
     include_ukrdc: bool = False,
@@ -34,7 +35,7 @@ def search_masterrecords(
 ):
     """Search the EMPI for a particular master record"""
     matched_ukrdc_ids = search_masterrecord_ids(
-        mrn_number, ukrdc_number, full_name, pid, dob, search, ukrdc3
+        mrn_number, ukrdc_number, full_name, pid, dob, facility, search, ukrdc3
     )
 
     # Matched UKRDC IDs will only give us UKRDC-type Master Records,
