@@ -37,7 +37,7 @@ def test_workitem_related(client):
     assert response.status_code == 200
 
     returned_ids = {item["id"] for item in response.json()}
-    assert returned_ids == {2, 4}
+    assert returned_ids == {2, 3, 4}
 
 
 def test_workitem_messages(client):
