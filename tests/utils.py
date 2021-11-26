@@ -3,15 +3,7 @@ from typing import Optional
 
 from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import LinkRecord, MasterRecord, Person, PidXRef
-from ukrdc_sqla.ukrdc import (
-    Address,
-    Code,
-    Facility,
-    Name,
-    Patient,
-    PatientNumber,
-    PatientRecord,
-)
+from ukrdc_sqla.ukrdc import Address, Name, Patient, PatientNumber, PatientRecord
 
 
 def create_basic_patient(

@@ -175,6 +175,7 @@ def records_from_full_name(ukrdc3: Session, names: Iterable[str]):
         query_term: str = _convert_query_to_pg_like(name).upper()
 
         conditions.append(concat(Name.given, " ", Name.family).like(query_term))
+        conditions.append(concat(Name.family, " ", Name.given).like(query_term))
         conditions.append(Name.given.like(query_term))
         conditions.append(Name.family.like(query_term))
 
