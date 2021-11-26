@@ -10,7 +10,7 @@ from mirth_client import MirthAPI
 from pytest_httpx import HTTPXMock
 from pytest_postgresql import factories
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import Session, sessionmaker
 from ukrdc_sqla.empi import Base as JtraceBase
 from ukrdc_sqla.empi import LinkRecord, MasterRecord, Person, PidXRef, WorkItem
 from ukrdc_sqla.errorsdb import Base as ErrorsBase
@@ -56,6 +56,8 @@ from ukrdc_fastapi.dependencies import (
 )
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
 
+from .utils import create_basic_patient
+
 # Using the factory to create a postgresql instance
 socket_dir = tempfile.TemporaryDirectory()
 postgresql_my_proc = factories.postgresql_proc(port=None, unixsocketdir=socket_dir.name)
@@ -78,12 +80,15 @@ MINIMAL_PDF_BYTES = (
 
 PID_1: str = "PYTEST01:PV:00000000A"
 PID_2: str = "PYTEST02:PV:00000000A"
+PID_3: str = "PYTEST03:PV:00000000A"
+PID_4: str = "PYTEST04:PV:00000000A"
 UKRDCID_1 = "999999999"
 UKRDCID_2 = "999999911"
+UKRDCID_3 = "999999922"
+UKRDCID_4 = "999999933"
 
 
-def populate_ukrdc3_session(session):
-
+def populate_facilities(ukrdc3, statsdb, errorsdb):
     code1 = Code(
         coding_standard="RR1+",
         code="TEST_SENDING_FACILITY_1",
@@ -96,6 +101,115 @@ def populate_ukrdc3_session(session):
         description="TEST_SENDING_FACILITY_2_DESCRIPTION",
         creation_date=datetime(2020, 3, 16),
     )
+
+    ukrdc3.add(code1)
+    ukrdc3.add(code2)
+
+    facility_1 = Facility(
+        code="TEST_SENDING_FACILITY_1",
+        pkb_in=False,
+        pkb_out=True,
+        pkb_msg_exclusions=["MDM_T02_CP"],
+    )
+
+    facility_2 = Facility(
+        code="TEST_SENDING_FACILITY_2",
+        pkb_in=False,
+        pkb_out=False,
+        pkb_msg_exclusions=None,
+    )
+
+    ukrdc3.add(facility_1)
+    ukrdc3.add(facility_2)
+
+    ukrdc3.commit()
+
+    channel_1 = Channel(id="MIRTH-CHANNEL-UUID", name="MIRTH-CHANNEL-NAME")
+    errorsdb.add(channel_1)
+
+    # Mock error relating to MR 1, WORKITEMS 1 and 2
+    error_1 = ErrorMessage(
+        id=1,
+        message_id=1,
+        channel_id="MIRTH-CHANNEL-UUID",
+        received=datetime(2021, 1, 1),
+        msg_status="ERROR",
+        ni=UKRDCID_1,
+        filename="FILENAME_1.XML",
+        facility="TEST_SENDING_FACILITY_1",
+        error="ERROR MESSAGE 1",
+        status="STATUS1",
+    )
+
+    # Mock error unrelated to workitems
+    error_2 = ErrorMessage(
+        id=2,
+        message_id=2,
+        channel_id="MIRTH-CHANNEL-UUID",
+        received=datetime(2020, 3, 16),
+        msg_status="ERROR",
+        ni=UKRDCID_2,
+        filename="FILENAME_2.XML",
+        facility="TEST_SENDING_FACILITY_2",
+        error="ERROR MESSAGE 2",
+        status="STATUS2",
+    )
+
+    message_1 = ErrorMessage(
+        id=3,
+        message_id=3,
+        channel_id="MIRTH-CHANNEL-UUID",
+        received=datetime(2021, 1, 1),
+        msg_status="RECEIVED",
+        ni=UKRDCID_1,
+        filename="FILENAME_3.XML",
+        facility="TEST_SENDING_FACILITY_1",
+        error=None,
+        status="STATUS3",
+    )
+
+    errorsdb.add(error_1)
+    errorsdb.add(error_2)
+    errorsdb.add(message_1)
+
+    errorsdb.commit()
+
+    stats_1 = FacilityStats(
+        facility="TEST_SENDING_FACILITY_1",
+        total_patients=1,
+        patients_receiving_messages=1,
+        patients_receiving_errors=1,
+        last_updated=datetime(2021, 10, 1),
+    )
+    stats_2 = FacilityStats(
+        facility="TEST_SENDING_FACILITY_2",
+        total_patients=1,
+        patients_receiving_messages=1,
+        patients_receiving_errors=0,
+        last_updated=datetime(2021, 10, 1),
+    )
+
+    latest_1 = PatientsLatestErrors(
+        ni=UKRDCID_1,
+        facility="TEST_SENDING_FACILITY_1",
+        id=3,
+        last_updated=datetime(2021, 10, 1),
+    )
+
+    history_1 = ErrorHistory(
+        facility="TEST_SENDING_FACILITY_1", date=datetime(2021, 1, 1), count=1
+    )
+
+    statsdb.add(stats_1)
+    statsdb.add(stats_2)
+    statsdb.add(latest_1)
+    statsdb.add(history_1)
+
+    statsdb.commit()
+
+
+def populate_codes(ukrdc3):
+
     code3 = Code(
         coding_standard="CODING_STANDARD_1",
         code="CODE_1",
@@ -137,89 +251,20 @@ def populate_ukrdc3_session(session):
     codeexc3 = CodeExclusion(
         coding_standard="CODING_STANDARD_2", code="CODE_2", system="SYSTEM_2"
     )
-    session.add(code1)
-    session.add(code2)
-    session.add(code3)
-    session.add(code4)
-    session.add(code5)
-    session.add(codemap1)
-    session.add(codemap2)
-    session.add(codeexc1)
-    session.add(codeexc2)
-    session.add(codeexc3)
 
-    facility_1 = Facility(
-        code="TEST_SENDING_FACILITY_1",
-        pkb_in=False,
-        pkb_out=True,
-        pkb_msg_exclusions=["MDM_T02_CP"],
-    )
+    ukrdc3.add(code3)
+    ukrdc3.add(code4)
+    ukrdc3.add(code5)
+    ukrdc3.add(codemap1)
+    ukrdc3.add(codemap2)
+    ukrdc3.add(codeexc1)
+    ukrdc3.add(codeexc2)
+    ukrdc3.add(codeexc3)
 
-    facility_2 = Facility(
-        code="TEST_SENDING_FACILITY_2",
-        pkb_in=False,
-        pkb_out=False,
-        pkb_msg_exclusions=None,
-    )
+    ukrdc3.commit()
 
-    session.add(facility_1)
-    session.add(facility_2)
 
-    patient_record_1 = PatientRecord(
-        pid=PID_1,
-        sendingfacility="TEST_SENDING_FACILITY_1",
-        sendingextract="PV",
-        localpatientid="00000000A",
-        ukrdcid=UKRDCID_1,
-        repository_update_date=datetime(2020, 3, 16),
-        repository_creation_date=datetime(2020, 3, 16),
-    )
-    patient_record_1.update_date = datetime(2021, 1, 21)
-    patient_record_1.repository_update_date = datetime(2021, 1, 21)
-    session.add(patient_record_1)
-
-    patient_record_2 = PatientRecord(
-        pid=PID_2,
-        sendingfacility="TEST_SENDING_FACILITY_2",
-        sendingextract="PV",
-        localpatientid="00000000B",
-        ukrdcid=UKRDCID_1,
-        repository_update_date=datetime(2020, 3, 16),
-        repository_creation_date=datetime(2020, 3, 16),
-    )
-    patient_record_2.update_date = datetime(2021, 1, 21)
-    patient_record_2.repository_update_date = datetime(2021, 1, 21)
-    session.add(patient_record_2)
-
-    name = Name(id=1, pid=PID_1, family="Star", given="Patrick", nameuse="L")
-    address = Address(
-        id="ADDRESS1",
-        pid=PID_1,
-        street="120 Conch Street",
-        town="Bikini Bottom",
-        county="Bikini County",
-        postcode="XX0 1AA",
-        country_description="Pacific Ocean",
-    )
-    address_alt = Address(
-        id="ADDRESS2",
-        pid=PID_1,
-        street="121 Conch Street",
-        town="Bikini Bottom",
-        county="Bikini County",
-        postcode="XX0 1AA",
-        country_description="Pacific Ocean",
-    )
-    patient = Patient(pid=PID_1, birth_time=datetime(1984, 3, 17), gender="1")
-    patient_number = PatientNumber(
-        id=1, pid=PID_1, patientid="888888888", organization="NHS", numbertype="NI"
-    )
-    session.add(name)
-    session.add(address)
-    session.add(address_alt)
-    session.add(patient)
-    session.add(patient_number)
-
+def populate_patient_1_extra(session):
     diagnosis_1 = Diagnosis(
         id="DIAGNOSIS1",
         pid=PID_1,
@@ -270,6 +315,7 @@ def populate_ukrdc3_session(session):
         link="http://renal_pkb_link.2",
         link_name="RENAL_PKB_LINK_2",
     )
+
     session.add(renal_diagnosis_1)
     session.add(renal_pkb_link_2)
 
@@ -297,21 +343,9 @@ def populate_ukrdc3_session(session):
         dose_uom_description="DOSE_UOM_DESCRIPTION_2",
         dose_uom_code_std="DOSE_UOM_CODE_STD_2",
     )
-    medication_3 = Medication(
-        id="MEDICATION3",
-        pid=PID_2,
-        frequency="FREQUENCY_3",
-        from_time=datetime(2019, 3, 16),
-        to_time=datetime(9999, 3, 16),
-        drug_product_generic="DRUG_PRODUCT_GENERIC_3",
-        dose_quantity="DOSE_QUANTITY_3",
-        dose_uom_code="DOSE_UOM_CODE_3",
-        dose_uom_description="DOSE_UOM_DESCRIPTION_3",
-        dose_uom_code_std="DOSE_UOM_CODE_STD_3",
-    )
+
     session.add(medication_1)
     session.add(medication_2)
-    session.add(medication_3)
 
     treatment_1 = Treatment(
         id="TREATMENT1",
@@ -333,19 +367,9 @@ def populate_ukrdc3_session(session):
         health_care_facility_code="TEST_SENDING_FACILITY_1",
         health_care_facility_code_std="ODS",
     )
-    treatment_3 = Treatment(
-        id="TREATMENT3",
-        pid=PID_2,
-        from_time=datetime(2019, 3, 16),
-        to_time=datetime(9999, 3, 16),
-        admit_reason_code=1,
-        admission_source_code_std="CF_RR7_TREATMENT",
-        health_care_facility_code="TEST_SENDING_FACILITY_2",
-        health_care_facility_code_std="ODS",
-    )
+
     session.add(treatment_1)
     session.add(treatment_2)
-    session.add(treatment_3)
 
     laborder_1 = LabOrder(
         id="LABORDER1",
@@ -398,18 +422,8 @@ def populate_ukrdc3_session(session):
         observation_units="OBSERVATION_UNITS",
         observation_time=datetime(2020, 3, 16),
     )
-    observation_2 = Observation(
-        id="OBSERVATION2",
-        pid=PID_2,
-        observation_code_std="OBSERVATION_CODE_STD",
-        observation_code="OBSERVATION_CODE",
-        observation_desc="OBSERVATION_DESC",
-        observation_value="OBSERVATION_VALUE",
-        observation_units="OBSERVATION_UNITS",
-        observation_time=datetime(2020, 3, 16),
-    )
+
     session.add(observation_1)
-    session.add(observation_2)
 
     observation_dia = Observation(
         id="OBSERVATION_DIA_1",
@@ -442,14 +456,7 @@ def populate_ukrdc3_session(session):
         enteredbycode="ENTEREDBYCODE",
         enteredatcode="ENTEREDATCODE",
     )
-    survey_2 = Survey(
-        id="SURVEY2",
-        pid=PID_2,
-        surveytime=datetime(2020, 3, 16, 18, 00),
-        surveytypecode="TYPECODE",
-        enteredbycode="ENTEREDBYCODE",
-        enteredatcode="ENTEREDATCODE",
-    )
+
     question_1 = Question(
         id="QUESTION1",
         surveyid="SURVEY1",
@@ -469,7 +476,7 @@ def populate_ukrdc3_session(session):
         id="LEVEL1", surveyid="SURVEY1", value="LEVEL_VALUE", leveltypecode="TYPECODE"
     )
     session.add(survey_1)
-    session.add(survey_2)
+
     session.add(question_1)
     session.add(question_2)
     session.add(score)
@@ -497,106 +504,67 @@ def populate_ukrdc3_session(session):
     session.commit()
 
 
-def populate_jtrace_session(session):
-    master_record_1 = MasterRecord(
-        id=1,
-        status=0,
-        last_updated=datetime(2020, 3, 16),
-        date_of_birth=datetime(1950, 1, 1),
-        nationalid=UKRDCID_1,
-        nationalid_type="UKRDC",
-        effective_date=datetime(2020, 3, 16),
-    )
-
-    master_record_2 = MasterRecord(
-        id=2,
-        status=0,
-        last_updated=datetime(2021, 1, 1),
-        date_of_birth=datetime(1980, 12, 12),
-        nationalid=UKRDCID_2,
-        nationalid_type="UKRDC",
-        effective_date=datetime(2021, 1, 1),
-    )
-
-    person_1 = Person(
-        id=1,
-        originator="UKRDC",
-        localid=PID_1,
-        localid_type="CLPID",
-        date_of_birth=datetime(1950, 1, 1),
-        gender="9",
-    )
-
-    person_1_xref_1 = PidXRef(
-        id=1,
-        pid=PID_1,
-        sending_facility="TEST_SENDING_FACILITY_1",
-        sending_extract="XREF_SENDING_EXTRACT_1",
-        localid="XREF_LOCALID_1",
-    )
-
-    person_2 = Person(
-        id=2,
-        originator="UKRDC",
-        localid=PID_2,
-        localid_type="CLPID",
-        date_of_birth=datetime(1950, 1, 1),
-        gender="9",
-    )
-    person_2_xref_1 = PidXRef(
-        id=2,
+def populate_patient_2_extra(session):
+    medication_3 = Medication(
+        id="MEDICATION3",
         pid=PID_2,
-        sending_facility="TEST_SENDING_FACILITY_2",
-        sending_extract="XREF_SENDING_EXTRACT_2",
-        localid="XREF_LOCALID_2",
+        frequency="FREQUENCY_3",
+        from_time=datetime(2019, 3, 16),
+        to_time=datetime(9999, 3, 16),
+        drug_product_generic="DRUG_PRODUCT_GENERIC_3",
+        dose_quantity="DOSE_QUANTITY_3",
+        dose_uom_code="DOSE_UOM_CODE_3",
+        dose_uom_description="DOSE_UOM_DESCRIPTION_3",
+        dose_uom_code_std="DOSE_UOM_CODE_STD_3",
     )
 
-    person_3 = Person(
-        id=3,
-        originator="UKRDC",
-        localid="PYTEST03:PV:00000000A",
-        localid_type="CLPID",
-        date_of_birth=datetime(1950, 1, 1),
-        gender="9",
+    session.add(medication_3)
+
+    treatment_3 = Treatment(
+        id="TREATMENT3",
+        pid=PID_2,
+        from_time=datetime(2019, 3, 16),
+        to_time=datetime(9999, 3, 16),
+        admit_reason_code=1,
+        admission_source_code_std="CF_RR7_TREATMENT",
+        health_care_facility_code="TEST_SENDING_FACILITY_2",
+        health_care_facility_code_std="ODS",
     )
 
-    person_4 = Person(
-        id=4,
-        originator="UKRDC",
-        localid="PYTEST04:PV:00000000A",
-        localid_type="CLPID",
-        date_of_birth=datetime(1950, 1, 1),
-        gender="9",
-    )
-    person_4_xref_1 = PidXRef(
-        id=3,
-        pid="PYTEST04:PV:00000000A",
-        sending_facility="TEST_SENDING_FACILITY_1",
-        sending_extract="XREF_SENDING_EXTRACT_1",
-        localid="XREF_LOCALID_2",
+    session.add(treatment_3)
+
+    observation_2 = Observation(
+        id="OBSERVATION2",
+        pid=PID_2,
+        observation_code_std="OBSERVATION_CODE_STD",
+        observation_code="OBSERVATION_CODE",
+        observation_desc="OBSERVATION_DESC",
+        observation_value="OBSERVATION_VALUE",
+        observation_units="OBSERVATION_UNITS",
+        observation_time=datetime(2020, 3, 16),
     )
 
-    link_record_1 = LinkRecord(
-        id=1,
-        person_id=1,
-        master_id=1,
-        link_type=0,
-        link_code=0,
-        last_updated=datetime(2019, 1, 1),
-    )
-    link_record_2 = LinkRecord(
-        id=2,
-        person_id=2,
-        master_id=1,
-        link_type=0,
-        link_code=0,
-        last_updated=datetime(2020, 3, 16),
+    session.add(observation_2)
+
+    survey_2 = Survey(
+        id="SURVEY2",
+        pid=PID_2,
+        surveytime=datetime(2020, 3, 16, 18, 00),
+        surveytypecode="TYPECODE",
+        enteredbycode="ENTEREDBYCODE",
+        enteredatcode="ENTEREDATCODE",
     )
 
+    session.add(survey_2)
+
+    session.commit()
+
+
+def populate_workitems(session: Session):
     work_item_1 = WorkItem(
         id=1,
-        person_id=3,
-        master_id=1,
+        person_id=1,
+        master_id=4,
         type=9,
         description="DESCRIPTION_1",
         status=1,
@@ -606,8 +574,8 @@ def populate_jtrace_session(session):
 
     work_item_2 = WorkItem(
         id=2,
-        person_id=4,
-        master_id=1,
+        person_id=2,
+        master_id=4,
         type=9,
         description="DESCRIPTION_2",
         status=1,
@@ -628,7 +596,7 @@ def populate_jtrace_session(session):
 
     work_item_closed = WorkItem(
         id=4,
-        person_id=1,
+        person_id=4,
         master_id=1,
         type=9,
         description="DESCRIPTION_CLOSED",
@@ -637,17 +605,6 @@ def populate_jtrace_session(session):
         last_updated=datetime(2021, 1, 1),
     )
 
-    session.add(master_record_1)
-    session.add(master_record_2)
-    session.add(person_1)
-    session.add(person_1_xref_1)
-    session.add(person_2)
-    session.add(person_2_xref_1)
-    session.add(person_3)
-    session.add(person_4)
-    session.add(person_4_xref_1)
-    session.add(link_record_1)
-    session.add(link_record_2)
     session.add(work_item_1)
     session.add(work_item_2)
     session.add(work_item_3)
@@ -656,98 +613,89 @@ def populate_jtrace_session(session):
     session.commit()
 
 
-def populate_errorsdb_session(session):
-    channel_1 = Channel(id="MIRTH-CHANNEL-UUID", name="MIRTH-CHANNEL-NAME")
-    session.add(channel_1)
+def populate_all(ukrdc3: Session, jtrace: Session, errorsdb: Session, statsdb: Session):
+    populate_facilities(ukrdc3, statsdb, errorsdb)
+    populate_codes(ukrdc3)
 
-    # Mock error relating to MR 1, WORKITEMS 1 and 2
-    error_1 = ErrorMessage(
-        id=1,
-        message_id=1,
-        channel_id="MIRTH-CHANNEL-UUID",
-        received=datetime(2021, 1, 1),
-        msg_status="ERROR",
-        ni=UKRDCID_1,
-        filename="FILENAME_1.XML",
-        facility="TEST_SENDING_FACILITY_1",
-        error="ERROR MESSAGE 1",
-        status="STATUS1",
+    # Create patients
+    create_basic_patient(
+        1,
+        PID_1,
+        UKRDCID_1,
+        "888888888",
+        "TEST_SENDING_FACILITY_1",
+        "PV",
+        "00000000A",
+        "Star",
+        "Patrick",
+        datetime(1984, 3, 17),
+        ukrdc3,
+        jtrace,
     )
-
-    # Mock error unrelated to workitems
-    error_2 = ErrorMessage(
-        id=2,
-        message_id=2,
-        channel_id="MIRTH-CHANNEL-UUID",
-        received=datetime(2020, 3, 16),
-        msg_status="ERROR",
-        ni=None,
-        filename="FILENAME_2.XML",
-        facility="TEST_SENDING_FACILITY_2",
-        error="ERROR MESSAGE 2",
-        status="STATUS2",
+    create_basic_patient(
+        2,
+        PID_2,
+        UKRDCID_2,
+        "888888887",
+        "TEST_SENDING_FACILITY_2",
+        "PV",
+        "00000000B",
+        "Tentacles",
+        "Squidward",
+        datetime(1975, 10, 9),
+        ukrdc3,
+        jtrace,
     )
-
-    message_1 = ErrorMessage(
-        id=3,
-        message_id=3,
-        channel_id="MIRTH-CHANNEL-UUID",
-        received=datetime(2021, 1, 1),
-        msg_status="RECEIVED",
-        ni=UKRDCID_1,
-        filename="FILENAME_3.XML",
-        facility="TEST_SENDING_FACILITY_1",
-        error=None,
-        status="STATUS3",
+    create_basic_patient(
+        3,
+        PID_3,
+        UKRDCID_3,
+        "888888886",
+        "TEST_SENDING_FACILITY_3",
+        "PV",
+        "00000000A",
+        "FAMILYNAME3",
+        "GIVENNAME3",
+        datetime(1984, 3, 17),
+        ukrdc3,
+        jtrace,
     )
-
-    session.add(error_1)
-    session.add(error_2)
-    session.add(message_1)
-
-    session.commit()
-
-
-def populate_stats_session(session):
-    stats_1 = FacilityStats(
-        facility="TEST_SENDING_FACILITY_1",
-        total_patients=1,
-        patients_receiving_messages=1,
-        patients_receiving_errors=1,
-        last_updated=datetime(2021, 10, 1),
+    create_basic_patient(
+        4,
+        PID_4,
+        UKRDCID_4,
+        "888888885",
+        "TEST_SENDING_FACILITY_1",
+        "PV",
+        "00000000B",
+        "FAMILYNAME4",
+        "GIVENNAME4",
+        datetime(1975, 10, 9),
+        ukrdc3,
+        jtrace,
     )
-    stats_2 = FacilityStats(
-        facility="TEST_SENDING_FACILITY_2",
-        total_patients=1,
-        patients_receiving_messages=1,
-        patients_receiving_errors=0,
-        last_updated=datetime(2021, 10, 1),
+    # Link patients 1 and 4
+    link_record = LinkRecord(
+        id=401,
+        person_id=4,
+        master_id=1,
+        link_type=0,
+        link_code=0,
+        last_updated=datetime(2019, 1, 1),
     )
+    jtrace.add(link_record)
+    jtrace.commit()
 
-    latest_1 = PatientsLatestErrors(
-        ni=UKRDCID_1,
-        facility="TEST_SENDING_FACILITY_1",
-        id=3,
-        last_updated=datetime(2021, 10, 1),
-    )
+    populate_patient_1_extra(ukrdc3)
+    populate_patient_2_extra(ukrdc3)
 
-    history_1 = ErrorHistory(
-        facility="TEST_SENDING_FACILITY_1", date=datetime(2021, 1, 1), count=1
-    )
-
-    session.add(stats_1)
-    session.add(stats_2)
-    session.add(latest_1)
-    session.add(history_1)
-
-    session.commit()
+    populate_workitems(jtrace)
 
 
 @pytest.fixture(scope="function")
 def jtrace_sessionmaker(postgresql_my):
     """
-    Create a new function-scoped in-memory JTRACE database,
-    populate with test data, and return the session class
+    Create a new function-scoped in-memory JTRACE database and return the session class
     """
 
     def dbcreator():
@@ -760,15 +708,13 @@ def jtrace_sessionmaker(postgresql_my):
         bind=engine,
     )
     JtraceBase.metadata.create_all(bind=engine)
-    populate_jtrace_session(JtraceTestSession())
     return JtraceTestSession
 
 
 @pytest.fixture(scope="function")
 def ukrdc3_sessionmaker(postgresql_my):
     """
-    Create a new function-scoped in-memory UKRDC3 database,
-    populate with test data, and return the session class
+    Create a new function-scoped in-memory UKRDC3 database and return the session class
     """
 
     def dbcreator():
@@ -781,15 +727,13 @@ def ukrdc3_sessionmaker(postgresql_my):
         bind=engine,
     )
     UKRDC3Base.metadata.create_all(bind=engine)
-    populate_ukrdc3_session(UKRDCTestSession())
     return UKRDCTestSession
 
 
 @pytest.fixture(scope="function")
 def errorsdb_sessionmaker(postgresql_my):
     """
-    Create a new function-scoped in-memory ERRORS database,
-    populate with test data, and return the session class
+    Create a new function-scoped in-memory ERRORS database and return the session class
     """
 
     def dbcreator():
@@ -802,15 +746,13 @@ def errorsdb_sessionmaker(postgresql_my):
         bind=engine,
     )
     ErrorsBase.metadata.create_all(bind=engine)
-    populate_errorsdb_session(ErrorsTestSession())
     return ErrorsTestSession
 
 
 @pytest.fixture(scope="function")
 def statsdb_sessionmaker(postgresql_my):
     """
-    Create a new function-scoped in-memory STATS database,
-    populate with test data, and return the session class
+    Create a new function-scoped in-memory STATS database and return the session class
     """
 
     def dbcreator():
@@ -823,48 +765,54 @@ def statsdb_sessionmaker(postgresql_my):
         bind=engine,
     )
     StatsBase.metadata.create_all(bind=engine)
-    populate_stats_session(StatsTestSession())
     return StatsTestSession
 
 
 @pytest.fixture(scope="function")
-def ukrdc3_session(ukrdc3_sessionmaker):
-    """Create and yield a fresh in-memory test UKRDC3 database session"""
-    db = ukrdc3_sessionmaker()
-    try:
-        yield db
-    finally:
-        db.close()
+def sessions(
+    ukrdc3_sessionmaker,
+    jtrace_sessionmaker,
+    errorsdb_sessionmaker,
+    statsdb_sessionmaker,
+):
+    """
+    Create a new function-scoped in-memory UKRDC3, JTRACE, ERRORS and STATS databases,
+    populate with test data, and return the session classes
+    """
+
+    ukrdc3 = ukrdc3_sessionmaker()
+    jtrace = jtrace_sessionmaker()
+    errorsdb = errorsdb_sessionmaker()
+    statsdb = statsdb_sessionmaker()
+
+    populate_all(ukrdc3, jtrace, errorsdb, statsdb)
+
+    yield ukrdc3, jtrace, errorsdb, statsdb
+
+    ukrdc3.close()
+    jtrace.close()
+    errorsdb.close()
+    statsdb.close()
 
 
 @pytest.fixture(scope="function")
-def jtrace_session(jtrace_sessionmaker):
-    """Create and yield a fresh in-memory test JTRACE database session"""
-    db = jtrace_sessionmaker()
-    try:
-        yield db
-    finally:
-        db.close()
+def ukrdc3_session(sessions):
+    return sessions[0]
 
 
 @pytest.fixture(scope="function")
-def errorsdb_session(errorsdb_sessionmaker):
-    """Create and yield a fresh in-memory test ERRORS database session"""
-    db = errorsdb_sessionmaker()
-    try:
-        yield db
-    finally:
-        db.close()
+def jtrace_session(sessions):
+    return sessions[1]
 
 
 @pytest.fixture(scope="function")
-def stats_session(statsdb_sessionmaker):
-    """Create and yield a fresh in-memory test STATSDB database session"""
-    db = statsdb_sessionmaker()
-    try:
-        yield db
-    finally:
-        db.close()
+def errorsdb_session(sessions):
+    return sessions[2]
+
+
+@pytest.fixture(scope="function")
+def stats_session(sessions):
+    return sessions[3]
 
 
 @pytest.fixture(scope="function")

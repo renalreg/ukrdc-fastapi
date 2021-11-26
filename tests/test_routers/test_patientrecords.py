@@ -6,7 +6,12 @@ def test_records(client):
     assert response.status_code == 200
     records = [PatientRecordSchema(**item) for item in response.json()["items"]]
     record_ids = {record.pid for record in records}
-    assert record_ids == {"PYTEST01:PV:00000000A", "PYTEST02:PV:00000000A"}
+    assert record_ids == {
+        "PYTEST01:PV:00000000A",
+        "PYTEST02:PV:00000000A",
+        "PYTEST03:PV:00000000A",
+        "PYTEST04:PV:00000000A",
+    }
 
 
 def test_record(client):

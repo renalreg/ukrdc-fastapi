@@ -5,13 +5,13 @@ from ukrdc_fastapi.schemas.delete import DeletePIDResponseSchema
 
 
 def test_delete_summary(client, ukrdc3_session, jtrace_session):
-    response = client.post("/api/v1/patientrecords/PYTEST01:PV:00000000A/delete")
+    response = client.post("/api/v1/patientrecords/PYTEST03:PV:00000000A/delete")
     assert response.status_code == 200
 
     summary = DeletePIDResponseSchema(**response.json())
 
     # Assert all expected records exist
-    assert ukrdc3_session.query(PatientRecord).get("PYTEST01:PV:00000000A")
+    assert ukrdc3_session.query(PatientRecord).get("PYTEST03:PV:00000000A")
     for person in summary.empi.persons:
         assert jtrace_session.query(Person).get(person.id)
     for master_record in summary.empi.master_records:
@@ -25,13 +25,13 @@ def test_delete_summary(client, ukrdc3_session, jtrace_session):
 
 
 def test_delete(client, ukrdc3_session, jtrace_session):
-    response = client.post("/api/v1/patientrecords/PYTEST01:PV:00000000A/delete")
+    response = client.post("/api/v1/patientrecords/PYTEST03:PV:00000000A/delete")
     assert response.status_code == 200
 
     summary = DeletePIDResponseSchema(**response.json())
 
     # Assert all expected records exist
-    assert ukrdc3_session.query(PatientRecord).get("PYTEST01:PV:00000000A")
+    assert ukrdc3_session.query(PatientRecord).get("PYTEST03:PV:00000000A")
     for person in summary.empi.persons:
         assert jtrace_session.query(Person).get(person.id)
     for master_record in summary.empi.master_records:
@@ -44,7 +44,7 @@ def test_delete(client, ukrdc3_session, jtrace_session):
         assert jtrace_session.query(LinkRecord).get(link_record.id)
 
     deleted_response = client.post(
-        "/api/v1/patientrecords/PYTEST01:PV:00000000A/delete",
+        "/api/v1/patientrecords/PYTEST03:PV:00000000A/delete",
         json={"hash": summary.hash},
     )
     assert deleted_response.status_code == 200
@@ -55,7 +55,7 @@ def test_delete(client, ukrdc3_session, jtrace_session):
     assert deleted.hash == summary.hash
 
     # Assert all expected records have been deleted
-    assert not ukrdc3_session.query(PatientRecord).get("PYTEST01:PV:00000000A")
+    assert not ukrdc3_session.query(PatientRecord).get("PYTEST03:PV:00000000A")
     for person in summary.empi.persons:
         assert not jtrace_session.query(Person).get(person.id)
     for master_record in summary.empi.master_records:
@@ -70,10 +70,10 @@ def test_delete(client, ukrdc3_session, jtrace_session):
 
 def test_delete_badhash(client, ukrdc3_session):
     response = client.post(
-        "/api/v1/patientrecords/PYTEST01:PV:00000000A/delete",
+        "/api/v1/patientrecords/PYTEST03:PV:00000000A/delete",
         json={"hash": "BADHASH"},
     )
     assert response.status_code == 400
 
     # Assert expected record still exists
-    assert ukrdc3_session.query(PatientRecord).get("PYTEST01:PV:00000000A")
+    assert ukrdc3_session.query(PatientRecord).get("PYTEST03:PV:00000000A")

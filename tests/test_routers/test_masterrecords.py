@@ -19,7 +19,7 @@ def test_masterrecords_list(client):
     response = client.get("/api/v1/masterrecords")
     assert response.status_code == 200
     returned_ids = {item["id"] for item in response.json()["items"]}
-    assert returned_ids == {1, 2}
+    assert returned_ids == {1, 2, 3, 4, 101, 102, 103, 104}
 
 
 def test_masterrecord_detail(client):
@@ -30,47 +30,21 @@ def test_masterrecord_detail(client):
 
 
 def test_masterrecord_related(client, jtrace_session):
-    # Create a new master record
-    master_record_999 = MasterRecord(
-        id=999,
-        status=0,
-        last_updated=datetime(2021, 1, 1),
-        date_of_birth=datetime(1980, 12, 12),
-        nationalid="119999999",
-        nationalid_type="UKRDC",
-        effective_date=datetime(2021, 1, 1),
-    )
-
-    # Link the new master record to an existing person
-    link_record_999 = LinkRecord(
-        id=999,
-        person_id=1,
-        master_id=999,
-        link_type=0,
-        link_code=0,
-        last_updated=datetime(2020, 3, 16),
-    )
-
-    # Person 3 now has 2 master records we want to merge
-    jtrace_session.add(master_record_999)
-    jtrace_session.add(link_record_999)
-    jtrace_session.commit()
-
-    # Check expected link
+    # Check expected links
 
     response = client.get("/api/v1/masterrecords/1/related")
     assert response.status_code == 200
     mrecs = [MasterRecordSchema(**item) for item in response.json()]
     returned_ids = {item.id for item in mrecs}
-    assert returned_ids == {999}
+    assert returned_ids == {4, 101, 104}
 
     # Test reciprocal link
 
-    response_reciprocal = client.get("/api/v1/masterrecords/999/related")
+    response_reciprocal = client.get("/api/v1/masterrecords/4/related")
     assert response_reciprocal.status_code == 200
     mrecs = [MasterRecordSchema(**item) for item in response_reciprocal.json()]
     returned_ids = {item.id for item in mrecs}
-    assert returned_ids == {1}
+    assert returned_ids == {1, 101, 104}
 
 
 def test_masterrecord_statistics(client):
@@ -80,7 +54,7 @@ def test_masterrecord_statistics(client):
     stats = MasterRecordStatisticsSchema(**response.json())
     assert stats.workitems == 2
     assert stats.errors == 1
-    assert stats.ukrdcids == 1
+    assert stats.ukrdcids == 2
 
 
 def test_masterrecord_linkrecords(client):
@@ -89,7 +63,7 @@ def test_masterrecord_linkrecords(client):
 
     records = [LinkRecordSchema(**item) for item in response.json()]
     returned_ids = {item.id for item in records}
-    assert returned_ids == {1, 2}
+    assert returned_ids == {1, 4, 101, 104, 401}
 
 
 def test_masterrecord_workitems(client):
@@ -125,7 +99,7 @@ def test_masterrecord_persons(client):
 
     persons = [PersonSchema(**item) for item in response.json()]
     returned_ids = {item.id for item in persons}
-    assert returned_ids == {1, 2}
+    assert returned_ids == {1, 4}
 
 
 def test_masterrecord_patientrecords(client):
@@ -134,4 +108,4 @@ def test_masterrecord_patientrecords(client):
 
     records = [PatientRecordSchema(**item) for item in response.json()]
     pids = {record.pid for record in records}
-    assert pids == {"PYTEST01:PV:00000000A", "PYTEST02:PV:00000000A"}
+    assert pids == {"PYTEST01:PV:00000000A", "PYTEST04:PV:00000000A"}
