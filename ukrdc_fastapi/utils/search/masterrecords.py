@@ -7,7 +7,7 @@ from sqlalchemy.sql.expression import or_
 from sqlalchemy.sql.functions import concat
 from stdnum.gb import nhs
 from stdnum.util import isdigits
-from ukrdc_sqla.ukrdc import Name, Patient, PatientNumber, PatientRecord
+from ukrdc_sqla.ukrdc import Facility, Name, Patient, PatientNumber, PatientRecord
 
 from ukrdc_fastapi.utils import parse_date
 
@@ -78,11 +78,14 @@ class SearchSet:
         """Add a facility name to the search query set."""
         self.facilities.append(item)
 
-    def add_terms(self, terms: list[str]):
+    def add_terms(self, terms: list[str], ukrdc3: Session):
         """
         Add a list of strings to the search query set.
         Each string will be added to any search query group in which it is valid
         """
+        facility_codes = {
+            facility.code for facility in ukrdc3.query(Facility.code).all()
+        }
 
         for item in terms:
             item = item.strip()
@@ -98,6 +101,10 @@ class SearchSet:
 
             # Extract PIDs (by range)
             self.add_pid(item)
+
+            # Match facility codes
+            if item in facility_codes:
+                self.add_facility(item)
 
             # Absolutely anything can be a name
             self.add_name(item)
@@ -218,7 +225,7 @@ def search_masterrecord_ids(  # pylint: disable=too-many-branches
         searchset.add_facility(item)
 
     # Add all implicit search terms to the search set
-    searchset.add_terms(search)
+    searchset.add_terms(search, ukrdc3)
 
     if searchset.ukrdc_numbers:
         query = records_from_ukrdcid(ukrdc3, searchset.ukrdc_numbers)

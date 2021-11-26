@@ -56,7 +56,7 @@ from ukrdc_fastapi.dependencies import (
 )
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
 
-from .utils import create_basic_patient
+from .utils import create_basic_facility, create_basic_patient
 
 # Using the factory to create a postgresql instance
 socket_dir = tempfile.TemporaryDirectory()
@@ -89,40 +89,23 @@ UKRDCID_4 = "999999933"
 
 
 def populate_facilities(ukrdc3, statsdb, errorsdb):
-    code1 = Code(
-        coding_standard="RR1+",
-        code="TEST_SENDING_FACILITY_1",
-        description="TEST_SENDING_FACILITY_1_DESCRIPTION",
-        creation_date=datetime(2020, 3, 16),
-    )
-    code2 = Code(
-        coding_standard="RR1+",
-        code="TEST_SENDING_FACILITY_2",
-        description="TEST_SENDING_FACILITY_2_DESCRIPTION",
-        creation_date=datetime(2020, 3, 16),
-    )
-
-    ukrdc3.add(code1)
-    ukrdc3.add(code2)
-
-    facility_1 = Facility(
-        code="TEST_SENDING_FACILITY_1",
+    create_basic_facility(
+        "TEST_SENDING_FACILITY_1",
+        "TEST_SENDING_FACILITY_1_DESCRIPTION",
+        ukrdc3,
         pkb_in=False,
         pkb_out=True,
         pkb_msg_exclusions=["MDM_T02_CP"],
     )
 
-    facility_2 = Facility(
-        code="TEST_SENDING_FACILITY_2",
+    create_basic_facility(
+        "TEST_SENDING_FACILITY_2",
+        "TEST_SENDING_FACILITY_2_DESCRIPTION",
+        ukrdc3,
         pkb_in=False,
         pkb_out=False,
         pkb_msg_exclusions=None,
     )
-
-    ukrdc3.add(facility_1)
-    ukrdc3.add(facility_2)
-
-    ukrdc3.commit()
 
     channel_1 = Channel(id="MIRTH-CHANNEL-UUID", name="MIRTH-CHANNEL-NAME")
     errorsdb.add(channel_1)

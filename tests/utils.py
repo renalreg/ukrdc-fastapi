@@ -3,7 +3,15 @@ from typing import Optional
 
 from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import LinkRecord, MasterRecord, Person, PidXRef
-from ukrdc_sqla.ukrdc import Address, Name, Patient, PatientNumber, PatientRecord
+from ukrdc_sqla.ukrdc import (
+    Address,
+    Code,
+    Facility,
+    Name,
+    Patient,
+    PatientNumber,
+    PatientRecord,
+)
 
 
 def create_basic_patient(
@@ -122,25 +130,29 @@ def create_basic_patient(
     jtrace.commit()
 
 
-# def create_basic_facility(
-#     code: str,
-#     description: str,
-#     ukrdc3: Session,
-#     statsdb: Session,
-#     pkb_in: bool = False,
-#     pkb_out: bool = False,
-#     pkb_msg_exclusions: Optional[list[str]] = None,
-# ):
-#     code = Code(
-#         coding_standard="RR1+",
-#         code=code,
-#         description=description,
-#         creation_date=datetime(2020, 3, 16),
-#     )
+def create_basic_facility(
+    code: str,
+    description: str,
+    ukrdc3: Session,
+    pkb_in: bool = False,
+    pkb_out: bool = False,
+    pkb_msg_exclusions: Optional[list[str]] = None,
+):
+    code_obj = Code(
+        coding_standard="RR1+",
+        code=code,
+        description=description,
+        creation_date=datetime(2020, 3, 16),
+    )
 
-#     facility = Facility(
-#         code=code,
-#         pkb_in=pkb_in,
-#         pkb_out=pkb_out,
-#         pkb_msg_exclusions=pkb_msg_exclusions if pkb_msg_exclusions else [],
-#     )
+    facility_obj = Facility(
+        code=code,
+        pkb_in=pkb_in,
+        pkb_out=pkb_out,
+        pkb_msg_exclusions=pkb_msg_exclusions if pkb_msg_exclusions else [],
+    )
+
+    ukrdc3.add(code_obj)
+    ukrdc3.add(facility_obj)
+
+    ukrdc3.commit()
