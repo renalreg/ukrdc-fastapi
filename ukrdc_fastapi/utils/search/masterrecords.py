@@ -7,7 +7,6 @@ from sqlalchemy.sql.expression import or_
 from sqlalchemy.sql.functions import concat
 from stdnum.gb import nhs
 from stdnum.util import isdigits
-from ukrdc_sqla.empi import LinkRecord, MasterRecord, Person, PidXRef
 from ukrdc_sqla.ukrdc import Name, Patient, PatientNumber, PatientRecord
 
 from ukrdc_fastapi.utils import parse_date
@@ -106,7 +105,7 @@ class SearchSet:
 
 def _term_is_exact(item: str) -> bool:
     """Determine is a search string is intended to be exact,
-    by being wrapped in quotes.
+    by being wrapped in queryuotes.
 
     Args:
         item (str): Search term
@@ -119,7 +118,7 @@ def _term_is_exact(item: str) -> bool:
 
 def _convert_query_to_pg_like(item: str) -> str:
     """Convert a search query into a postgres LIKE expression.
-    E.g. a term wrapped in quotes will be matched exactly (but case
+    E.g. a term wrapped in queryuotes will be matched exactly (but case
     insensitive), but without quotes will be fuzzy-searched
 
     Args:
@@ -221,28 +220,28 @@ def search_masterrecord_ids(  # pylint: disable=too-many-branches
     searchset.add_terms(search)
 
     if searchset.ukrdc_numbers:
-        q = records_from_ukrdcid(ukrdc3, searchset.ukrdc_numbers)
-        match_sets.append({record.ukrdcid for record in q})
+        query = records_from_ukrdcid(ukrdc3, searchset.ukrdc_numbers)
+        match_sets.append({record.ukrdcid for record in query})
 
     if searchset.mrn_numbers:
-        q = records_from_mrn_no(ukrdc3, searchset.mrn_numbers)
-        match_sets.append({record.ukrdcid for record in q})
+        query = records_from_mrn_no(ukrdc3, searchset.mrn_numbers)
+        match_sets.append({record.ukrdcid for record in query})
 
     if searchset.names:
-        q = records_from_full_name(ukrdc3, searchset.names)
-        match_sets.append({record.ukrdcid for record in q})
+        query = records_from_full_name(ukrdc3, searchset.names)
+        match_sets.append({record.ukrdcid for record in query})
 
     if searchset.dates:
-        q = records_from_dob(ukrdc3, searchset.dates)
-        match_sets.append({record.ukrdcid for record in q})
+        query = records_from_dob(ukrdc3, searchset.dates)
+        match_sets.append({record.ukrdcid for record in query})
 
     if searchset.pids:
-        q = records_from_pid(ukrdc3, searchset.pids)
-        match_sets.append({record.ukrdcid for record in q})
+        query = records_from_pid(ukrdc3, searchset.pids)
+        match_sets.append({record.ukrdcid for record in query})
 
     if searchset.facilities:
-        q = records_from_facility(ukrdc3, searchset.facilities)
-        match_sets.append({record.ukrdcid for record in q})
+        query = records_from_facility(ukrdc3, searchset.facilities)
+        match_sets.append({record.ukrdcid for record in query})
 
     non_empty_sets: list[set[int]] = [
         match_set for match_set in match_sets if match_set

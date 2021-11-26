@@ -3,14 +3,16 @@ from time import time
 from typing import Optional
 
 
-class Timer(object):
+class Timer:
     def __init__(self, description):
         self.description = description
+        self.start = None
+        self.end = None
 
     def __enter__(self):
         self.start = time()
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, *_):
         self.end = time()
         print(f"{self.description}: {self.end - self.start}")
 
