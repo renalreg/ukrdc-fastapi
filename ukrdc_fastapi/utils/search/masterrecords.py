@@ -13,7 +13,7 @@ from ukrdc_fastapi.utils import parse_date
 
 
 class SearchSet:
-    def __init__(self, terms: Optional[list[str]] = None) -> None:
+    def __init__(self) -> None:
         # Dates
         self.dates: list[datetime.date] = []  # DoB, DoD etc
 
@@ -29,10 +29,6 @@ class SearchSet:
 
         # Facilities
         self.facilities: list[str] = []
-
-        # Assign each term to a list
-        if terms:
-            self.add_terms(terms)
 
     def add_date(self, item: str):
         """Add a datetime formatted string to the search query set.
@@ -83,9 +79,7 @@ class SearchSet:
         Add a list of strings to the search query set.
         Each string will be added to any search query group in which it is valid
         """
-        facility_codes = {
-            facility.code for facility in ukrdc3.query(Facility.code).all()
-        }
+        facility_codes = {facility.code for facility in ukrdc3.query(Facility).all()}
 
         for item in terms:
             item = item.strip()
