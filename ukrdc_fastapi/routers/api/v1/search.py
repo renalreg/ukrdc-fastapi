@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends
 from fastapi import Query as QueryParam
 from fastapi import Security
 from sqlalchemy.orm import Session
-from ukrdc_sqla.empi import MasterRecord
+from ukrdc_sqla.empi import LinkRecord, MasterRecord
 
-from ukrdc_fastapi.dependencies import get_jtrace
+from ukrdc_fastapi.dependencies import get_jtrace, get_ukrdc3
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.query.masterrecords import get_masterrecords
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema
@@ -25,19 +25,36 @@ def search_masterrecords(
     ukrdc_number: list[str] = QueryParam([]),
     full_name: list[str] = QueryParam([]),
     dob: list[str] = QueryParam([]),
+    facility: list[str] = QueryParam([]),
     search: list[str] = QueryParam([]),
     number_type: list[str] = QueryParam([]),
     include_ukrdc: bool = False,
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
+    ukrdc3: Session = Depends(get_ukrdc3),
 ):
     """Search the EMPI for a particular master record"""
-    matched_ids = search_masterrecord_ids(
-        mrn_number, ukrdc_number, full_name, pid, dob, search, jtrace
+    matched_ukrdc_ids = search_masterrecord_ids(
+        mrn_number, ukrdc_number, full_name, pid, dob, facility, search, ukrdc3
+    )
+
+    # Matched UKRDC IDs will only give us UKRDC-type Master Records,
+    # but we also want the associated NHS/CHI/HSC master records.
+    # So, we do a single pass of the link records to expand our selection.
+    person_ids = (
+        jtrace.query(LinkRecord.person_id)
+        .join(MasterRecord)
+        .filter(MasterRecord.nationalid.in_(matched_ukrdc_ids))
+    )
+
+    master_ids = (
+        jtrace.query(MasterRecord.id)
+        .join(LinkRecord)
+        .filter(LinkRecord.person_id.in_(person_ids))
     )
 
     matched_records = get_masterrecords(jtrace, user).filter(
-        MasterRecord.id.in_(matched_ids)
+        MasterRecord.id.in_(master_ids)
     )
 
     if number_type:

@@ -12,25 +12,12 @@ from ukrdc_fastapi.schemas.empi import LinkRecordSchema
 async def test_unlink_person_from_master_record(
     jtrace_session, redis_session, mirth_session, superuser, httpx_session
 ):
-    # Create new link record
-    link_999 = LinkRecord(
-        id=999,
-        person_id=3,
-        master_id=1,
-        link_type=0,
-        link_code=0,
-        last_updated=datetime(2019, 1, 1),
-    )
-
-    # Person 3 now has a link to Master Record 1
-    jtrace_session.add(link_999)
-    jtrace_session.commit()
-
     response = await unlink_person_from_master_record(
-        3, 1, "comment", superuser, jtrace_session, mirth_session, redis_session
+        4, 1, "comment", superuser, jtrace_session, mirth_session, redis_session
     )
 
-    assert LinkRecordSchema.from_orm(link_999) == response
+    # First remaining link should be the original person 4 to MR 4
+    assert response.id == 4
 
 
 @pytest.mark.asyncio

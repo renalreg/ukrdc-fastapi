@@ -9,14 +9,16 @@ from ukrdc_fastapi.query.delete import (
     summarise_delete_pid,
 )
 
+# We use "PYTEST03:PV:00000000A" as the pid to delete because it has no open workitems
+
 
 def test_summarise_delete_pid_superuser(ukrdc3_session, jtrace_session, superuser):
     summary_1 = summarise_delete_pid(
-        ukrdc3_session, jtrace_session, "PYTEST01:PV:00000000A", superuser
+        ukrdc3_session, jtrace_session, "PYTEST03:PV:00000000A", superuser
     )
 
     summary_2 = summarise_delete_pid(
-        ukrdc3_session, jtrace_session, "PYTEST01:PV:00000000A", superuser
+        ukrdc3_session, jtrace_session, "PYTEST03:PV:00000000A", superuser
     )
 
     # Should get identical hash each request for the same delete
@@ -25,11 +27,11 @@ def test_summarise_delete_pid_superuser(ukrdc3_session, jtrace_session, superuse
 
 def test_delete_pid_superuser(ukrdc3_session, jtrace_session, superuser):
     summary = summarise_delete_pid(
-        ukrdc3_session, jtrace_session, "PYTEST01:PV:00000000A", superuser
+        ukrdc3_session, jtrace_session, "PYTEST03:PV:00000000A", superuser
     )
 
     # Assert all expected records exist
-    assert ukrdc3_session.query(PatientRecord).get("PYTEST01:PV:00000000A")
+    assert ukrdc3_session.query(PatientRecord).get("PYTEST03:PV:00000000A")
     for person in summary.empi.persons:
         assert jtrace_session.query(Person).get(person.id)
     for master_record in summary.empi.master_records:
@@ -42,13 +44,13 @@ def test_delete_pid_superuser(ukrdc3_session, jtrace_session, superuser):
         assert jtrace_session.query(LinkRecord).get(link_record.id)
 
     deleted = delete_pid(
-        ukrdc3_session, jtrace_session, "PYTEST01:PV:00000000A", summary.hash, superuser
+        ukrdc3_session, jtrace_session, "PYTEST03:PV:00000000A", summary.hash, superuser
     )
 
     assert deleted.hash == summary.hash
 
     # Assert all expected records have been deleted
-    assert not ukrdc3_session.query(PatientRecord).get("PYTEST01:PV:00000000A")
+    assert not ukrdc3_session.query(PatientRecord).get("PYTEST03:PV:00000000A")
     for person in summary.empi.persons:
         assert not jtrace_session.query(Person).get(person.id)
     for master_record in summary.empi.master_records:
@@ -66,7 +68,7 @@ def test_delete_pid_badhash(ukrdc3_session, jtrace_session, superuser):
         delete_pid(
             ukrdc3_session,
             jtrace_session,
-            "PYTEST01:PV:00000000A",
+            "PYTEST03:PV:00000000A",
             "BADHASH",
             superuser,
         )

@@ -17,23 +17,9 @@ def test_merge(client, httpx_session):
 
 
 def test_unlink(client, httpx_session, jtrace_session):
-    # Create new link record
-    link_999 = LinkRecord(
-        id=999,
-        person_id=3,
-        master_id=1,
-        link_type=0,
-        link_code=0,
-        last_updated=datetime(2019, 1, 1),
-    )
-
-    # Person 3 now has a link to Master Record 1
-    jtrace_session.add(link_999)
-    jtrace_session.commit()
-
     response = client.post(
         f"/api/v1/empi/unlink/",
-        json={"personId": 3, "comment": "comment", "masterId": 1},
+        json={"personId": 4, "comment": "comment", "masterId": 1},
     )
 
-    assert LinkRecordSchema(**response.json()) == LinkRecordSchema.from_orm(link_999)
+    assert response.json().get("id") == 4

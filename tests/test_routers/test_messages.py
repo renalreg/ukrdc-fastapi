@@ -44,7 +44,11 @@ def test_message_detail(client):
 def test_message_workitems(client):
     response = client.get("/api/v1/messages/1/workitems")
     ids = {item.get("id") for item in response.json()}
-    assert ids == {1, 2}
+    assert ids == set()
+
+    response = client.get("/api/v1/messages/2/workitems")
+    ids = {item.get("id") for item in response.json()}
+    assert ids == {3}
 
 
 def test_message_masterrecords(client):

@@ -1,7 +1,7 @@
-from datetime import date, datetime
+from datetime import datetime
+from urllib.parse import quote
 
-from stdnum.gb import nhs
-from ukrdc_sqla.empi import LinkRecord, MasterRecord, Person, PidXRef
+from ..utils import create_basic_facility, create_basic_patient
 
 TEST_NUMBERS = [
     "9434765870",
@@ -15,53 +15,46 @@ TEST_NUMBERS = [
     "9434765951",
 ]
 
+BUMPER = 200
 
-def _commit_extra_patients(session, number_type="NHS"):
+
+def _commit_extra_patients(ukrdc3, jtrace):
     for index, number in enumerate(TEST_NUMBERS):
+        nhs_number = number
+        ukrdcid = 100000000 + index
+
         dob = datetime(1950, 1, (index + 11) % 28)
         localid = f"PYTEST:SEARCH:{number}"
-        master_record = MasterRecord(
-            id=index + 99,
-            status=0,
-            last_updated=dob,
-            date_of_birth=dob,
-            nationalid=number,
-            nationalid_type=number_type,
-            effective_date=datetime(2020, 3, 16),
+
+        sending_facility = f"TEST_SENDING_FACILITY_{index + BUMPER}"
+        sending_facility_desc = f"TEST_SENDING_FACILITY_{index + BUMPER}_DESCRIPTION"
+        sending_extract = f"TEST_SENDING_EXTRACT_{index + BUMPER}"
+
+        create_basic_facility(
+            sending_facility,
+            sending_facility_desc,
+            ukrdc3,
         )
-        person = Person(
-            id=index + 99,
-            originator="UKRDC",
-            localid=localid,
-            localid_type="CLPID",
-            date_of_birth=dob,
-            gender="9",
+
+        create_basic_patient(
+            index + BUMPER,
+            number,
+            ukrdcid,
+            nhs_number,
+            sending_facility,
+            sending_extract,
+            localid,
+            f"SURNAME{index}",
+            f"NAME{index}",
+            dob,
+            ukrdc3,
+            jtrace,
         )
-        link_record = LinkRecord(
-            id=index + 99,
-            person_id=index + 99,
-            master_id=index + 99,
-            link_type=0,
-            link_code=0,
-            last_updated=datetime(2019, 1, 1),
-        )
-        xref = PidXRef(
-            id=index + 99,
-            pid=localid,
-            sending_facility="TEST_SENDING_FACILITY_1",
-            sending_extract="XREF_SENDING_EXTRACT_1",
-            localid=number,
-        )
-        session.add(master_record)
-        session.add(person)
-        session.add(link_record)
-        session.add(xref)
-        session.commit()
 
 
-def test_search_all(jtrace_session, client):
+def test_search_all(ukrdc3_session, jtrace_session, client):
     # Add extra test items
-    _commit_extra_patients(jtrace_session, number_type="NHS")
+    _commit_extra_patients(ukrdc3_session, jtrace_session)
 
     # Search for each item individually
     for index, number in enumerate(TEST_NUMBERS):
@@ -71,27 +64,112 @@ def test_search_all(jtrace_session, client):
         assert response.status_code == 200
 
         returned_ids = {item["id"] for item in response.json()["items"]}
-        assert returned_ids == {index + 99}
+        assert returned_ids == {index + BUMPER + 100}
 
-
-def test_search_mrn(jtrace_session, client):
-    # Add extra test items
-    _commit_extra_patients(jtrace_session, number_type="NHS")
-
-    # Search for each item individually
-    for index, number in enumerate(TEST_NUMBERS):
-        url = f"/api/v1/search/?mrn_number={number}"
+        url = f"/api/v1/search/?search={number}&include_ukrdc=true"
 
         response = client.get(url)
         assert response.status_code == 200
 
         returned_ids = {item["id"] for item in response.json()["items"]}
-        assert returned_ids == {index + 99}
+        assert returned_ids == {index + BUMPER, index + BUMPER + 100}
 
 
-def test_search_multiple_mrn(jtrace_session, client):
+def test_search_pid(ukrdc3_session, jtrace_session, client):
     # Add extra test items
-    _commit_extra_patients(jtrace_session, number_type="NHS")
+    _commit_extra_patients(ukrdc3_session, jtrace_session)
+
+    # Search for each item individually
+    for index, number in enumerate(TEST_NUMBERS):
+        url = f"/api/v1/search/?pid={number}&include_ukrdc=true"
+
+        response = client.get(url)
+        assert response.status_code == 200
+
+        returned_ids = {item["id"] for item in response.json()["items"]}
+        assert returned_ids == {index + BUMPER, index + BUMPER + 100}
+
+
+def test_search_mrn(ukrdc3_session, jtrace_session, client):
+    # Add extra test items
+    _commit_extra_patients(ukrdc3_session, jtrace_session)
+
+    # Search for each item individually
+    for index, number in enumerate(TEST_NUMBERS):
+        url = f"/api/v1/search/?mrn_number={number}&include_ukrdc=true"
+
+        response = client.get(url)
+        assert response.status_code == 200
+
+        returned_ids = {item["id"] for item in response.json()["items"]}
+        assert returned_ids == {index + BUMPER, index + BUMPER + 100}
+
+
+def test_search_ukrdc_number(ukrdc3_session, jtrace_session, client):
+    # Add extra test items
+    _commit_extra_patients(ukrdc3_session, jtrace_session)
+
+    # Search for each item individually
+    for index, _ in enumerate(TEST_NUMBERS):
+        url = f"/api/v1/search/?ukrdc_number={100000000 + index}&include_ukrdc=true"
+
+        response = client.get(url)
+        assert response.status_code == 200
+
+        returned_ids = {item["id"] for item in response.json()["items"]}
+        assert returned_ids == {index + BUMPER, index + BUMPER + 100}
+
+
+def test_search_facility(ukrdc3_session, jtrace_session, client):
+    # Add extra test items
+    _commit_extra_patients(ukrdc3_session, jtrace_session)
+
+    # Search for each item individually
+    for index, _ in enumerate(TEST_NUMBERS):
+        url = f"/api/v1/search/?facility=TEST_SENDING_FACILITY_{index + BUMPER}&include_ukrdc=true"
+
+        response = client.get(url)
+        assert response.status_code == 200
+
+        returned_ids = {item["id"] for item in response.json()["items"]}
+        assert returned_ids == {index + BUMPER, index + BUMPER + 100}
+
+
+def test_search_name(ukrdc3_session, jtrace_session, client):
+    # Add extra test items
+    _commit_extra_patients(ukrdc3_session, jtrace_session)
+
+    # Search for each item individually
+    for index, _ in enumerate(TEST_NUMBERS):
+        full_name = quote(f"NAME{index} SURNAME{index}")
+        url = f"/api/v1/search/?full_name={full_name}&include_ukrdc=true"
+
+        response = client.get(url)
+        assert response.status_code == 200
+
+        returned_ids = {item["id"] for item in response.json()["items"]}
+        assert returned_ids == {index + BUMPER, index + BUMPER + 100}
+
+
+def test_search_dob(ukrdc3_session, jtrace_session, client):
+    # Add extra test items
+    _commit_extra_patients(ukrdc3_session, jtrace_session)
+
+    # Search for each item individually
+    for index, _ in enumerate(TEST_NUMBERS):
+        dob = f"1950-01-{str((index + 11) % 28).zfill(2)}"
+        url = f"/api/v1/search/?dob={dob}&include_ukrdc=true"
+
+        response = client.get(url)
+        assert response.status_code == 200
+
+        returned_ids = {item["id"] for item in response.json()["items"]}
+        assert returned_ids == {index + BUMPER, index + BUMPER + 100}
+
+
+def test_search_multiple_mrn(ukrdc3_session, jtrace_session, client):
+    # Add extra test items
+    _commit_extra_patients(ukrdc3_session, jtrace_session)
 
     # Add extra test items
     path = "/api/v1/search/?"
@@ -103,21 +181,35 @@ def test_search_multiple_mrn(jtrace_session, client):
     assert response.status_code == 200
 
     returned_ids = {item["id"] for item in response.json()["items"]}
-    assert returned_ids == {i + 99 for i in range(5)}
+    assert returned_ids == {i + BUMPER + 100 for i in range(5)}
 
 
-def test_search_implicit_dob(jtrace_session, client):
+def test_search_implicit_dob(ukrdc3_session, jtrace_session, client):
     # Add extra test items
-    _commit_extra_patients(jtrace_session, number_type="NHS")
+    _commit_extra_patients(ukrdc3_session, jtrace_session)
 
     # Search for each item individually
     for index, _ in enumerate(TEST_NUMBERS):
-        # NHS number is master record `nationalid`
         dob = f"1950-01-{str((index + 11) % 28).zfill(2)}"
-        url = f"/api/v1/search/?search={dob}"
+        url = f"/api/v1/search/?search={dob}&include_ukrdc=true"
 
         response = client.get(url)
         assert response.status_code == 200
 
         returned_ids = {item["id"] for item in response.json()["items"]}
-        assert returned_ids == {index + 99}
+        assert returned_ids == {index + BUMPER, index + BUMPER + 100}
+
+
+def test_search_implicit_facility(ukrdc3_session, jtrace_session, client):
+    # Add extra test items
+    _commit_extra_patients(ukrdc3_session, jtrace_session)
+
+    # Search for each item individually
+    for index, _ in enumerate(TEST_NUMBERS):
+        url = f"/api/v1/search/?search=TEST_SENDING_FACILITY_{index + BUMPER}&include_ukrdc=true"
+
+        response = client.get(url)
+        assert response.status_code == 200
+
+        returned_ids = {item["id"] for item in response.json()["items"]}
+        assert returned_ids == {index + BUMPER, index + BUMPER + 100}
