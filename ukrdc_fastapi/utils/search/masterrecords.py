@@ -163,8 +163,11 @@ def records_from_facility(ukrdc3: Session, facilities: Iterable[str]):
     """
     Finds Patient Records from facilities
     """
-    return ukrdc3.query(PatientRecord).filter(
-        PatientRecord.sendingfacility.in_(facilities)
+    ignore_extracts = {"PVMIG", "HSMIG"}
+    return (
+        ukrdc3.query(PatientRecord)
+        .filter(PatientRecord.sendingfacility.in_(facilities))
+        .filter(PatientRecord.sendingextract.notin_(ignore_extracts))
     )
 
 
