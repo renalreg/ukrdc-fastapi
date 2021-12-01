@@ -27,7 +27,11 @@ async def users():
         }
     )
 
-    users, resp, err = await okta_client.list_users()
-    print([getattr(user.profile, "ukrdcUnits", []) for user in users])
+    users, *_ = await okta_client.list_users()
+
+    for okta_user in users:
+        user = OktaUKRDCUser(okta_user)
+        print(user.get_units())
+        print(user.get_permissions())
 
     return ""
