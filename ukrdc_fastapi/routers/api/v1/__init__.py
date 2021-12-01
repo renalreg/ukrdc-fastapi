@@ -7,6 +7,7 @@ from . import (
     dashboard,
     empi,
     facilities,
+    manage,
     masterrecords,
     messages,
     mirth,
@@ -48,3 +49,6 @@ router.include_router(masterrecords.router, prefix="/masterrecords")
 
 # ErrorsDB/Message Records
 router.include_router(messages.router, prefix="/messages")
+
+# Management
+router.include_router(manage.router, prefix="/manage")

@@ -54,6 +54,9 @@ class Settings(BaseSettings):
     oauth_issuer: str = "https://renalregistry.okta.com/oauth2/ausn7fa9zfh1DC2La5d6"
     oauth_audience: str = "api://ukrdc"
 
+    okta_domain: str = "https://renalregistry.okta.com"
+    okta_api_token: str = ""
+
     user_permission_key: str = "org.ukrdc.permissions"
 
     mirth_url: str = "http://localhost:9004"
