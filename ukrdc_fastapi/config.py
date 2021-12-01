@@ -56,6 +56,7 @@ class Settings(BaseSettings):
 
     okta_domain: str = "https://renalregistry.okta.com"
     okta_api_token: str = ""
+    okta_ukrdc_group_id: str = "00gswg6wl9oi2hCci5d6"
 
     user_permission_key: str = "org.ukrdc.permissions"
 
