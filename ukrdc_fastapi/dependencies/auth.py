@@ -1,4 +1,4 @@
-from typing import Callable, Sequence, Union
+from typing import Callable, Optional, Sequence, Union
 
 from fastapi import Depends, HTTPException
 from pydantic.main import BaseModel
@@ -73,6 +73,7 @@ class Permissions:
 
 class UKRDCUser(BaseModel):
     id: str
+    cid: Optional[str]
     email: str
     scopes: list[str]
     permissions: list[str]
@@ -122,6 +123,7 @@ class URKDCAuth:
         async def get_user_dependency(token=Depends(self.okta_jwt_scheme)) -> UKRDCUser:
             return UKRDCUser(
                 id=token.get("uid"),
+                cid=token.get("cid"),
                 email=token.get("sub"),
                 scopes=token.get("scp", []),
                 permissions=token.get(self.permission_key, []),
