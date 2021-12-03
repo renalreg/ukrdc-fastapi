@@ -56,8 +56,12 @@ def workitem_detail(
         audit.add_master_record(master_record.id, AuditOperation.READ)
     for persons in workitem.destination.persons:
         audit.add_person(persons.id, AuditOperation.READ)
-    audit.add_master_record(workitem.destination.master_record.id, AuditOperation.READ)
-    audit.add_person(workitem.incoming.person.id, AuditOperation.READ)
+    if workitem.destination.master_record:
+        audit.add_master_record(
+            workitem.destination.master_record.id, AuditOperation.READ
+        )
+    if workitem.incoming.person:
+        audit.add_person(workitem.incoming.person.id, AuditOperation.READ)
 
     return workitem
 
@@ -178,7 +182,7 @@ def workitem_messages(
         )
     )
 
-    for item in page.items:
+    for item in page.items:  # type: ignore
         audit.add_message(item.id, MessageOperation.READ)
 
     return page

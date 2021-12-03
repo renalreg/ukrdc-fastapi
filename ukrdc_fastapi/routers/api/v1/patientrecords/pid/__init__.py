@@ -16,7 +16,12 @@ from ukrdc_sqla.ukrdc import (
 )
 
 from ukrdc_fastapi.dependencies import get_jtrace, get_ukrdc3
-from ukrdc_fastapi.dependencies.audit import Auditer, RecordOperation, RecordResource
+from ukrdc_fastapi.dependencies.audit import (
+    Auditer,
+    AuditOperation,
+    RecordOperation,
+    RecordResource,
+)
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.query.delete import delete_pid, summarise_delete_pid
 from ukrdc_fastapi.query.patientrecords import (
@@ -80,7 +85,8 @@ def patient_get(
     )
 
     audit.add_patient_record(record.pid, None, None, RecordOperation.READ)
-    audit.add_master_record(record.master_record.id, RecordOperation.READ)
+    if record.master_record:
+        audit.add_master_record(record.master_record.id, AuditOperation.READ)
 
     return record
 
@@ -103,20 +109,21 @@ def patient_delete(
 ):
     """Delete a specific patient record and all its associated data"""
     summary: DeletePIDResponseSchema
-    audit_op: RecordOperation
+    audit_op: AuditOperation
 
     if args and args.hash:
         summary = delete_pid(ukrdc3, jtrace, pid, args.hash, user)
-        audit_op = RecordOperation.READ
+        audit_op = AuditOperation.READ
     else:
         summary = summarise_delete_pid(ukrdc3, jtrace, pid, user)
-        audit_op = RecordOperation.DELETE
+        audit_op = AuditOperation.DELETE
 
     audit.add_patient_record(pid, None, None, audit_op)
-    for person in summary.empi.persons:
-        audit.add_person(person.id, audit_op)
-    for master_record in summary.empi.master_records:
-        audit.add_master_record(master_record.id, audit_op)
+    if summary.empi:
+        for person in summary.empi.persons:
+            audit.add_person(person.id, audit_op)
+        for master_record in summary.empi.master_records:
+            audit.add_master_record(master_record.id, audit_op)
 
     return summary
 

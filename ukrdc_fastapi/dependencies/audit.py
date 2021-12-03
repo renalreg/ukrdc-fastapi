@@ -1,11 +1,11 @@
 from datetime import datetime
 from enum import Enum
-from typing import Optional
+from typing import Optional, Union
 
 from fastapi import Depends, Request, Security
 from sqlalchemy.orm.session import Session
 
-from ukrdc_fastapi.dependencies import get_auditsdb
+from ukrdc_fastapi.dependencies import get_auditdb
 from ukrdc_fastapi.dependencies.auth import UKRDCUser
 from ukrdc_fastapi.models.audit import (
     AccessEvent,
@@ -83,7 +83,7 @@ class Auditer:
     def __init__(
         self,
         request: Request,
-        auditdb: Session = Depends(get_auditsdb),
+        auditdb: Session = Depends(get_auditdb),
         user: UKRDCUser = Security(auth.get_user()),
     ):
         self.session = auditdb
@@ -108,8 +108,16 @@ class Auditer:
         pid: str,
         resource: Optional[RecordResource],
         resource_id: Optional[str],
-        operation: Optional[AuditOperation],
+        operation: Optional[Union[RecordOperation, AuditOperation]],
     ):
+        """Add a patient record access log
+
+        Args:
+            pid (str): Patient record PID
+            resource (Optional[RecordResource]): Sub-resource accessed
+            resource_id (Optional[str]): ID of sub-resource (if applicable)
+            operation (Optional[Union[RecordOperation, AuditOperation]]): Access operation
+        """
         self.session.add(
             PatientRecordEvent(
                 event=self.event.event,
@@ -126,6 +134,12 @@ class Auditer:
         id_: int,
         operation: Optional[AuditOperation],
     ):
+        """Add a MasterRecord access log
+
+        Args:
+            id_ (int): Master Record ID
+            operation (Optional[AuditOperation]): Access operation
+        """
         self.session.add(
             MasterRecordEvent(
                 event=self.event.event,
@@ -140,6 +154,12 @@ class Auditer:
         id_: int,
         operation: Optional[AuditOperation],
     ):
+        """Add a Person access log
+
+        Args:
+            id_ (int): Person ID
+            operation (Optional[AuditOperation]): Access operation
+        """
         self.session.add(
             PersonEvent(
                 event=self.event.event,
@@ -152,8 +172,14 @@ class Auditer:
     def add_message(
         self,
         id_: int,
-        operation: Optional[MessageOperation],
+        operation: Optional[Union[AuditOperation, MessageOperation]],
     ):
+        """Add a Message/ErrorsDB access log
+
+        Args:
+            id_ (int): Message ID
+            operation (Optional[AuditOperation]): Access operation
+        """
         self.session.add(
             MessageEvent(
                 event=self.event.event,

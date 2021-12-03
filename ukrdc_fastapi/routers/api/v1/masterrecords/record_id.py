@@ -12,8 +12,8 @@ from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_ukrdc3
 from ukrdc_fastapi.dependencies.audit import (
     Auditer,
     AuditOperation,
-    MasterRecordResource,
     MessageOperation,
+    RecordOperation,
 )
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.query.masterrecords import (
@@ -91,7 +91,7 @@ def master_record_latest_message(
     if not latest:
         return Response(status_code=HTTP_204_NO_CONTENT)
 
-    audit.add_message(latest.id, AuditOperation.READ)
+    audit.add_message(latest.id, MessageOperation.READ)
 
     return latest
 
@@ -216,7 +216,7 @@ def master_record_messages(
         )
     )
 
-    for item in page.items:
+    for item in page.items:  # type: ignore
         audit.add_message(item.id, MessageOperation.READ)
 
     return page
@@ -287,6 +287,6 @@ def master_record_patientrecords(
     ).all()
 
     for record in records:
-        audit.add_patient_record(record.pid, None, None, AuditOperation.READ)
+        audit.add_patient_record(record.pid, None, None, RecordOperation.READ)
 
     return records

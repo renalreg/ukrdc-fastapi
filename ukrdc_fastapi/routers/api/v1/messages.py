@@ -63,7 +63,7 @@ def error_messages(
         )
     )
 
-    for item in page.items:
+    for item in page.items:  # type: ignore
         audit.add_message(item.id, MessageOperation.READ)
 
     return page
@@ -131,7 +131,7 @@ async def error_source(
     if not message_data:
         return MessageSourceSchema(content=None, content_type=None)
 
-    audit.add_message(message.id, MessageOperation.READ_SOURCE)
+    audit.add_message(error.id, MessageOperation.READ_SOURCE)
 
     return MessageSourceSchema(
         content=message_data.content, content_type=message_data.data_type

@@ -6,7 +6,6 @@ from sqlalchemy.orm.session import Session
 from ukrdc_sqla.empi import LinkRecord, MasterRecord, Person, PidXRef, WorkItem
 from ukrdc_sqla.ukrdc import PatientRecord
 
-from ukrdc_fastapi.dependencies.audit import Auditer
 from ukrdc_fastapi.dependencies.auth import UKRDCUser
 from ukrdc_fastapi.query.patientrecords import get_patientrecord
 from ukrdc_fastapi.schemas.delete import (

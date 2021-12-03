@@ -52,7 +52,7 @@ def workitems_list(
     )
     page = paginate(sorter.sort(query))
 
-    for item in page.items:
+    for item in page.items:  # type: ignore
         audit.add_master_record(item.master_record.id, AuditOperation.READ)
         audit.add_person(item.person.id, AuditOperation.READ)
 

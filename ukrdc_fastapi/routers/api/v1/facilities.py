@@ -4,7 +4,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, Security
 from sqlalchemy.orm import Session
 
-from ukrdc_fastapi.dependencies import get_errorsdb, get_statssdb, get_ukrdc3
+from ukrdc_fastapi.dependencies import get_errorsdb, get_statsdb, get_ukrdc3
 from ukrdc_fastapi.dependencies.auth import UKRDCUser, auth
 from ukrdc_fastapi.query.facilities import (
     FacilityDetailsSchema,
@@ -37,7 +37,7 @@ def facility_list(
         )
     ),
     ukrdc3: Session = Depends(get_ukrdc3),
-    statsdb: Session = Depends(get_statssdb),
+    statsdb: Session = Depends(get_statsdb),
     user: UKRDCUser = Security(auth.get_user()),
 ):
     """Retreive a list of on-record facilities"""
@@ -50,7 +50,7 @@ def facility_list(
 def facility(
     code: str,
     ukrdc3: Session = Depends(get_ukrdc3),
-    statsdb: Session = Depends(get_statssdb),
+    statsdb: Session = Depends(get_statsdb),
     user: UKRDCUser = Security(auth.get_user()),
 ):
     """Retreive information and current status of a particular facility"""
@@ -63,7 +63,7 @@ def facility_errrors_history(
     since: Optional[datetime.date] = None,
     until: Optional[datetime.date] = None,
     ukrdc3: Session = Depends(get_ukrdc3),
-    statsdb: Session = Depends(get_statssdb),
+    statsdb: Session = Depends(get_statsdb),
     user: UKRDCUser = Security(auth.get_user()),
 ):
     """Retreive time-series new error counts for the last year for a particular facility"""
@@ -75,7 +75,7 @@ def facility_patients_latest_errors(
     code: str,
     ukrdc3: Session = Depends(get_ukrdc3),
     errorsdb: Session = Depends(get_errorsdb),
-    statsdb: Session = Depends(get_statssdb),
+    statsdb: Session = Depends(get_statsdb),
     user: UKRDCUser = Security(auth.get_user()),
     sorter: SQLASorter = Depends(ERROR_SORTER),
 ):

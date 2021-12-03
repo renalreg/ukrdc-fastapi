@@ -41,11 +41,12 @@ from ukrdc_sqla.ukrdc import (
 from ukrdc_fastapi.config import settings
 from ukrdc_fastapi.dependencies import (
     auth,
+    get_auditdb,
     get_errorsdb,
     get_jtrace,
     get_mirth,
     get_redis,
-    get_statssdb,
+    get_statsdb,
     get_ukrdc3,
 )
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
@@ -846,7 +847,14 @@ async def redis_session(mirth_session, httpx_session):
 
 
 @pytest.fixture(scope="function")
-def app(jtrace_session, ukrdc3_session, errorsdb_session, stats_session, redis_session):
+def app(
+    jtrace_session,
+    ukrdc3_session,
+    errorsdb_session,
+    stats_session,
+    audit_session,
+    redis_session,
+):
     from ukrdc_fastapi.main import app
 
     async def _get_mirth():
@@ -868,6 +876,9 @@ def app(jtrace_session, ukrdc3_session, errorsdb_session, stats_session, redis_s
     def _get_statsdb():
         return stats_session
 
+    def _get_auditdb():
+        return audit_session
+
     def _get_token():
         return {
             "uid": "TEST_ID",
@@ -882,7 +893,9 @@ def app(jtrace_session, ukrdc3_session, errorsdb_session, stats_session, redis_s
     app.dependency_overrides[get_ukrdc3] = _get_ukrdc3
     app.dependency_overrides[get_jtrace] = _get_jtrace
     app.dependency_overrides[get_errorsdb] = _get_errorsdb
-    app.dependency_overrides[get_statssdb] = _get_statsdb
+    app.dependency_overrides[get_statsdb] = _get_statsdb
+    app.dependency_overrides[get_auditdb] = _get_auditdb
+
     app.dependency_overrides[auth.auth.okta_jwt_scheme] = _get_token
 
     return app

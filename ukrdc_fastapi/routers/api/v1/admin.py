@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import MasterRecord
 from ukrdc_sqla.stats import PatientsLatestErrors
 
-from ukrdc_fastapi.dependencies import get_jtrace, get_statssdb
+from ukrdc_fastapi.dependencies import get_jtrace, get_statsdb
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.query.stats import get_full_errors_history
 from ukrdc_fastapi.query.workitems import get_full_workitem_history, get_workitems
@@ -56,7 +56,7 @@ def full_workitem_history(
 def full_errors_history(
     since: Optional[datetime.date] = None,
     until: Optional[datetime.date] = None,
-    statsdb: Session = Depends(get_statssdb),
+    statsdb: Session = Depends(get_statsdb),
 ):
     """Retreive basic statistics about recent records"""
     return get_full_errors_history(statsdb, since, until)
@@ -80,7 +80,7 @@ def full_errors_history(
 )
 def admin_counts(
     jtrace: Session = Depends(get_jtrace),
-    statsdb: Session = Depends(get_statssdb),
+    statsdb: Session = Depends(get_statsdb),
     user: UKRDCUser = Security(auth.get_user()),
 ):
     """Retreive basic counts across the UKRDC"""

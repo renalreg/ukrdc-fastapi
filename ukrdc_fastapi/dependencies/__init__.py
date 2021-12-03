@@ -60,7 +60,7 @@ def get_errorsdb() -> Generator[Session, None, None]:
         yield errorsdb
 
 
-def get_statssdb() -> Generator[Session, None, None]:
+def get_statsdb() -> Generator[Session, None, None]:
     """Yeild a new statsdb database session
 
     Yields:
@@ -70,7 +70,7 @@ def get_statssdb() -> Generator[Session, None, None]:
         yield statsdb
 
 
-def get_auditsdb() -> Generator[Session, None, None]:
+def get_auditdb() -> Generator[Session, None, None]:
     """Yeild a new auditdb database session
 
     Yields:

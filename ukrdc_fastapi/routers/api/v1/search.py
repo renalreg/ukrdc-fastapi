@@ -69,7 +69,7 @@ def search_masterrecords(
             MasterRecord.nationalid_type != "UKRDC"
         )
 
-    page = paginate(matched_records)
+    page: Page = paginate(matched_records)  # type: ignore
 
     for record in page.items:
         audit.add_master_record(record.id, AuditOperation.READ)

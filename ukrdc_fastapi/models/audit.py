@@ -51,7 +51,7 @@ class MasterRecordEvent(Base):
 
 
 class PersonEvent(Base):
-    __tablename__ = "work_item_event"
+    __tablename__ = "person_event"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     event = Column(Integer, ForeignKey("access_event.event"))
