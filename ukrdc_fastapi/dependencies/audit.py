@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import Optional, Union
+from typing import AsyncGenerator, Optional, Union
 
 from fastapi import Depends, Request, Security
 from sqlalchemy.orm.session import Session
@@ -189,7 +189,12 @@ async def get_auditer(
     request: Request,
     auditdb: Session = Depends(get_auditdb),
     user: UKRDCUser = Security(auth.get_user()),
-) -> Auditer:
+) -> AsyncGenerator[Auditer, None]:
+    """Yeild a new Auditer object with an access event pre-populated
+
+    Yields:
+        [Auditer]: Auditer
+    """
     auditer = Auditer(request, auditdb, user)
     await auditer.add_request()
 
