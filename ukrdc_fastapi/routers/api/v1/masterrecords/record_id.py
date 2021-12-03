@@ -9,6 +9,12 @@ from starlette.status import HTTP_204_NO_CONTENT
 from ukrdc_sqla.empi import LinkRecord, MasterRecord
 
 from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_ukrdc3
+from ukrdc_fastapi.dependencies.audit import (
+    Auditer,
+    AuditOperation,
+    MasterRecordResource,
+    MessageOperation,
+)
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.query.masterrecords import (
     get_masterrecord,
@@ -55,9 +61,14 @@ def master_record_detail(
     record_id: int,
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
+    audit: Auditer = Depends(Auditer),
 ):
     """Retreive a particular master record from the EMPI"""
-    return get_masterrecord(jtrace, record_id, user)
+    record = get_masterrecord(jtrace, record_id, user)
+
+    audit.add_master_record(record_id, AuditOperation.READ)
+
+    return record
 
 
 @router.get(
@@ -71,6 +82,7 @@ def master_record_latest_message(
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
     errorsdb: Session = Depends(get_errorsdb),
+    audit: Auditer = Depends(Auditer),
 ):
     """
     Retreive a minimal representation of the latest file received for the patient,
@@ -78,6 +90,9 @@ def master_record_latest_message(
     latest = get_last_message_on_masterrecord(jtrace, errorsdb, record_id, user)
     if not latest:
         return Response(status_code=HTTP_204_NO_CONTENT)
+
+    audit.add_message(latest.id, AuditOperation.READ)
+
     return latest
 
 
@@ -133,13 +148,20 @@ def master_record_linkrecords(
     record_id: int,
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
+    audit: Auditer = Depends(Auditer),
 ):
     """Retreive a list of link records related to a particular master record"""
     # Find record and asserrt permissions
     records = get_masterrecords_related_to_masterrecord(jtrace, record_id, user).all()
     link_records: list[LinkRecord] = []
+
     for record in records:
         link_records.extend(record.link_records)
+
+    for link in link_records:
+        audit.add_master_record(link.master_id, AuditOperation.READ)
+        audit.add_person(link.person_id, AuditOperation.READ)
+
     return link_records
 
 
@@ -152,11 +174,17 @@ def master_record_related(
     record_id: int,
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
+    audit: Auditer = Depends(Auditer),
 ):
     """Retreive a list of other master records related to a particular master record"""
-    return get_masterrecords_related_to_masterrecord(
+    records = get_masterrecords_related_to_masterrecord(
         jtrace, record_id, user, exclude_self=True
     ).all()
+
+    for record in records:
+        audit.add_master_record(record.id, AuditOperation.READ)
+
+    return records
 
 
 @router.get(
@@ -174,15 +202,24 @@ def master_record_messages(
     jtrace: Session = Depends(get_jtrace),
     errorsdb: Session = Depends(get_errorsdb),
     sorter: SQLASorter = Depends(ERROR_SORTER),
+    audit: Auditer = Depends(Auditer),
 ):
     """
     Retreive a list of errors related to a particular master record.
     By default returns message created within the last 365 days.
     """
-    query = get_messages_related_to_masterrecord(
-        errorsdb, jtrace, record_id, user, status, facility, since, until
+    page = paginate(
+        sorter.sort(
+            get_messages_related_to_masterrecord(
+                errorsdb, jtrace, record_id, user, status, facility, since, until
+            )
+        )
     )
-    return paginate(sorter.sort(query))
+
+    for item in page.items:
+        audit.add_message(item.id, MessageOperation.READ)
+
+    return page
 
 
 @router.get(
@@ -194,14 +231,22 @@ def master_record_workitems(
     record_id: int,
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
+    audit: Auditer = Depends(Auditer),
 ):
     """Retreive a list of work items related to a particular master record."""
     related: list[MasterRecord] = get_masterrecords_related_to_masterrecord(
         jtrace, record_id, user
     ).all()
-    return get_workitems(
+
+    workitems = get_workitems(
         jtrace, user, master_id=[record.id for record in related]
     ).all()
+
+    for item in workitems:
+        audit.add_master_record(item.master_id, AuditOperation.READ)
+        audit.add_person(item.person_id, AuditOperation.READ)
+
+    return workitems
 
 
 @router.get(
@@ -213,9 +258,15 @@ def master_record_persons(
     record_id: int,
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
+    audit: Auditer = Depends(Auditer),
 ):
     """Retreive a list of person records related to a particular master record."""
-    return get_persons_related_to_masterrecord(jtrace, record_id, user).all()
+    persons = get_persons_related_to_masterrecord(jtrace, record_id, user).all()
+
+    for person in persons:
+        audit.add_person(person.id, AuditOperation.READ)
+
+    return persons
 
 
 @router.get(
@@ -228,8 +279,14 @@ def master_record_patientrecords(
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
     ukrdc3: Session = Depends(get_ukrdc3),
+    audit: Auditer = Depends(Auditer),
 ):
     """Retreive a list of patient records related to a particular master record."""
-    return get_patientrecords_related_to_masterrecord(
+    records = get_patientrecords_related_to_masterrecord(
         ukrdc3, jtrace, record_id, user
     ).all()
+
+    for record in records:
+        audit.add_patient_record(record.pid, None, None, AuditOperation.READ)
+
+    return records

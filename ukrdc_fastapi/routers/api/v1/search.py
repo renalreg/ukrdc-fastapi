@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import LinkRecord, MasterRecord
 
 from ukrdc_fastapi.dependencies import get_jtrace, get_ukrdc3
+from ukrdc_fastapi.dependencies.audit import Auditer, AuditOperation
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.query.masterrecords import get_masterrecords
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema
@@ -32,6 +33,7 @@ def search_masterrecords(
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
     ukrdc3: Session = Depends(get_ukrdc3),
+    audit: Auditer = Depends(Auditer),
 ):
     """Search the EMPI for a particular master record"""
     matched_ukrdc_ids = search_masterrecord_ids(
@@ -67,4 +69,9 @@ def search_masterrecords(
             MasterRecord.nationalid_type != "UKRDC"
         )
 
-    return paginate(matched_records)
+    page = paginate(matched_records)
+
+    for record in page.items:
+        audit.add_master_record(record.id, AuditOperation.READ)
+
+    return page

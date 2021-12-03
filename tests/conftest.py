@@ -12,14 +12,13 @@ from pytest_postgresql import factories
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from ukrdc_sqla.empi import Base as JtraceBase
-from ukrdc_sqla.empi import LinkRecord, MasterRecord, Person, PidXRef, WorkItem
+from ukrdc_sqla.empi import LinkRecord, WorkItem
 from ukrdc_sqla.errorsdb import Base as ErrorsBase
 from ukrdc_sqla.errorsdb import Channel
 from ukrdc_sqla.errorsdb import Message as ErrorMessage
 from ukrdc_sqla.pkb import PKBLink
 from ukrdc_sqla.stats import Base as StatsBase
 from ukrdc_sqla.stats import ErrorHistory, FacilityStats, PatientsLatestErrors
-from ukrdc_sqla.ukrdc import Address
 from ukrdc_sqla.ukrdc import Base as UKRDC3Base
 from ukrdc_sqla.ukrdc import (
     Code,
@@ -27,15 +26,10 @@ from ukrdc_sqla.ukrdc import (
     CodeMap,
     Diagnosis,
     Document,
-    Facility,
     LabOrder,
     Level,
     Medication,
-    Name,
     Observation,
-    Patient,
-    PatientNumber,
-    PatientRecord,
     Question,
     RenalDiagnosis,
     ResultItem,
@@ -55,6 +49,7 @@ from ukrdc_fastapi.dependencies import (
     get_ukrdc3,
 )
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
+from ukrdc_fastapi.models.audit import Base as AuditBase
 
 from .utils import create_basic_facility, create_basic_patient
 
@@ -752,11 +747,31 @@ def statsdb_sessionmaker(postgresql_my):
 
 
 @pytest.fixture(scope="function")
+def auditdb_sessionmaker(postgresql_my):
+    """
+    Create a new function-scoped in-memory AUDIT database and return the session class
+    """
+
+    def dbcreator():
+        return postgresql_my.cursor().connection
+
+    engine = create_engine("postgresql+psycopg2://", creator=dbcreator)
+    StatsTestSession = sessionmaker(
+        autocommit=False,
+        autoflush=False,
+        bind=engine,
+    )
+    AuditBase.metadata.create_all(bind=engine)
+    return StatsTestSession
+
+
+@pytest.fixture(scope="function")
 def sessions(
     ukrdc3_sessionmaker,
     jtrace_sessionmaker,
     errorsdb_sessionmaker,
     statsdb_sessionmaker,
+    auditdb_sessionmaker,
 ):
     """
     Create a new function-scoped in-memory UKRDC3, JTRACE, ERRORS and STATS databases,
@@ -767,15 +782,17 @@ def sessions(
     jtrace = jtrace_sessionmaker()
     errorsdb = errorsdb_sessionmaker()
     statsdb = statsdb_sessionmaker()
+    auditdb = auditdb_sessionmaker()
 
     populate_all(ukrdc3, jtrace, errorsdb, statsdb)
 
-    yield ukrdc3, jtrace, errorsdb, statsdb
+    yield ukrdc3, jtrace, errorsdb, statsdb, auditdb
 
     ukrdc3.close()
     jtrace.close()
     errorsdb.close()
     statsdb.close()
+    auditdb.close()
 
 
 @pytest.fixture(scope="function")
@@ -796,6 +813,11 @@ def errorsdb_session(sessions):
 @pytest.fixture(scope="function")
 def stats_session(sessions):
     return sessions[3]
+
+
+@pytest.fixture(scope="function")
+def audit_session(sessions):
+    return sessions[4]
 
 
 @pytest.fixture(scope="function")
@@ -924,6 +946,7 @@ def httpx_session(httpx_mock: HTTPXMock):
 def superuser():
     return UKRDCUser(
         id="TEST_ID",
+        cid="PYTEST",
         email="TEST@UKRDC_FASTAPI",
         permissions=Permissions.all(),
         scopes=["openid", "profile", "email", "offline_access"],
@@ -934,6 +957,7 @@ def superuser():
 def test_user():
     return UKRDCUser(
         id="TEST_ID",
+        cid="PYTEST",
         email="TEST@UKRDC_FASTAPI",
         permissions=[*Permissions.all()[:-1], "ukrdc:unit:TEST_SENDING_FACILITY_1"],
         scopes=["openid", "profile", "email", "offline_access"],

@@ -6,7 +6,13 @@ from sqlalchemy.orm import Session
 
 from ukrdc_fastapi.config import settings
 
-from .database import errors_session, jtrace_session, stats_session, ukrdc3_session
+from .database import (
+    audit_session,
+    errors_session,
+    jtrace_session,
+    stats_session,
+    ukrdc3_session,
+)
 from .mirth import mirth_session
 
 JTRACE_FRIENDLY_ERROR_CODES = {"e3q8": "Error connecting to JTRACE database."}
@@ -62,6 +68,16 @@ def get_statssdb() -> Generator[Session, None, None]:
     """
     with stats_session() as statsdb:
         yield statsdb
+
+
+def get_auditsdb() -> Generator[Session, None, None]:
+    """Yeild a new auditdb database session
+
+    Yields:
+        Generator[Session]: auditdb database session
+    """
+    with audit_session() as auditdb:
+        yield auditdb
 
 
 def get_redis() -> redis.Redis:

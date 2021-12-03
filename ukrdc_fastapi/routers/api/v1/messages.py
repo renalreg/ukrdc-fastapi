@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import MasterRecord
 
 from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_mirth
+from ukrdc_fastapi.dependencies.audit import Auditer, AuditOperation, MessageOperation
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.query.messages import ERROR_SORTER, get_message, get_messages
 from ukrdc_fastapi.query.workitems import get_workitems_related_to_message
@@ -42,21 +43,30 @@ def error_messages(
     user: UKRDCUser = Security(auth.get_user()),
     errorsdb: Session = Depends(get_errorsdb),
     sorter: SQLASorter = Depends(ERROR_SORTER),
+    audit: Auditer = Depends(Auditer),
 ):
     """
     Retreive a list of error messages, optionally filtered by NI, facility, or date.
     By default returns message created within the last 365 days.
     """
-    query = get_messages(
-        errorsdb,
-        user,
-        statuses=status,
-        nis=ni,
-        facility=facility,
-        since=since,
-        until=until,
+    page = paginate(
+        sorter.sort(
+            get_messages(
+                errorsdb,
+                user,
+                statuses=status,
+                nis=ni,
+                facility=facility,
+                since=since,
+                until=until,
+            )
+        )
     )
-    return paginate(sorter.sort(query))
+
+    for item in page.items:
+        audit.add_message(item.id, MessageOperation.READ)
+
+    return page
 
 
 @router.get(
@@ -68,12 +78,17 @@ def error_detail(
     message_id: str,
     user: UKRDCUser = Security(auth.get_user()),
     errorsdb: Session = Depends(get_errorsdb),
+    audit: Auditer = Depends(Auditer),
 ):
     """Retreive detailed information about a specific error message"""
     # For some reason the fastAPI response_model doesn't call our channel_name
     # validator, meaning we don't get a populated channel name unless we explicitly
     # call it here.
-    return MessageSchema.from_orm(get_message(errorsdb, message_id, user))
+    message = MessageSchema.from_orm(get_message(errorsdb, message_id, user))
+
+    audit.add_message(message.id, MessageOperation.READ)
+
+    return message
 
 
 @router.get(
@@ -86,6 +101,7 @@ async def error_source(
     user: UKRDCUser = Security(auth.get_user()),
     errorsdb: Session = Depends(get_errorsdb),
     mirth: MirthAPI = Depends(get_mirth),
+    audit: Auditer = Depends(Auditer),
 ):
     """Retreive detailed information about a specific error message"""
     error = get_message(errorsdb, message_id, user)
@@ -115,6 +131,8 @@ async def error_source(
     if not message_data:
         return MessageSourceSchema(content=None, content_type=None)
 
+    audit.add_message(message.id, MessageOperation.READ_SOURCE)
+
     return MessageSourceSchema(
         content=message_data.content, content_type=message_data.data_type
     )
@@ -134,9 +152,18 @@ async def error_workitems(
     user: UKRDCUser = Security(auth.get_user()),
     errorsdb: Session = Depends(get_errorsdb),
     jtrace: Session = Depends(get_jtrace),
+    audit: Auditer = Depends(Auditer),
 ):
     """Retreive WorkItems associated with a specific error message"""
-    return get_workitems_related_to_message(jtrace, errorsdb, message_id, user).all()
+    workitems = get_workitems_related_to_message(
+        jtrace, errorsdb, message_id, user
+    ).all()
+
+    for item in workitems:
+        audit.add_master_record(item.master_id, AuditOperation.READ)
+        audit.add_person(item.person_id, AuditOperation.READ)
+
+    return workitems
 
 
 @router.get(
@@ -151,9 +178,17 @@ async def error_masterrecords(
     user: UKRDCUser = Security(auth.get_user()),
     errorsdb: Session = Depends(get_errorsdb),
     jtrace: Session = Depends(get_jtrace),
+    audit: Auditer = Depends(Auditer),
 ):
     """Retreive MasterRecords associated with a specific error message"""
     error = get_message(errorsdb, message_id, user)
 
     # Get masterrecords directly referenced by the error
-    return jtrace.query(MasterRecord).filter(MasterRecord.nationalid == error.ni).all()
+    records = (
+        jtrace.query(MasterRecord).filter(MasterRecord.nationalid == error.ni).all()
+    )
+
+    for record in records:
+        audit.add_master_record(record.id, AuditOperation.READ)
+
+    return records

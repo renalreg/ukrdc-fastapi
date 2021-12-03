@@ -6,6 +6,7 @@ from sqlalchemy.orm.session import Session
 from ukrdc_sqla.empi import LinkRecord, MasterRecord, Person, PidXRef, WorkItem
 from ukrdc_sqla.ukrdc import PatientRecord
 
+from ukrdc_fastapi.dependencies.audit import Auditer
 from ukrdc_fastapi.dependencies.auth import UKRDCUser
 from ukrdc_fastapi.query.patientrecords import get_patientrecord
 from ukrdc_fastapi.schemas.delete import (
@@ -146,7 +147,11 @@ def summarise_delete_pid(
 
 
 def delete_pid(
-    ukrdc3: Session, jtrace: Session, pid: str, hash_: str, user: UKRDCUser
+    ukrdc3: Session,
+    jtrace: Session,
+    pid: str,
+    hash_: str,
+    user: UKRDCUser,
 ) -> DeletePIDResponseSchema:
     """Delete a patient record and related records from the database.
 

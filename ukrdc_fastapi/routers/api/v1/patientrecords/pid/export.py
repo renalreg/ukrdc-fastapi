@@ -4,6 +4,7 @@ from mirth_client.mirth import MirthAPI
 from redis import Redis
 
 from ukrdc_fastapi.dependencies import get_mirth, get_redis
+from ukrdc_fastapi.dependencies.audit import Auditer, RecordOperation
 from ukrdc_fastapi.dependencies.auth import Permissions, auth
 from ukrdc_fastapi.utils.mirth import (
     MirthMessageResponseSchema,
@@ -23,7 +24,10 @@ router = APIRouter(tags=["Patient Records/Export"])
     dependencies=[Security(auth.permission(Permissions.EXPORT_RECORDS))],
 )
 async def patient_export_pv(
-    pid: str, mirth: MirthAPI = Depends(get_mirth), redis: Redis = Depends(get_redis)
+    pid: str,
+    mirth: MirthAPI = Depends(get_mirth),
+    redis: Redis = Depends(get_redis),
+    audit: Auditer = Depends(Auditer),
 ):
     """Export a specific patient's data to PV"""
     channel = get_channel_from_name("PV Outbound", mirth, redis)
@@ -38,6 +42,8 @@ async def patient_export_pv(
     except MirthPostError as e:
         raise HTTPException(500, str(e)) from e  # pragma: no cover
 
+    audit.add_patient_record(pid, None, None, RecordOperation.EXPORT_PV)
+
     return MirthMessageResponseSchema(status="success", message=message)
 
 
@@ -47,7 +53,10 @@ async def patient_export_pv(
     dependencies=[Security(auth.permission(Permissions.EXPORT_RECORDS))],
 )
 async def patient_export_pv_tests(
-    pid: str, mirth: MirthAPI = Depends(get_mirth), redis: Redis = Depends(get_redis)
+    pid: str,
+    mirth: MirthAPI = Depends(get_mirth),
+    redis: Redis = Depends(get_redis),
+    audit: Auditer = Depends(Auditer),
 ):
     """Export a specific patient's test data to PV"""
     channel = get_channel_from_name("PV Outbound", mirth, redis)
@@ -62,6 +71,8 @@ async def patient_export_pv_tests(
     except MirthPostError as e:
         raise HTTPException(500, str(e)) from e  # pragma: no cover
 
+    audit.add_patient_record(pid, None, None, RecordOperation.EXPORT_PV_TESTS)
+
     return MirthMessageResponseSchema(status="success", message=message)
 
 
@@ -71,7 +82,10 @@ async def patient_export_pv_tests(
     dependencies=[Security(auth.permission(Permissions.EXPORT_RECORDS))],
 )
 async def patient_export_pv_docs(
-    pid: str, mirth: MirthAPI = Depends(get_mirth), redis: Redis = Depends(get_redis)
+    pid: str,
+    mirth: MirthAPI = Depends(get_mirth),
+    redis: Redis = Depends(get_redis),
+    audit: Auditer = Depends(Auditer),
 ):
     """Export a specific patient's documents data to PV"""
     channel = get_channel_from_name("PV Outbound", mirth, redis)
@@ -86,6 +100,8 @@ async def patient_export_pv_docs(
     except MirthPostError as e:
         raise HTTPException(500, str(e)) from e  # pragma: no cover
 
+    audit.add_patient_record(pid, None, None, RecordOperation.EXPORT_PV_DOCS)
+
     return MirthMessageResponseSchema(status="success", message=message)
 
 
@@ -95,7 +111,10 @@ async def patient_export_pv_docs(
     dependencies=[Security(auth.permission(Permissions.EXPORT_RECORDS))],
 )
 async def patient_export_radar(
-    pid: str, mirth: MirthAPI = Depends(get_mirth), redis: Redis = Depends(get_redis)
+    pid: str,
+    mirth: MirthAPI = Depends(get_mirth),
+    redis: Redis = Depends(get_redis),
+    audit: Auditer = Depends(Auditer),
 ):
     """Export a specific patient's data to RaDaR"""
     channel = get_channel_from_name("RADAR Outbound", mirth, redis)
@@ -109,5 +128,7 @@ async def patient_export_radar(
         await channel.post_message(message)
     except MirthPostError as e:
         raise HTTPException(500, str(e)) from e  # pragma: no cover
+
+    audit.add_patient_record(pid, None, None, RecordOperation.EXPORT_RADAR)
 
     return MirthMessageResponseSchema(status="success", message=message)

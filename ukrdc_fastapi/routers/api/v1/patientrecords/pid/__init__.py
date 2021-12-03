@@ -16,13 +16,14 @@ from ukrdc_sqla.ukrdc import (
 )
 
 from ukrdc_fastapi.dependencies import get_jtrace, get_ukrdc3
+from ukrdc_fastapi.dependencies.audit import Auditer, RecordOperation, RecordResource
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.query.delete import delete_pid, summarise_delete_pid
 from ukrdc_fastapi.query.patientrecords import (
     get_patientrecord,
     get_patientrecords_related_to_patientrecord,
 )
-from ukrdc_fastapi.schemas.delete import DeletePIDRequestSchema
+from ukrdc_fastapi.schemas.delete import DeletePIDRequestSchema, DeletePIDResponseSchema
 from ukrdc_fastapi.schemas.laborder import (
     LabOrderSchema,
     LabOrderShortSchema,
@@ -68,12 +69,20 @@ def _get_patientrecord(
 def patient_get(
     patient_record: PatientRecord = Depends(_get_patientrecord),
     jtrace: Session = Depends(get_jtrace),
+    audit: Auditer = Depends(Auditer),
 ):
     """Retreive a specific patient record"""
     # For some reason the fastAPI response_model doesn't call our master_record_compute
     # validator, meaning we don't get a populated master record unless we explicitly
     # call it here.
-    return PatientRecordSchema.from_orm_with_master_record(patient_record, jtrace)
+    record: PatientRecordSchema = PatientRecordSchema.from_orm_with_master_record(
+        patient_record, jtrace
+    )
+
+    audit.add_patient_record(record.pid, None, None, RecordOperation.READ)
+    audit.add_master_record(record.master_record.id, RecordOperation.READ)
+
+    return record
 
 
 @router.post(
@@ -89,12 +98,27 @@ def patient_delete(
     user: UKRDCUser = Security(auth.get_user()),
     ukrdc3: Session = Depends(get_ukrdc3),
     jtrace: Session = Depends(get_jtrace),
+    audit: Auditer = Depends(Auditer),
     args: Optional[DeletePIDRequestSchema] = None,
 ):
     """Delete a specific patient record and all its associated data"""
+    summary: DeletePIDResponseSchema
+    audit_op: RecordOperation
+
     if args and args.hash:
-        return delete_pid(ukrdc3, jtrace, pid, args.hash, user)
-    return summarise_delete_pid(ukrdc3, jtrace, pid, user)
+        summary = delete_pid(ukrdc3, jtrace, pid, args.hash, user)
+        audit_op = RecordOperation.READ
+    else:
+        summary = summarise_delete_pid(ukrdc3, jtrace, pid, user)
+        audit_op = RecordOperation.DELETE
+
+    audit.add_patient_record(pid, None, None, audit_op)
+    for person in summary.empi.persons:
+        audit.add_person(person.id, audit_op)
+    for master_record in summary.empi.master_records:
+        audit.add_master_record(master_record.id, audit_op)
+
+    return summary
 
 
 @router.get(
@@ -107,9 +131,17 @@ def patient_related(
     user: UKRDCUser = Security(auth.get_user()),
     ukrdc3: Session = Depends(get_ukrdc3),
     jtrace: Session = Depends(get_jtrace),
+    audit: Auditer = Depends(Auditer),
 ):
     """Retreive patient records related to a specific patient record"""
-    return get_patientrecords_related_to_patientrecord(ukrdc3, jtrace, pid, user).all()
+    related = get_patientrecords_related_to_patientrecord(
+        ukrdc3, jtrace, pid, user
+    ).all()
+
+    for record in related:
+        audit.add_patient_record(record.pid, None, None, RecordOperation.READ)
+
+    return related
 
 
 # Internal resources
@@ -120,8 +152,14 @@ def patient_related(
     response_model=list[MedicationSchema],
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
-def patient_medications(patient_record: PatientRecord = Depends(_get_patientrecord)):
+def patient_medications(
+    patient_record: PatientRecord = Depends(_get_patientrecord),
+    audit: Auditer = Depends(Auditer),
+):
     """Retreive a specific patient's medications"""
+    audit.add_patient_record(
+        patient_record.pid, RecordResource.MEDICATIONS, None, RecordOperation.READ
+    )
     return patient_record.medications.all()
 
 
@@ -130,8 +168,14 @@ def patient_medications(patient_record: PatientRecord = Depends(_get_patientreco
     response_model=list[TreatmentSchema],
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
-def patient_treatments(patient_record: PatientRecord = Depends(_get_patientrecord)):
+def patient_treatments(
+    patient_record: PatientRecord = Depends(_get_patientrecord),
+    audit: Auditer = Depends(Auditer),
+):
     """Retreive a specific patient's treatments"""
+    audit.add_patient_record(
+        patient_record.pid, RecordResource.TREATMENTS, None, RecordOperation.READ
+    )
     return patient_record.treatments.all()
 
 
@@ -140,8 +184,14 @@ def patient_treatments(patient_record: PatientRecord = Depends(_get_patientrecor
     response_model=list[SurveySchema],
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
-def patient_surveys(patient_record: PatientRecord = Depends(_get_patientrecord)):
+def patient_surveys(
+    patient_record: PatientRecord = Depends(_get_patientrecord),
+    audit: Auditer = Depends(Auditer),
+):
     """Retreive a specific patient's surveys"""
+    audit.add_patient_record(
+        patient_record.pid, RecordResource.SURVEYS, None, RecordOperation.READ
+    )
     return patient_record.surveys.all()
 
 
@@ -158,8 +208,12 @@ def patient_documents(
             default_sort_by=Document.documenttime,
         )
     ),
+    audit: Auditer = Depends(Auditer),
 ):
     """Retreive a specific patient's documents"""
+    audit.add_patient_record(
+        patient_record.pid, RecordResource.DOCUMENTS, None, RecordOperation.READ
+    )
     # NOTE: We defer the 'stream' column to avoid sending the full PDF file content
     # when we're just querying the list of documents.
     return paginate(sorter.sort(patient_record.documents.options(defer("stream"))))
@@ -171,12 +225,19 @@ def patient_documents(
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
 def document_get(
-    document_id: str, patient_record: PatientRecord = Depends(_get_patientrecord)
+    document_id: str,
+    patient_record: PatientRecord = Depends(_get_patientrecord),
+    audit: Auditer = Depends(Auditer),
 ):
     """Retreive a specific patient's document information"""
     document = patient_record.documents.filter(Document.id == document_id).first()
     if not document:
         raise HTTPException(404, detail="Document not found")
+
+    audit.add_patient_record(
+        patient_record.pid, RecordResource.DOCUMENT, document_id, RecordOperation.READ
+    )
+
     return document
 
 
@@ -185,7 +246,9 @@ def document_get(
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
 def document_download(
-    document_id: str, patient_record: PatientRecord = Depends(_get_patientrecord)
+    document_id: str,
+    patient_record: PatientRecord = Depends(_get_patientrecord),
+    audit: Auditer = Depends(Auditer),
 ):
     """Retreive a specific patient's document file"""
     document: Optional[Document] = patient_record.documents.filter(
@@ -193,6 +256,10 @@ def document_download(
     ).first()
     if not document:
         raise HTTPException(404, detail="Document not found")
+
+    audit.add_patient_record(
+        patient_record.pid, RecordResource.DOCUMENT, document_id, RecordOperation.READ
+    )
 
     media_type: str
     stream: bytes
@@ -228,11 +295,17 @@ def patient_observations(
             default_sort_by=Observation.observation_time,
         )
     ),
+    audit: Auditer = Depends(Auditer),
 ):
     """Retreive a specific patient's lab orders"""
     observations = patient_record.observations
     if code:
         observations = observations.filter(Observation.observation_code.in_(code))
+
+    audit.add_patient_record(
+        patient_record.pid, RecordResource.OBSERVATIONS, None, RecordOperation.READ
+    )
+
     return paginate(sorter.sort(observations))
 
 
@@ -254,8 +327,15 @@ def patient_observation_codes(
     response_model=Page[LabOrderShortSchema],
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
-def patient_laborders(patient_record: PatientRecord = Depends(_get_patientrecord)):
+def patient_laborders(
+    patient_record: PatientRecord = Depends(_get_patientrecord),
+    audit: Auditer = Depends(Auditer),
+):
     """Retreive a specific patient's lab orders"""
+    audit.add_patient_record(
+        patient_record.pid, RecordResource.LABORDERS, None, RecordOperation.READ
+    )
+
     return paginate(
         patient_record.lab_orders.order_by(LabOrder.specimen_collected_time.desc())
     )
@@ -267,12 +347,19 @@ def patient_laborders(patient_record: PatientRecord = Depends(_get_patientrecord
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
 def laborder_get(
-    order_id: str, patient_record: PatientRecord = Depends(_get_patientrecord)
+    order_id: str,
+    patient_record: PatientRecord = Depends(_get_patientrecord),
+    audit: Auditer = Depends(Auditer),
 ) -> LabOrder:
     """Retreive a particular lab order"""
     order = patient_record.lab_orders.filter(LabOrder.id == order_id).first()
     if not order:
         raise HTTPException(404, detail="Lab Order not found")
+
+    audit.add_patient_record(
+        patient_record.pid, RecordResource.LABORDER, order_id, RecordOperation.READ
+    )
+
     return order
 
 
@@ -284,6 +371,7 @@ def laborder_delete(
     order_id: str,
     patient_record: PatientRecord = Depends(_get_patientrecord),
     ukrdc3: Session = Depends(get_ukrdc3),
+    audit: Auditer = Depends(Auditer),
 ) -> Response:
     """Mark a particular lab order for deletion"""
     order = patient_record.lab_orders.filter(LabOrder.id == order_id).first()
@@ -302,6 +390,17 @@ def laborder_delete(
 
     ukrdc3.delete(order)
     ukrdc3.commit()
+
+    audit.add_patient_record(
+        patient_record.pid, RecordResource.LABORDER, order_id, RecordOperation.DELETE
+    )
+    for item in order.result_items:
+        audit.add_patient_record(
+            item.pid,
+            RecordResource.RESULTITEM,
+            item.id,
+            RecordOperation.DELETE,
+        )
 
     return Response(status_code=204)
 
@@ -323,6 +422,7 @@ def patient_resultitems(
             default_sort_by=ResultItem.observation_time,
         )
     ),
+    audit: Auditer = Depends(Auditer),
 ):
     """Retreive a specific patient's lab orders"""
 
@@ -337,6 +437,10 @@ def patient_resultitems(
     if until:
         query = query.filter(ResultItem.observation_time <= until)
 
+    audit.add_patient_record(
+        patient_record.pid, RecordResource.RESULTITEMS, None, RecordOperation.READ
+    )
+
     return paginate(sorter.sort(query))
 
 
@@ -346,12 +450,22 @@ def patient_resultitems(
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
 def resultitem_get(
-    resultitem_id: str, patient_record: PatientRecord = Depends(_get_patientrecord)
+    resultitem_id: str,
+    patient_record: PatientRecord = Depends(_get_patientrecord),
+    audit: Auditer = Depends(Auditer),
 ) -> ResultItem:
     """Retreive a particular lab result"""
     item = patient_record.result_items.filter(ResultItem.id == resultitem_id).first()
     if not item:
         raise HTTPException(404, detail="Result item not found")
+
+    audit.add_patient_record(
+        patient_record.pid,
+        RecordResource.RESULTITEM,
+        resultitem_id,
+        RecordOperation.READ,
+    )
+
     return item
 
 
@@ -363,6 +477,7 @@ def resultitem_delete(
     resultitem_id: str,
     patient_record: PatientRecord = Depends(_get_patientrecord),
     ukrdc3: Session = Depends(get_ukrdc3),
+    audit: Auditer = Depends(Auditer),
 ) -> Response:
     """Mark a particular lab result for deletion"""
     item = patient_record.result_items.filter(ResultItem.id == resultitem_id).first()
@@ -377,6 +492,13 @@ def resultitem_delete(
     if order and order.result_items.count() == 0:
         ukrdc3.delete(order)
     ukrdc3.commit()
+
+    audit.add_patient_record(
+        patient_record.pid,
+        RecordResource.RESULTITEM,
+        resultitem_id,
+        RecordOperation.DELETE,
+    )
 
     return Response(status_code=204)
 

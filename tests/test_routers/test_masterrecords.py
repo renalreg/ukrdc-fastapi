@@ -15,13 +15,6 @@ from ukrdc_fastapi.schemas.message import MessageSchema
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordSchema
 
 
-def test_masterrecords_list(client):
-    response = client.get("/api/v1/masterrecords")
-    assert response.status_code == 200
-    returned_ids = {item["id"] for item in response.json()["items"]}
-    assert returned_ids == {1, 2, 3, 4, 101, 102, 103, 104}
-
-
 def test_masterrecord_detail(client):
     response = client.get("/api/v1/masterrecords/1")
     assert response.status_code == 200

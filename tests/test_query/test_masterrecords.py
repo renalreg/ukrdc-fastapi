@@ -17,13 +17,6 @@ def test_get_masterrecords_user(jtrace_session, test_user):
     assert {record.id for record in all_records} == {1, 4, 101, 104}
 
 
-def test_get_masterrecords_facility(jtrace_session, superuser):
-    all_records = masterrecords.get_masterrecords(
-        jtrace_session, superuser, facility="TEST_SENDING_FACILITY_1"
-    )
-    assert {record.id for record in all_records} == {1, 4, 101, 104}
-
-
 def test_get_masterrecord_superuser(jtrace_session, superuser):
     record = masterrecords.get_masterrecord(jtrace_session, 1, superuser)
     assert record

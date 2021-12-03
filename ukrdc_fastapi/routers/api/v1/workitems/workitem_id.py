@@ -10,6 +10,7 @@ from redis import Redis
 from sqlalchemy.orm import Session
 
 from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_mirth, get_redis
+from ukrdc_fastapi.dependencies.audit import Auditer, AuditOperation, MessageOperation
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.query.messages import get_messages
 from ukrdc_fastapi.query.mirth.workitems import close_workitem, update_workitem
@@ -46,9 +47,19 @@ def workitem_detail(
     workitem_id: int,
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
+    audit: Auditer = Depends(Auditer),
 ):
     """Retreive a particular work item from the EMPI"""
-    return get_extended_workitem(jtrace, workitem_id, user)
+    workitem = get_extended_workitem(jtrace, workitem_id, user)
+
+    for master_record in workitem.incoming.master_records:
+        audit.add_master_record(master_record.id, AuditOperation.READ)
+    for persons in workitem.destination.persons:
+        audit.add_person(persons.id, AuditOperation.READ)
+    audit.add_master_record(workitem.destination.master_record.id, AuditOperation.READ)
+    audit.add_person(workitem.incoming.person.id, AuditOperation.READ)
+
+    return workitem
 
 
 @router.put(
@@ -96,9 +107,16 @@ def workitem_collection(
     workitem_id: int,
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
+    audit: Auditer = Depends(Auditer),
 ):
     """Retreive a list of other work items related to a particular work item"""
-    return get_workitem_collection(jtrace, workitem_id, user).all()
+    collection = get_workitem_collection(jtrace, workitem_id, user).all()
+
+    for workitem in collection:
+        audit.add_master_record(workitem.master_record.id, AuditOperation.READ)
+        audit.add_person(workitem.person.id, AuditOperation.READ)
+
+    return collection
 
 
 @router.get(
@@ -110,9 +128,16 @@ def workitem_related(
     workitem_id: int,
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
+    audit: Auditer = Depends(Auditer),
 ):
     """Retreive a list of other work items related to a particular work item"""
-    return get_workitems_related_to_workitem(jtrace, workitem_id, user).all()
+    related = get_workitems_related_to_workitem(jtrace, workitem_id, user).all()
+
+    for workitem in related:
+        audit.add_master_record(workitem.master_record.id, AuditOperation.READ)
+        audit.add_person(workitem.person.id, AuditOperation.READ)
+
+    return related
 
 
 @router.get(
@@ -129,6 +154,7 @@ def workitem_messages(
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
     errorsdb: Session = Depends(get_errorsdb),
+    audit: Auditer = Depends(Auditer),
 ):
     """Retreive a list of other work items related to a particular work item"""
     workitem = get_extended_workitem(jtrace, workitem_id, user)
@@ -140,7 +166,7 @@ def workitem_messages(
     if workitem.master_record:
         workitem_nis.append(workitem.master_record.nationalid)
 
-    return paginate(
+    page = paginate(
         get_messages(
             errorsdb,
             user,
@@ -151,6 +177,11 @@ def workitem_messages(
             until=until,
         )
     )
+
+    for item in page.items:
+        audit.add_message(item.id, MessageOperation.READ)
+
+    return page
 
 
 @router.post(
