@@ -114,10 +114,10 @@ def patient_delete(
 
     if args and args.hash:
         summary = delete_pid(ukrdc3, jtrace, pid, args.hash, user)
-        audit_op = AuditOperation.READ
+        audit_op = AuditOperation.DELETE
     else:
         summary = summarise_delete_pid(ukrdc3, jtrace, pid, user)
-        audit_op = AuditOperation.DELETE
+        audit_op = AuditOperation.READ
 
     audit.add_patient_record(pid, None, None, audit_op)
     if summary.empi:
