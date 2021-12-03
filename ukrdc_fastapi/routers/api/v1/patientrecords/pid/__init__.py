@@ -21,6 +21,7 @@ from ukrdc_fastapi.dependencies.audit import (
     AuditOperation,
     RecordOperation,
     RecordResource,
+    get_auditer,
 )
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.query.delete import delete_pid, summarise_delete_pid
@@ -74,7 +75,7 @@ def _get_patientrecord(
 def patient_get(
     patient_record: PatientRecord = Depends(_get_patientrecord),
     jtrace: Session = Depends(get_jtrace),
-    audit: Auditer = Depends(Auditer),
+    audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient record"""
     # For some reason the fastAPI response_model doesn't call our master_record_compute
@@ -104,7 +105,7 @@ def patient_delete(
     user: UKRDCUser = Security(auth.get_user()),
     ukrdc3: Session = Depends(get_ukrdc3),
     jtrace: Session = Depends(get_jtrace),
-    audit: Auditer = Depends(Auditer),
+    audit: Auditer = Depends(get_auditer),
     args: Optional[DeletePIDRequestSchema] = None,
 ):
     """Delete a specific patient record and all its associated data"""
@@ -138,7 +139,7 @@ def patient_related(
     user: UKRDCUser = Security(auth.get_user()),
     ukrdc3: Session = Depends(get_ukrdc3),
     jtrace: Session = Depends(get_jtrace),
-    audit: Auditer = Depends(Auditer),
+    audit: Auditer = Depends(get_auditer),
 ):
     """Retreive patient records related to a specific patient record"""
     related = get_patientrecords_related_to_patientrecord(
@@ -161,7 +162,7 @@ def patient_related(
 )
 def patient_medications(
     patient_record: PatientRecord = Depends(_get_patientrecord),
-    audit: Auditer = Depends(Auditer),
+    audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's medications"""
     audit.add_patient_record(
@@ -177,7 +178,7 @@ def patient_medications(
 )
 def patient_treatments(
     patient_record: PatientRecord = Depends(_get_patientrecord),
-    audit: Auditer = Depends(Auditer),
+    audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's treatments"""
     audit.add_patient_record(
@@ -193,7 +194,7 @@ def patient_treatments(
 )
 def patient_surveys(
     patient_record: PatientRecord = Depends(_get_patientrecord),
-    audit: Auditer = Depends(Auditer),
+    audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's surveys"""
     audit.add_patient_record(
@@ -215,7 +216,7 @@ def patient_documents(
             default_sort_by=Document.documenttime,
         )
     ),
-    audit: Auditer = Depends(Auditer),
+    audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's documents"""
     audit.add_patient_record(
@@ -234,7 +235,7 @@ def patient_documents(
 def document_get(
     document_id: str,
     patient_record: PatientRecord = Depends(_get_patientrecord),
-    audit: Auditer = Depends(Auditer),
+    audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's document information"""
     document = patient_record.documents.filter(Document.id == document_id).first()
@@ -255,7 +256,7 @@ def document_get(
 def document_download(
     document_id: str,
     patient_record: PatientRecord = Depends(_get_patientrecord),
-    audit: Auditer = Depends(Auditer),
+    audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's document file"""
     document: Optional[Document] = patient_record.documents.filter(
@@ -302,7 +303,7 @@ def patient_observations(
             default_sort_by=Observation.observation_time,
         )
     ),
-    audit: Auditer = Depends(Auditer),
+    audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's lab orders"""
     observations = patient_record.observations
@@ -336,7 +337,7 @@ def patient_observation_codes(
 )
 def patient_laborders(
     patient_record: PatientRecord = Depends(_get_patientrecord),
-    audit: Auditer = Depends(Auditer),
+    audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's lab orders"""
     audit.add_patient_record(
@@ -356,7 +357,7 @@ def patient_laborders(
 def laborder_get(
     order_id: str,
     patient_record: PatientRecord = Depends(_get_patientrecord),
-    audit: Auditer = Depends(Auditer),
+    audit: Auditer = Depends(get_auditer),
 ) -> LabOrder:
     """Retreive a particular lab order"""
     order = patient_record.lab_orders.filter(LabOrder.id == order_id).first()
@@ -378,7 +379,7 @@ def laborder_delete(
     order_id: str,
     patient_record: PatientRecord = Depends(_get_patientrecord),
     ukrdc3: Session = Depends(get_ukrdc3),
-    audit: Auditer = Depends(Auditer),
+    audit: Auditer = Depends(get_auditer),
 ) -> Response:
     """Mark a particular lab order for deletion"""
     order = patient_record.lab_orders.filter(LabOrder.id == order_id).first()
@@ -429,7 +430,7 @@ def patient_resultitems(
             default_sort_by=ResultItem.observation_time,
         )
     ),
-    audit: Auditer = Depends(Auditer),
+    audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's lab orders"""
 
@@ -459,7 +460,7 @@ def patient_resultitems(
 def resultitem_get(
     resultitem_id: str,
     patient_record: PatientRecord = Depends(_get_patientrecord),
-    audit: Auditer = Depends(Auditer),
+    audit: Auditer = Depends(get_auditer),
 ) -> ResultItem:
     """Retreive a particular lab result"""
     item = patient_record.result_items.filter(ResultItem.id == resultitem_id).first()
@@ -484,7 +485,7 @@ def resultitem_delete(
     resultitem_id: str,
     patient_record: PatientRecord = Depends(_get_patientrecord),
     ukrdc3: Session = Depends(get_ukrdc3),
-    audit: Auditer = Depends(Auditer),
+    audit: Auditer = Depends(get_auditer),
 ) -> Response:
     """Mark a particular lab result for deletion"""
     item = patient_record.result_items.filter(ResultItem.id == resultitem_id).first()

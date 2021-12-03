@@ -1,4 +1,4 @@
-from sqlalchemy import JSON, Column, DateTime, Integer, String
+from sqlalchemy import Column, DateTime, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql.schema import ForeignKey
 
@@ -19,8 +19,7 @@ class AccessEvent(Base):
 
     path = Column(String)  # API path
     method = Column(String)  # API method
-    query_params = Column(JSON)  # API query params
-    path_params = Column(JSON)  # API path params
+    body = Column(String)  # API request body
 
 
 class PatientRecordEvent(Base):

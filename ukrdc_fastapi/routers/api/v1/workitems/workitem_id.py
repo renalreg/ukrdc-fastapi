@@ -10,7 +10,12 @@ from redis import Redis
 from sqlalchemy.orm import Session
 
 from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_mirth, get_redis
-from ukrdc_fastapi.dependencies.audit import Auditer, AuditOperation, MessageOperation
+from ukrdc_fastapi.dependencies.audit import (
+    Auditer,
+    AuditOperation,
+    MessageOperation,
+    get_auditer,
+)
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.query.messages import get_messages
 from ukrdc_fastapi.query.mirth.workitems import close_workitem, update_workitem
@@ -47,7 +52,7 @@ def workitem_detail(
     workitem_id: int,
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
-    audit: Auditer = Depends(Auditer),
+    audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a particular work item from the EMPI"""
     workitem = get_extended_workitem(jtrace, workitem_id, user)
@@ -111,14 +116,16 @@ def workitem_collection(
     workitem_id: int,
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
-    audit: Auditer = Depends(Auditer),
+    audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a list of other work items related to a particular work item"""
     collection = get_workitem_collection(jtrace, workitem_id, user).all()
 
     for workitem in collection:
-        audit.add_master_record(workitem.master_record.id, AuditOperation.READ)
-        audit.add_person(workitem.person.id, AuditOperation.READ)
+        if workitem.master_record:
+            audit.add_master_record(workitem.master_record.id, AuditOperation.READ)
+        if workitem.person:
+            audit.add_person(workitem.person.id, AuditOperation.READ)
 
     return collection
 
@@ -132,14 +139,16 @@ def workitem_related(
     workitem_id: int,
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
-    audit: Auditer = Depends(Auditer),
+    audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a list of other work items related to a particular work item"""
     related = get_workitems_related_to_workitem(jtrace, workitem_id, user).all()
 
     for workitem in related:
-        audit.add_master_record(workitem.master_record.id, AuditOperation.READ)
-        audit.add_person(workitem.person.id, AuditOperation.READ)
+        if workitem.master_record:
+            audit.add_master_record(workitem.master_record.id, AuditOperation.READ)
+        if workitem.person:
+            audit.add_person(workitem.person.id, AuditOperation.READ)
 
     return related
 
@@ -158,7 +167,7 @@ def workitem_messages(
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
     errorsdb: Session = Depends(get_errorsdb),
-    audit: Auditer = Depends(Auditer),
+    audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a list of other work items related to a particular work item"""
     workitem = get_extended_workitem(jtrace, workitem_id, user)

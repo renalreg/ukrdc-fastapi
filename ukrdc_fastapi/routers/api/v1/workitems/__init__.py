@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import WorkItem
 
 from ukrdc_fastapi.dependencies import get_jtrace
-from ukrdc_fastapi.dependencies.audit import Auditer, AuditOperation
+from ukrdc_fastapi.dependencies.audit import Auditer, AuditOperation, get_auditer
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.query.workitems import get_workitems
 from ukrdc_fastapi.schemas.empi import WorkItemSchema
@@ -44,7 +44,7 @@ def workitems_list(
             default_sort_by=WorkItem.last_updated,
         )
     ),
-    audit: Auditer = Depends(Auditer),
+    audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a list of open work items from the EMPI"""
     query = get_workitems(

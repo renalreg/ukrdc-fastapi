@@ -4,7 +4,7 @@ from mirth_client.mirth import MirthAPI
 from redis import Redis
 
 from ukrdc_fastapi.dependencies import get_mirth, get_redis
-from ukrdc_fastapi.dependencies.audit import Auditer, RecordOperation
+from ukrdc_fastapi.dependencies.audit import Auditer, RecordOperation, get_auditer
 from ukrdc_fastapi.dependencies.auth import Permissions, auth
 from ukrdc_fastapi.utils.mirth import (
     MirthMessageResponseSchema,
@@ -27,7 +27,7 @@ async def patient_export_pv(
     pid: str,
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
-    audit: Auditer = Depends(Auditer),
+    audit: Auditer = Depends(get_auditer),
 ):
     """Export a specific patient's data to PV"""
     channel = get_channel_from_name("PV Outbound", mirth, redis)
@@ -56,7 +56,7 @@ async def patient_export_pv_tests(
     pid: str,
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
-    audit: Auditer = Depends(Auditer),
+    audit: Auditer = Depends(get_auditer),
 ):
     """Export a specific patient's test data to PV"""
     channel = get_channel_from_name("PV Outbound", mirth, redis)
@@ -85,7 +85,7 @@ async def patient_export_pv_docs(
     pid: str,
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
-    audit: Auditer = Depends(Auditer),
+    audit: Auditer = Depends(get_auditer),
 ):
     """Export a specific patient's documents data to PV"""
     channel = get_channel_from_name("PV Outbound", mirth, redis)
@@ -114,7 +114,7 @@ async def patient_export_radar(
     pid: str,
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
-    audit: Auditer = Depends(Auditer),
+    audit: Auditer = Depends(get_auditer),
 ):
     """Export a specific patient's data to RaDaR"""
     channel = get_channel_from_name("RADAR Outbound", mirth, redis)

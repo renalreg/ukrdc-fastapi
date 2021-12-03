@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import MasterRecord, Person
 
 from ukrdc_fastapi.dependencies import get_jtrace
-from ukrdc_fastapi.dependencies.audit import Auditer, AuditOperation
+from ukrdc_fastapi.dependencies.audit import Auditer, AuditOperation, get_auditer
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.query.masterrecords import get_masterrecords
 from ukrdc_fastapi.query.persons import get_person
@@ -21,7 +21,7 @@ def person_detail(
     person_id: int,
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
-    audit: Auditer = Depends(Auditer),
+    audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a particular Person record from the EMPI"""
     person = get_person(jtrace, person_id, user)
@@ -40,7 +40,7 @@ def person_masterrecords(
     person_id: int,
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
-    audit: Auditer = Depends(Auditer),
+    audit: Auditer = Depends(get_auditer),
 ):
     """Retreive MasterRecords directly linked to a particular Person record"""
     person: Person = get_person(jtrace, person_id, user)

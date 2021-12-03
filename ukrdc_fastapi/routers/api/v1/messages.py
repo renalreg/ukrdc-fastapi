@@ -11,7 +11,12 @@ from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import MasterRecord
 
 from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_mirth
-from ukrdc_fastapi.dependencies.audit import Auditer, AuditOperation, MessageOperation
+from ukrdc_fastapi.dependencies.audit import (
+    Auditer,
+    AuditOperation,
+    MessageOperation,
+    get_auditer,
+)
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.query.messages import ERROR_SORTER, get_message, get_messages
 from ukrdc_fastapi.query.workitems import get_workitems_related_to_message
@@ -43,7 +48,7 @@ def error_messages(
     user: UKRDCUser = Security(auth.get_user()),
     errorsdb: Session = Depends(get_errorsdb),
     sorter: SQLASorter = Depends(ERROR_SORTER),
-    audit: Auditer = Depends(Auditer),
+    audit: Auditer = Depends(get_auditer),
 ):
     """
     Retreive a list of error messages, optionally filtered by NI, facility, or date.
@@ -78,7 +83,7 @@ def error_detail(
     message_id: str,
     user: UKRDCUser = Security(auth.get_user()),
     errorsdb: Session = Depends(get_errorsdb),
-    audit: Auditer = Depends(Auditer),
+    audit: Auditer = Depends(get_auditer),
 ):
     """Retreive detailed information about a specific error message"""
     # For some reason the fastAPI response_model doesn't call our channel_name
@@ -101,7 +106,7 @@ async def error_source(
     user: UKRDCUser = Security(auth.get_user()),
     errorsdb: Session = Depends(get_errorsdb),
     mirth: MirthAPI = Depends(get_mirth),
-    audit: Auditer = Depends(Auditer),
+    audit: Auditer = Depends(get_auditer),
 ):
     """Retreive detailed information about a specific error message"""
     error = get_message(errorsdb, message_id, user)
@@ -152,7 +157,7 @@ async def error_workitems(
     user: UKRDCUser = Security(auth.get_user()),
     errorsdb: Session = Depends(get_errorsdb),
     jtrace: Session = Depends(get_jtrace),
-    audit: Auditer = Depends(Auditer),
+    audit: Auditer = Depends(get_auditer),
 ):
     """Retreive WorkItems associated with a specific error message"""
     workitems = get_workitems_related_to_message(
@@ -178,7 +183,7 @@ async def error_masterrecords(
     user: UKRDCUser = Security(auth.get_user()),
     errorsdb: Session = Depends(get_errorsdb),
     jtrace: Session = Depends(get_jtrace),
-    audit: Auditer = Depends(Auditer),
+    audit: Auditer = Depends(get_auditer),
 ):
     """Retreive MasterRecords associated with a specific error message"""
     error = get_message(errorsdb, message_id, user)

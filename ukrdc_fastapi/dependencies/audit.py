@@ -80,12 +80,8 @@ class Auditer:
     items to audit, and commit the audit rows in the view function.
     """
 
-    def __init__(
-        self,
-        request: Request,
-        auditdb: Session = Depends(get_auditdb),
-        user: UKRDCUser = Security(auth.get_user()),
-    ):
+    def __init__(self, request: Request, auditdb: Session, user: UKRDCUser):
+        self.request = request
         self.session = auditdb
 
         self.event = AccessEvent(
@@ -96,12 +92,15 @@ class Auditer:
             client_host=request.client.host,
             path=str(request.url),
             method=request.method,
-            query_params=dict(request.query_params),
-            path_params=dict(request.path_params),
+            body=None,
         )
 
-        auditdb.add(self.event)
-        auditdb.commit()
+    async def add_request(self):
+        """Add the audit request"""
+        self.event.body = (await self.request.body()) or None
+
+        self.session.add(self.event)
+        self.session.commit()
 
     def add_patient_record(
         self,
@@ -127,7 +126,6 @@ class Auditer:
                 operation=operation.value if operation else None,
             )
         )
-        self.session.commit()
 
     def add_master_record(
         self,
@@ -147,7 +145,6 @@ class Auditer:
                 operation=operation.value if operation else None,
             )
         )
-        self.session.commit()
 
     def add_person(
         self,
@@ -167,7 +164,6 @@ class Auditer:
                 operation=operation.value if operation else None,
             )
         )
-        self.session.commit()
 
     def add_message(
         self,
@@ -187,4 +183,18 @@ class Auditer:
                 operation=operation.value if operation else None,
             )
         )
-        self.session.commit()
+
+
+async def get_auditer(
+    request: Request,
+    auditdb: Session = Depends(get_auditdb),
+    user: UKRDCUser = Security(auth.get_user()),
+) -> Auditer:
+    auditer = Auditer(request, auditdb, user)
+    await auditer.add_request()
+
+    try:
+        yield auditer
+        auditer.session.commit()
+    finally:
+        auditer.session.close()
