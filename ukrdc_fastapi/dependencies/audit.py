@@ -97,7 +97,7 @@ class Auditer:
 
     async def add_request(self):
         """Add the audit request"""
-        self.event.body = (await self.request.body()) or None
+        self.event.body = (await self.request.body()).decode("utf-8") or None
 
         self.session.add(self.event)
         self.session.commit()
