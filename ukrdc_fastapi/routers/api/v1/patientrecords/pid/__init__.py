@@ -26,7 +26,6 @@ from ukrdc_fastapi.dependencies.audit import (
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.query.delete import delete_pid, summarise_delete_pid
 from ukrdc_fastapi.query.patientrecords import (
-    get_patientrecord,
     get_patientrecords_related_to_patientrecord,
 )
 from ukrdc_fastapi.schemas.delete import DeletePIDRequestSchema, DeletePIDResponseSchema
@@ -50,18 +49,10 @@ from ukrdc_fastapi.utils.paginate import Page, paginate
 from ukrdc_fastapi.utils.sort import SQLASorter, make_sqla_sorter
 
 from . import export
+from .dependencies import _get_patientrecord
 
 router = APIRouter(prefix="/{pid}")
 router.include_router(export.router, prefix="/export")
-
-
-def _get_patientrecord(
-    pid: str,
-    user: UKRDCUser = Security(auth.get_user()),
-    ukrdc3: Session = Depends(get_ukrdc3),
-) -> PatientRecord:
-    """Simple dependency to turn pid query param and User object into a PatientRecord object."""
-    return get_patientrecord(ukrdc3, pid, user)
 
 
 # Self-resources
@@ -394,10 +385,6 @@ def laborder_delete(
         )
         for item in order.result_items
     ]
-    ukrdc3.bulk_save_objects(deletes)
-
-    ukrdc3.delete(order)
-    ukrdc3.commit()
 
     audit.add_patient_record(
         patient_record.pid, RecordResource.LABORDER, order_id, RecordOperation.DELETE
@@ -409,6 +396,10 @@ def laborder_delete(
             item.id,
             RecordOperation.DELETE,
         )
+
+    ukrdc3.bulk_save_objects(deletes)
+    ukrdc3.delete(order)
+    ukrdc3.commit()
 
     return Response(status_code=204)
 
