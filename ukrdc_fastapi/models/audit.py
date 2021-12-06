@@ -2,7 +2,7 @@ from typing import List
 
 from sqlalchemy import Column, DateTime, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import Mapped, relationship
+from sqlalchemy.orm import Mapped, relationship  # type: ignore
 from sqlalchemy.sql.schema import ForeignKey
 
 Base = declarative_base()
