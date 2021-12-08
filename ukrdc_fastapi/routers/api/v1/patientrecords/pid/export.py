@@ -5,7 +5,12 @@ from redis import Redis
 from ukrdc_sqla.ukrdc import PatientRecord
 
 from ukrdc_fastapi.dependencies import get_mirth, get_redis
-from ukrdc_fastapi.dependencies.audit import Auditer, RecordOperation, get_auditer
+from ukrdc_fastapi.dependencies.audit import (
+    Auditer,
+    RecordOperation,
+    Resource,
+    get_auditer,
+)
 from ukrdc_fastapi.dependencies.auth import Permissions, auth
 from ukrdc_fastapi.utils.mirth import (
     MirthMessageResponseSchema,
@@ -45,7 +50,9 @@ async def patient_export_pv(
     except MirthPostError as e:
         raise HTTPException(500, str(e)) from e  # pragma: no cover
 
-    audit.add_patient_record(patient_record.pid, None, None, RecordOperation.EXPORT_PV)
+    audit.add_event(
+        Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.EXPORT_PV
+    )
 
     return MirthMessageResponseSchema(status="success", message=message)
 
@@ -74,8 +81,8 @@ async def patient_export_pv_tests(
     except MirthPostError as e:
         raise HTTPException(500, str(e)) from e  # pragma: no cover
 
-    audit.add_patient_record(
-        patient_record.pid, None, None, RecordOperation.EXPORT_PV_TESTS
+    audit.add_event(
+        Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.EXPORT_PV_TESTS
     )
 
     return MirthMessageResponseSchema(status="success", message=message)
@@ -105,8 +112,8 @@ async def patient_export_pv_docs(
     except MirthPostError as e:
         raise HTTPException(500, str(e)) from e  # pragma: no cover
 
-    audit.add_patient_record(
-        patient_record.pid, None, None, RecordOperation.EXPORT_PV_DOCS
+    audit.add_event(
+        Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.EXPORT_PV_DOCS
     )
 
     return MirthMessageResponseSchema(status="success", message=message)
@@ -136,8 +143,8 @@ async def patient_export_radar(
     except MirthPostError as e:
         raise HTTPException(500, str(e)) from e  # pragma: no cover
 
-    audit.add_patient_record(
-        patient_record.pid, None, None, RecordOperation.EXPORT_RADAR
+    audit.add_event(
+        Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.EXPORT_RADAR
     )
 
     return MirthMessageResponseSchema(status="success", message=message)

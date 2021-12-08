@@ -14,6 +14,7 @@ from ukrdc_fastapi.dependencies.audit import (
     AuditOperation,
     MessageOperation,
     RecordOperation,
+    Resource,
     get_auditer,
 )
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
@@ -67,7 +68,7 @@ def master_record_detail(
     """Retreive a particular master record from the EMPI"""
     record = get_masterrecord(jtrace, record_id, user)
 
-    audit.add_master_record(record_id, AuditOperation.READ)
+    audit.add_event(Resource.MASTER_RECORD, record.id, AuditOperation.READ)
 
     return record
 
@@ -92,7 +93,12 @@ def master_record_latest_message(
     if not latest:
         return Response(status_code=HTTP_204_NO_CONTENT)
 
-    audit.add_message(latest.id, MessageOperation.READ)
+    audit.add_event(
+        Resource.MESSAGE,
+        latest.id,
+        AuditOperation.READ,
+        parent=audit.add_event(Resource.MASTER_RECORD, record_id, AuditOperation.READ),
+    )
 
     return latest
 
@@ -107,6 +113,7 @@ def master_record_statistics(
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
     errorsdb: Session = Depends(get_errorsdb),
+    audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a particular master record from the EMPI"""
     record: MasterRecord = get_masterrecord(jtrace, record_id, user)
@@ -123,6 +130,13 @@ def master_record_statistics(
 
     workitems = get_workitems(
         jtrace, user, master_id=[record.id for record in related_records.all()]
+    )
+
+    audit.add_event(
+        Resource.STATISTICS,
+        None,
+        AuditOperation.READ,
+        parent=audit.add_event(Resource.MASTER_RECORD, record.id, AuditOperation.READ),
     )
 
     return MasterRecordStatisticsSchema(
@@ -159,9 +173,22 @@ def master_record_linkrecords(
     for record in records:
         link_records.extend(record.link_records)
 
+    record_audit = audit.add_event(
+        Resource.MASTER_RECORD, record.id, AuditOperation.READ
+    )
     for link in link_records:
-        audit.add_master_record(link.master_id, AuditOperation.READ)
-        audit.add_person(link.person_id, AuditOperation.READ)
+        audit.add_event(
+            Resource.MASTER_RECORD,
+            link.master_id,
+            AuditOperation.READ,
+            parent=record_audit,
+        )
+        audit.add_event(
+            Resource.PERSON,
+            link.person_id,
+            AuditOperation.READ,
+            parent=record_audit,
+        )
 
     return link_records
 
@@ -182,8 +209,16 @@ def master_record_related(
         jtrace, record_id, user, exclude_self=True
     ).all()
 
+    record_audit = audit.add_event(
+        Resource.MASTER_RECORD, record_id, AuditOperation.READ
+    )
     for record in records:
-        audit.add_master_record(record.id, AuditOperation.READ)
+        audit.add_event(
+            Resource.MASTER_RECORD,
+            record.id,
+            AuditOperation.READ,
+            parent=record_audit,
+        )
 
     return records
 
@@ -217,8 +252,13 @@ def master_record_messages(
         )
     )
 
+    record_audit = audit.add_event(
+        Resource.MASTER_RECORD, record_id, AuditOperation.READ
+    )
     for item in page.items:  # type: ignore
-        audit.add_message(item.id, MessageOperation.READ)
+        audit.add_event(
+            Resource.MESSAGE, item.id, AuditOperation.READ, parent=record_audit
+        )
 
     return page
 
@@ -243,9 +283,25 @@ def master_record_workitems(
         jtrace, user, master_id=[record.id for record in related]
     ).all()
 
+    record_audit = audit.add_event(
+        Resource.MASTER_RECORD, record_id, AuditOperation.READ
+    )
     for item in workitems:
-        audit.add_master_record(item.master_id, AuditOperation.READ)
-        audit.add_person(item.person_id, AuditOperation.READ)
+        workitem_audit = audit.add_event(
+            Resource.WORKITEM, item.id, AuditOperation.READ, parent=record_audit
+        )
+        audit.add_event(
+            Resource.MASTER_RECORD,
+            item.master_id,
+            AuditOperation.READ,
+            parent=workitem_audit,
+        )
+        audit.add_event(
+            Resource.PERSON,
+            item.person_id,
+            AuditOperation.READ,
+            parent=workitem_audit,
+        )
 
     return workitems
 
@@ -264,8 +320,13 @@ def master_record_persons(
     """Retreive a list of person records related to a particular master record."""
     persons = get_persons_related_to_masterrecord(jtrace, record_id, user).all()
 
+    record_audit = audit.add_event(
+        Resource.MASTER_RECORD, record_id, AuditOperation.READ
+    )
     for person in persons:
-        audit.add_person(person.id, AuditOperation.READ)
+        audit.add_event(
+            Resource.PERSON, person.id, AuditOperation.READ, parent=record_audit
+        )
 
     return persons
 
@@ -287,7 +348,15 @@ def master_record_patientrecords(
         ukrdc3, jtrace, record_id, user
     ).all()
 
+    record_audit = audit.add_event(
+        Resource.MASTER_RECORD, record_id, AuditOperation.READ
+    )
     for record in records:
-        audit.add_patient_record(record.pid, None, None, RecordOperation.READ)
+        audit.add_event(
+            Resource.PATIENT_RECORD,
+            record.pid,
+            AuditOperation.READ,
+            parent=record_audit,
+        )
 
     return records

@@ -5,7 +5,12 @@ from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import LinkRecord, MasterRecord
 
 from ukrdc_fastapi.dependencies import get_jtrace, get_ukrdc3
-from ukrdc_fastapi.dependencies.audit import Auditer, AuditOperation, get_auditer
+from ukrdc_fastapi.dependencies.audit import (
+    Auditer,
+    AuditOperation,
+    Resource,
+    get_auditer,
+)
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.query.masterrecords import get_masterrecords
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema
@@ -72,6 +77,6 @@ def search_masterrecords(
     page: Page = paginate(matched_records)  # type: ignore
 
     for record in page.items:
-        audit.add_master_record(record.id, AuditOperation.READ)
+        audit.add_event(Resource.MASTER_RECORD, record.id, AuditOperation.READ)
 
     return page

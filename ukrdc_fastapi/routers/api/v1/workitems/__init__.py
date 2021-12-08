@@ -7,7 +7,12 @@ from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import WorkItem
 
 from ukrdc_fastapi.dependencies import get_jtrace
-from ukrdc_fastapi.dependencies.audit import Auditer, AuditOperation, get_auditer
+from ukrdc_fastapi.dependencies.audit import (
+    Auditer,
+    AuditOperation,
+    Resource,
+    get_auditer,
+)
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.query.workitems import get_workitems
 from ukrdc_fastapi.schemas.empi import WorkItemSchema
@@ -53,7 +58,22 @@ def workitems_list(
     page = paginate(sorter.sort(query))
 
     for item in page.items:  # type: ignore
-        audit.add_master_record(item.master_record.id, AuditOperation.READ)
-        audit.add_person(item.person.id, AuditOperation.READ)
+        workitem_audit = audit.add_event(
+            Resource.WORKITEM, item.id, AuditOperation.READ
+        )
+        if item.master_record:
+            audit.add_event(
+                Resource.MASTER_RECORD,
+                item.master_record.id,
+                AuditOperation.READ,
+                parent=workitem_audit,
+            )
+        if item.person:
+            audit.add_event(
+                Resource.PERSON,
+                item.person.id,
+                AuditOperation.READ,
+                parent=workitem_audit,
+            )
 
     return page

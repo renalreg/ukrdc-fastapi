@@ -14,6 +14,7 @@ from ukrdc_fastapi.dependencies.audit import (
     Auditer,
     AuditOperation,
     MessageOperation,
+    Resource,
     get_auditer,
 )
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
@@ -57,16 +58,37 @@ def workitem_detail(
     """Retreive a particular work item from the EMPI"""
     workitem = get_extended_workitem(jtrace, workitem_id, user)
 
+    workitem_audit = audit.add_event(
+        Resource.WORKITEM, workitem.id, AuditOperation.READ
+    )
     for master_record in workitem.incoming.master_records:
-        audit.add_master_record(master_record.id, AuditOperation.READ)
-    for persons in workitem.destination.persons:
-        audit.add_person(persons.id, AuditOperation.READ)
+        audit.add_event(
+            Resource.MASTER_RECORD,
+            master_record.id,
+            AuditOperation.READ,
+            parent=workitem_audit,
+        )
+    for person in workitem.destination.persons:
+        audit.add_event(
+            Resource.PERSON,
+            person.id,
+            AuditOperation.READ,
+            parent=workitem_audit,
+        )
     if workitem.destination.master_record:
-        audit.add_master_record(
-            workitem.destination.master_record.id, AuditOperation.READ
+        audit.add_event(
+            Resource.MASTER_RECORD,
+            workitem.destination.master_record.id,
+            AuditOperation.READ,
+            parent=workitem_audit,
         )
     if workitem.incoming.person:
-        audit.add_person(workitem.incoming.person.id, AuditOperation.READ)
+        audit.add_event(
+            Resource.PERSON,
+            workitem.incoming.person.id,
+            AuditOperation.READ,
+            parent=workitem_audit,
+        )
 
     return workitem
 
@@ -93,8 +115,11 @@ async def workitem_update(
     jtrace: Session = Depends(get_jtrace),
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
+    audit: Auditer = Depends(get_auditer),
 ):
     """Update a particular work item in the EMPI"""
+
+    audit.add_event(Resource.WORKITEM, workitem_id, AuditOperation.UPDATE)
 
     return await update_workitem(
         jtrace,
@@ -121,11 +146,27 @@ def workitem_collection(
     """Retreive a list of other work items related to a particular work item"""
     collection = get_workitem_collection(jtrace, workitem_id, user).all()
 
+    workitem_audit = audit.add_event(
+        Resource.WORKITEM, workitem_id, AuditOperation.READ
+    )
     for workitem in collection:
+        workitem_element_audit = audit.add_event(
+            Resource.WORKITEM, workitem.id, AuditOperation.READ, parent=workitem_audit
+        )
         if workitem.master_record:
-            audit.add_master_record(workitem.master_record.id, AuditOperation.READ)
+            audit.add_event(
+                Resource.MASTER_RECORD,
+                workitem.master_record.id,
+                AuditOperation.READ,
+                parent=workitem_element_audit,
+            )
         if workitem.person:
-            audit.add_person(workitem.person.id, AuditOperation.READ)
+            audit.add_event(
+                Resource.PERSON,
+                workitem.person.id,
+                AuditOperation.READ,
+                parent=workitem_element_audit,
+            )
 
     return collection
 
@@ -144,11 +185,27 @@ def workitem_related(
     """Retreive a list of other work items related to a particular work item"""
     related = get_workitems_related_to_workitem(jtrace, workitem_id, user).all()
 
+    workitem_audit = audit.add_event(
+        Resource.WORKITEM, workitem_id, AuditOperation.READ
+    )
     for workitem in related:
+        workitem_element_audit = audit.add_event(
+            Resource.WORKITEM, workitem.id, AuditOperation.READ, parent=workitem_audit
+        )
         if workitem.master_record:
-            audit.add_master_record(workitem.master_record.id, AuditOperation.READ)
+            audit.add_event(
+                Resource.MASTER_RECORD,
+                workitem.master_record.id,
+                AuditOperation.READ,
+                parent=workitem_element_audit,
+            )
         if workitem.person:
-            audit.add_person(workitem.person.id, AuditOperation.READ)
+            audit.add_event(
+                Resource.PERSON,
+                workitem.person.id,
+                AuditOperation.READ,
+                parent=workitem_element_audit,
+            )
 
     return related
 
@@ -191,8 +248,13 @@ def workitem_messages(
         )
     )
 
+    workitem_audit = audit.add_event(
+        Resource.WORKITEM, workitem.id, AuditOperation.READ
+    )
     for item in page.items:  # type: ignore
-        audit.add_message(item.id, MessageOperation.READ)
+        audit.add_event(
+            Resource.MESSAGE, item.id, AuditOperation.READ, parent=workitem_audit
+        )
 
     return page
 
@@ -213,9 +275,13 @@ async def workitem_close(
     user: UKRDCUser = Security(auth.get_user()),
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
+    audit: Auditer = Depends(get_auditer),
 ):
     """Update and close a particular work item"""
     workitem = get_workitem(jtrace, workitem_id, user)
+
+    audit.add_event(Resource.WORKITEM, workitem.id, AuditOperation.UPDATE)
+
     return await close_workitem(
         jtrace,
         workitem.id,

@@ -20,7 +20,7 @@ from ukrdc_fastapi.dependencies.audit import (
     Auditer,
     AuditOperation,
     RecordOperation,
-    RecordResource,
+    Resource,
     get_auditer,
 )
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
@@ -76,9 +76,16 @@ def patient_get(
         patient_record, jtrace
     )
 
-    audit.add_patient_record(record.pid, None, None, RecordOperation.READ)
+    record_audit = audit.add_event(
+        Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.READ
+    )
     if record.master_record:
-        audit.add_master_record(record.master_record.id, AuditOperation.READ)
+        audit.add_event(
+            Resource.MASTER_RECORD,
+            record.master_record.id,
+            RecordOperation.READ,
+            parent=record_audit,
+        )
 
     return record
 
@@ -110,12 +117,14 @@ def patient_delete(
         summary = summarise_delete_pid(ukrdc3, jtrace, pid, user)
         audit_op = AuditOperation.READ
 
-    audit.add_patient_record(pid, None, None, audit_op)
+    record_audit = audit.add_event(Resource.PATIENT_RECORD, pid, audit_op)
     if summary.empi:
         for person in summary.empi.persons:
-            audit.add_person(person.id, audit_op)
+            audit.add_event(Resource.PERSON, person.id, audit_op, parent=record_audit)
         for master_record in summary.empi.master_records:
-            audit.add_master_record(master_record.id, audit_op)
+            audit.add_event(
+                Resource.MASTER_RECORD, master_record.id, audit_op, parent=record_audit
+            )
 
     return summary
 
@@ -137,8 +146,14 @@ def patient_related(
         ukrdc3, jtrace, pid, user
     ).all()
 
+    record_audit = audit.add_event(Resource.PATIENT_RECORD, pid, RecordOperation.READ)
     for record in related:
-        audit.add_patient_record(record.pid, None, None, RecordOperation.READ)
+        audit.add_event(
+            Resource.PATIENT_RECORD,
+            record.pid,
+            RecordOperation.READ,
+            parent=record_audit,
+        )
 
     return related
 
@@ -156,8 +171,13 @@ def patient_medications(
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's medications"""
-    audit.add_patient_record(
-        patient_record.pid, RecordResource.MEDICATIONS, None, RecordOperation.READ
+    audit.add_event(
+        Resource.PATIENT_RECORD,
+        patient_record.pid,
+        RecordOperation.READ,
+        parent=audit.add_event(
+            Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.READ
+        ),
     )
     return patient_record.medications.all()
 
@@ -172,8 +192,13 @@ def patient_treatments(
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's treatments"""
-    audit.add_patient_record(
-        patient_record.pid, RecordResource.TREATMENTS, None, RecordOperation.READ
+    audit.add_event(
+        Resource.TREATMENTS,
+        None,
+        RecordOperation.READ,
+        parent=audit.add_event(
+            Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.READ
+        ),
     )
     return patient_record.treatments.all()
 
@@ -188,8 +213,13 @@ def patient_surveys(
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's surveys"""
-    audit.add_patient_record(
-        patient_record.pid, RecordResource.SURVEYS, None, RecordOperation.READ
+    audit.add_event(
+        Resource.SURVEYS,
+        None,
+        RecordOperation.READ,
+        parent=audit.add_event(
+            Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.READ
+        ),
     )
     return patient_record.surveys.all()
 
@@ -210,8 +240,13 @@ def patient_documents(
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's documents"""
-    audit.add_patient_record(
-        patient_record.pid, RecordResource.DOCUMENTS, None, RecordOperation.READ
+    audit.add_event(
+        Resource.DOCUMENTS,
+        None,
+        RecordOperation.READ,
+        parent=audit.add_event(
+            Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.READ
+        ),
     )
     # NOTE: We defer the 'stream' column to avoid sending the full PDF file content
     # when we're just querying the list of documents.
@@ -233,8 +268,13 @@ def document_get(
     if not document:
         raise HTTPException(404, detail="Document not found")
 
-    audit.add_patient_record(
-        patient_record.pid, RecordResource.DOCUMENT, document_id, RecordOperation.READ
+    audit.add_event(
+        Resource.DOCUMENT,
+        document_id,
+        RecordOperation.READ,
+        parent=audit.add_event(
+            Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.READ
+        ),
     )
 
     return document
@@ -256,8 +296,13 @@ def document_download(
     if not document:
         raise HTTPException(404, detail="Document not found")
 
-    audit.add_patient_record(
-        patient_record.pid, RecordResource.DOCUMENT, document_id, RecordOperation.READ
+    audit.add_event(
+        Resource.DOCUMENT,
+        document_id,
+        RecordOperation.READ,
+        parent=audit.add_event(
+            Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.READ
+        ),
     )
 
     media_type: str
@@ -301,8 +346,13 @@ def patient_observations(
     if code:
         observations = observations.filter(Observation.observation_code.in_(code))
 
-    audit.add_patient_record(
-        patient_record.pid, RecordResource.OBSERVATIONS, None, RecordOperation.READ
+    audit.add_event(
+        Resource.OBSERVATIONS,
+        None,
+        RecordOperation.READ,
+        parent=audit.add_event(
+            Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.READ
+        ),
     )
 
     return paginate(sorter.sort(observations))
@@ -331,8 +381,13 @@ def patient_laborders(
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's lab orders"""
-    audit.add_patient_record(
-        patient_record.pid, RecordResource.LABORDERS, None, RecordOperation.READ
+    audit.add_event(
+        Resource.LABORDERS,
+        None,
+        RecordOperation.READ,
+        parent=audit.add_event(
+            Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.READ
+        ),
     )
 
     return paginate(
@@ -355,8 +410,13 @@ def laborder_get(
     if not order:
         raise HTTPException(404, detail="Lab Order not found")
 
-    audit.add_patient_record(
-        patient_record.pid, RecordResource.LABORDER, order_id, RecordOperation.READ
+    audit.add_event(
+        Resource.LABORDER,
+        order_id,
+        RecordOperation.READ,
+        parent=audit.add_event(
+            Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.READ
+        ),
     )
 
     return order
@@ -386,15 +446,21 @@ def laborder_delete(
         for item in order.result_items
     ]
 
-    audit.add_patient_record(
-        patient_record.pid, RecordResource.LABORDER, order_id, RecordOperation.DELETE
+    # Audit the laborder delete and then each resulitem delete
+    order_audit = audit.add_event(
+        Resource.LABORDER,
+        order_id,
+        RecordOperation.DELETE,
+        parent=audit.add_event(
+            Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.UPDATE
+        ),
     )
     for item in order.result_items:
-        audit.add_patient_record(
-            item.pid,
-            RecordResource.RESULTITEM,
+        audit.add_event(
+            Resource.RESULTITEM,
             item.id,
             RecordOperation.DELETE,
+            parent=order_audit,
         )
 
     ukrdc3.bulk_save_objects(deletes)
@@ -436,8 +502,13 @@ def patient_resultitems(
     if until:
         query = query.filter(ResultItem.observation_time <= until)
 
-    audit.add_patient_record(
-        patient_record.pid, RecordResource.RESULTITEMS, None, RecordOperation.READ
+    audit.add_event(
+        Resource.RESULTITEMS,
+        None,
+        RecordOperation.READ,
+        parent=audit.add_event(
+            Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.READ
+        ),
     )
 
     return paginate(sorter.sort(query))
@@ -458,11 +529,13 @@ def resultitem_get(
     if not item:
         raise HTTPException(404, detail="Result item not found")
 
-    audit.add_patient_record(
-        patient_record.pid,
-        RecordResource.RESULTITEM,
+    audit.add_event(
+        Resource.RESULTITEM,
         resultitem_id,
         RecordOperation.READ,
+        parent=audit.add_event(
+            Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.READ
+        ),
     )
 
     return item
@@ -492,11 +565,13 @@ def resultitem_delete(
         ukrdc3.delete(order)
     ukrdc3.commit()
 
-    audit.add_patient_record(
-        patient_record.pid,
-        RecordResource.RESULTITEM,
+    audit.add_event(
+        Resource.RESULTITEM,
         resultitem_id,
         RecordOperation.DELETE,
+        parent=audit.add_event(
+            Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.UPDATE
+        ),
     )
 
     return Response(status_code=204)

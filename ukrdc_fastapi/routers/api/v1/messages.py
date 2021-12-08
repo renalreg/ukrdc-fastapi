@@ -15,6 +15,7 @@ from ukrdc_fastapi.dependencies.audit import (
     Auditer,
     AuditOperation,
     MessageOperation,
+    Resource,
     get_auditer,
 )
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
@@ -68,8 +69,11 @@ def error_messages(
         )
     )
 
+    list_audit = audit.add_event(Resource.MESSAGES, None, AuditOperation.READ)
     for item in page.items:  # type: ignore
-        audit.add_message(item.id, MessageOperation.READ)
+        audit.add_event(
+            Resource.MESSAGE, item.id, MessageOperation.READ, parent=list_audit
+        )
 
     return page
 
@@ -91,7 +95,7 @@ def error_detail(
     # call it here.
     message = MessageSchema.from_orm(get_message(errorsdb, message_id, user))
 
-    audit.add_message(message.id, MessageOperation.READ)
+    audit.add_event(Resource.MESSAGE, message.id, MessageOperation.READ)
 
     return message
 
@@ -136,7 +140,7 @@ async def error_source(
     if not message_data:
         return MessageSourceSchema(content=None, content_type=None)
 
-    audit.add_message(error.id, MessageOperation.READ_SOURCE)
+    audit.add_event(Resource.MESSAGE, error.id, MessageOperation.READ_SOURCE)
 
     return MessageSourceSchema(
         content=message_data.content, content_type=message_data.data_type
@@ -160,13 +164,29 @@ async def error_workitems(
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive WorkItems associated with a specific error message"""
+    message = get_message(errorsdb, message_id, user)
+
     workitems = get_workitems_related_to_message(
-        jtrace, errorsdb, message_id, user
+        jtrace, errorsdb, str(message.id), user
     ).all()
 
+    message_audit = audit.add_event(Resource.MESSAGE, message.id, MessageOperation.READ)
     for item in workitems:
-        audit.add_master_record(item.master_id, AuditOperation.READ)
-        audit.add_person(item.person_id, AuditOperation.READ)
+        workitem_audit = audit.add_event(
+            Resource.WORKITEM, item.id, AuditOperation.READ, parent=message_audit
+        )
+        audit.add_event(
+            Resource.MASTER_RECORD,
+            item.master_id,
+            AuditOperation.READ,
+            parent=workitem_audit,
+        )
+        audit.add_event(
+            Resource.PERSON,
+            item.person_id,
+            AuditOperation.READ,
+            parent=workitem_audit,
+        )
 
     return workitems
 
@@ -186,14 +206,20 @@ async def error_masterrecords(
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive MasterRecords associated with a specific error message"""
-    error = get_message(errorsdb, message_id, user)
+    message = get_message(errorsdb, message_id, user)
 
     # Get masterrecords directly referenced by the error
     records = (
-        jtrace.query(MasterRecord).filter(MasterRecord.nationalid == error.ni).all()
+        jtrace.query(MasterRecord).filter(MasterRecord.nationalid == message.ni).all()
     )
 
+    message_audit = audit.add_event(Resource.MESSAGE, message.id, MessageOperation.READ)
     for record in records:
-        audit.add_master_record(record.id, AuditOperation.READ)
+        audit.add_event(
+            Resource.MASTER_RECORD,
+            record.id,
+            AuditOperation.READ,
+            parent=message_audit,
+        )
 
     return records

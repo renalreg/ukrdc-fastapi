@@ -7,18 +7,13 @@ from sqlalchemy.orm.session import Session
 
 from ukrdc_fastapi.dependencies import get_auditdb
 from ukrdc_fastapi.dependencies.auth import UKRDCUser
-from ukrdc_fastapi.models.audit import (
-    AccessEvent,
-    MasterRecordEvent,
-    MessageEvent,
-    PatientRecordEvent,
-    PersonEvent,
-)
+from ukrdc_fastapi.models.audit import AccessEvent, AuditEvent
 
 from .auth import auth
 
 
-class RecordResource(Enum):
+class Resource(Enum):
+    PATIENT_RECORD = "PATIENT_RECORD"
     MEDICATIONS = "MEDICATIONS"
     TREATMENTS = "TREATMENTS"
     SURVEYS = "SURVEYS"
@@ -29,6 +24,14 @@ class RecordResource(Enum):
     LABORDER = "LABORDER"
     RESULTITEMS = "RESULTITEMS"
     RESULTITEM = "RESULTITEM"
+
+    MASTER_RECORD = "MASTER_RECORD"
+    MESSAGES = "MESSAGES"
+    STATISTICS = "STATISTICS"
+
+    PERSON = "PERSON"
+    MESSAGE = "MESSAGE"
+    WORKITEM = "WORKITEM"
 
 
 class MasterRecordResource(Enum):
@@ -100,89 +103,27 @@ class Auditer:
         self.event.body = (await self.request.body()).decode("utf-8") or None
 
         self.session.add(self.event)
-        self.session.commit()
+        self.session.flush()
 
-    def add_patient_record(
+    def add_event(
         self,
-        pid: str,
-        resource: Optional[RecordResource],
-        resource_id: Optional[str],
-        operation: Optional[Union[RecordOperation, AuditOperation]],
-    ):
-        """Add a patient record access log
-
-        Args:
-            pid (str): Patient record PID
-            resource (Optional[RecordResource]): Sub-resource accessed
-            resource_id (Optional[str]): ID of sub-resource (if applicable)
-            operation (Optional[Union[RecordOperation, AuditOperation]]): Access operation
-        """
-        self.session.add(
-            PatientRecordEvent(
-                event=self.event.event,
-                pid=pid,
-                resource=resource.value if resource else None,
-                resource_id=resource_id,
-                operation=operation.value if operation else None,
-            )
+        resource: Resource,
+        resource_id: Optional[Union[str, int]],
+        operation: Optional[Union[RecordOperation, MessageOperation, AuditOperation]],
+        parent: Optional[AuditEvent] = None,
+    ) -> AuditEvent:
+        event = AuditEvent(
+            parent_id=parent.id if parent else None,
+            access_event_id=self.event.id,
+            resource=resource.value if resource else None,
+            resource_id=str(resource_id),
+            operation=operation.value if operation else None,
         )
-
-    def add_master_record(
-        self,
-        id_: int,
-        operation: Optional[AuditOperation],
-    ):
-        """Add a MasterRecord access log
-
-        Args:
-            id_ (int): Master Record ID
-            operation (Optional[AuditOperation]): Access operation
-        """
-        self.session.add(
-            MasterRecordEvent(
-                event=self.event.event,
-                master_id=id_,
-                operation=operation.value if operation else None,
-            )
-        )
-
-    def add_person(
-        self,
-        id_: int,
-        operation: Optional[AuditOperation],
-    ):
-        """Add a Person access log
-
-        Args:
-            id_ (int): Person ID
-            operation (Optional[AuditOperation]): Access operation
-        """
-        self.session.add(
-            PersonEvent(
-                event=self.event.event,
-                person_id=id_,
-                operation=operation.value if operation else None,
-            )
-        )
-
-    def add_message(
-        self,
-        id_: int,
-        operation: Optional[Union[AuditOperation, MessageOperation]],
-    ):
-        """Add a Message/ErrorsDB access log
-
-        Args:
-            id_ (int): Message ID
-            operation (Optional[AuditOperation]): Access operation
-        """
-        self.session.add(
-            MessageEvent(
-                event=self.event.event,
-                message_id=id_,
-                operation=operation.value if operation else None,
-            )
-        )
+        self.session.add(event)
+        # Flush so that the auto-incrementing ID is available
+        self.session.flush()
+        # Return the Event so it can be used as a parent event later
+        return event
 
 
 async def get_auditer(

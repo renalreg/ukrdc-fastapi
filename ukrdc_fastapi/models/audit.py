@@ -11,7 +11,7 @@ Base = declarative_base()
 class AccessEvent(Base):
     __tablename__ = "access_event"
 
-    event = Column(Integer, primary_key=True, autoincrement=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     time = Column(DateTime, nullable=False)
 
     uid = Column(String, nullable=False)  # User ID
@@ -24,74 +24,22 @@ class AccessEvent(Base):
     method = Column(String)  # API method
     body = Column(String)  # API request body
 
-    patient_record_events: Mapped[List["PatientRecordEvent"]] = relationship(
-        "PatientRecordEvent", back_populates="access_event"
-    )
-    master_record_events: Mapped[List["MasterRecordEvent"]] = relationship(
-        "MasterRecordEvent", back_populates="access_event"
-    )
-    person_events: Mapped[List["PersonEvent"]] = relationship(
-        "PersonEvent", back_populates="access_event"
-    )
-    message_events: Mapped[List["MessageEvent"]] = relationship(
-        "MessageEvent", back_populates="access_event"
+    audit_events: Mapped[List["AuditEvent"]] = relationship(
+        "AuditEvent", back_populates="access_event"
     )
 
 
-class PatientRecordEvent(Base):
-    __tablename__ = "patient_record_event"
+class AuditEvent(Base):
+    __tablename__ = "audit_event"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
+    parent_id = Column(Integer, ForeignKey("audit_event.id"))
+    children = relationship("AuditEvent")
 
-    event = Column(Integer, ForeignKey("access_event.event"))
-    access_event = relationship("AccessEvent", back_populates="patient_record_events")
-
-    pid = Column(String, nullable=False)  # Patient ID
+    access_event_id = Column(Integer, ForeignKey("access_event.id"))
+    access_event = relationship("AccessEvent", back_populates="audit_events")
 
     resource = Column(String)  # Resource type (null if self)
     resource_id = Column(String)  # Resource ID if applicable
 
-    # Resource operation
-    operation = Column(String)
-
-
-class MasterRecordEvent(Base):
-    __tablename__ = "master_record_event"
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-
-    event = Column(Integer, ForeignKey("access_event.event"))
-    access_event = relationship("AccessEvent", back_populates="master_record_events")
-
-    master_id = Column(Integer, nullable=False)  # Master Record ID
-
-    # Resource operation
-    operation = Column(String)
-
-
-class PersonEvent(Base):
-    __tablename__ = "person_event"
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-
-    event = Column(Integer, ForeignKey("access_event.event"))
-    access_event = relationship("AccessEvent", back_populates="person_events")
-
-    person_id = Column(Integer, nullable=False)  # Person ID
-
-    # Resource operation
-    operation = Column(String)
-
-
-class MessageEvent(Base):
-    __tablename__ = "message_event"
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-
-    event = Column(Integer, ForeignKey("access_event.event"))
-    access_event = relationship("AccessEvent", back_populates="message_events")
-
-    message_id = Column(Integer, nullable=False)  # Message ID
-
-    # Resource operation
-    operation = Column(String)
+    operation = Column(String)  # Resource operation
