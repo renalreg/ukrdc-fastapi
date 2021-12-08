@@ -127,7 +127,7 @@ class Auditer:
             parent_id=parent.id if parent else None,
             access_event_id=self.event.id,
             resource=resource.value if resource else None,
-            resource_id=str(resource_id),
+            resource_id=str(resource_id) if resource_id else None,
             operation=operation.value if operation else None,
         )
         self.session.add(event)
