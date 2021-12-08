@@ -11,7 +11,7 @@ T = TypeVar("T")  # pylint: disable=invalid-name
 
 
 class Params(BaseParams):
-    size: int = Query(20, gt=0, le=100, description="Page size")
+    size: int = Query(20, gt=0, le=50, description="Page size")
 
 
 class Page(BasePage[T], Generic[T]):
