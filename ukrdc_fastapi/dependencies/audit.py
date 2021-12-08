@@ -112,6 +112,17 @@ class Auditer:
         operation: Optional[Union[RecordOperation, MessageOperation, AuditOperation]],
         parent: Optional[AuditEvent] = None,
     ) -> AuditEvent:
+        """Add an audit event
+
+        Args:
+            resource (Resource): Resource type
+            resource_id (Optional[Union[str, int]]): Resource ID (e.g. PID, Master Record ID etc)
+            operation (Optional[Union[RecordOperation, MessageOperation, AuditOperation]]): Audit operation (e.g. READ, UPDATE etc)
+            parent (Optional[AuditEvent], optional): Parent AuditEvent. Defaults to None.
+
+        Returns:
+            AuditEvent: AuditEvent object
+        """
         event = AuditEvent(
             parent_id=parent.id if parent else None,
             access_event_id=self.event.id,

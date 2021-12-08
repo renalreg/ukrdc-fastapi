@@ -13,7 +13,6 @@ from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_mirth, get_
 from ukrdc_fastapi.dependencies.audit import (
     Auditer,
     AuditOperation,
-    MessageOperation,
     Resource,
     get_auditer,
 )

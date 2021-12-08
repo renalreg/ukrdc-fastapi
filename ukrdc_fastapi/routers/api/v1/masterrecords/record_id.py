@@ -12,8 +12,6 @@ from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_ukrdc3
 from ukrdc_fastapi.dependencies.audit import (
     Auditer,
     AuditOperation,
-    MessageOperation,
-    RecordOperation,
     Resource,
     get_auditer,
 )
@@ -174,7 +172,7 @@ def master_record_linkrecords(
         link_records.extend(record.link_records)
 
     record_audit = audit.add_event(
-        Resource.MASTER_RECORD, record.id, AuditOperation.READ
+        Resource.MASTER_RECORD, record_id, AuditOperation.READ
     )
     for link in link_records:
         audit.add_event(
