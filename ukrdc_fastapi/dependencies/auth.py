@@ -31,6 +31,8 @@ class Permissions:
     READ_CODES = "ukrdc:codes:read"
     WRITE_CODES = "ukrdc:codes:write"
 
+    READ_PATIENTRECORDS_AUDIT = "ukrdc:audit:records:read"
+
     UNIT_PREFIX = "ukrdc:unit:"
     UNIT_WILDCARD = "*"
 
@@ -43,14 +45,15 @@ class Permissions:
             cls.READ_MIRTH,
             cls.READ_WORKITEMS,
             cls.READ_CODES,
+            cls.READ_PATIENTRECORDS_AUDIT,
             cls.WRITE_RECORDS,
             cls.WRITE_MESSAGES,
             cls.WRITE_MIRTH,
             cls.WRITE_WORKITEMS,
             cls.WRITE_CODES,
+            cls.WRITE_EMPI,
             cls.EXPORT_RECORDS,
             cls.DELETE_RECORDS,
-            cls.WRITE_EMPI,
             cls.UNIT_PREFIX + cls.UNIT_WILDCARD,
         ]
 
