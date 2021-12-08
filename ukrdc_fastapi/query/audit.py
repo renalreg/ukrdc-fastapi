@@ -1,10 +1,13 @@
+import datetime
+from typing import Optional
+
 from sqlalchemy import and_, or_
 from sqlalchemy.orm.query import Query
 from sqlalchemy.orm.session import Session
 
 from ukrdc_fastapi.dependencies.audit import Resource
 from ukrdc_fastapi.dependencies.auth import UKRDCUser
-from ukrdc_fastapi.models.audit import AuditEvent
+from ukrdc_fastapi.models.audit import AccessEvent, AuditEvent
 from ukrdc_fastapi.query.masterrecords import (
     get_masterrecord,
     get_masterrecords_related_to_masterrecord,
@@ -15,7 +18,13 @@ from ukrdc_fastapi.query.patientrecords import (
 
 
 def get_auditevents_related_to_masterrecord(
-    audit: Session, ukrdc3: Session, jtrace: Session, record_id: int, user: UKRDCUser
+    audit: Session,
+    ukrdc3: Session,
+    jtrace: Session,
+    record_id: int,
+    user: UKRDCUser,
+    since: Optional[datetime.datetime] = None,
+    until: Optional[datetime.datetime] = None,
 ) -> Query:
     """
     Get all audit events related to a master record or any of its patient records.
@@ -54,4 +63,12 @@ def get_auditevents_related_to_masterrecord(
         ),
     ]
 
-    return audit.query(AuditEvent).filter(or_(*conditions))
+    query = audit.query(AuditEvent).join(AccessEvent).filter(or_(*conditions))
+
+    if since:
+        query = query.filter(AccessEvent.time >= since)
+
+    if until:
+        query = query.filter(AccessEvent.time <= until)
+
+    return query.order_by(AuditEvent.id.desc())

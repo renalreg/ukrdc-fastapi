@@ -373,12 +373,14 @@ def master_record_audit(
     jtrace: Session = Depends(get_jtrace),
     ukrdc3: Session = Depends(get_ukrdc3),
     auditdb: Session = Depends(get_auditdb),
+    since: Optional[datetime.datetime] = None,
+    until: Optional[datetime.datetime] = None,
 ):
     """
     Retreive a page of audit events related to a particular master record.
     """
     return paginate(
         get_auditevents_related_to_masterrecord(
-            auditdb, ukrdc3, jtrace, record_id, user
+            auditdb, ukrdc3, jtrace, record_id, user, since=since, until=until
         )
     )
