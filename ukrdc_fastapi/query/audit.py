@@ -1,4 +1,5 @@
 from sqlalchemy import and_, or_
+from sqlalchemy.orm.query import Query
 from sqlalchemy.orm.session import Session
 
 from ukrdc_fastapi.dependencies.audit import Resource
@@ -14,8 +15,21 @@ from ukrdc_fastapi.query.patientrecords import (
 
 
 def get_auditevents_related_to_masterrecord(
-    audit: Session, jtrace: Session, ukrdc3: Session, record_id: int, user: UKRDCUser
-):
+    audit: Session, ukrdc3: Session, jtrace: Session, record_id: int, user: UKRDCUser
+) -> Query:
+    """
+    Get all audit events related to a master record or any of its patient records.
+
+    Args:
+        audit (Session): AUDITDB SQLAlchemy session
+        jtrace (Session): JTRACE SQLAlchemy session
+        ukrdc3 (Session): UKRDC SQLAlchemy session
+        record_id (str): MasterRecord ID
+        user (UKRDCUser): User object
+
+    Returns:
+        Query: SQLAlchemy query
+    """
     # Get the main record and check permissions
     record = get_masterrecord(jtrace, record_id, user)
 

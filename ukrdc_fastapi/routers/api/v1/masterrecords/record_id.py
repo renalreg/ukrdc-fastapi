@@ -379,6 +379,6 @@ def master_record_audit(
     """
     return paginate(
         get_auditevents_related_to_masterrecord(
-            auditdb, jtrace, ukrdc3, record_id, user
+            auditdb, ukrdc3, jtrace, record_id, user
         )
     )
