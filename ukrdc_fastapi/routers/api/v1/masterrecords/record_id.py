@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from starlette.status import HTTP_204_NO_CONTENT
 from ukrdc_sqla.empi import LinkRecord, MasterRecord
 
-from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_ukrdc3
+from ukrdc_fastapi.dependencies import get_auditdb, get_errorsdb, get_jtrace, get_ukrdc3
 from ukrdc_fastapi.dependencies.audit import (
     Auditer,
     AuditOperation,
@@ -16,6 +16,7 @@ from ukrdc_fastapi.dependencies.audit import (
     get_auditer,
 )
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
+from ukrdc_fastapi.query.audit import get_auditevents_related_to_masterrecord
 from ukrdc_fastapi.query.masterrecords import (
     get_masterrecord,
     get_masterrecords_related_to_masterrecord,
@@ -30,6 +31,7 @@ from ukrdc_fastapi.query.patientrecords import (
 )
 from ukrdc_fastapi.query.persons import get_persons_related_to_masterrecord
 from ukrdc_fastapi.query.workitems import get_workitems
+from ukrdc_fastapi.schemas.audit import AuditEventSchema
 from ukrdc_fastapi.schemas.base import OrmModel
 from ukrdc_fastapi.schemas.empi import (
     LinkRecordSchema,
@@ -358,3 +360,25 @@ def master_record_patientrecords(
         )
 
     return records
+
+
+@router.get(
+    "/audit/",
+    response_model=Page[AuditEventSchema],
+    dependencies=[Security(auth.permission(Permissions.READ_RECORDS_AUDIT))],
+)
+def master_record_audit(
+    record_id: int,
+    user: UKRDCUser = Security(auth.get_user()),
+    jtrace: Session = Depends(get_jtrace),
+    ukrdc3: Session = Depends(get_ukrdc3),
+    auditdb: Session = Depends(get_auditdb),
+):
+    """
+    Retreive a page of audit events related to a particular master record.
+    """
+    return paginate(
+        get_auditevents_related_to_masterrecord(
+            auditdb, jtrace, ukrdc3, record_id, user
+        )
+    )
