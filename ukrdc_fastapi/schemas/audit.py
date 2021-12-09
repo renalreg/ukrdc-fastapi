@@ -71,5 +71,8 @@ class AuditEventSchema(OrmModel):
                     master_record.nationalid,
                 ]
 
+        for child in self.children:
+            child.populate_identifiers(jtrace, ukrdc3)
+
 
 AuditEventSchema.update_forward_refs()
