@@ -38,6 +38,12 @@ class AuditEventSchema(OrmModel):
     identifiers: List[str] = []
 
     def populate_identifiers(self, jtrace: Session, ukrdc3: Session):
+        """
+        Use database sessions to populate an array of resource identifier strings.
+        The identifiers will vary depending on resource type, but should be listed
+        in descending priority.
+        Identifiers include names, patient numbers, record types etc
+        """
         if self.resource == Resource.PATIENT_RECORD.value:
             record = ukrdc3.query(PatientRecord).get(self.resource_id)
             if record:
