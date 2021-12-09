@@ -75,18 +75,7 @@ def patient_get(
     record: PatientRecordSchema = PatientRecordSchema.from_orm_with_master_record(
         patient_record, jtrace
     )
-
-    record_audit = audit.add_event(
-        Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.READ
-    )
-    if record.master_record:
-        audit.add_event(
-            Resource.MASTER_RECORD,
-            record.master_record.id,
-            RecordOperation.READ,
-            parent=record_audit,
-        )
-
+    audit.add_event(Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.READ)
     return record
 
 

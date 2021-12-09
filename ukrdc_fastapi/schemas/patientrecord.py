@@ -183,19 +183,19 @@ class PatientRecordSummarySchema(OrmModel):
 class PatientRecordSchema(PatientRecordSummarySchema):
     """Schema for PatientRecord resources"""
 
-    master_record: Optional[MasterRecordSchema]
+    master_id: Optional[int]
 
     @classmethod
     def from_orm_with_master_record(
         cls, patient_record: PatientRecord, jtrace: Session
     ):
         """
-        Find the PatientRecord's nearest matching UKRDC MasterRecord,
-        and inject it into the master_record field before returning
+        Find the PatientRecord's nearest matching UKRDC Master Record,
+        and inject it's ID into the masterId field before returning
         a validated PatientRecordSchema object.
         """
         record_dict = cls.from_orm(patient_record).dict()
-        if not record_dict.get("masterRecord"):
+        if not record_dict.get("masterId"):
             master_record = (
                 jtrace.query(MasterRecord)
                 .filter(
@@ -205,7 +205,7 @@ class PatientRecordSchema(PatientRecordSummarySchema):
                 .first()
             )
             if master_record:
-                record_dict["masterRecord"] = MasterRecordSchema.from_orm(master_record)
+                record_dict["masterId"] = master_record.id
         return cls(**record_dict)
 
 
