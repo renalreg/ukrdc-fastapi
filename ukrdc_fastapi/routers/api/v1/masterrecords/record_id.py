@@ -386,10 +386,15 @@ def master_record_audit(
     """
     Retreive a page of audit events related to a particular master record.
     """
-    return paginate(
+    page = paginate(
         sorter.sort(
             get_auditevents_related_to_masterrecord(
                 auditdb, ukrdc3, jtrace, record_id, user, since=since, until=until
             )
         )
     )
+
+    for item in page.items:
+        item.populate_identifiers(jtrace, ukrdc3)
+
+    return page
