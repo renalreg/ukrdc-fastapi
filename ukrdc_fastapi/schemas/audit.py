@@ -40,24 +40,29 @@ class AuditEventSchema(OrmModel):
     def populate_identifiers(self, jtrace: Session, ukrdc3: Session):
         if self.resource == Resource.PATIENT_RECORD.value:
             record = ukrdc3.query(PatientRecord).get(self.resource_id)
-            first_mrn = next(
-                number
-                for number in record.patient.numbers
-                if number.numbertype == "MRN"
-            )
             if record:
-                self.identifiers = [
-                    f"{record.patient.name.given} {record.patient.name.family}",
-                    first_mrn.organization,
-                    first_mrn.patientid,
-                ]
+                first_mrn = next(
+                    number
+                    for number in record.patient.numbers
+                    if number.numbertype == "MRN"
+                )
+                if record.patient.name:
+                    self.identifiers.append(
+                        f"{record.patient.name.given} {record.patient.name.family}"
+                    )
+                self.identifiers.extend(
+                    [
+                        first_mrn.organization,
+                        first_mrn.patientid,
+                    ]
+                )
         elif self.resource == Resource.MASTER_RECORD.value:
-            record = jtrace.query(MasterRecord).get(self.resource_id)
-            if record:
+            master_record = jtrace.query(MasterRecord).get(self.resource_id)
+            if master_record:
                 self.identifiers = [
-                    f"{record.givenname} {record.surname}",
-                    record.nationalid_type,
-                    record.nationalid,
+                    f"{master_record.givenname} {master_record.surname}",
+                    master_record.nationalid_type,
+                    master_record.nationalid,
                 ]
 
 
