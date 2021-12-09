@@ -10,9 +10,9 @@ class AccessEventSchema(OrmModel):
     id: int = Field(alias="event")
     time: datetime.datetime
 
-    user_id: str = Field(alias="uid")
-    client_id: str = Field(alias="cid")
-    user_email: str = Field(alias="sub")
+    uid: str = Field(alias="userId")
+    cid: str = Field(alias="clientId")
+    sub: str = Field(alias="userEmail")
 
     path: str
     method: str
