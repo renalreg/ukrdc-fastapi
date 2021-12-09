@@ -1,7 +1,3 @@
-from datetime import datetime
-
-from ukrdc_sqla.empi import LinkRecord, MasterRecord
-
 from ukrdc_fastapi.routers.api.v1.masterrecords.record_id import (
     MasterRecordStatisticsSchema,
 )
@@ -12,7 +8,7 @@ from ukrdc_fastapi.schemas.empi import (
     WorkItemSchema,
 )
 from ukrdc_fastapi.schemas.message import MessageSchema
-from ukrdc_fastapi.schemas.patientrecord import PatientRecordSchema
+from ukrdc_fastapi.schemas.patientrecord import PatientRecordSummarySchema
 
 
 def test_masterrecord_detail(client):
@@ -99,6 +95,6 @@ def test_masterrecord_patientrecords(client):
     response = client.get("/api/v1/masterrecords/1/patientrecords")
     assert response.status_code == 200
 
-    records = [PatientRecordSchema(**item) for item in response.json()]
+    records = [PatientRecordSummarySchema(**item) for item in response.json()]
     pids = {record.pid for record in records}
     assert pids == {"PYTEST01:PV:00000000A", "PYTEST04:PV:00000000A"}
