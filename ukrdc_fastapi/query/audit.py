@@ -71,4 +71,4 @@ def get_auditevents_related_to_masterrecord(
     if until:
         query = query.filter(AccessEvent.time <= until)
 
-    return query.order_by(AuditEvent.id.desc())
+    return query

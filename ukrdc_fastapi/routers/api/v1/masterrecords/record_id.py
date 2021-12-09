@@ -16,6 +16,7 @@ from ukrdc_fastapi.dependencies.audit import (
     get_auditer,
 )
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
+from ukrdc_fastapi.models.audit import AccessEvent, AuditEvent
 from ukrdc_fastapi.query.audit import get_auditevents_related_to_masterrecord
 from ukrdc_fastapi.query.masterrecords import (
     get_masterrecord,
@@ -42,7 +43,7 @@ from ukrdc_fastapi.schemas.empi import (
 from ukrdc_fastapi.schemas.message import MessageSchema, MinimalMessageSchema
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordSummarySchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
-from ukrdc_fastapi.utils.sort import SQLASorter
+from ukrdc_fastapi.utils.sort import SQLASorter, make_sqla_sorter
 
 
 class MasterRecordStatisticsSchema(OrmModel):
@@ -375,12 +376,20 @@ def master_record_audit(
     auditdb: Session = Depends(get_auditdb),
     since: Optional[datetime.datetime] = None,
     until: Optional[datetime.datetime] = None,
+    sorter: SQLASorter = Depends(
+        make_sqla_sorter(
+            [AuditEvent.id, AccessEvent.time],
+            default_sort_by=AuditEvent.id,
+        )
+    ),
 ):
     """
     Retreive a page of audit events related to a particular master record.
     """
     return paginate(
-        get_auditevents_related_to_masterrecord(
-            auditdb, ukrdc3, jtrace, record_id, user, since=since, until=until
+        sorter.sort(
+            get_auditevents_related_to_masterrecord(
+                auditdb, ukrdc3, jtrace, record_id, user, since=since, until=until
+            )
         )
     )
