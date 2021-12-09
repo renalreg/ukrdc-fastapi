@@ -148,8 +148,6 @@ class PatientRecordSummarySchema(OrmModel):
     sendingextract: str
     localpatientid: str
     ukrdcid: str
-    repository_creation_date: datetime.datetime
-    repository_update_date: datetime.datetime
 
     program_memberships: list[ProgramMembershipSchema]
     patient: Optional[PatientSchema]
@@ -182,6 +180,9 @@ class PatientRecordSummarySchema(OrmModel):
 
 class PatientRecordSchema(PatientRecordSummarySchema):
     """Schema for PatientRecord resources"""
+
+    repository_creation_date: datetime.datetime
+    repository_update_date: datetime.datetime
 
     master_id: Optional[int]
 
