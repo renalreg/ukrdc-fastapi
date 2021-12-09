@@ -394,7 +394,7 @@ def master_record_audit(
         )
     )
 
-    for item in page.items:
+    for item in page.items:  # type: ignore
         item.populate_identifiers(jtrace, ukrdc3)
 
     return page
