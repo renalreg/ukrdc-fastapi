@@ -60,10 +60,9 @@ def test_workitem_errors(client):
 
 @pytest.mark.parametrize("workitem_id", [1, 2, 3])
 def test_workitem_close(client, workitem_id, httpx_session):
-    response = client.post(
-        f"/api/v1/workitems/{workitem_id}/close/",
-        json={},
-    )
+    response = client.post(f"/api/v1/workitems/{workitem_id}/close/", json={})
+    assert response.status_code == 200
+
     message = response.json().get("message")
 
     assert "<status>3</status>" in message
@@ -75,8 +74,9 @@ def test_workitem_update(client, httpx_session):
     response = client.put(
         "/api/v1/workitems/1/", json={"status": 3, "comment": "UPDATE COMMENT"}
     )
-
+    assert response.status_code == 200
     assert response.json().get("status") == "success"
+
     message = response.json().get("message")
 
     assert "<workitem>1</workitem>" in message
