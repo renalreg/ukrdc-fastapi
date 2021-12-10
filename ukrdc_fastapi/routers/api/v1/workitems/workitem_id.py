@@ -56,39 +56,7 @@ def workitem_detail(
 ):
     """Retreive a particular work item from the EMPI"""
     workitem = get_extended_workitem(jtrace, workitem_id, user)
-
-    workitem_audit = audit.add_event(
-        Resource.WORKITEM, workitem.id, AuditOperation.READ
-    )
-    for master_record in workitem.incoming.master_records:
-        audit.add_event(
-            Resource.MASTER_RECORD,
-            master_record.id,
-            AuditOperation.READ,
-            parent=workitem_audit,
-        )
-    for person in workitem.destination.persons:
-        audit.add_event(
-            Resource.PERSON,
-            person.id,
-            AuditOperation.READ,
-            parent=workitem_audit,
-        )
-    if workitem.destination.master_record:
-        audit.add_event(
-            Resource.MASTER_RECORD,
-            workitem.destination.master_record.id,
-            AuditOperation.READ,
-            parent=workitem_audit,
-        )
-    if workitem.incoming.person:
-        audit.add_event(
-            Resource.PERSON,
-            workitem.incoming.person.id,
-            AuditOperation.READ,
-            parent=workitem_audit,
-        )
-
+    audit.add_workitem(workitem)
     return workitem
 
 
@@ -145,27 +113,8 @@ def workitem_collection(
     """Retreive a list of other work items related to a particular work item"""
     collection = get_workitem_collection(jtrace, workitem_id, user).all()
 
-    workitem_audit = audit.add_event(
-        Resource.WORKITEM, workitem_id, AuditOperation.READ
-    )
     for workitem in collection:
-        workitem_element_audit = audit.add_event(
-            Resource.WORKITEM, workitem.id, AuditOperation.READ, parent=workitem_audit
-        )
-        if workitem.master_record:
-            audit.add_event(
-                Resource.MASTER_RECORD,
-                workitem.master_record.id,
-                AuditOperation.READ,
-                parent=workitem_element_audit,
-            )
-        if workitem.person:
-            audit.add_event(
-                Resource.PERSON,
-                workitem.person.id,
-                AuditOperation.READ,
-                parent=workitem_element_audit,
-            )
+        audit.add_workitem(workitem)
 
     return collection
 
@@ -184,27 +133,8 @@ def workitem_related(
     """Retreive a list of other work items related to a particular work item"""
     related = get_workitems_related_to_workitem(jtrace, workitem_id, user).all()
 
-    workitem_audit = audit.add_event(
-        Resource.WORKITEM, workitem_id, AuditOperation.READ
-    )
     for workitem in related:
-        workitem_element_audit = audit.add_event(
-            Resource.WORKITEM, workitem.id, AuditOperation.READ, parent=workitem_audit
-        )
-        if workitem.master_record:
-            audit.add_event(
-                Resource.MASTER_RECORD,
-                workitem.master_record.id,
-                AuditOperation.READ,
-                parent=workitem_element_audit,
-            )
-        if workitem.person:
-            audit.add_event(
-                Resource.PERSON,
-                workitem.person.id,
-                AuditOperation.READ,
-                parent=workitem_element_audit,
-            )
+        audit.add_workitem(workitem)
 
     return related
 

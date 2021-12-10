@@ -58,22 +58,6 @@ def workitems_list(
     page = paginate(sorter.sort(query))
 
     for item in page.items:  # type: ignore
-        workitem_audit = audit.add_event(
-            Resource.WORKITEM, item.id, AuditOperation.READ
-        )
-        if item.master_record:
-            audit.add_event(
-                Resource.MASTER_RECORD,
-                item.master_record.id,
-                AuditOperation.READ,
-                parent=workitem_audit,
-            )
-        if item.person:
-            audit.add_event(
-                Resource.PERSON,
-                item.person.id,
-                AuditOperation.READ,
-                parent=workitem_audit,
-            )
+        audit.add_workitem(item)
 
     return page

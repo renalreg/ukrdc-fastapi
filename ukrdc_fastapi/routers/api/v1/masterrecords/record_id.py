@@ -286,21 +286,7 @@ def master_record_workitems(
         Resource.MASTER_RECORD, record_id, AuditOperation.READ
     )
     for item in workitems:
-        workitem_audit = audit.add_event(
-            Resource.WORKITEM, item.id, AuditOperation.READ, parent=record_audit
-        )
-        audit.add_event(
-            Resource.MASTER_RECORD,
-            item.master_id,
-            AuditOperation.READ,
-            parent=workitem_audit,
-        )
-        audit.add_event(
-            Resource.PERSON,
-            item.person_id,
-            AuditOperation.READ,
-            parent=workitem_audit,
-        )
+        audit.add_workitem(item, parent=record_audit)
 
     return workitems
 

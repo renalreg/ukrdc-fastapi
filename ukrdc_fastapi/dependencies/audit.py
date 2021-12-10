@@ -4,10 +4,12 @@ from typing import AsyncGenerator, Optional, Union
 
 from fastapi import Depends, Request, Security
 from sqlalchemy.orm.session import Session
+from ukrdc_sqla.empi import WorkItem
 
 from ukrdc_fastapi.dependencies import get_auditdb
 from ukrdc_fastapi.dependencies.auth import UKRDCUser
 from ukrdc_fastapi.models.audit import AccessEvent, AuditEvent
+from ukrdc_fastapi.schemas.empi import WorkItemExtendedSchema, WorkItemSchema
 
 from .auth import auth
 
@@ -135,6 +137,83 @@ class Auditer:
         self.session.flush()
         # Return the Event so it can be used as a parent event later
         return event
+
+    def add_workitem(
+        self,
+        workitem: Union[WorkItem, WorkItemSchema, WorkItemExtendedSchema],
+        parent: Optional[AuditEvent] = None,
+    ) -> AuditEvent:
+        """Add a WorkItem and all of its child Person and Master Records to the audit database
+
+        Args:
+            workitem (Union[WorkItem, WorkItemSchema, WorkItemExtendedSchema]): WorkItem object
+            parent (Optional[AuditEvent], optional): Parent AuditEvent. Defaults to None.
+
+        Returns:
+            AuditEvent: AuditEvent object
+        """
+        workitem_audit = self.add_event(
+            Resource.WORKITEM, workitem.id, AuditOperation.READ, parent=parent
+        )
+        audited_master_ids = set()
+        audited_person_ids = set()
+        if (
+            workitem.master_record
+            and workitem.master_record.id not in audited_master_ids
+        ):
+            self.add_event(
+                Resource.MASTER_RECORD,
+                workitem.master_record.id,
+                AuditOperation.READ,
+                parent=workitem_audit,
+            )
+        if workitem.person and workitem.person.id not in audited_person_ids:
+            self.add_event(
+                Resource.PERSON,
+                workitem.person.id,
+                AuditOperation.READ,
+                parent=workitem_audit,
+            )
+
+        if isinstance(workitem, WorkItemExtendedSchema):
+            for master_record in workitem.incoming.master_records:
+                if master_record.id not in audited_master_ids:
+                    self.add_event(
+                        Resource.MASTER_RECORD,
+                        master_record.id,
+                        AuditOperation.READ,
+                        parent=workitem_audit,
+                    )
+            for person in workitem.destination.persons:
+                if person.id not in audited_person_ids:
+                    self.add_event(
+                        Resource.PERSON,
+                        person.id,
+                        AuditOperation.READ,
+                        parent=workitem_audit,
+                    )
+            if (
+                workitem.destination.master_record
+                and workitem.destination.master_record.id not in audited_master_ids
+            ):
+                self.add_event(
+                    Resource.MASTER_RECORD,
+                    workitem.destination.master_record.id,
+                    AuditOperation.READ,
+                    parent=workitem_audit,
+                )
+            if (
+                workitem.incoming.person
+                and workitem.incoming.person.id not in audited_person_ids
+            ):
+                self.add_event(
+                    Resource.PERSON,
+                    workitem.incoming.person.id,
+                    AuditOperation.READ,
+                    parent=workitem_audit,
+                )
+
+        return workitem_audit
 
 
 async def get_auditer(

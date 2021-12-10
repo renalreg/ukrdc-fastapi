@@ -172,21 +172,7 @@ async def error_workitems(
 
     message_audit = audit.add_event(Resource.MESSAGE, message.id, MessageOperation.READ)
     for item in workitems:
-        workitem_audit = audit.add_event(
-            Resource.WORKITEM, item.id, AuditOperation.READ, parent=message_audit
-        )
-        audit.add_event(
-            Resource.MASTER_RECORD,
-            item.master_id,
-            AuditOperation.READ,
-            parent=workitem_audit,
-        )
-        audit.add_event(
-            Resource.PERSON,
-            item.person_id,
-            AuditOperation.READ,
-            parent=workitem_audit,
-        )
+        audit.add_workitem(item, parent=message_audit)
 
     return workitems
 
