@@ -155,8 +155,8 @@ class Auditer:
         workitem_audit = self.add_event(
             Resource.WORKITEM, workitem.id, AuditOperation.READ, parent=parent
         )
-        audited_master_ids = set()
-        audited_person_ids = set()
+        audited_master_ids: set[int] = set()
+        audited_person_ids: set[int] = set()
         if (
             workitem.master_record
             and workitem.master_record.id not in audited_master_ids
