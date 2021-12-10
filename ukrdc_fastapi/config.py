@@ -93,6 +93,13 @@ class Settings(BaseSettings):
     stats_name: str = "statsdb"
     stats_driver: str = "postgresql+psycopg2"
 
+    audit_host: str = "localhost"
+    audit_port: int = 5432
+    audit_user: str = "ukrdc"
+    audit_pass: str = "****"
+    audit_name: str = "auditdb"
+    audit_driver: str = "postgresql+psycopg2"
+
     allowed_origins: list[str] = []
 
     class Config:

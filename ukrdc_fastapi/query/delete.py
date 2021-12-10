@@ -146,7 +146,11 @@ def summarise_delete_pid(
 
 
 def delete_pid(
-    ukrdc3: Session, jtrace: Session, pid: str, hash_: str, user: UKRDCUser
+    ukrdc3: Session,
+    jtrace: Session,
+    pid: str,
+    hash_: str,
+    user: UKRDCUser,
 ) -> DeletePIDResponseSchema:
     """Delete a patient record and related records from the database.
 

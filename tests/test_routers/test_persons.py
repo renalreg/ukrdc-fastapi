@@ -1,15 +1,4 @@
-from datetime import datetime
-
-from ukrdc_sqla.empi import LinkRecord, MasterRecord
-
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema, PersonSchema
-
-
-def test_persons_list(client):
-    response = client.get("/api/v1/persons")
-    assert response.status_code == 200
-    returned_ids = {item["id"] for item in response.json()["items"]}
-    assert returned_ids == {1, 2, 3, 4}
 
 
 def test_person_detail(client):

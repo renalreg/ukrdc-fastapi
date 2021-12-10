@@ -8,8 +8,16 @@ from sqlalchemy.orm import Session
 from starlette.status import HTTP_204_NO_CONTENT
 from ukrdc_sqla.empi import LinkRecord, MasterRecord
 
-from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_ukrdc3
+from ukrdc_fastapi.dependencies import get_auditdb, get_errorsdb, get_jtrace, get_ukrdc3
+from ukrdc_fastapi.dependencies.audit import (
+    Auditer,
+    AuditOperation,
+    Resource,
+    get_auditer,
+)
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
+from ukrdc_fastapi.models.audit import AccessEvent, AuditEvent
+from ukrdc_fastapi.query.audit import get_auditevents_related_to_masterrecord
 from ukrdc_fastapi.query.masterrecords import (
     get_masterrecord,
     get_masterrecords_related_to_masterrecord,
@@ -24,6 +32,7 @@ from ukrdc_fastapi.query.patientrecords import (
 )
 from ukrdc_fastapi.query.persons import get_persons_related_to_masterrecord
 from ukrdc_fastapi.query.workitems import get_workitems
+from ukrdc_fastapi.schemas.audit import AuditEventSchema
 from ukrdc_fastapi.schemas.base import OrmModel
 from ukrdc_fastapi.schemas.empi import (
     LinkRecordSchema,
@@ -34,7 +43,7 @@ from ukrdc_fastapi.schemas.empi import (
 from ukrdc_fastapi.schemas.message import MessageSchema, MinimalMessageSchema
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordSummarySchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
-from ukrdc_fastapi.utils.sort import SQLASorter
+from ukrdc_fastapi.utils.sort import SQLASorter, make_sqla_sorter
 
 
 class MasterRecordStatisticsSchema(OrmModel):
@@ -55,9 +64,44 @@ def master_record_detail(
     record_id: int,
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
+    audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a particular master record from the EMPI"""
-    return get_masterrecord(jtrace, record_id, user)
+    record = get_masterrecord(jtrace, record_id, user)
+
+    audit.add_event(Resource.MASTER_RECORD, record.id, AuditOperation.READ)
+
+    return record
+
+
+@router.get(
+    "/related/",
+    response_model=list[MasterRecordSchema],
+    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
+)
+def master_record_related(
+    record_id: int,
+    user: UKRDCUser = Security(auth.get_user()),
+    jtrace: Session = Depends(get_jtrace),
+    audit: Auditer = Depends(get_auditer),
+):
+    """Retreive a list of other master records related to a particular master record"""
+    records = get_masterrecords_related_to_masterrecord(
+        jtrace, record_id, user, exclude_self=True
+    ).all()
+
+    record_audit = audit.add_event(
+        Resource.MASTER_RECORD, record_id, AuditOperation.READ
+    )
+    for record in records:
+        audit.add_event(
+            Resource.MASTER_RECORD,
+            record.id,
+            AuditOperation.READ,
+            parent=record_audit,
+        )
+
+    return records
 
 
 @router.get(
@@ -78,6 +122,7 @@ def master_record_latest_message(
     latest = get_last_message_on_masterrecord(jtrace, errorsdb, record_id, user)
     if not latest:
         return Response(status_code=HTTP_204_NO_CONTENT)
+
     return latest
 
 
@@ -91,6 +136,7 @@ def master_record_statistics(
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
     errorsdb: Session = Depends(get_errorsdb),
+    audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a particular master record from the EMPI"""
     record: MasterRecord = get_masterrecord(jtrace, record_id, user)
@@ -107,6 +153,13 @@ def master_record_statistics(
 
     workitems = get_workitems(
         jtrace, user, master_id=[record.id for record in related_records.all()]
+    )
+
+    audit.add_event(
+        Resource.STATISTICS,
+        None,
+        AuditOperation.READ,
+        parent=audit.add_event(Resource.MASTER_RECORD, record.id, AuditOperation.READ),
     )
 
     return MasterRecordStatisticsSchema(
@@ -133,30 +186,40 @@ def master_record_linkrecords(
     record_id: int,
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
+    audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a list of link records related to a particular master record"""
     # Find record and asserrt permissions
     records = get_masterrecords_related_to_masterrecord(jtrace, record_id, user).all()
     link_records: list[LinkRecord] = []
+
     for record in records:
         link_records.extend(record.link_records)
+
+    record_audit = audit.add_event(
+        Resource.MASTER_RECORD, record_id, AuditOperation.READ
+    )
+    audited_master_ids = set()
+    audited_person_ids = set()
+    for link in link_records:
+        if link.master_id not in audited_master_ids:
+            audit.add_event(
+                Resource.MASTER_RECORD,
+                link.master_id,
+                AuditOperation.READ,
+                parent=record_audit,
+            )
+            audited_master_ids.add(link.master_id)
+        if link.person_id not in audited_person_ids:
+            audit.add_event(
+                Resource.PERSON,
+                link.person_id,
+                AuditOperation.READ,
+                parent=record_audit,
+            )
+            audited_person_ids.add(link.person_id)
+
     return link_records
-
-
-@router.get(
-    "/related/",
-    response_model=list[MasterRecordSchema],
-    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
-)
-def master_record_related(
-    record_id: int,
-    user: UKRDCUser = Security(auth.get_user()),
-    jtrace: Session = Depends(get_jtrace),
-):
-    """Retreive a list of other master records related to a particular master record"""
-    return get_masterrecords_related_to_masterrecord(
-        jtrace, record_id, user, exclude_self=True
-    ).all()
 
 
 @router.get(
@@ -174,15 +237,29 @@ def master_record_messages(
     jtrace: Session = Depends(get_jtrace),
     errorsdb: Session = Depends(get_errorsdb),
     sorter: SQLASorter = Depends(ERROR_SORTER),
+    audit: Auditer = Depends(get_auditer),
 ):
     """
     Retreive a list of errors related to a particular master record.
     By default returns message created within the last 365 days.
     """
-    query = get_messages_related_to_masterrecord(
-        errorsdb, jtrace, record_id, user, status, facility, since, until
+    page = paginate(
+        sorter.sort(
+            get_messages_related_to_masterrecord(
+                errorsdb, jtrace, record_id, user, status, facility, since, until
+            )
+        )
     )
-    return paginate(sorter.sort(query))
+
+    record_audit = audit.add_event(
+        Resource.MASTER_RECORD, record_id, AuditOperation.READ
+    )
+    for item in page.items:  # type: ignore
+        audit.add_event(
+            Resource.MESSAGE, item.id, AuditOperation.READ, parent=record_audit
+        )
+
+    return page
 
 
 @router.get(
@@ -194,14 +271,24 @@ def master_record_workitems(
     record_id: int,
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
+    audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a list of work items related to a particular master record."""
     related: list[MasterRecord] = get_masterrecords_related_to_masterrecord(
         jtrace, record_id, user
     ).all()
-    return get_workitems(
+
+    workitems = get_workitems(
         jtrace, user, master_id=[record.id for record in related]
     ).all()
+
+    record_audit = audit.add_event(
+        Resource.MASTER_RECORD, record_id, AuditOperation.READ
+    )
+    for item in workitems:
+        audit.add_workitem(item, parent=record_audit)
+
+    return workitems
 
 
 @router.get(
@@ -213,9 +300,20 @@ def master_record_persons(
     record_id: int,
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
+    audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a list of person records related to a particular master record."""
-    return get_persons_related_to_masterrecord(jtrace, record_id, user).all()
+    persons = get_persons_related_to_masterrecord(jtrace, record_id, user).all()
+
+    record_audit = audit.add_event(
+        Resource.MASTER_RECORD, record_id, AuditOperation.READ
+    )
+    for person in persons:
+        audit.add_event(
+            Resource.PERSON, person.id, AuditOperation.READ, parent=record_audit
+        )
+
+    return persons
 
 
 @router.get(
@@ -228,8 +326,59 @@ def master_record_patientrecords(
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
     ukrdc3: Session = Depends(get_ukrdc3),
+    audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a list of patient records related to a particular master record."""
-    return get_patientrecords_related_to_masterrecord(
+    records = get_patientrecords_related_to_masterrecord(
         ukrdc3, jtrace, record_id, user
     ).all()
+
+    record_audit = audit.add_event(
+        Resource.MASTER_RECORD, record_id, AuditOperation.READ
+    )
+    for record in records:
+        audit.add_event(
+            Resource.PATIENT_RECORD,
+            record.pid,
+            AuditOperation.READ,
+            parent=record_audit,
+        )
+
+    return records
+
+
+@router.get(
+    "/audit/",
+    response_model=Page[AuditEventSchema],
+    dependencies=[Security(auth.permission(Permissions.READ_RECORDS_AUDIT))],
+)
+def master_record_audit(
+    record_id: int,
+    user: UKRDCUser = Security(auth.get_user()),
+    jtrace: Session = Depends(get_jtrace),
+    ukrdc3: Session = Depends(get_ukrdc3),
+    auditdb: Session = Depends(get_auditdb),
+    since: Optional[datetime.datetime] = None,
+    until: Optional[datetime.datetime] = None,
+    sorter: SQLASorter = Depends(
+        make_sqla_sorter(
+            [AuditEvent.id, AccessEvent.time],
+            default_sort_by=AuditEvent.id,
+        )
+    ),
+):
+    """
+    Retreive a page of audit events related to a particular master record.
+    """
+    page = paginate(
+        sorter.sort(
+            get_auditevents_related_to_masterrecord(
+                auditdb, ukrdc3, jtrace, record_id, user, since=since, until=until
+            )
+        )
+    )
+
+    for item in page.items:  # type: ignore
+        item.populate_identifiers(jtrace, ukrdc3)
+
+    return page

@@ -11,6 +11,13 @@ from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import MasterRecord
 
 from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_mirth
+from ukrdc_fastapi.dependencies.audit import (
+    Auditer,
+    AuditOperation,
+    MessageOperation,
+    Resource,
+    get_auditer,
+)
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.query.messages import ERROR_SORTER, get_message, get_messages
 from ukrdc_fastapi.query.workitems import get_workitems_related_to_message
@@ -42,21 +49,33 @@ def error_messages(
     user: UKRDCUser = Security(auth.get_user()),
     errorsdb: Session = Depends(get_errorsdb),
     sorter: SQLASorter = Depends(ERROR_SORTER),
+    audit: Auditer = Depends(get_auditer),
 ):
     """
     Retreive a list of error messages, optionally filtered by NI, facility, or date.
     By default returns message created within the last 365 days.
     """
-    query = get_messages(
-        errorsdb,
-        user,
-        statuses=status,
-        nis=ni,
-        facility=facility,
-        since=since,
-        until=until,
+    page = paginate(
+        sorter.sort(
+            get_messages(
+                errorsdb,
+                user,
+                statuses=status,
+                nis=ni,
+                facility=facility,
+                since=since,
+                until=until,
+            )
+        )
     )
-    return paginate(sorter.sort(query))
+
+    list_audit = audit.add_event(Resource.MESSAGES, None, AuditOperation.READ)
+    for item in page.items:  # type: ignore
+        audit.add_event(
+            Resource.MESSAGE, item.id, MessageOperation.READ, parent=list_audit
+        )
+
+    return page
 
 
 @router.get(
@@ -68,12 +87,17 @@ def error_detail(
     message_id: str,
     user: UKRDCUser = Security(auth.get_user()),
     errorsdb: Session = Depends(get_errorsdb),
+    audit: Auditer = Depends(get_auditer),
 ):
     """Retreive detailed information about a specific error message"""
     # For some reason the fastAPI response_model doesn't call our channel_name
     # validator, meaning we don't get a populated channel name unless we explicitly
     # call it here.
-    return MessageSchema.from_orm(get_message(errorsdb, message_id, user))
+    message = MessageSchema.from_orm(get_message(errorsdb, message_id, user))
+
+    audit.add_event(Resource.MESSAGE, message.id, MessageOperation.READ)
+
+    return message
 
 
 @router.get(
@@ -86,6 +110,7 @@ async def error_source(
     user: UKRDCUser = Security(auth.get_user()),
     errorsdb: Session = Depends(get_errorsdb),
     mirth: MirthAPI = Depends(get_mirth),
+    audit: Auditer = Depends(get_auditer),
 ):
     """Retreive detailed information about a specific error message"""
     error = get_message(errorsdb, message_id, user)
@@ -115,6 +140,8 @@ async def error_source(
     if not message_data:
         return MessageSourceSchema(content=None, content_type=None)
 
+    audit.add_event(Resource.MESSAGE, error.id, MessageOperation.READ_SOURCE)
+
     return MessageSourceSchema(
         content=message_data.content, content_type=message_data.data_type
     )
@@ -134,9 +161,20 @@ async def error_workitems(
     user: UKRDCUser = Security(auth.get_user()),
     errorsdb: Session = Depends(get_errorsdb),
     jtrace: Session = Depends(get_jtrace),
+    audit: Auditer = Depends(get_auditer),
 ):
     """Retreive WorkItems associated with a specific error message"""
-    return get_workitems_related_to_message(jtrace, errorsdb, message_id, user).all()
+    message = get_message(errorsdb, message_id, user)
+
+    workitems = get_workitems_related_to_message(
+        jtrace, errorsdb, str(message.id), user
+    ).all()
+
+    message_audit = audit.add_event(Resource.MESSAGE, message.id, MessageOperation.READ)
+    for item in workitems:
+        audit.add_workitem(item, parent=message_audit)
+
+    return workitems
 
 
 @router.get(
@@ -151,9 +189,23 @@ async def error_masterrecords(
     user: UKRDCUser = Security(auth.get_user()),
     errorsdb: Session = Depends(get_errorsdb),
     jtrace: Session = Depends(get_jtrace),
+    audit: Auditer = Depends(get_auditer),
 ):
     """Retreive MasterRecords associated with a specific error message"""
-    error = get_message(errorsdb, message_id, user)
+    message = get_message(errorsdb, message_id, user)
 
     # Get masterrecords directly referenced by the error
-    return jtrace.query(MasterRecord).filter(MasterRecord.nationalid == error.ni).all()
+    records = (
+        jtrace.query(MasterRecord).filter(MasterRecord.nationalid == message.ni).all()
+    )
+
+    message_audit = audit.add_event(Resource.MESSAGE, message.id, MessageOperation.READ)
+    for record in records:
+        audit.add_event(
+            Resource.MASTER_RECORD,
+            record.id,
+            AuditOperation.READ,
+            parent=message_audit,
+        )
+
+    return records

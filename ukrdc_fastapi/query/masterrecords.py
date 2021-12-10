@@ -45,29 +45,17 @@ def _assert_permission(record: MasterRecord, user: UKRDCUser):
 def get_masterrecords(
     jtrace: Session,
     user: UKRDCUser,
-    facility: Optional[str] = None,
 ) -> Query:
     """Get a list of MasterRecords from the EMPI
 
     Args:
         jtrace (Session): SQLALchemy session
         user (UKRDCUser): Logged-in user object
-        facility (Optional[str], optional): Facility code to get records from. Defaults to None.
 
     Returns:
         Query: SQLALchemy query
     """
-    records = jtrace.query(MasterRecord)
-
-    if facility:
-        records = (
-            records.join(LinkRecord)
-            .join(Person)
-            .join(PidXRef)
-            .filter(PidXRef.sending_facility == facility)
-        )
-
-    return _apply_query_permissions(records, user)
+    return _apply_query_permissions(jtrace.query(MasterRecord), user)
 
 
 def get_masterrecord(jtrace: Session, record_id: int, user: UKRDCUser) -> MasterRecord:

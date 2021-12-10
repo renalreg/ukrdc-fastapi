@@ -130,3 +130,34 @@ def stats_session() -> Generator[Session, None, None]:
         yield session
     finally:
         session.close()
+
+
+AuditSession = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=create_engine(
+        build_db_uri(
+            settings.audit_driver,
+            settings.audit_host,
+            settings.audit_port,
+            settings.audit_user,
+            settings.audit_pass,
+            settings.audit_name,
+        ),
+        connect_args={"application_name": settings.application_name},
+    ),
+)
+
+
+@contextmanager
+def audit_session() -> Generator[Session, None, None]:
+    """Yeild a new AUDITDB database session
+
+    Yields:
+        [Session]: AUDITDB database session
+    """
+    session = AuditSession()
+    try:
+        yield session
+    finally:
+        session.close()

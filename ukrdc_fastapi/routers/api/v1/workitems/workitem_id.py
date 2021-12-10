@@ -10,6 +10,12 @@ from redis import Redis
 from sqlalchemy.orm import Session
 
 from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_mirth, get_redis
+from ukrdc_fastapi.dependencies.audit import (
+    Auditer,
+    AuditOperation,
+    Resource,
+    get_auditer,
+)
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.query.messages import get_messages
 from ukrdc_fastapi.query.mirth.workitems import close_workitem, update_workitem
@@ -46,9 +52,12 @@ def workitem_detail(
     workitem_id: int,
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
+    audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a particular work item from the EMPI"""
-    return get_extended_workitem(jtrace, workitem_id, user)
+    workitem = get_extended_workitem(jtrace, workitem_id, user)
+    audit.add_workitem(workitem)
+    return workitem
 
 
 @router.put(
@@ -73,8 +82,11 @@ async def workitem_update(
     jtrace: Session = Depends(get_jtrace),
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
+    audit: Auditer = Depends(get_auditer),
 ):
     """Update a particular work item in the EMPI"""
+
+    audit.add_event(Resource.WORKITEM, workitem_id, AuditOperation.UPDATE)
 
     return await update_workitem(
         jtrace,
@@ -96,9 +108,15 @@ def workitem_collection(
     workitem_id: int,
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
+    audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a list of other work items related to a particular work item"""
-    return get_workitem_collection(jtrace, workitem_id, user).all()
+    collection = get_workitem_collection(jtrace, workitem_id, user).all()
+
+    for workitem in collection:
+        audit.add_workitem(workitem)
+
+    return collection
 
 
 @router.get(
@@ -110,9 +128,15 @@ def workitem_related(
     workitem_id: int,
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
+    audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a list of other work items related to a particular work item"""
-    return get_workitems_related_to_workitem(jtrace, workitem_id, user).all()
+    related = get_workitems_related_to_workitem(jtrace, workitem_id, user).all()
+
+    for workitem in related:
+        audit.add_workitem(workitem)
+
+    return related
 
 
 @router.get(
@@ -129,6 +153,7 @@ def workitem_messages(
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
     errorsdb: Session = Depends(get_errorsdb),
+    audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a list of other work items related to a particular work item"""
     workitem = get_extended_workitem(jtrace, workitem_id, user)
@@ -140,7 +165,7 @@ def workitem_messages(
     if workitem.master_record:
         workitem_nis.append(workitem.master_record.nationalid)
 
-    return paginate(
+    page = paginate(
         get_messages(
             errorsdb,
             user,
@@ -151,6 +176,16 @@ def workitem_messages(
             until=until,
         )
     )
+
+    workitem_audit = audit.add_event(
+        Resource.WORKITEM, workitem.id, AuditOperation.READ
+    )
+    for item in page.items:  # type: ignore
+        audit.add_event(
+            Resource.MESSAGE, item.id, AuditOperation.READ, parent=workitem_audit
+        )
+
+    return page
 
 
 @router.post(
@@ -169,9 +204,13 @@ async def workitem_close(
     user: UKRDCUser = Security(auth.get_user()),
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
+    audit: Auditer = Depends(get_auditer),
 ):
     """Update and close a particular work item"""
     workitem = get_workitem(jtrace, workitem_id, user)
+
+    audit.add_event(Resource.WORKITEM, workitem.id, AuditOperation.UPDATE)
+
     return await close_workitem(
         jtrace,
         workitem.id,

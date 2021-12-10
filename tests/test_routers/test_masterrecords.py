@@ -1,7 +1,3 @@
-from datetime import datetime
-
-from ukrdc_sqla.empi import LinkRecord, MasterRecord
-
 from ukrdc_fastapi.routers.api.v1.masterrecords.record_id import (
     MasterRecordStatisticsSchema,
 )
@@ -11,15 +7,8 @@ from ukrdc_fastapi.schemas.empi import (
     PersonSchema,
     WorkItemSchema,
 )
-from ukrdc_fastapi.schemas.message import MessageSchema
-from ukrdc_fastapi.schemas.patientrecord import PatientRecordSchema
-
-
-def test_masterrecords_list(client):
-    response = client.get("/api/v1/masterrecords")
-    assert response.status_code == 200
-    returned_ids = {item["id"] for item in response.json()["items"]}
-    assert returned_ids == {1, 2, 3, 4, 101, 102, 103, 104}
+from ukrdc_fastapi.schemas.message import MessageSchema, MinimalMessageSchema
+from ukrdc_fastapi.schemas.patientrecord import PatientRecordSummarySchema
 
 
 def test_masterrecord_detail(client):
@@ -45,6 +34,14 @@ def test_masterrecord_related(client, jtrace_session):
     mrecs = [MasterRecordSchema(**item) for item in response_reciprocal.json()]
     returned_ids = {item.id for item in mrecs}
     assert returned_ids == {1, 101, 104}
+
+
+def test_masterrecord_latest_message(client):
+    response = client.get("/api/v1/masterrecords/1/latest_message")
+    assert response.status_code == 200
+
+    message = MinimalMessageSchema(**response.json())
+    assert message.id == 1
 
 
 def test_masterrecord_statistics(client):
@@ -106,6 +103,6 @@ def test_masterrecord_patientrecords(client):
     response = client.get("/api/v1/masterrecords/1/patientrecords")
     assert response.status_code == 200
 
-    records = [PatientRecordSchema(**item) for item in response.json()]
+    records = [PatientRecordSummarySchema(**item) for item in response.json()]
     pids = {record.pid for record in records}
     assert pids == {"PYTEST01:PV:00000000A", "PYTEST04:PV:00000000A"}

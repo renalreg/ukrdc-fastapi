@@ -12,14 +12,13 @@ from pytest_postgresql import factories
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from ukrdc_sqla.empi import Base as JtraceBase
-from ukrdc_sqla.empi import LinkRecord, MasterRecord, Person, PidXRef, WorkItem
+from ukrdc_sqla.empi import LinkRecord, WorkItem
 from ukrdc_sqla.errorsdb import Base as ErrorsBase
 from ukrdc_sqla.errorsdb import Channel
 from ukrdc_sqla.errorsdb import Message as ErrorMessage
 from ukrdc_sqla.pkb import PKBLink
 from ukrdc_sqla.stats import Base as StatsBase
 from ukrdc_sqla.stats import ErrorHistory, FacilityStats, PatientsLatestErrors
-from ukrdc_sqla.ukrdc import Address
 from ukrdc_sqla.ukrdc import Base as UKRDC3Base
 from ukrdc_sqla.ukrdc import (
     Code,
@@ -27,15 +26,10 @@ from ukrdc_sqla.ukrdc import (
     CodeMap,
     Diagnosis,
     Document,
-    Facility,
     LabOrder,
     Level,
     Medication,
-    Name,
     Observation,
-    Patient,
-    PatientNumber,
-    PatientRecord,
     Question,
     RenalDiagnosis,
     ResultItem,
@@ -47,14 +41,16 @@ from ukrdc_sqla.ukrdc import (
 from ukrdc_fastapi.config import settings
 from ukrdc_fastapi.dependencies import (
     auth,
+    get_auditdb,
     get_errorsdb,
     get_jtrace,
     get_mirth,
     get_redis,
-    get_statssdb,
+    get_statsdb,
     get_ukrdc3,
 )
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
+from ukrdc_fastapi.models.audit import Base as AuditBase
 
 from .utils import create_basic_facility, create_basic_patient
 
@@ -107,14 +103,16 @@ def populate_facilities(ukrdc3, statsdb, errorsdb):
         pkb_msg_exclusions=None,
     )
 
-    channel_1 = Channel(id="MIRTH-CHANNEL-UUID", name="MIRTH-CHANNEL-NAME")
+    channel_1 = Channel(
+        id="00000000-0000-0000-0000-000000000000", name="MIRTH-CHANNEL-NAME"
+    )
     errorsdb.add(channel_1)
 
     # Mock error relating to MR 1, WORKITEMS 1 and 2
     error_1 = ErrorMessage(
         id=1,
         message_id=1,
-        channel_id="MIRTH-CHANNEL-UUID",
+        channel_id="00000000-0000-0000-0000-000000000000",
         received=datetime(2021, 1, 1),
         msg_status="ERROR",
         ni=UKRDCID_1,
@@ -128,7 +126,7 @@ def populate_facilities(ukrdc3, statsdb, errorsdb):
     error_2 = ErrorMessage(
         id=2,
         message_id=2,
-        channel_id="MIRTH-CHANNEL-UUID",
+        channel_id="00000000-0000-0000-0000-000000000000",
         received=datetime(2020, 3, 16),
         msg_status="ERROR",
         ni=UKRDCID_2,
@@ -141,7 +139,7 @@ def populate_facilities(ukrdc3, statsdb, errorsdb):
     message_1 = ErrorMessage(
         id=3,
         message_id=3,
-        channel_id="MIRTH-CHANNEL-UUID",
+        channel_id="00000000-0000-0000-0000-000000000000",
         received=datetime(2021, 1, 1),
         msg_status="RECEIVED",
         ni=UKRDCID_1,
@@ -752,11 +750,31 @@ def statsdb_sessionmaker(postgresql_my):
 
 
 @pytest.fixture(scope="function")
+def auditdb_sessionmaker(postgresql_my):
+    """
+    Create a new function-scoped in-memory AUDIT database and return the session class
+    """
+
+    def dbcreator():
+        return postgresql_my.cursor().connection
+
+    engine = create_engine("postgresql+psycopg2://", creator=dbcreator)
+    StatsTestSession = sessionmaker(
+        autocommit=False,
+        autoflush=False,
+        bind=engine,
+    )
+    AuditBase.metadata.create_all(bind=engine)
+    return StatsTestSession
+
+
+@pytest.fixture(scope="function")
 def sessions(
     ukrdc3_sessionmaker,
     jtrace_sessionmaker,
     errorsdb_sessionmaker,
     statsdb_sessionmaker,
+    auditdb_sessionmaker,
 ):
     """
     Create a new function-scoped in-memory UKRDC3, JTRACE, ERRORS and STATS databases,
@@ -767,15 +785,17 @@ def sessions(
     jtrace = jtrace_sessionmaker()
     errorsdb = errorsdb_sessionmaker()
     statsdb = statsdb_sessionmaker()
+    auditdb = auditdb_sessionmaker()
 
     populate_all(ukrdc3, jtrace, errorsdb, statsdb)
 
-    yield ukrdc3, jtrace, errorsdb, statsdb
+    yield ukrdc3, jtrace, errorsdb, statsdb, auditdb
 
     ukrdc3.close()
     jtrace.close()
     errorsdb.close()
     statsdb.close()
+    auditdb.close()
 
 
 @pytest.fixture(scope="function")
@@ -796,6 +816,11 @@ def errorsdb_session(sessions):
 @pytest.fixture(scope="function")
 def stats_session(sessions):
     return sessions[3]
+
+
+@pytest.fixture(scope="function")
+def audit_session(sessions):
+    return sessions[4]
 
 
 @pytest.fixture(scope="function")
@@ -824,7 +849,14 @@ async def redis_session(mirth_session, httpx_session):
 
 
 @pytest.fixture(scope="function")
-def app(jtrace_session, ukrdc3_session, errorsdb_session, stats_session, redis_session):
+def app(
+    jtrace_session,
+    ukrdc3_session,
+    errorsdb_session,
+    stats_session,
+    audit_session,
+    redis_session,
+):
     from ukrdc_fastapi.main import app
 
     async def _get_mirth():
@@ -846,9 +878,13 @@ def app(jtrace_session, ukrdc3_session, errorsdb_session, stats_session, redis_s
     def _get_statsdb():
         return stats_session
 
+    def _get_auditdb():
+        return audit_session
+
     def _get_token():
         return {
             "uid": "TEST_ID",
+            "cid": "PYTEST",
             "sub": "TEST@UKRDC_FASTAPI",
             "scp": ["openid", "profile", "email", "offline_access"],
             settings.user_permission_key: auth.Permissions.all(),
@@ -860,7 +896,9 @@ def app(jtrace_session, ukrdc3_session, errorsdb_session, stats_session, redis_s
     app.dependency_overrides[get_ukrdc3] = _get_ukrdc3
     app.dependency_overrides[get_jtrace] = _get_jtrace
     app.dependency_overrides[get_errorsdb] = _get_errorsdb
-    app.dependency_overrides[get_statssdb] = _get_statsdb
+    app.dependency_overrides[get_statsdb] = _get_statsdb
+    app.dependency_overrides[get_auditdb] = _get_auditdb
+
     app.dependency_overrides[auth.auth.okta_jwt_scheme] = _get_token
 
     return app
@@ -924,6 +962,7 @@ def httpx_session(httpx_mock: HTTPXMock):
 def superuser():
     return UKRDCUser(
         id="TEST_ID",
+        cid="PYTEST",
         email="TEST@UKRDC_FASTAPI",
         permissions=Permissions.all(),
         scopes=["openid", "profile", "email", "offline_access"],
@@ -934,6 +973,7 @@ def superuser():
 def test_user():
     return UKRDCUser(
         id="TEST_ID",
+        cid="PYTEST",
         email="TEST@UKRDC_FASTAPI",
         permissions=[*Permissions.all()[:-1], "ukrdc:unit:TEST_SENDING_FACILITY_1"],
         scopes=["openid", "profile", "email", "offline_access"],

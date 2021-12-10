@@ -34,6 +34,7 @@ class MasterRecordSchema(OrmModel):
             "patientrecords": UrlFor(
                 "master_record_patientrecords", {"record_id": "<id>"}
             ),
+            "audit": UrlFor("master_record_audit", {"record_id": "<id>"}),
         }
     )
 
