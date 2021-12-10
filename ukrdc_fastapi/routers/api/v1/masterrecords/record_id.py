@@ -75,6 +75,36 @@ def master_record_detail(
 
 
 @router.get(
+    "/related/",
+    response_model=list[MasterRecordSchema],
+    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
+)
+def master_record_related(
+    record_id: int,
+    user: UKRDCUser = Security(auth.get_user()),
+    jtrace: Session = Depends(get_jtrace),
+    audit: Auditer = Depends(get_auditer),
+):
+    """Retreive a list of other master records related to a particular master record"""
+    records = get_masterrecords_related_to_masterrecord(
+        jtrace, record_id, user, exclude_self=True
+    ).all()
+
+    record_audit = audit.add_event(
+        Resource.MASTER_RECORD, record_id, AuditOperation.READ
+    )
+    for record in records:
+        audit.add_event(
+            Resource.MASTER_RECORD,
+            record.id,
+            AuditOperation.READ,
+            parent=record_audit,
+        )
+
+    return records
+
+
+@router.get(
     "/latest_message/",
     response_model=MinimalMessageSchema,
     responses={204: {"model": None}},
@@ -85,7 +115,6 @@ def master_record_latest_message(
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
     errorsdb: Session = Depends(get_errorsdb),
-    audit: Auditer = Depends(get_auditer),
 ):
     """
     Retreive a minimal representation of the latest file received for the patient,
@@ -93,13 +122,6 @@ def master_record_latest_message(
     latest = get_last_message_on_masterrecord(jtrace, errorsdb, record_id, user)
     if not latest:
         return Response(status_code=HTTP_204_NO_CONTENT)
-
-    audit.add_event(
-        Resource.MESSAGE,
-        latest.id,
-        AuditOperation.READ,
-        parent=audit.add_event(Resource.MASTER_RECORD, record_id, AuditOperation.READ),
-    )
 
     return latest
 
@@ -192,36 +214,6 @@ def master_record_linkrecords(
         )
 
     return link_records
-
-
-@router.get(
-    "/related/",
-    response_model=list[MasterRecordSchema],
-    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
-)
-def master_record_related(
-    record_id: int,
-    user: UKRDCUser = Security(auth.get_user()),
-    jtrace: Session = Depends(get_jtrace),
-    audit: Auditer = Depends(get_auditer),
-):
-    """Retreive a list of other master records related to a particular master record"""
-    records = get_masterrecords_related_to_masterrecord(
-        jtrace, record_id, user, exclude_self=True
-    ).all()
-
-    record_audit = audit.add_event(
-        Resource.MASTER_RECORD, record_id, AuditOperation.READ
-    )
-    for record in records:
-        audit.add_event(
-            Resource.MASTER_RECORD,
-            record.id,
-            AuditOperation.READ,
-            parent=record_audit,
-        )
-
-    return records
 
 
 @router.get(
