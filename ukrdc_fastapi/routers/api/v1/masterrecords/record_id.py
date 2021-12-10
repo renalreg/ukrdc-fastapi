@@ -199,19 +199,25 @@ def master_record_linkrecords(
     record_audit = audit.add_event(
         Resource.MASTER_RECORD, record_id, AuditOperation.READ
     )
+    audited_master_ids = set()
+    audited_person_ids = set()
     for link in link_records:
-        audit.add_event(
-            Resource.MASTER_RECORD,
-            link.master_id,
-            AuditOperation.READ,
-            parent=record_audit,
-        )
-        audit.add_event(
-            Resource.PERSON,
-            link.person_id,
-            AuditOperation.READ,
-            parent=record_audit,
-        )
+        if link.master_id not in audited_master_ids:
+            audit.add_event(
+                Resource.MASTER_RECORD,
+                link.master_id,
+                AuditOperation.READ,
+                parent=record_audit,
+            )
+            audited_master_ids.add(link.master_id)
+        if link.person_id not in audited_person_ids:
+            audit.add_event(
+                Resource.PERSON,
+                link.person_id,
+                AuditOperation.READ,
+                parent=record_audit,
+            )
+            audited_person_ids.add(link.person_id)
 
     return link_records
 
