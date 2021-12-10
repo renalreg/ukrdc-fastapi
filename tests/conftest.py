@@ -103,14 +103,16 @@ def populate_facilities(ukrdc3, statsdb, errorsdb):
         pkb_msg_exclusions=None,
     )
 
-    channel_1 = Channel(id="MIRTH-CHANNEL-UUID", name="MIRTH-CHANNEL-NAME")
+    channel_1 = Channel(
+        id="00000000-0000-0000-0000-000000000000", name="MIRTH-CHANNEL-NAME"
+    )
     errorsdb.add(channel_1)
 
     # Mock error relating to MR 1, WORKITEMS 1 and 2
     error_1 = ErrorMessage(
         id=1,
         message_id=1,
-        channel_id="MIRTH-CHANNEL-UUID",
+        channel_id="00000000-0000-0000-0000-000000000000",
         received=datetime(2021, 1, 1),
         msg_status="ERROR",
         ni=UKRDCID_1,
@@ -124,7 +126,7 @@ def populate_facilities(ukrdc3, statsdb, errorsdb):
     error_2 = ErrorMessage(
         id=2,
         message_id=2,
-        channel_id="MIRTH-CHANNEL-UUID",
+        channel_id="00000000-0000-0000-0000-000000000000",
         received=datetime(2020, 3, 16),
         msg_status="ERROR",
         ni=UKRDCID_2,
@@ -137,7 +139,7 @@ def populate_facilities(ukrdc3, statsdb, errorsdb):
     message_1 = ErrorMessage(
         id=3,
         message_id=3,
-        channel_id="MIRTH-CHANNEL-UUID",
+        channel_id="00000000-0000-0000-0000-000000000000",
         received=datetime(2021, 1, 1),
         msg_status="RECEIVED",
         ni=UKRDCID_1,
