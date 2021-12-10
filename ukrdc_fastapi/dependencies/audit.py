@@ -157,61 +157,35 @@ class Auditer:
         )
         audited_master_ids: set[int] = set()
         audited_person_ids: set[int] = set()
-        if (
-            workitem.master_record
-            and workitem.master_record.id not in audited_master_ids
-        ):
-            self.add_event(
-                Resource.MASTER_RECORD,
-                workitem.master_record.id,
-                AuditOperation.READ,
-                parent=workitem_audit,
-            )
-        if workitem.person and workitem.person.id not in audited_person_ids:
-            self.add_event(
-                Resource.PERSON,
-                workitem.person.id,
-                AuditOperation.READ,
-                parent=workitem_audit,
-            )
+        if workitem.master_record:
+            audited_master_ids.add(workitem.master_record.id)
+        if workitem.person:
+            audited_person_ids.add(workitem.person.id)
 
         if isinstance(workitem, WorkItemExtendedSchema):
             for master_record in workitem.incoming.master_records:
-                if master_record.id not in audited_master_ids:
-                    self.add_event(
-                        Resource.MASTER_RECORD,
-                        master_record.id,
-                        AuditOperation.READ,
-                        parent=workitem_audit,
-                    )
+                audited_master_ids.add(master_record.id)
             for person in workitem.destination.persons:
-                if person.id not in audited_person_ids:
-                    self.add_event(
-                        Resource.PERSON,
-                        person.id,
-                        AuditOperation.READ,
-                        parent=workitem_audit,
-                    )
-            if (
-                workitem.destination.master_record
-                and workitem.destination.master_record.id not in audited_master_ids
-            ):
-                self.add_event(
-                    Resource.MASTER_RECORD,
-                    workitem.destination.master_record.id,
-                    AuditOperation.READ,
-                    parent=workitem_audit,
-                )
-            if (
-                workitem.incoming.person
-                and workitem.incoming.person.id not in audited_person_ids
-            ):
-                self.add_event(
-                    Resource.PERSON,
-                    workitem.incoming.person.id,
-                    AuditOperation.READ,
-                    parent=workitem_audit,
-                )
+                audited_person_ids.add(person.id)
+            if workitem.destination.master_record:
+                audited_master_ids.add(workitem.destination.master_record.id)
+            if workitem.incoming.person:
+                audited_person_ids.add(workitem.incoming.person.id)
+
+        for person_id in audited_person_ids:
+            self.add_event(
+                Resource.PERSON,
+                person_id,
+                AuditOperation.READ,
+                parent=workitem_audit,
+            )
+        for master_id in audited_master_ids:
+            self.add_event(
+                Resource.MASTER_RECORD,
+                master_id,
+                AuditOperation.READ,
+                parent=workitem_audit,
+            )
 
         return workitem_audit
 
