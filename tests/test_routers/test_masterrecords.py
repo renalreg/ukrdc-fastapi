@@ -7,7 +7,7 @@ from ukrdc_fastapi.schemas.empi import (
     PersonSchema,
     WorkItemSchema,
 )
-from ukrdc_fastapi.schemas.message import MessageSchema
+from ukrdc_fastapi.schemas.message import MessageSchema, MinimalMessageSchema
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordSummarySchema
 
 
@@ -34,6 +34,14 @@ def test_masterrecord_related(client, jtrace_session):
     mrecs = [MasterRecordSchema(**item) for item in response_reciprocal.json()]
     returned_ids = {item.id for item in mrecs}
     assert returned_ids == {1, 101, 104}
+
+
+def test_masterrecord_latest_message(client):
+    response = client.get("/api/v1/masterrecords/1/latest_message")
+    assert response.status_code == 200
+
+    message = MinimalMessageSchema(**response.json())
+    assert message.id == 1
 
 
 def test_masterrecord_statistics(client):

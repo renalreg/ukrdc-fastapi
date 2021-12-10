@@ -882,6 +882,7 @@ def app(
     def _get_token():
         return {
             "uid": "TEST_ID",
+            "cid": "PYTEST",
             "sub": "TEST@UKRDC_FASTAPI",
             "scp": ["openid", "profile", "email", "offline_access"],
             settings.user_permission_key: auth.Permissions.all(),

@@ -161,8 +161,8 @@ def patient_medications(
 ):
     """Retreive a specific patient's medications"""
     audit.add_event(
-        Resource.PATIENT_RECORD,
-        patient_record.pid,
+        Resource.MEDICATIONS,
+        None,
         RecordOperation.READ,
         parent=audit.add_event(
             Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.READ
@@ -211,104 +211,6 @@ def patient_surveys(
         ),
     )
     return patient_record.surveys.all()
-
-
-@router.get(
-    "/documents/",
-    response_model=Page[DocumentSummarySchema],
-    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
-)
-def patient_documents(
-    patient_record: PatientRecord = Depends(_get_patientrecord),
-    sorter: SQLASorter = Depends(
-        make_sqla_sorter(
-            [Document.documenttime, Document.updatedon],
-            default_sort_by=Document.documenttime,
-        )
-    ),
-    audit: Auditer = Depends(get_auditer),
-):
-    """Retreive a specific patient's documents"""
-    audit.add_event(
-        Resource.DOCUMENTS,
-        None,
-        RecordOperation.READ,
-        parent=audit.add_event(
-            Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.READ
-        ),
-    )
-    # NOTE: We defer the 'stream' column to avoid sending the full PDF file content
-    # when we're just querying the list of documents.
-    return paginate(sorter.sort(patient_record.documents.options(defer("stream"))))
-
-
-@router.get(
-    "/documents/{document_id}/",
-    response_model=DocumentSchema,
-    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
-)
-def document_get(
-    document_id: str,
-    patient_record: PatientRecord = Depends(_get_patientrecord),
-    audit: Auditer = Depends(get_auditer),
-):
-    """Retreive a specific patient's document information"""
-    document = patient_record.documents.filter(Document.id == document_id).first()
-    if not document:
-        raise HTTPException(404, detail="Document not found")
-
-    audit.add_event(
-        Resource.DOCUMENT,
-        document_id,
-        RecordOperation.READ,
-        parent=audit.add_event(
-            Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.READ
-        ),
-    )
-
-    return document
-
-
-@router.get(
-    "/documents/{document_id}/download",
-    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
-)
-def document_download(
-    document_id: str,
-    patient_record: PatientRecord = Depends(_get_patientrecord),
-    audit: Auditer = Depends(get_auditer),
-):
-    """Retreive a specific patient's document file"""
-    document: Optional[Document] = patient_record.documents.filter(
-        Document.id == document_id
-    ).first()
-    if not document:
-        raise HTTPException(404, detail="Document not found")
-
-    audit.add_event(
-        Resource.DOCUMENT,
-        document_id,
-        RecordOperation.READ,
-        parent=audit.add_event(
-            Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.READ
-        ),
-    )
-
-    media_type: str
-    stream: bytes
-    filename: str
-    if not document.filetype:
-        media_type = "text/csv"
-        stream = (document.notetext or "").encode()
-        filename = f"{document.documentname}.txt"
-    else:
-        media_type = document.filetype
-        stream = document.stream or b""
-        filename = document.filename or document.documentname or "NoFileName"
-
-    response = Response(content=stream, media_type=media_type)
-    response.headers["Content-Disposition"] = f"attachment; filename={filename}"
-    return response
 
 
 # Complex internal resources
@@ -584,3 +486,101 @@ def patient_result_services(
         )
         for item in services.all()
     ]
+
+
+@router.get(
+    "/documents/",
+    response_model=Page[DocumentSummarySchema],
+    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
+)
+def patient_documents(
+    patient_record: PatientRecord = Depends(_get_patientrecord),
+    sorter: SQLASorter = Depends(
+        make_sqla_sorter(
+            [Document.documenttime, Document.updatedon],
+            default_sort_by=Document.documenttime,
+        )
+    ),
+    audit: Auditer = Depends(get_auditer),
+):
+    """Retreive a specific patient's documents"""
+    audit.add_event(
+        Resource.DOCUMENTS,
+        None,
+        RecordOperation.READ,
+        parent=audit.add_event(
+            Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.READ
+        ),
+    )
+    # NOTE: We defer the 'stream' column to avoid sending the full PDF file content
+    # when we're just querying the list of documents.
+    return paginate(sorter.sort(patient_record.documents.options(defer("stream"))))
+
+
+@router.get(
+    "/documents/{document_id}/",
+    response_model=DocumentSchema,
+    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
+)
+def document_get(
+    document_id: str,
+    patient_record: PatientRecord = Depends(_get_patientrecord),
+    audit: Auditer = Depends(get_auditer),
+):
+    """Retreive a specific patient's document information"""
+    document = patient_record.documents.filter(Document.id == document_id).first()
+    if not document:
+        raise HTTPException(404, detail="Document not found")
+
+    audit.add_event(
+        Resource.DOCUMENT,
+        document_id,
+        RecordOperation.READ,
+        parent=audit.add_event(
+            Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.READ
+        ),
+    )
+
+    return document
+
+
+@router.get(
+    "/documents/{document_id}/download",
+    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
+)
+def document_download(
+    document_id: str,
+    patient_record: PatientRecord = Depends(_get_patientrecord),
+    audit: Auditer = Depends(get_auditer),
+):
+    """Retreive a specific patient's document file"""
+    document: Optional[Document] = patient_record.documents.filter(
+        Document.id == document_id
+    ).first()
+    if not document:
+        raise HTTPException(404, detail="Document not found")
+
+    audit.add_event(
+        Resource.DOCUMENT,
+        document_id,
+        RecordOperation.READ,
+        parent=audit.add_event(
+            Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.READ
+        ),
+    )
+
+    media_type: str
+    stream: bytes
+    filename: str
+    if not document.filetype:
+        media_type = "text/csv"
+        stream = (document.notetext or "").encode()
+        filename = f"{document.documentname}.txt"
+    else:
+        media_type = document.filetype
+        stream = document.stream or b""
+        filename = document.filename or document.documentname or "NoFileName"
+
+    response = Response(content=stream, media_type=media_type)
+    response.headers["Content-Disposition"] = f"attachment; filename={filename}"
+    return response
