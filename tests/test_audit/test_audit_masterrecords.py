@@ -1,6 +1,5 @@
 from ukrdc_fastapi.models.audit import AuditEvent
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema, PersonSchema, WorkItemSchema
-from ukrdc_fastapi.schemas.message import MessageSchema
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordSummarySchema
 
 
@@ -111,26 +110,22 @@ def test_masterrecord_linkrecords(client, audit_session):
 def test_masterrecord_messages(client, audit_session):
     response = client.get("/api/v1/masterrecords/1/messages")
     assert response.status_code == 200
-    messages = [MessageSchema(**item) for item in response.json().get("items")]
-    returned_ids = {item.id for item in messages}
-    assert returned_ids == {1, 3}
 
     events = audit_session.query(AuditEvent).all()
-    assert len(events) == 3
+    assert len(events) == 2
 
     event = events[0]
-    assert len(event.children) == 2
+    assert len(event.children) == 1
 
     assert event.resource == "MASTER_RECORD"
     assert event.operation == "READ"
     assert event.resource_id == "1"
     assert event.parent_id == None
 
-    for child_event in event.children:
-        assert child_event.resource == "MESSAGE"
-        assert child_event.operation == "READ"
-        assert int(child_event.resource_id) in returned_ids
-        assert child_event.parent_id == event.id
+    child_event = event.children[0]
+    assert child_event.resource == "MESSAGES"
+    assert child_event.operation == "READ"
+    assert child_event.parent_id == event.id
 
 
 def test_masterrecord_workitems(client, audit_session):

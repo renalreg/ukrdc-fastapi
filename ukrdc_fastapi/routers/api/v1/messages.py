@@ -55,7 +55,8 @@ def error_messages(
     Retreive a list of error messages, optionally filtered by NI, facility, or date.
     By default returns message created within the last 365 days.
     """
-    page = paginate(
+    audit.add_event(Resource.MESSAGES, None, MessageOperation.READ)
+    return paginate(
         sorter.sort(
             get_messages(
                 errorsdb,
@@ -68,14 +69,6 @@ def error_messages(
             )
         )
     )
-
-    list_audit = audit.add_event(Resource.MESSAGES, None, AuditOperation.READ)
-    for item in page.items:  # type: ignore
-        audit.add_event(
-            Resource.MESSAGE, item.id, MessageOperation.READ, parent=list_audit
-        )
-
-    return page
 
 
 @router.get(
@@ -93,11 +86,9 @@ def error_detail(
     # For some reason the fastAPI response_model doesn't call our channel_name
     # validator, meaning we don't get a populated channel name unless we explicitly
     # call it here.
-    message = MessageSchema.from_orm(get_message(errorsdb, message_id, user))
-
+    message = get_message(errorsdb, message_id, user)
     audit.add_event(Resource.MESSAGE, message.id, MessageOperation.READ)
-
-    return message
+    return MessageSchema.from_orm(message)
 
 
 @router.get(

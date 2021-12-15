@@ -165,7 +165,14 @@ def workitem_messages(
     if workitem.master_record:
         workitem_nis.append(workitem.master_record.nationalid)
 
-    page = paginate(
+    audit.add_event(
+        Resource.MESSAGES,
+        None,
+        AuditOperation.READ,
+        parent=audit.add_event(Resource.WORKITEM, workitem_id, AuditOperation.READ),
+    )
+
+    return paginate(
         get_messages(
             errorsdb,
             user,
@@ -176,16 +183,6 @@ def workitem_messages(
             until=until,
         )
     )
-
-    workitem_audit = audit.add_event(
-        Resource.WORKITEM, workitem.id, AuditOperation.READ
-    )
-    for item in page.items:  # type: ignore
-        audit.add_event(
-            Resource.MESSAGE, item.id, AuditOperation.READ, parent=workitem_audit
-        )
-
-    return page
 
 
 @router.post(
