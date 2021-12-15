@@ -35,6 +35,8 @@ class Resource(Enum):
     MESSAGE = "MESSAGE"
     WORKITEM = "WORKITEM"
 
+    FACILITY = "FACILITY"
+
 
 class MasterRecordResource(Enum):
     MESSAGE = "MESSAGE"

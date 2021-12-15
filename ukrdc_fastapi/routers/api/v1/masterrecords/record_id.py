@@ -243,23 +243,19 @@ def master_record_messages(
     Retreive a list of errors related to a particular master record.
     By default returns message created within the last 365 days.
     """
-    page = paginate(
+    audit.add_event(
+        Resource.MESSAGES,
+        None,
+        AuditOperation.READ,
+        parent=audit.add_event(Resource.MASTER_RECORD, record_id, AuditOperation.READ),
+    )
+    return paginate(
         sorter.sort(
             get_messages_related_to_masterrecord(
                 errorsdb, jtrace, record_id, user, status, facility, since, until
             )
         )
     )
-
-    record_audit = audit.add_event(
-        Resource.MASTER_RECORD, record_id, AuditOperation.READ
-    )
-    for item in page.items:  # type: ignore
-        audit.add_event(
-            Resource.MESSAGE, item.id, AuditOperation.READ, parent=record_audit
-        )
-
-    return page
 
 
 @router.get(
