@@ -49,13 +49,12 @@ def error_messages(
     user: UKRDCUser = Security(auth.get_user()),
     errorsdb: Session = Depends(get_errorsdb),
     sorter: SQLASorter = Depends(ERROR_SORTER),
-    audit: Auditer = Depends(get_auditer),
 ):
     """
     Retreive a list of error messages, optionally filtered by NI, facility, or date.
     By default returns message created within the last 365 days.
     """
-    page = paginate(
+    return paginate(
         sorter.sort(
             get_messages(
                 errorsdb,
@@ -69,14 +68,6 @@ def error_messages(
         )
     )
 
-    list_audit = audit.add_event(Resource.MESSAGES, None, AuditOperation.READ)
-    for item in page.items:  # type: ignore
-        audit.add_event(
-            Resource.MESSAGE, item.id, MessageOperation.READ, parent=list_audit
-        )
-
-    return page
-
 
 @router.get(
     "/{message_id}/",
@@ -87,17 +78,12 @@ def error_detail(
     message_id: str,
     user: UKRDCUser = Security(auth.get_user()),
     errorsdb: Session = Depends(get_errorsdb),
-    audit: Auditer = Depends(get_auditer),
 ):
     """Retreive detailed information about a specific error message"""
     # For some reason the fastAPI response_model doesn't call our channel_name
     # validator, meaning we don't get a populated channel name unless we explicitly
     # call it here.
-    message = MessageSchema.from_orm(get_message(errorsdb, message_id, user))
-
-    audit.add_event(Resource.MESSAGE, message.id, MessageOperation.READ)
-
-    return message
+    return MessageSchema.from_orm(get_message(errorsdb, message_id, user))
 
 
 @router.get(

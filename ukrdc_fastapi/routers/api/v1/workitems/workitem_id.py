@@ -153,7 +153,6 @@ def workitem_messages(
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
     errorsdb: Session = Depends(get_errorsdb),
-    audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a list of other work items related to a particular work item"""
     workitem = get_extended_workitem(jtrace, workitem_id, user)
@@ -165,7 +164,7 @@ def workitem_messages(
     if workitem.master_record:
         workitem_nis.append(workitem.master_record.nationalid)
 
-    page = paginate(
+    return paginate(
         get_messages(
             errorsdb,
             user,
@@ -176,16 +175,6 @@ def workitem_messages(
             until=until,
         )
     )
-
-    workitem_audit = audit.add_event(
-        Resource.WORKITEM, workitem.id, AuditOperation.READ
-    )
-    for item in page.items:  # type: ignore
-        audit.add_event(
-            Resource.MESSAGE, item.id, AuditOperation.READ, parent=workitem_audit
-        )
-
-    return page
 
 
 @router.post(
