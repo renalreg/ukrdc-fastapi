@@ -237,11 +237,18 @@ def master_record_messages(
     jtrace: Session = Depends(get_jtrace),
     errorsdb: Session = Depends(get_errorsdb),
     sorter: SQLASorter = Depends(ERROR_SORTER),
+    audit: Auditer = Depends(get_auditer),
 ):
     """
     Retreive a list of errors related to a particular master record.
     By default returns message created within the last 365 days.
     """
+    audit.add_event(
+        Resource.MESSAGES,
+        None,
+        AuditOperation.READ,
+        parent=audit.add_event(Resource.MASTER_RECORD, record_id, AuditOperation.READ),
+    )
     return paginate(
         sorter.sort(
             get_messages_related_to_masterrecord(

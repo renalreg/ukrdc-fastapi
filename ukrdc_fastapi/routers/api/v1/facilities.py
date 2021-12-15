@@ -5,6 +5,12 @@ from fastapi import APIRouter, Depends, Security
 from sqlalchemy.orm import Session
 
 from ukrdc_fastapi.dependencies import get_errorsdb, get_statsdb, get_ukrdc3
+from ukrdc_fastapi.dependencies.audit import (
+    Auditer,
+    AuditOperation,
+    Resource,
+    get_auditer,
+)
 from ukrdc_fastapi.dependencies.auth import UKRDCUser, auth
 from ukrdc_fastapi.query.facilities import (
     FacilityDetailsSchema,
@@ -78,7 +84,16 @@ def facility_patients_latest_errors(
     statsdb: Session = Depends(get_statsdb),
     user: UKRDCUser = Security(auth.get_user()),
     sorter: SQLASorter = Depends(ERROR_SORTER),
+    audit: Auditer = Depends(get_auditer),
 ):
     """Retreive time-series new error counts for the last year for a particular facility"""
     query = get_patients_latest_errors(ukrdc3, errorsdb, statsdb, code, user)
+
+    audit.add_event(
+        Resource.MESSAGES,
+        None,
+        AuditOperation.READ,
+        parent=audit.add_event(Resource.FACILITY, code, AuditOperation.READ),
+    )
+
     return paginate(sorter.sort(query))

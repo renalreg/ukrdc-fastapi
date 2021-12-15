@@ -8,32 +8,22 @@ from ukrdc_fastapi.schemas.message import MessageSchema
 def test_messages_list(client, audit_session):
     response = client.get(f"/api/v1/messages/")
     assert response.status_code == 200
-    messages = [MessageSchema(**item) for item in response.json()["items"]]
-    returned_ids = {item.id for item in messages}
-    assert returned_ids == {1, 3}
 
     events = audit_session.query(AuditEvent).all()
-    assert len(events) == 3
+    assert len(events) == 1
 
     event = events[0]
-    assert len(event.children) == 2
+    assert len(event.children) == 0
 
     assert event.resource == "MESSAGES"
     assert event.operation == "READ"
     assert event.resource_id == None
     assert event.parent_id == None
 
-    for child_event in event.children:
-        assert child_event.resource == "MESSAGE"
-        assert child_event.operation == "READ"
-        assert int(child_event.resource_id) in returned_ids
-        assert child_event.parent_id == event.id
-
 
 def test_message_detail(client, audit_session):
     response = client.get("/api/v1/messages/1")
     assert response.status_code == 200
-    message = MessageSchema(**response.json())
 
     events = audit_session.query(AuditEvent).all()
     assert len(events) == 1
