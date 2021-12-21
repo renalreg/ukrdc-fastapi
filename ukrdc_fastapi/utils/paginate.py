@@ -1,11 +1,12 @@
 from typing import Generic, TypeVar
 
 from fastapi import Query
+from fastapi_pagination import paginate as paginate_sequence
 from fastapi_pagination.default import Page as BasePage
 from fastapi_pagination.default import Params as BaseParams
 from fastapi_pagination.ext.sqlalchemy import paginate, paginate_query
 
-__all__ = ["Page", "paginate", "paginate_query"]
+__all__ = ["Page", "Params", "paginate", "paginate_sequence", "paginate_query"]
 
 T = TypeVar("T")  # pylint: disable=invalid-name
 
