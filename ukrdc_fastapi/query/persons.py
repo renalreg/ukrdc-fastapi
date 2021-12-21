@@ -2,11 +2,11 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.query import Query
 from ukrdc_sqla.empi import Person, PidXRef
+from ukrdc_sqla.utils.links import find_related_ids
 
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
 from ukrdc_fastapi.exceptions import AmbigousQueryError, EmptyQueryError
 from ukrdc_fastapi.query.common import PermissionsError, person_belongs_to_units
-from ukrdc_fastapi.utils.links import find_related_ids
 
 
 def _apply_query_permissions(query: Query, user: UKRDCUser):

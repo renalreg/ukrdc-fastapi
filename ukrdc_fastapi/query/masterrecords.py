@@ -4,15 +4,15 @@ from fastapi.exceptions import HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.query import Query
 from ukrdc_sqla.empi import LinkRecord, MasterRecord, Person, PidXRef
-
-from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
-from ukrdc_fastapi.query.common import PermissionsError, person_belongs_to_units
-from ukrdc_fastapi.query.persons import get_person
-from ukrdc_fastapi.utils.links import (
+from ukrdc_sqla.utils.links import (
     PersonMasterLink,
     find_related_ids,
     find_related_link_records,
 )
+
+from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
+from ukrdc_fastapi.query.common import PermissionsError, person_belongs_to_units
+from ukrdc_fastapi.query.persons import get_person
 
 
 def _apply_query_permissions(query: Query, user: UKRDCUser):

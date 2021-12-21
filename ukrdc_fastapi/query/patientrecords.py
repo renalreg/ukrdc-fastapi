@@ -3,11 +3,11 @@ from sqlalchemy.orm.query import Query
 from sqlalchemy.orm.session import Session
 from ukrdc_sqla.empi import MasterRecord, Person
 from ukrdc_sqla.ukrdc import PatientRecord
+from ukrdc_sqla.utils.links import find_related_ids
 
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
 from ukrdc_fastapi.query.common import PermissionsError
 from ukrdc_fastapi.query.masterrecords import get_masterrecords_related_to_masterrecord
-from ukrdc_fastapi.utils.links import find_related_ids
 
 
 def _apply_query_permissions(query: Query, user: UKRDCUser):

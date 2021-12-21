@@ -7,6 +7,7 @@ from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.expression import or_
 from sqlalchemy.sql.functions import func
 from ukrdc_sqla.empi import MasterRecord, Person, PidXRef, WorkItem
+from ukrdc_sqla.utils.links import find_related_ids
 
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
 from ukrdc_fastapi.query.common import PermissionsError, person_belongs_to_units
@@ -15,7 +16,6 @@ from ukrdc_fastapi.query.messages import get_message
 from ukrdc_fastapi.query.persons import get_persons_related_to_masterrecord
 from ukrdc_fastapi.schemas.common import HistoryPoint
 from ukrdc_fastapi.schemas.empi import WorkItemExtendedSchema
-from ukrdc_fastapi.utils.links import find_related_ids
 
 
 def _apply_query_permissions(query: Query, user: UKRDCUser):
