@@ -8,10 +8,12 @@ from ukrdc_sqla.stats import PatientsLatestErrors
 
 from ukrdc_fastapi.dependencies import get_jtrace, get_statsdb
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
-from ukrdc_fastapi.query.stats import get_full_errors_history
+from ukrdc_fastapi.query.stats import get_full_errors_history, get_multiple_ukrdcids
 from ukrdc_fastapi.query.workitems import get_full_workitem_history, get_workitems
 from ukrdc_fastapi.schemas.admin import AdminCountsSchema
 from ukrdc_fastapi.schemas.common import HistoryPoint
+from ukrdc_fastapi.schemas.empi import MasterRecordSchema
+from ukrdc_fastapi.utils.paginate import Page, paginate_sequence
 
 router = APIRouter(tags=["Admin"])
 
@@ -99,3 +101,28 @@ def admin_counts(
         UKRDC_records=ukrdc_records_count,
         patients_receiving_errors=patients_receiving_errors_count,
     )
+
+
+# Data health reports
+
+
+@router.get(
+    "/datahealth/multiple_ukrdcids",
+    response_model=Page[list[MasterRecordSchema]],
+    dependencies=[
+        Security(
+            auth.permission(
+                [
+                    Permissions.READ_RECORDS,
+                    Permissions.UNIT_PREFIX + Permissions.UNIT_WILDCARD,
+                ]
+            )
+        )
+    ],
+)
+def datahealth_multiple_ukrdcids(
+    jtrace: Session = Depends(get_jtrace),
+    statsdb: Session = Depends(get_statsdb),
+):
+    """Retreive list of patients with multiple UKRDC IDs"""
+    return paginate_sequence(get_multiple_ukrdcids(statsdb, jtrace))
