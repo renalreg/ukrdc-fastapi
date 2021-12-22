@@ -18,7 +18,12 @@ from ukrdc_sqla.errorsdb import Channel
 from ukrdc_sqla.errorsdb import Message as ErrorMessage
 from ukrdc_sqla.pkb import PKBLink
 from ukrdc_sqla.stats import Base as StatsBase
-from ukrdc_sqla.stats import ErrorHistory, FacilityStats, PatientsLatestErrors
+from ukrdc_sqla.stats import (
+    ErrorHistory,
+    FacilityStats,
+    MultipleUKRDCID,
+    PatientsLatestErrors,
+)
 from ukrdc_sqla.ukrdc import Base as UKRDC3Base
 from ukrdc_sqla.ukrdc import (
     Code,
@@ -82,6 +87,22 @@ UKRDCID_1 = "999999999"
 UKRDCID_2 = "999999911"
 UKRDCID_3 = "999999922"
 UKRDCID_4 = "999999933"
+
+
+def populate_basic_stats(statsdb):
+    row_1 = MultipleUKRDCID(
+        group_id=1,
+        master_id=1,
+        last_updated=datetime(2021, 12, 22),
+    )
+    row_2 = MultipleUKRDCID(
+        group_id=1,
+        master_id=4,
+        last_updated=datetime(2021, 12, 22),
+    )
+    statsdb.add(row_1)
+    statsdb.add(row_2)
+    statsdb.commit()
 
 
 def populate_facilities(ukrdc3, statsdb, errorsdb):
@@ -671,6 +692,8 @@ def populate_all(ukrdc3: Session, jtrace: Session, errorsdb: Session, statsdb: S
     populate_patient_2_extra(ukrdc3)
 
     populate_workitems(jtrace)
+
+    populate_basic_stats(statsdb)
 
 
 @pytest.fixture(scope="function")

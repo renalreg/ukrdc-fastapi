@@ -1,7 +1,4 @@
-from datetime import datetime
-
 import pytest
-from ukrdc_sqla.empi import LinkRecord, MasterRecord
 
 from ukrdc_fastapi.query import masterrecords
 from ukrdc_fastapi.query.common import PermissionsError

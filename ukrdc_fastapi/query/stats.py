@@ -2,7 +2,8 @@ import datetime
 from typing import Optional
 
 from sqlalchemy.orm.session import Session
-from ukrdc_sqla.stats import ErrorHistory
+from ukrdc_sqla.empi import MasterRecord
+from ukrdc_sqla.stats import ErrorHistory, MultipleUKRDCID
 
 from ukrdc_fastapi.query.facilities import HistoryPoint
 
@@ -47,3 +48,51 @@ def get_full_errors_history(
     points.sort(key=lambda p: p.time)
 
     return points
+
+
+def get_multiple_ukrdcids(
+    statsdb: Session, jtrace: Session
+) -> list[list[MasterRecord]]:
+    """
+    Fetch groups of records corresponding to multiple UKRDC IDs for a single patient.
+    Returns a list of lists of records, where the inner lists are groups of records.
+
+    Args:
+        statsdb (Session): Stats database session.
+        jtrace (Session): JTrace database session.
+
+    Returns:
+        list[list[MasterRecord]]: List of groups of records.
+    """
+    # Fetch all unresolved rows
+    record_groups = {
+        item.master_id: item.group_id
+        for item in statsdb.query(MultipleUKRDCID).filter(
+            # pylint: disable=singleton-comparison
+            MultipleUKRDCID.resolved
+            == False
+        )
+    }
+
+    # Fetch MasterRecord objects for each row, and key with record ID
+    # This is another case of sacrificing memory for speed. We assume
+    # that the number of records is small enough to fit in memory, meaning
+    # that we can avoid many small JTRACE queries.
+    records: dict[int, MasterRecord] = {
+        record.id: record
+        for record in jtrace.query(MasterRecord).filter(
+            MasterRecord.id.in_(record_groups.keys())
+        )
+    }
+
+    # Sort each fetched MasterRecord into groups
+    item_groups: dict[int, list[MasterRecord]] = {}
+    for master_id, group_id in record_groups.items():
+        record = records.get(master_id)
+        if record:
+            if group_id in item_groups:
+                item_groups[group_id].append(record)
+            else:
+                item_groups[group_id] = [record]
+
+    return list(item_groups.values())
