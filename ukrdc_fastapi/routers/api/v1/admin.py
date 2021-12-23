@@ -12,7 +12,6 @@ from ukrdc_fastapi.query.stats import get_full_errors_history, get_multiple_ukrd
 from ukrdc_fastapi.query.workitems import get_full_workitem_history, get_workitems
 from ukrdc_fastapi.schemas.admin import AdminCountsSchema, MultipleUKRDCIDGroup
 from ukrdc_fastapi.schemas.common import HistoryPoint
-from ukrdc_fastapi.schemas.empi import MasterRecordSchema
 from ukrdc_fastapi.utils.paginate import Page, paginate_sequence
 
 router = APIRouter(tags=["Admin"])
