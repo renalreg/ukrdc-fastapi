@@ -24,8 +24,11 @@ def test_get_full_errors_history(stats_session):
     assert d[date(2021, 1, 2)] == 1
 
 
-def test_get_multiple_ukrdcids(stats_session, jtrace_session, superuser):
+def test_get_multiple_ukrdcids(stats_session, jtrace_session):
     multiple_id_groups = get_multiple_ukrdcids(stats_session, jtrace_session)
     assert len(multiple_id_groups) == 1
-    assert len(multiple_id_groups[0]) == 2
-    assert {record.id for record in multiple_id_groups[0]} == {1, 4}
+    assert len(multiple_id_groups[0].records) == 2
+    assert {record.master_record.id for record in multiple_id_groups[0].records} == {
+        1,
+        4,
+    }

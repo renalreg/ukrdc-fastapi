@@ -53,7 +53,7 @@ def get_full_errors_history(
 
 def get_multiple_ukrdcids(
     statsdb: Session, jtrace: Session
-) -> list[list[MasterRecord]]:
+) -> list[MultipleUKRDCIDGroup]:
     """
     Fetch groups of records corresponding to multiple UKRDC IDs for a single patient.
     Returns a list of lists of records, where the inner lists are groups of records.
@@ -87,7 +87,7 @@ def get_multiple_ukrdcids(
     }
 
     # Sort each fetched MasterRecord into groups
-    item_groups: dict[int, MultipleUKRDCIDGroupItem] = {}
+    item_groups: dict[int, list[MultipleUKRDCIDGroupItem]] = {}
     for master_id, item in record_groups.items():
         record = records.get(master_id)
         if record:
