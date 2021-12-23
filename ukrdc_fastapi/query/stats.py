@@ -6,6 +6,7 @@ from ukrdc_sqla.empi import MasterRecord
 from ukrdc_sqla.stats import ErrorHistory, MultipleUKRDCID
 
 from ukrdc_fastapi.query.facilities import HistoryPoint
+from ukrdc_fastapi.schemas.admin import MultipleUKRDCIDGroup, MultipleUKRDCIDGroupItem
 
 
 def get_full_errors_history(
@@ -52,7 +53,7 @@ def get_full_errors_history(
 
 def get_multiple_ukrdcids(
     statsdb: Session, jtrace: Session
-) -> list[list[MasterRecord]]:
+) -> list[MultipleUKRDCIDGroup]:
     """
     Fetch groups of records corresponding to multiple UKRDC IDs for a single patient.
     Returns a list of lists of records, where the inner lists are groups of records.
@@ -66,7 +67,7 @@ def get_multiple_ukrdcids(
     """
     # Fetch all unresolved rows
     record_groups = {
-        item.master_id: item.group_id
+        item.master_id: item
         for item in statsdb.query(MultipleUKRDCID).filter(
             # pylint: disable=singleton-comparison
             MultipleUKRDCID.resolved
@@ -86,13 +87,19 @@ def get_multiple_ukrdcids(
     }
 
     # Sort each fetched MasterRecord into groups
-    item_groups: dict[int, list[MasterRecord]] = {}
-    for master_id, group_id in record_groups.items():
+    item_groups: dict[int, list[MultipleUKRDCIDGroupItem]] = {}
+    for master_id, item in record_groups.items():
         record = records.get(master_id)
         if record:
-            if group_id in item_groups:
-                item_groups[group_id].append(record)
+            group_item = MultipleUKRDCIDGroupItem(
+                last_updated=item.last_updated, master_record=record
+            )
+            if item.group_id in item_groups:
+                item_groups[item.group_id].append(group_item)
             else:
-                item_groups[group_id] = [record]
+                item_groups[item.group_id] = [group_item]
 
-    return list(item_groups.values())
+    return [
+        MultipleUKRDCIDGroup(group_id=group_id, records=records)
+        for group_id, records in item_groups.items()
+    ]

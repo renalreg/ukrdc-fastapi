@@ -6,5 +6,8 @@ def test_datahealth_multiple_ukrdcids(client):
 
     multiple_id_groups = response.json().get("items")
     assert len(multiple_id_groups) == 1
-    assert len(multiple_id_groups[0]) == 2
-    assert {record.get("id") for record in multiple_id_groups[0]} == {1, 4}
+    assert len(multiple_id_groups[0].get("records")) == 2
+    assert {
+        record.get("masterRecord").get("id")
+        for record in multiple_id_groups[0].get("records")
+    } == {1, 4}
