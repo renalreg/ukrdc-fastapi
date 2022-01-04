@@ -1,4 +1,4 @@
-from datetime import datetime
+import datetime
 from typing import Optional
 
 from sqlalchemy.orm import Session
@@ -12,6 +12,12 @@ from ukrdc_sqla.ukrdc import (
     PatientNumber,
     PatientRecord,
 )
+
+
+def days_ago(days: int):
+    dt = datetime.datetime.now() - datetime.timedelta(days=days)
+    # Strip time from datetime
+    return datetime.datetime(year=dt.year, month=dt.month, day=dt.day)
 
 
 def create_basic_patient(
@@ -34,8 +40,8 @@ def create_basic_patient(
         sendingextract=sendingextract,
         localpatientid=localpatientid,
         ukrdcid=ukrdcid,
-        repository_update_date=datetime(2020, 3, 16),
-        repository_creation_date=datetime(2020, 3, 16),
+        repository_update_date=datetime.datetime(2020, 3, 16),
+        repository_creation_date=datetime.datetime(2020, 3, 16),
     )
 
     name = Name(id=id_, pid=pid, family=family_name, given=given_name, nameuse="L")
@@ -63,25 +69,25 @@ def create_basic_patient(
     master_record_ukrdc = MasterRecord(
         id=id_,
         status=0,
-        last_updated=datetime(2020, 3, 16),
+        last_updated=datetime.datetime(2020, 3, 16),
         givenname=given_name,
         surname=family_name,
         date_of_birth=birth_time,
         nationalid=ukrdcid,
         nationalid_type="UKRDC",
-        effective_date=datetime(2020, 3, 16),
+        effective_date=datetime.datetime(2020, 3, 16),
     )
 
     master_record_nhs = MasterRecord(
         id=id_ + 100,
         status=0,
-        last_updated=datetime(2020, 3, 16),
+        last_updated=datetime.datetime(2020, 3, 16),
         givenname=given_name,
         surname=family_name,
         date_of_birth=birth_time,
         nationalid=nhs_number,
         nationalid_type="NHS",
-        effective_date=datetime(2020, 3, 16),
+        effective_date=datetime.datetime(2020, 3, 16),
     )
 
     person = Person(
@@ -107,7 +113,7 @@ def create_basic_patient(
         master_id=id_,
         link_type=0,
         link_code=0,
-        last_updated=datetime(2019, 1, 1),
+        last_updated=datetime.datetime(2019, 1, 1),
     )
 
     link_record_nhs = LinkRecord(
@@ -116,7 +122,7 @@ def create_basic_patient(
         master_id=id_ + 100,
         link_type=0,
         link_code=0,
-        last_updated=datetime(2019, 1, 1),
+        last_updated=datetime.datetime(2019, 1, 1),
     )
 
     jtrace.add(master_record_ukrdc)
@@ -142,7 +148,7 @@ def create_basic_facility(
         coding_standard="RR1+",
         code=code,
         description=description,
-        creation_date=datetime(2020, 3, 16),
+        creation_date=datetime.datetime(2020, 3, 16),
     )
 
     facility_obj = Facility(

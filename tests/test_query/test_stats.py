@@ -1,16 +1,15 @@
-from datetime import date
-
 from ukrdc_sqla.stats import ErrorHistory
 
+from tests.utils import days_ago
 from ukrdc_fastapi.query.stats import get_full_errors_history, get_multiple_ukrdcids
 
 
 def test_get_full_errors_history(stats_session):
     history_test_1 = ErrorHistory(
-        facility="TEST_SENDING_FACILITY_99", date=date(2021, 1, 1), count=1
+        facility="TEST_SENDING_FACILITY_99", date=days_ago(1).date(), count=1
     )
     history_test_2 = ErrorHistory(
-        facility="TEST_SENDING_FACILITY_98", date=date(2021, 1, 2), count=1
+        facility="TEST_SENDING_FACILITY_98", date=days_ago(2).date(), count=1
     )
 
     stats_session.add(history_test_1)
@@ -20,8 +19,8 @@ def test_get_full_errors_history(stats_session):
     history = get_full_errors_history(stats_session)
 
     d = {point.time: point.count for point in history}
-    assert d[date(2021, 1, 1)] == 2
-    assert d[date(2021, 1, 2)] == 1
+    assert d[days_ago(1).date()] == 2
+    assert d[days_ago(2).date()] == 1
 
 
 def test_get_multiple_ukrdcids(stats_session, jtrace_session):

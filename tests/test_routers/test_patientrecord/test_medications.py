@@ -1,9 +1,12 @@
+from tests.utils import days_ago
+
+
 def test_record_medications(client):
     response = client.get("/api/v1/patientrecords/PYTEST01:PV:00000000A/medications")
     assert response.status_code == 200
     assert response.json() == [
         {
-            "fromTime": "2019-03-16T00:00:00",
+            "fromTime": days_ago(730).isoformat(),
             "toTime": None,
             "drugProductGeneric": "DRUG_PRODUCT_GENERIC",
             "comment": None,
@@ -11,8 +14,8 @@ def test_record_medications(client):
             "enteringOrganizationDescription": None,
         },
         {
-            "fromTime": "2019-03-16T00:00:00",
-            "toTime": "9999-03-16T00:00:00",
+            "fromTime": days_ago(730).isoformat(),
+            "toTime": days_ago(-999).isoformat(),
             "drugProductGeneric": "DRUG_PRODUCT_GENERIC_2",
             "comment": None,
             "enteringOrganizationCode": None,

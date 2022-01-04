@@ -1,10 +1,3 @@
-from datetime import datetime
-
-from ukrdc_sqla.empi import LinkRecord
-
-from ukrdc_fastapi.schemas.empi import LinkRecordSchema
-
-
 def test_merge(client, httpx_session):
     response = client.post(
         f"/api/v1/empi/merge/", json={"superseding": 1, "superseded": 2}

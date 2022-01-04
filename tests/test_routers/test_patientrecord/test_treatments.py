@@ -1,29 +1,31 @@
+from tests.utils import days_ago
+
+
 def test_record_treatments(client):
     response = client.get("/api/v1/patientrecords/PYTEST01:PV:00000000A/treatments")
     assert response.status_code == 200
-    assert response.json() == [
-        {
-            "id": "TREATMENT1",
-            "fromTime": "2019-03-16",
-            "toTime": None,
-            "admitReasonCode": "1",
-            "admitReasonCodeStd": None,
-            "admitReasonDesc": None,
-            "dischargeReasonCode": None,
-            "dischargeReasonCodeStd": None,
-            "dischargeReasonDesc": None,
-            "healthCareFacilityCode": "TEST_SENDING_FACILITY_1",
-        },
-        {
-            "id": "TREATMENT2",
-            "fromTime": "2019-03-16",
-            "toTime": "9999-03-16",
-            "admitReasonCode": "1",
-            "admitReasonCodeStd": None,
-            "admitReasonDesc": None,
-            "dischargeReasonCode": None,
-            "dischargeReasonCodeStd": None,
-            "dischargeReasonDesc": None,
-            "healthCareFacilityCode": "TEST_SENDING_FACILITY_1",
-        },
-    ]
+    assert {
+        "id": "TREATMENT1",
+        "fromTime": days_ago(730).date().isoformat(),
+        "toTime": None,
+        "admitReasonCode": "1",
+        "admitReasonCodeStd": None,
+        "admitReasonDesc": None,
+        "dischargeReasonCode": None,
+        "dischargeReasonCodeStd": None,
+        "dischargeReasonDesc": None,
+        "healthCareFacilityCode": "TEST_SENDING_FACILITY_1",
+    } in response.json()
+
+    assert {
+        "id": "TREATMENT2",
+        "fromTime": days_ago(730).date().isoformat(),
+        "toTime": days_ago(-999).date().isoformat(),
+        "admitReasonCode": "1",
+        "admitReasonCodeStd": None,
+        "admitReasonDesc": None,
+        "dischargeReasonCode": None,
+        "dischargeReasonCodeStd": None,
+        "dischargeReasonDesc": None,
+        "healthCareFacilityCode": "TEST_SENDING_FACILITY_1",
+    } in response.json()

@@ -2,6 +2,7 @@ from datetime import datetime
 
 from ukrdc_sqla.ukrdc import LabOrder, ResultItem
 
+from tests.utils import days_ago
 from ukrdc_fastapi.schemas.laborder import LabOrderSchema, LabOrderShortSchema
 
 
@@ -31,7 +32,7 @@ def test_laborder_delete(client, ukrdc3_session):
         pid="PYTEST01:PV:00000000A",
         external_id="EXTERNAL_ID_TEMP",
         order_category="ORDER_CATEGORY_TEMP",
-        specimen_collected_time=datetime(2020, 3, 16),
+        specimen_collected_time=days_ago(365),
     )
     resultitem = ResultItem(
         id="RESULTITEM_TEMP",
@@ -41,7 +42,7 @@ def test_laborder_delete(client, ukrdc3_session):
         service_id_description="SERVICE_ID_DESCRIPTION_TEMP",
         value="VALUE_TEMP",
         value_units="VALUE_UNITS_TEMP",
-        observation_time=datetime(2020, 3, 16),
+        observation_time=days_ago(365),
     )
     ukrdc3_session.add(laborder)
     ukrdc3_session.add(resultitem)

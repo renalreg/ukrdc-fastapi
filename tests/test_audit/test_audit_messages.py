@@ -1,8 +1,5 @@
-import datetime
-
 from ukrdc_fastapi.models.audit import AuditEvent
 from ukrdc_fastapi.schemas.empi import WorkItemSchema
-from ukrdc_fastapi.schemas.message import MessageSchema
 
 
 def test_messages_list(client, audit_session):

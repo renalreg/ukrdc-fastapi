@@ -1,5 +1,6 @@
 import pytest
 
+from tests.utils import days_ago
 from ukrdc_fastapi.schemas.empi import WorkItemSchema
 from ukrdc_fastapi.schemas.message import MessageSchema
 
@@ -12,14 +13,16 @@ def test_workitems_list(client):
 
 
 def test_workitems_list_filter_since(client):
-    response = client.get("/api/v1/workitems?since=2021-01-01T00:00:00")
+    since = days_ago(2).isoformat()
+    response = client.get(f"/api/v1/workitems?since={since}")
     assert response.status_code == 200
     returned_ids = {item["id"] for item in response.json()["items"]}
     assert returned_ids == {2, 3}
 
 
 def test_workitems_list_filter_until(client):
-    response = client.get("/api/v1/workitems?until=2020-12-01T23:59:59")
+    until = days_ago(365).isoformat()
+    response = client.get(f"/api/v1/workitems?until={until}")
     assert response.status_code == 200
     returned_ids = {item["id"] for item in response.json()["items"]}
     assert returned_ids == {1}

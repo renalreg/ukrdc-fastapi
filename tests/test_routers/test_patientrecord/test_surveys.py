@@ -1,3 +1,6 @@
+from tests.utils import days_ago
+
+
 def test_record_surveys(client):
     response = client.get("/api/v1/patientrecords/PYTEST01:PV:00000000A/surveys")
     assert response.status_code == 200
@@ -29,7 +32,7 @@ def test_record_surveys(client):
             ],
             "id": "SURVEY1",
             "pid": "PYTEST01:PV:00000000A",
-            "surveytime": "2020-03-16T18:00:00",
+            "surveytime": days_ago(730).isoformat(),
             "surveytypecode": "TYPECODE",
             "enteredbycode": "ENTEREDBYCODE",
             "enteredatcode": "ENTEREDATCODE",

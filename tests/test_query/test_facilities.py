@@ -1,10 +1,10 @@
-import datetime
-
 import pytest
 from ukrdc_sqla.ukrdc import Code
 
 from ukrdc_fastapi.query import facilities
 from ukrdc_fastapi.query.common import PermissionsError
+
+from ..utils import days_ago
 
 
 def test_get_facilities_superuser(ukrdc3_session, stats_session, superuser):
@@ -62,7 +62,7 @@ def test_get_facility_history(ukrdc3_session, stats_session, superuser):
         superuser,
     )
     assert len(history) == 1
-    assert history[0].time == datetime.date(2021, 1, 1)
+    assert history[0].time == days_ago(1).date()
     assert history[0].count == 1
 
 
@@ -76,7 +76,7 @@ def test_get_facility_history_range(ukrdc3_session, stats_session, superuser):
         stats_session,
         test_code.code,
         superuser,
-        since=datetime.date(2021, 1, 2),
+        since=days_ago(0),
     )
     assert len(history) == 0
 
@@ -85,7 +85,7 @@ def test_get_facility_history_range(ukrdc3_session, stats_session, superuser):
         stats_session,
         test_code.code,
         superuser,
-        until=datetime.date(2020, 12, 31),
+        until=days_ago(5),
     )
     assert len(history) == 0
 
@@ -94,8 +94,8 @@ def test_get_facility_history_range(ukrdc3_session, stats_session, superuser):
         stats_session,
         test_code.code,
         superuser,
-        since=datetime.date(2020, 12, 31),
-        until=datetime.date(2021, 1, 2),
+        since=days_ago(5),
+        until=days_ago(0),
     )
     assert len(history) == 1
 

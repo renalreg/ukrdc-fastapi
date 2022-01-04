@@ -1,3 +1,6 @@
+from ..utils import days_ago
+
+
 def test_facilities(client):
     response = client.get("/api/v1/facilities/?include_empty=true")
     ids = {item.get("id") for item in response.json()}
@@ -18,7 +21,7 @@ def test_facility_error_history(client):
     response = client.get("/api/v1/facilities/TEST_SENDING_FACILITY_1/error_history/")
     json = response.json()
     assert len(json) == 1
-    assert json[0].get("time") == "2021-01-01"
+    assert json[0].get("time") == days_ago(1).date().isoformat()
 
 
 def test_facility_patients_latest_errors(client):

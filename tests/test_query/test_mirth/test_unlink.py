@@ -1,11 +1,7 @@
-from datetime import datetime
-
 import pytest
-from ukrdc_sqla.empi import LinkRecord
 
 from ukrdc_fastapi.query.common import PermissionsError
 from ukrdc_fastapi.query.mirth.unlink import unlink_person_from_master_record
-from ukrdc_fastapi.schemas.empi import LinkRecordSchema
 
 
 @pytest.mark.asyncio

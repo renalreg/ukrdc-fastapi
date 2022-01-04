@@ -57,7 +57,7 @@ from ukrdc_fastapi.dependencies import (
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
 from ukrdc_fastapi.models.audit import Base as AuditBase
 
-from .utils import create_basic_facility, create_basic_patient
+from .utils import create_basic_facility, create_basic_patient, days_ago
 
 # Using the factory to create a postgresql instance
 socket_dir = tempfile.TemporaryDirectory()
@@ -93,12 +93,12 @@ def populate_basic_stats(statsdb):
     row_1 = MultipleUKRDCID(
         group_id=1,
         master_id=1,
-        last_updated=datetime(2021, 12, 22),
+        last_updated=days_ago(0),
     )
     row_2 = MultipleUKRDCID(
         group_id=1,
         master_id=4,
-        last_updated=datetime(2021, 12, 22),
+        last_updated=days_ago(0),
     )
     statsdb.add(row_1)
     statsdb.add(row_2)
@@ -134,7 +134,7 @@ def populate_facilities(ukrdc3, statsdb, errorsdb):
         id=1,
         message_id=1,
         channel_id="00000000-0000-0000-0000-000000000000",
-        received=datetime(2021, 1, 1),
+        received=days_ago(1),
         msg_status="ERROR",
         ni=UKRDCID_1,
         filename="FILENAME_1.XML",
@@ -148,7 +148,7 @@ def populate_facilities(ukrdc3, statsdb, errorsdb):
         id=2,
         message_id=2,
         channel_id="00000000-0000-0000-0000-000000000000",
-        received=datetime(2020, 3, 16),
+        received=days_ago(730),
         msg_status="ERROR",
         ni=UKRDCID_2,
         filename="FILENAME_2.XML",
@@ -161,7 +161,7 @@ def populate_facilities(ukrdc3, statsdb, errorsdb):
         id=3,
         message_id=3,
         channel_id="00000000-0000-0000-0000-000000000000",
-        received=datetime(2021, 1, 1),
+        received=days_ago(1),
         msg_status="RECEIVED",
         ni=UKRDCID_1,
         filename="FILENAME_3.XML",
@@ -181,25 +181,25 @@ def populate_facilities(ukrdc3, statsdb, errorsdb):
         total_patients=1,
         patients_receiving_messages=1,
         patients_receiving_errors=1,
-        last_updated=datetime(2021, 10, 1),
+        last_updated=days_ago(0),
     )
     stats_2 = FacilityStats(
         facility="TEST_SENDING_FACILITY_2",
         total_patients=1,
         patients_receiving_messages=1,
         patients_receiving_errors=0,
-        last_updated=datetime(2021, 10, 1),
+        last_updated=days_ago(0),
     )
 
     latest_1 = PatientsLatestErrors(
         ni=UKRDCID_1,
         facility="TEST_SENDING_FACILITY_1",
         id=3,
-        last_updated=datetime(2021, 10, 1),
+        last_updated=days_ago(0),
     )
 
     history_1 = ErrorHistory(
-        facility="TEST_SENDING_FACILITY_1", date=datetime(2021, 1, 1), count=1
+        facility="TEST_SENDING_FACILITY_1", date=days_ago(1), count=1
     )
 
     statsdb.add(stats_1)
@@ -216,33 +216,33 @@ def populate_codes(ukrdc3):
         coding_standard="CODING_STANDARD_1",
         code="CODE_1",
         description="DESCRIPTION_1",
-        creation_date=datetime(2020, 3, 16),
+        creation_date=days_ago(365),
     )
     code4 = Code(
         coding_standard="CODING_STANDARD_2",
         code="CODE_2",
         description="DESCRIPTION_2",
-        creation_date=datetime(2020, 3, 16),
+        creation_date=days_ago(365),
     )
     code5 = Code(
         coding_standard="CODING_STANDARD_2",
         code="CODE_3",
         description="DESCRIPTION_3",
-        creation_date=datetime(2020, 3, 16),
+        creation_date=days_ago(365),
     )
     codemap1 = CodeMap(
         source_coding_standard="CODING_STANDARD_1",
         destination_coding_standard="CODING_STANDARD_2",
         source_code="CODE_1",
         destination_code="CODE_2",
-        creation_date=datetime(2020, 3, 16),
+        creation_date=days_ago(365),
     )
     codemap2 = CodeMap(
         source_coding_standard="CODING_STANDARD_2",
         destination_coding_standard="CODING_STANDARD_1",
         source_code="CODE_2",
         destination_code="CODE_1",
-        creation_date=datetime(2020, 3, 16),
+        creation_date=days_ago(365),
     )
     codeexc1 = CodeExclusion(
         coding_standard="CODING_STANDARD_1", code="CODE_1", system="SYSTEM_1"
@@ -273,8 +273,8 @@ def populate_patient_1_extra(session):
         diagnosis_code="DIAGNOSIS_CODE",
         diagnosis_code_std="DIAGNOSIS_CODE_STD",
         diagnosis_desc="DIAGNOSIS_DESCRIPTION",
-        identification_time=datetime(2020, 3, 16),
-        onset_time=datetime(2019, 3, 16),
+        identification_time=days_ago(365),
+        onset_time=days_ago(730),
         comments="DIAGNOSIS_COMMENTS",
     )
     pkb_link_1 = PKBLink(
@@ -288,8 +288,8 @@ def populate_patient_1_extra(session):
         pid=PID_1,
         diagnosis_code="DIAGNOSIS_CODE_2",
         diagnosis_code_std="DIAGNOSIS_CODE_STD_2",
-        identification_time=datetime(2020, 3, 16),
-        onset_time=datetime(2019, 3, 16),
+        identification_time=days_ago(365),
+        onset_time=days_ago(730),
         comments="DIAGNOSIS_COMMENTS_2",
     )
     pkb_link_2 = PKBLink(
@@ -308,7 +308,7 @@ def populate_patient_1_extra(session):
         diagnosis_code="R_DIAGNOSIS_CODE",
         diagnosis_code_std="R_DIAGNOSIS_CODE_STD",
         diagnosis_desc="R_DIAGNOSIS_DESCRIPTION",
-        identification_time=datetime(2020, 3, 16),
+        identification_time=days_ago(365),
         comments="R_DIAGNOSIS_COMMENTS",
     )
     renal_pkb_link_2 = PKBLink(
@@ -325,7 +325,7 @@ def populate_patient_1_extra(session):
         id="MEDICATION1",
         pid=PID_1,
         frequency="FREQUENCY",
-        from_time=datetime(2019, 3, 16),
+        from_time=days_ago(730),
         to_time=None,
         drug_product_generic="DRUG_PRODUCT_GENERIC",
         dose_quantity="DOSE_QUANTITY",
@@ -337,8 +337,8 @@ def populate_patient_1_extra(session):
         id="MEDICATION2",
         pid=PID_1,
         frequency="FREQUENCY_2",
-        from_time=datetime(2019, 3, 16),
-        to_time=datetime(9999, 3, 16),
+        from_time=days_ago(730),
+        to_time=days_ago(-999),
         drug_product_generic="DRUG_PRODUCT_GENERIC_2",
         dose_quantity="DOSE_QUANTITY_2",
         dose_uom_code="DOSE_UOM_CODE_2",
@@ -352,7 +352,7 @@ def populate_patient_1_extra(session):
     treatment_1 = Treatment(
         id="TREATMENT1",
         pid=PID_1,
-        from_time=datetime(2019, 3, 16),
+        from_time=days_ago(730),
         to_time=None,
         admit_reason_code=1,
         admission_source_code_std="CF_RR7_TREATMENT",
@@ -362,8 +362,8 @@ def populate_patient_1_extra(session):
     treatment_2 = Treatment(
         id="TREATMENT2",
         pid=PID_1,
-        from_time=datetime(2019, 3, 16),
-        to_time=datetime(9999, 3, 16),
+        from_time=days_ago(730),
+        to_time=days_ago(-999),
         admit_reason_code=1,
         admission_source_code_std="CF_RR7_TREATMENT",
         health_care_facility_code="TEST_SENDING_FACILITY_1",
@@ -379,7 +379,7 @@ def populate_patient_1_extra(session):
         pid=PID_1,
         external_id="EXTERNAL_ID_1",
         order_category="ORDER_CATEGORY",
-        specimen_collected_time=datetime(2020, 3, 16),
+        specimen_collected_time=days_ago(365),
     )
     resultitem_1 = ResultItem(
         id="RESULTITEM1",
@@ -389,7 +389,7 @@ def populate_patient_1_extra(session):
         service_id_description="SERVICE_ID_DESCRIPTION",
         value="VALUE",
         value_units="VALUE_UNITS",
-        observation_time=datetime(2020, 3, 16),
+        observation_time=days_ago(365),
     )
     laborder_2 = LabOrder(
         id="LABORDER2",
@@ -397,7 +397,7 @@ def populate_patient_1_extra(session):
         pid=PID_1,
         external_id="EXTERNAL_ID_2",
         order_category="ORDER_CATEGORY",
-        specimen_collected_time=datetime(2021, 1, 1),
+        specimen_collected_time=days_ago(0),
     )
     resultitem_2 = ResultItem(
         id="RESULTITEM2",
@@ -407,7 +407,7 @@ def populate_patient_1_extra(session):
         service_id_description="SERVICE_ID_DESCRIPTION",
         value="VALUE",
         value_units="VALUE_UNITS",
-        observation_time=datetime(2021, 1, 1),
+        observation_time=days_ago(0),
     )
     session.add(laborder_1)
     session.add(resultitem_1)
@@ -422,7 +422,7 @@ def populate_patient_1_extra(session):
         observation_desc="OBSERVATION_DESC",
         observation_value="OBSERVATION_VALUE",
         observation_units="OBSERVATION_UNITS",
-        observation_time=datetime(2020, 3, 16),
+        observation_time=days_ago(365),
     )
 
     session.add(observation_1)
@@ -435,7 +435,7 @@ def populate_patient_1_extra(session):
         observation_desc="OBSERVATION_DIA_1_DESC",
         observation_value="OBSERVATION_DIA_1_VALUE",
         observation_units="OBSERVATION_DIA_1_UNITS",
-        observation_time=datetime(2020, 3, 16, 11, 30, 00),
+        observation_time=days_ago(730),
     )
     observation_sys = Observation(
         id="OBSERVATION_SYS_1",
@@ -445,7 +445,7 @@ def populate_patient_1_extra(session):
         observation_desc="OBSERVATION_SYS_1_DESC",
         observation_value="OBSERVATION_SYS_1_VALUE",
         observation_units="OBSERVATION_SYS_1_UNITS",
-        observation_time=datetime(2020, 3, 16, 11, 35, 00),
+        observation_time=days_ago(730),
     )
     session.add(observation_dia)
     session.add(observation_sys)
@@ -453,7 +453,7 @@ def populate_patient_1_extra(session):
     survey_1 = Survey(
         id="SURVEY1",
         pid=PID_1,
-        surveytime=datetime(2020, 3, 16, 18, 00),
+        surveytime=days_ago(730),
         surveytypecode="TYPECODE",
         enteredbycode="ENTEREDBYCODE",
         enteredatcode="ENTEREDATCODE",
@@ -489,7 +489,7 @@ def populate_patient_1_extra(session):
         documentname="DOCUMENT_PDF_NAME",
         filename="DOCUMENT_PDF_FILENAME.pdf",
         pid=PID_1,
-        documenttime=datetime(2020, 3, 16),
+        documenttime=days_ago(365),
     )
     document_pdf.stream = MINIMAL_PDF_BYTES
     document_pdf.filetype = "application/pdf"
@@ -497,7 +497,7 @@ def populate_patient_1_extra(session):
         id="DOCUMENT_TXT",
         documentname="DOCUMENT_TXT_NAME",
         pid=PID_1,
-        documenttime=datetime(2020, 3, 16),
+        documenttime=days_ago(365),
         notetext="DOCUMENT_TXT_NOTETEXT",
     )
     session.add(document_pdf)
@@ -511,8 +511,8 @@ def populate_patient_2_extra(session):
         id="MEDICATION3",
         pid=PID_2,
         frequency="FREQUENCY_3",
-        from_time=datetime(2019, 3, 16),
-        to_time=datetime(9999, 3, 16),
+        from_time=days_ago(730),
+        to_time=days_ago(-999),
         drug_product_generic="DRUG_PRODUCT_GENERIC_3",
         dose_quantity="DOSE_QUANTITY_3",
         dose_uom_code="DOSE_UOM_CODE_3",
@@ -525,8 +525,8 @@ def populate_patient_2_extra(session):
     treatment_3 = Treatment(
         id="TREATMENT3",
         pid=PID_2,
-        from_time=datetime(2019, 3, 16),
-        to_time=datetime(9999, 3, 16),
+        from_time=days_ago(730),
+        to_time=days_ago(-999),
         admit_reason_code=1,
         admission_source_code_std="CF_RR7_TREATMENT",
         health_care_facility_code="TEST_SENDING_FACILITY_2",
@@ -543,7 +543,7 @@ def populate_patient_2_extra(session):
         observation_desc="OBSERVATION_DESC",
         observation_value="OBSERVATION_VALUE",
         observation_units="OBSERVATION_UNITS",
-        observation_time=datetime(2020, 3, 16),
+        observation_time=days_ago(365),
     )
 
     session.add(observation_2)
@@ -551,7 +551,7 @@ def populate_patient_2_extra(session):
     survey_2 = Survey(
         id="SURVEY2",
         pid=PID_2,
-        surveytime=datetime(2020, 3, 16, 18, 00),
+        surveytime=days_ago(365),
         surveytypecode="TYPECODE",
         enteredbycode="ENTEREDBYCODE",
         enteredatcode="ENTEREDATCODE",
@@ -570,8 +570,8 @@ def populate_workitems(session: Session):
         type=9,
         description="DESCRIPTION_1",
         status=1,
-        creation_date=datetime(2020, 3, 16),
-        last_updated=datetime(2020, 3, 16),
+        creation_date=days_ago(365),
+        last_updated=days_ago(365),
     )
 
     work_item_2 = WorkItem(
@@ -581,8 +581,8 @@ def populate_workitems(session: Session):
         type=9,
         description="DESCRIPTION_2",
         status=1,
-        creation_date=datetime(2021, 1, 1),
-        last_updated=datetime(2021, 1, 1),
+        creation_date=days_ago(1),
+        last_updated=days_ago(1),
     )
 
     work_item_3 = WorkItem(
@@ -592,8 +592,8 @@ def populate_workitems(session: Session):
         type=9,
         description="DESCRIPTION_3",
         status=1,
-        creation_date=datetime(2021, 1, 1),
-        last_updated=datetime(2021, 1, 1),
+        creation_date=days_ago(1),
+        last_updated=days_ago(1),
     )
 
     work_item_closed = WorkItem(
@@ -603,8 +603,8 @@ def populate_workitems(session: Session):
         type=9,
         description="DESCRIPTION_CLOSED",
         status=3,
-        creation_date=datetime(2021, 1, 1),
-        last_updated=datetime(2021, 1, 1),
+        creation_date=days_ago(1),
+        last_updated=days_ago(1),
     )
 
     session.add(work_item_1)
@@ -683,7 +683,7 @@ def populate_all(ukrdc3: Session, jtrace: Session, errorsdb: Session, statsdb: S
         master_id=1,
         link_type=0,
         link_code=0,
-        last_updated=datetime(2019, 1, 1),
+        last_updated=days_ago(365),
     )
     jtrace.add(link_record)
     jtrace.commit()

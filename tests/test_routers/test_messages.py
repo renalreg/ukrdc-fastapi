@@ -1,11 +1,11 @@
-import datetime
-
 from ukrdc_fastapi.schemas.message import MessageSchema
+
+from ..utils import days_ago
 
 
 def test_messages_list(client):
-    since = datetime.datetime(2020, 1, 1, 0, 0, 0).isoformat()
-    until = datetime.datetime(2021, 12, 12, 23, 59, 59).isoformat()
+    since = days_ago(730).isoformat()
+    until = days_ago(0).isoformat()
     response = client.get(f"/api/v1/messages/?since={since}&until={until}")
     assert response.status_code == 200
     messages = [MessageSchema(**item) for item in response.json()["items"]]
@@ -14,8 +14,8 @@ def test_messages_list(client):
 
 
 def test_messages_list_errors(client):
-    since = datetime.datetime(2020, 1, 1, 0, 0, 0).isoformat()
-    until = datetime.datetime(2021, 12, 12, 23, 59, 59).isoformat()
+    since = days_ago(730).isoformat()
+    until = days_ago(0).isoformat()
     response = client.get(f"/api/v1/messages/?since={since}&until={until}&status=ERROR")
     assert response.status_code == 200
     messages = [MessageSchema(**item) for item in response.json()["items"]]
@@ -24,8 +24,8 @@ def test_messages_list_errors(client):
 
 
 def test_messages_list_facility(client):
-    since = datetime.datetime(2020, 1, 1, 0, 0, 0).isoformat()
-    until = datetime.datetime(2021, 12, 12, 23, 59, 59).isoformat()
+    since = days_ago(730).isoformat()
+    until = days_ago(0).isoformat()
     response = client.get(
         f"/api/v1/messages/?since={since}&until={until}&facility=TEST_SENDING_FACILITY_2"
     )

@@ -1,8 +1,8 @@
-from datetime import datetime
-
 from ukrdc_sqla.ukrdc import LabOrder, ResultItem
 
 from ukrdc_fastapi.models.audit import AuditEvent
+
+from ..utils import days_ago
 
 
 def test_record_read_audit(client, audit_session):
@@ -219,7 +219,7 @@ def test_record_delete_laborder(client, ukrdc3_session, audit_session):
         pid="PYTEST01:PV:00000000A",
         external_id="EXTERNAL_ID_TEMP",
         order_category="ORDER_CATEGORY_TEMP",
-        specimen_collected_time=datetime(2020, 3, 16),
+        specimen_collected_time=days_ago(365),
     )
     resultitem = ResultItem(
         id="RESULTITEM_TEMP",
@@ -229,7 +229,7 @@ def test_record_delete_laborder(client, ukrdc3_session, audit_session):
         service_id_description="SERVICE_ID_DESCRIPTION_TEMP",
         value="VALUE_TEMP",
         value_units="VALUE_UNITS_TEMP",
-        observation_time=datetime(2020, 3, 16),
+        observation_time=days_ago(365),
     )
     ukrdc3_session.add(laborder)
     ukrdc3_session.add(resultitem)

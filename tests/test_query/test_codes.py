@@ -1,9 +1,7 @@
-import datetime
-
-from fastapi.exceptions import HTTPException
-
 from ukrdc_fastapi.query import codes
 from ukrdc_fastapi.schemas.code import CodeMapSchema
+
+from ..utils import days_ago
 
 
 def test_get_codes(ukrdc3_session):
@@ -119,7 +117,7 @@ def test_get_code(ukrdc3_session):
             source_code="CODE_1",
             destination_coding_standard="CODING_STANDARD_2",
             destination_code="CODE_2",
-            creation_date=datetime.datetime(2020, 3, 16, 0, 0),
+            creation_date=days_ago(365),
             update_date=None,
         )
     ]
@@ -129,7 +127,7 @@ def test_get_code(ukrdc3_session):
             source_code="CODE_2",
             destination_coding_standard="CODING_STANDARD_1",
             destination_code="CODE_1",
-            creation_date=datetime.datetime(2020, 3, 16, 0, 0),
+            creation_date=days_ago(365),
             update_date=None,
         )
     ]

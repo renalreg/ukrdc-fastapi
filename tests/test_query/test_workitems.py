@@ -3,6 +3,7 @@ from datetime import date, datetime
 import pytest
 from ukrdc_sqla.empi import LinkRecord, MasterRecord
 
+from tests.utils import days_ago
 from ukrdc_fastapi.query import workitems
 from ukrdc_fastapi.query.common import PermissionsError
 
@@ -28,16 +29,12 @@ def test_get_workitems_statuses(jtrace_session, superuser):
 
 
 def test_get_workitems_since(jtrace_session, superuser):
-    all_items = workitems.get_workitems(
-        jtrace_session, superuser, since=datetime(2021, 1, 1)
-    )
+    all_items = workitems.get_workitems(jtrace_session, superuser, since=days_ago(1))
     assert {item.id for item in all_items} == {2, 3}
 
 
 def test_get_workitems_until(jtrace_session, superuser):
-    all_items = workitems.get_workitems(
-        jtrace_session, superuser, until=datetime(2020, 12, 1)
-    )
+    all_items = workitems.get_workitems(jtrace_session, superuser, until=days_ago(2))
     assert {item.id for item in all_items} == {1}
 
 
@@ -76,11 +73,11 @@ def test_get_extended_workitem_superuser(jtrace_session, superuser):
     master_record_999 = MasterRecord(
         id=999,
         status=0,
-        last_updated=datetime(2021, 1, 1),
+        last_updated=days_ago(0),
         date_of_birth=datetime(1980, 12, 12),
         nationalid="119999999",
         nationalid_type="UKRDC",
-        effective_date=datetime(2021, 1, 1),
+        effective_date=days_ago(0),
     )
 
     # Link the new master record to an existing person
@@ -90,7 +87,7 @@ def test_get_extended_workitem_superuser(jtrace_session, superuser):
         master_id=999,
         link_type=0,
         link_code=0,
-        last_updated=datetime(2020, 3, 16),
+        last_updated=days_ago(0),
     )
 
     # Person 3 now has 2 master records we want to merge
@@ -131,7 +128,7 @@ def test_get_workitems_related_to_message(jtrace_session, errorsdb_session, supe
 def test_get_full_workitem_history_default(jtrace_session):
     history = workitems.get_full_workitem_history(jtrace_session)
     d = {point.time: point.count for point in history}
-    assert d[date(2021, 1, 1)] == 3
+    assert d[days_ago(1).date()] == 3
 
 
 def test_get_full_workitem_history_all_time(jtrace_session):
@@ -139,5 +136,5 @@ def test_get_full_workitem_history_all_time(jtrace_session):
         jtrace_session, since=date(1970, 1, 1)
     )
     d = {point.time: point.count for point in history}
-    assert d[date(2020, 3, 16)] == 1
-    assert d[date(2021, 1, 1)] == 3
+    assert d[days_ago(365).date()] == 1
+    assert d[days_ago(1).date()] == 3
