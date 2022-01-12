@@ -7,7 +7,9 @@ from ukrdc_fastapi.schemas.laborder import LabOrderSchema, LabOrderShortSchema
 
 
 def test_record_laborders(client):
-    response = client.get("/api/v1/patientrecords/PYTEST01:PV:00000000A/laborders")
+    response = client.get(
+        f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/laborders"
+    )
     assert response.status_code == 200
     orders = [LabOrderShortSchema(**item) for item in response.json()["items"]]
     assert {order.id for order in orders} == {
@@ -18,7 +20,7 @@ def test_record_laborders(client):
 
 def test_laborder(client):
     response = client.get(
-        "/api/v1/patientrecords/PYTEST01:PV:00000000A/laborders/LABORDER1"
+        f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/laborders/LABORDER1"
     )
     assert response.status_code == 200
     order = LabOrderSchema(**response.json())
@@ -52,19 +54,19 @@ def test_laborder_delete(client, ukrdc3_session):
     assert ukrdc3_session.query(LabOrder).get("LABORDER_TEMP")
     assert ukrdc3_session.query(ResultItem).get("RESULTITEM_TEMP")
     response = client.get(
-        "/api/v1/patientrecords/PYTEST01:PV:00000000A/laborders/LABORDER_TEMP"
+        f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/laborders/LABORDER_TEMP"
     )
     assert response.status_code == 200
 
     # Delete the lab order
     response = client.delete(
-        "/api/v1/patientrecords/PYTEST01:PV:00000000A/laborders/LABORDER_TEMP/"
+        f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/laborders/LABORDER_TEMP/"
     )
     assert response.status_code == 204
 
     # Make sure the lab order was deleted
     response = client.get(
-        "/api/v1/patientrecords/PYTEST01:PV:00000000A/laborders/LABORDER_TEMP/"
+        f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/laborders/LABORDER_TEMP/"
     )
     assert response.status_code == 404
     assert not ukrdc3_session.query(LabOrder).get("LABORDER_TEMP")

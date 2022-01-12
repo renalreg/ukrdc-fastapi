@@ -1,8 +1,11 @@
 from ukrdc_fastapi.models.audit import AuditEvent
+from ukrdc_fastapi.config import configuration
 
 
 def test_search_pid(client, audit_session):
-    response = client.get(f"/api/v1/search/?search=999999999&include_ukrdc=true")
+    response = client.get(
+        f"{configuration.base_url}/v1/search/?search=999999999&include_ukrdc=true"
+    )
     assert response.status_code == 200
 
     returned_ids = {item["id"] for item in response.json()["items"]}

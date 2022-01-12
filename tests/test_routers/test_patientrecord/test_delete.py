@@ -2,10 +2,13 @@ from ukrdc_sqla.empi import LinkRecord, MasterRecord, Person, PidXRef, WorkItem
 from ukrdc_sqla.ukrdc import PatientRecord
 
 from ukrdc_fastapi.schemas.delete import DeletePIDResponseSchema
+from ukrdc_fastapi.config import configuration
 
 
 def test_delete_summary(client, ukrdc3_session, jtrace_session):
-    response = client.post("/api/v1/patientrecords/PYTEST03:PV:00000000A/delete")
+    response = client.post(
+        f"{configuration.base_url}/v1/patientrecords/PYTEST03:PV:00000000A/delete"
+    )
     assert response.status_code == 200
 
     summary = DeletePIDResponseSchema(**response.json())
@@ -25,7 +28,9 @@ def test_delete_summary(client, ukrdc3_session, jtrace_session):
 
 
 def test_delete(client, ukrdc3_session, jtrace_session):
-    response = client.post("/api/v1/patientrecords/PYTEST03:PV:00000000A/delete")
+    response = client.post(
+        f"{configuration.base_url}/v1/patientrecords/PYTEST03:PV:00000000A/delete"
+    )
     assert response.status_code == 200
 
     summary = DeletePIDResponseSchema(**response.json())
@@ -44,7 +49,7 @@ def test_delete(client, ukrdc3_session, jtrace_session):
         assert jtrace_session.query(LinkRecord).get(link_record.id)
 
     deleted_response = client.post(
-        "/api/v1/patientrecords/PYTEST03:PV:00000000A/delete",
+        f"{configuration.base_url}/v1/patientrecords/PYTEST03:PV:00000000A/delete",
         json={"hash": summary.hash},
     )
     assert deleted_response.status_code == 200
@@ -70,7 +75,7 @@ def test_delete(client, ukrdc3_session, jtrace_session):
 
 def test_delete_badhash(client, ukrdc3_session):
     response = client.post(
-        "/api/v1/patientrecords/PYTEST03:PV:00000000A/delete",
+        f"{configuration.base_url}/v1/patientrecords/PYTEST03:PV:00000000A/delete",
         json={"hash": "BADHASH"},
     )
     assert response.status_code == 400

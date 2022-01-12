@@ -1,10 +1,11 @@
 from ukrdc_fastapi.models.audit import AuditEvent
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema, PersonSchema, WorkItemSchema
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordSummarySchema
+from ukrdc_fastapi.config import configuration
 
 
 def test_masterrecord_detail(client, audit_session):
-    response = client.get("/api/v1/masterrecords/1")
+    response = client.get(f"{configuration.base_url}/v1/masterrecords/1")
     assert response.status_code == 200
 
     events = audit_session.query(AuditEvent).all()
@@ -22,7 +23,7 @@ def test_masterrecord_detail(client, audit_session):
 def test_masterrecord_related(client, audit_session):
     # Check expected links
 
-    response = client.get("/api/v1/masterrecords/1/related")
+    response = client.get(f"{configuration.base_url}/v1/masterrecords/1/related")
     assert response.status_code == 200
     mrecs = [MasterRecordSchema(**item) for item in response.json()]
     returned_ids = {item.id for item in mrecs}
@@ -47,7 +48,7 @@ def test_masterrecord_related(client, audit_session):
 
 
 def test_masterrecord_statistics(client, audit_session):
-    response = client.get("/api/v1/masterrecords/1/statistics")
+    response = client.get(f"{configuration.base_url}/v1/masterrecords/1/statistics")
     assert response.status_code == 200
 
     events = audit_session.query(AuditEvent).all()
@@ -69,7 +70,7 @@ def test_masterrecord_statistics(client, audit_session):
 
 
 def test_masterrecord_linkrecords(client, audit_session):
-    response = client.get("/api/v1/masterrecords/1/linkrecords")
+    response = client.get(f"{configuration.base_url}/v1/masterrecords/1/linkrecords")
     assert response.status_code == 200
 
     events = audit_session.query(AuditEvent).all()
@@ -108,7 +109,7 @@ def test_masterrecord_linkrecords(client, audit_session):
 
 
 def test_masterrecord_messages(client, audit_session):
-    response = client.get("/api/v1/masterrecords/1/messages")
+    response = client.get(f"{configuration.base_url}/v1/masterrecords/1/messages")
     assert response.status_code == 200
 
     events = audit_session.query(AuditEvent).all()
@@ -129,7 +130,7 @@ def test_masterrecord_messages(client, audit_session):
 
 
 def test_masterrecord_workitems(client, audit_session):
-    response = client.get("/api/v1/masterrecords/1/workitems")
+    response = client.get(f"{configuration.base_url}/v1/masterrecords/1/workitems")
     assert response.status_code == 200
     workitems = [WorkItemSchema(**item) for item in response.json()]
 
@@ -166,7 +167,7 @@ def test_masterrecord_workitems(client, audit_session):
 
 
 def test_masterrecord_persons(client, audit_session):
-    response = client.get("/api/v1/masterrecords/1/persons")
+    response = client.get(f"{configuration.base_url}/v1/masterrecords/1/persons")
     assert response.status_code == 200
     persons = [PersonSchema(**item) for item in response.json()]
     returned_ids = {item.id for item in persons}
@@ -191,7 +192,7 @@ def test_masterrecord_persons(client, audit_session):
 
 
 def test_masterrecord_patientrecords(client, audit_session):
-    response = client.get("/api/v1/masterrecords/1/patientrecords")
+    response = client.get(f"{configuration.base_url}/v1/masterrecords/1/patientrecords")
     assert response.status_code == 200
     records = [PatientRecordSummarySchema(**item) for item in response.json()]
     returned_pids = {item.pid for item in records}
