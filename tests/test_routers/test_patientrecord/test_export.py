@@ -1,3 +1,6 @@
+from ukrdc_fastapi.config import configuration
+
+
 def test_record_export_data(client, httpx_session):
     response = client.post(
         f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/export/pv/",

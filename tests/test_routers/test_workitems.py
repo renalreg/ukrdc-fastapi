@@ -15,7 +15,7 @@ def test_workitems_list(client):
 
 def test_workitems_list_filter_since(client):
     since = days_ago(2).isoformat()
-    response = client.get(f"/workitems?since={since}")
+    response = client.get(f"{configuration.base_url}/v1/workitems?since={since}")
     assert response.status_code == 200
     returned_ids = {item["id"] for item in response.json()["items"]}
     assert returned_ids == {2, 3}
@@ -23,7 +23,7 @@ def test_workitems_list_filter_since(client):
 
 def test_workitems_list_filter_until(client):
     until = days_ago(365).isoformat()
-    response = client.get(f"/workitems?until={until}")
+    response = client.get(f"{configuration.base_url}/v1/workitems?until={until}")
     assert response.status_code == 200
     returned_ids = {item["id"] for item in response.json()["items"]}
     assert returned_ids == {1}
@@ -66,7 +66,9 @@ def test_workitem_errors(client):
 
 @pytest.mark.parametrize("workitem_id", [1, 2, 3])
 def test_workitem_close(client, workitem_id, httpx_session):
-    response = client.post(f"/workitems/{workitem_id}/close/", json={})
+    response = client.post(
+        f"{configuration.base_url}/v1/workitems/{workitem_id}/close/", json={}
+    )
     assert response.status_code == 200
 
     message = response.json().get("message")

@@ -1,9 +1,8 @@
-from datetime import datetime
-
 from ukrdc_sqla.ukrdc import LabOrder, ResultItem
 
 from tests.utils import days_ago
 from ukrdc_fastapi.schemas.laborder import LabOrderSchema, LabOrderShortSchema
+from ukrdc_fastapi.config import configuration
 
 
 def test_record_laborders(client):
