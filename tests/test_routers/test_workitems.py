@@ -3,10 +3,11 @@ import pytest
 from tests.utils import days_ago
 from ukrdc_fastapi.schemas.empi import WorkItemSchema
 from ukrdc_fastapi.schemas.message import MessageSchema
+from ukrdc_fastapi.config import configuration
 
 
 def test_workitems_list(client):
-    response = client.get("/api/v1/workitems")
+    response = client.get(f"{configuration.base_url}/v1/workitems")
     assert response.status_code == 200
     returned_ids = {item["id"] for item in response.json()["items"]}
     assert returned_ids == {1, 2, 3}
@@ -14,7 +15,7 @@ def test_workitems_list(client):
 
 def test_workitems_list_filter_since(client):
     since = days_ago(2).isoformat()
-    response = client.get(f"/api/v1/workitems?since={since}")
+    response = client.get(f"{configuration.base_url}/v1/workitems?since={since}")
     assert response.status_code == 200
     returned_ids = {item["id"] for item in response.json()["items"]}
     assert returned_ids == {2, 3}
@@ -22,21 +23,21 @@ def test_workitems_list_filter_since(client):
 
 def test_workitems_list_filter_until(client):
     until = days_ago(365).isoformat()
-    response = client.get(f"/api/v1/workitems?until={until}")
+    response = client.get(f"{configuration.base_url}/v1/workitems?until={until}")
     assert response.status_code == 200
     returned_ids = {item["id"] for item in response.json()["items"]}
     assert returned_ids == {1}
 
 
 def test_workitem_detail(client):
-    response = client.get("/api/v1/workitems/1")
+    response = client.get(f"{configuration.base_url}/v1/workitems/1")
     assert response.status_code == 200
     wi = WorkItemSchema(**response.json())
     assert wi.id == 1
 
 
 def test_workitem_related(client):
-    response = client.get("/api/v1/workitems/1/related")
+    response = client.get(f"{configuration.base_url}/v1/workitems/1/related")
     assert response.status_code == 200
 
     returned_ids = {item["id"] for item in response.json()}
@@ -44,7 +45,7 @@ def test_workitem_related(client):
 
 
 def test_workitem_messages(client):
-    response = client.get("/api/v1/workitems/1/messages")
+    response = client.get(f"{configuration.base_url}/v1/workitems/1/messages")
     assert response.status_code == 200
 
     errors = [MessageSchema(**item) for item in response.json()["items"]]
@@ -53,7 +54,9 @@ def test_workitem_messages(client):
 
 
 def test_workitem_errors(client):
-    response = client.get("/api/v1/workitems/1/messages/?status=ERROR")
+    response = client.get(
+        f"{configuration.base_url}/v1/workitems/1/messages/?status=ERROR"
+    )
     assert response.status_code == 200
 
     errors = [MessageSchema(**item) for item in response.json()["items"]]
@@ -63,7 +66,9 @@ def test_workitem_errors(client):
 
 @pytest.mark.parametrize("workitem_id", [1, 2, 3])
 def test_workitem_close(client, workitem_id, httpx_session):
-    response = client.post(f"/api/v1/workitems/{workitem_id}/close/", json={})
+    response = client.post(
+        f"{configuration.base_url}/v1/workitems/{workitem_id}/close/", json={}
+    )
     assert response.status_code == 200
 
     message = response.json().get("message")
@@ -75,7 +80,8 @@ def test_workitem_close(client, workitem_id, httpx_session):
 
 def test_workitem_update(client, httpx_session):
     response = client.put(
-        "/api/v1/workitems/1/", json={"status": 3, "comment": "UPDATE COMMENT"}
+        f"{configuration.base_url}/v1/workitems/1/",
+        json={"status": 3, "comment": "UPDATE COMMENT"},
     )
     assert response.status_code == 200
     assert response.json().get("status") == "success"

@@ -1,9 +1,10 @@
 from ukrdc_fastapi.models.audit import AuditEvent
 from ukrdc_fastapi.schemas.empi import WorkItemSchema
+from ukrdc_fastapi.config import configuration
 
 
 def test_messages_list(client, audit_session):
-    response = client.get(f"/api/v1/messages/")
+    response = client.get(f"{configuration.base_url}/v1/messages/")
     assert response.status_code == 200
 
     events = audit_session.query(AuditEvent).all()
@@ -19,7 +20,7 @@ def test_messages_list(client, audit_session):
 
 
 def test_message_detail(client, audit_session):
-    response = client.get("/api/v1/messages/1")
+    response = client.get(f"{configuration.base_url}/v1/messages/1")
     assert response.status_code == 200
 
     events = audit_session.query(AuditEvent).all()
@@ -35,7 +36,7 @@ def test_message_detail(client, audit_session):
 
 
 def test_message_workitems(client, audit_session):
-    response = client.get("/api/v1/messages/2/workitems")
+    response = client.get(f"{configuration.base_url}/v1/messages/2/workitems")
     workitems = [WorkItemSchema(**item) for item in response.json()]
 
     events = audit_session.query(AuditEvent).all()
@@ -71,7 +72,7 @@ def test_message_workitems(client, audit_session):
 
 
 def test_message_masterrecords(client, audit_session):
-    response = client.get("/api/v1/messages/1/masterrecords")
+    response = client.get(f"{configuration.base_url}/v1/messages/1/masterrecords")
     assert response.status_code == 200
     returned_ids = {item.get("id") for item in response.json()}
     assert returned_ids == {1}

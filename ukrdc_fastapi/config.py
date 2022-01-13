@@ -6,6 +6,9 @@ from pydantic import BaseSettings
 class Configuration(BaseSettings):
     # Built-time configuration, designed to be read-only
 
+    # Used to correct linking when behind a reverse proxy
+    base_url: str = "/new/api"
+
     # Deployment environment, used for error logging etc
     deployment_env: str = "development"
 
@@ -34,9 +37,6 @@ class Settings(BaseSettings):
 
     # Optionally skip data caching on startup
     skip_cache: bool = False
-
-    # Used to correct linking when behind a reverse proxy
-    api_base: str = "/api"
 
     # Messages to display on user dashboards
     motd: list[str] = []

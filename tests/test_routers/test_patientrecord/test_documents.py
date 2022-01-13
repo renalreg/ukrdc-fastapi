@@ -1,8 +1,11 @@
 from ukrdc_fastapi.schemas.patientrecord import DocumentSchema, DocumentSummarySchema
+from ukrdc_fastapi.config import configuration
 
 
 def test_record_documents(client):
-    response = client.get("/api/v1/patientrecords/PYTEST01:PV:00000000A/documents")
+    response = client.get(
+        f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/documents"
+    )
     assert response.status_code == 200
     documents = [DocumentSummarySchema(**item) for item in response.json()["items"]]
     assert {doc.id for doc in documents} == {
@@ -13,7 +16,7 @@ def test_record_documents(client):
 
 def test_record_document_detail(client):
     response = client.get(
-        "/api/v1/patientrecords/PYTEST01:PV:00000000A/documents/DOCUMENT_PDF"
+        f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/documents/DOCUMENT_PDF"
     )
     assert response.status_code == 200
     document = DocumentSchema(**response.json())
@@ -23,7 +26,7 @@ def test_record_document_detail(client):
 
 def test_record_document_download_txt(client):
     response = client.get(
-        "/api/v1/patientrecords/PYTEST01:PV:00000000A/documents/DOCUMENT_TXT/download"
+        f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/documents/DOCUMENT_TXT/download"
     )
     assert response.status_code == 200
     assert (
@@ -35,7 +38,7 @@ def test_record_document_download_txt(client):
 
 def test_record_document_download_pdf(client, minimal_pdf):
     response = client.get(
-        "/api/v1/patientrecords/PYTEST01:PV:00000000A/documents/DOCUMENT_PDF/download"
+        f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/documents/DOCUMENT_PDF/download"
     )
     assert response.status_code == 200
     assert (

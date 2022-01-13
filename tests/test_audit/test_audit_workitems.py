@@ -1,6 +1,6 @@
 from ukrdc_fastapi.models.audit import AuditEvent
 from ukrdc_fastapi.schemas.empi import WorkItemExtendedSchema, WorkItemSchema
-from ukrdc_fastapi.schemas.message import MessageSchema
+from ukrdc_fastapi.config import configuration
 
 
 def _verify_workitem_audit(workitem: WorkItemSchema, workitem_event: AuditEvent):
@@ -55,7 +55,7 @@ def _verify_extended_workitem_audit(
 
 
 def test_workitems_list(client, audit_session):
-    response = client.get("/api/v1/workitems")
+    response = client.get(f"{configuration.base_url}/v1/workitems")
     assert response.status_code == 200
     workitems = [WorkItemSchema(**wi) for wi in response.json().get("items")]
 
@@ -69,7 +69,7 @@ def test_workitems_list(client, audit_session):
 
 
 def test_workitem_detail(client, audit_session):
-    response = client.get("/api/v1/workitems/1")
+    response = client.get(f"{configuration.base_url}/v1/workitems/1")
     assert response.status_code == 200
     wi = WorkItemExtendedSchema(**response.json())
 
@@ -84,7 +84,8 @@ def test_workitem_detail(client, audit_session):
 
 def test_workitem_update(client, httpx_session, audit_session):
     response = client.put(
-        "/api/v1/workitems/1/", json={"status": 3, "comment": "UPDATE COMMENT"}
+        f"{configuration.base_url}/v1/workitems/1/",
+        json={"status": 3, "comment": "UPDATE COMMENT"},
     )
     assert response.status_code == 200
     assert response.json().get("status") == "success"
@@ -100,7 +101,7 @@ def test_workitem_update(client, httpx_session, audit_session):
 
 
 def test_workitem_close(client, httpx_session, audit_session):
-    response = client.post("/api/v1/workitems/1/close/", json={})
+    response = client.post(f"{configuration.base_url}/v1/workitems/1/close/", json={})
     assert response.status_code == 200
 
     events = audit_session.query(AuditEvent).all()
@@ -114,7 +115,7 @@ def test_workitem_close(client, httpx_session, audit_session):
 
 
 def test_workitems_related(client, audit_session):
-    response = client.get("/api/v1/workitems/1/related")
+    response = client.get(f"{configuration.base_url}/v1/workitems/1/related")
     assert response.status_code == 200
     workitems = [WorkItemSchema(**wi) for wi in response.json()]
     returned_ids = {item.id for item in workitems}
@@ -130,7 +131,7 @@ def test_workitems_related(client, audit_session):
 
 
 def test_workitem_messages(client, audit_session):
-    response = client.get("/api/v1/workitems/1/messages")
+    response = client.get(f"{configuration.base_url}/v1/workitems/1/messages")
     assert response.status_code == 200
 
     events = audit_session.query(AuditEvent).all()
