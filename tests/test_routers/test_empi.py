@@ -1,6 +1,10 @@
+from ukrdc_fastapi.config import configuration
+
+
 def test_merge(client, httpx_session):
     response = client.post(
-        f"/api/v1/empi/merge/", json={"superseding": 1, "superseded": 2}
+        f"{configuration.base_url}/v1/empi/merge/",
+        json={"superseding": 1, "superseded": 2},
     )
     assert response.json().get("status") == "success"
     message = response.json().get("message")
@@ -11,7 +15,7 @@ def test_merge(client, httpx_session):
 
 def test_unlink(client, httpx_session, jtrace_session):
     response = client.post(
-        f"/api/v1/empi/unlink/",
+        f"{configuration.base_url}/v1/empi/unlink/",
         json={"personId": 4, "comment": "comment", "masterId": 1},
     )
 

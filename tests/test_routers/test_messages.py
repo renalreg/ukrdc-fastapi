@@ -1,12 +1,14 @@
 from ukrdc_fastapi.schemas.message import MessageSchema
-
+from ukrdc_fastapi.config import configuration
 from ..utils import days_ago
 
 
 def test_messages_list(client):
     since = days_ago(730).isoformat()
     until = days_ago(0).isoformat()
-    response = client.get(f"/api/v1/messages/?since={since}&until={until}")
+    response = client.get(
+        f"{configuration.base_url}/v1/messages/?since={since}&until={until}"
+    )
     assert response.status_code == 200
     messages = [MessageSchema(**item) for item in response.json()["items"]]
     returned_ids = {item.id for item in messages}
@@ -16,7 +18,9 @@ def test_messages_list(client):
 def test_messages_list_errors(client):
     since = days_ago(730).isoformat()
     until = days_ago(0).isoformat()
-    response = client.get(f"/api/v1/messages/?since={since}&until={until}&status=ERROR")
+    response = client.get(
+        f"{configuration.base_url}/v1/messages/?since={since}&until={until}&status=ERROR"
+    )
     assert response.status_code == 200
     messages = [MessageSchema(**item) for item in response.json()["items"]]
     returned_ids = {item.id for item in messages}
@@ -27,7 +31,7 @@ def test_messages_list_facility(client):
     since = days_ago(730).isoformat()
     until = days_ago(0).isoformat()
     response = client.get(
-        f"/api/v1/messages/?since={since}&until={until}&facility=TEST_SENDING_FACILITY_2"
+        f"{configuration.base_url}/v1/messages/?since={since}&until={until}&facility=TEST_SENDING_FACILITY_2"
     )
     assert response.status_code == 200
     messages = [MessageSchema(**item) for item in response.json()["items"]]
@@ -36,26 +40,26 @@ def test_messages_list_facility(client):
 
 
 def test_message_detail(client):
-    response = client.get("/api/v1/messages/1")
+    response = client.get(f"{configuration.base_url}/v1/messages/1")
     assert response.status_code == 200
     error = MessageSchema(**response.json())
     assert error.id == 1
 
 
 def test_message_workitems(client):
-    response = client.get("/api/v1/messages/1/workitems")
+    response = client.get(f"{configuration.base_url}/v1/messages/1/workitems")
     assert response.status_code == 200
     ids = {item.get("id") for item in response.json()}
     assert ids == set()
 
-    response = client.get("/api/v1/messages/2/workitems")
+    response = client.get(f"{configuration.base_url}/v1/messages/2/workitems")
     assert response.status_code == 200
     ids = {item.get("id") for item in response.json()}
     assert ids == {3}
 
 
 def test_message_masterrecords(client):
-    response = client.get("/api/v1/messages/1/masterrecords")
+    response = client.get(f"{configuration.base_url}/v1/messages/1/masterrecords")
     assert response.status_code == 200
     ids = {item.get("id") for item in response.json()}
     assert ids == {1}
