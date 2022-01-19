@@ -66,7 +66,7 @@ def get_auditevents_related_to_masterrecord(
     query = audit.query(AuditEvent).join(AccessEvent).filter(or_(*conditions))
 
     # Only show top-level events in the query. Child events are attached to parents
-    query = query.filter(AuditEvent.parent_id == None)
+    query = query.filter(AuditEvent.parent_id.is_(None))
 
     if since:
         query = query.filter(AccessEvent.time >= since)
