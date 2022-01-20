@@ -38,4 +38,4 @@ def datahealth_multiple_ukrdcids_last_run(
     statsdb: Session = Depends(get_statsdb),
 ):
     """Retreive the datetime the multiple_ukrdcid table was fully refreshed"""
-    return statsdb.query(LastRunTimes).get(("multiple_ukrdcid", None))
+    return statsdb.query(LastRunTimes).get(("multiple_ukrdcid", ""))
