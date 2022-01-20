@@ -7,12 +7,7 @@ from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import WorkItem
 
 from ukrdc_fastapi.dependencies import get_jtrace
-from ukrdc_fastapi.dependencies.audit import (
-    Auditer,
-    AuditOperation,
-    Resource,
-    get_auditer,
-)
+from ukrdc_fastapi.dependencies.audit import Auditer, get_auditer
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.query.workitems import get_workitems
 from ukrdc_fastapi.schemas.empi import WorkItemSchema

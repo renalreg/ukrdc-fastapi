@@ -18,3 +18,11 @@ class MultipleUKRDCIDGroupItem(OrmModel):
 class MultipleUKRDCIDGroup(OrmModel):
     group_id: int
     records: list[MultipleUKRDCIDGroupItem]
+
+
+class LastRunTime(OrmModel):
+    last_run_time: datetime.datetime
+
+
+class LastRunTimeFacility(LastRunTime):
+    facility: str
