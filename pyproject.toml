@@ -21,7 +21,7 @@ pydantic = {extras = ["dotenv"], version = "^1.9.0"}
 python = "^3.9" 
 python-stdnum = "^1.16" 
 redis = "^4.0.2" 
-sentry-sdk = "^1.5.2" 
+sentry-sdk = "^1.5.3" 
 uvicorn = "^0.17.0" 
 ukrdc-sqla = "^1.10.0"
 
