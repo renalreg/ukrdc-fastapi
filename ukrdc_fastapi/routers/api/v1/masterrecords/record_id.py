@@ -82,13 +82,18 @@ def master_record_detail(
 def master_record_related(
     record_id: int,
     exclude_self: bool = True,
+    nationalid_type: Optional[str] = None,
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a list of other master records related to a particular master record"""
     records = get_masterrecords_related_to_masterrecord(
-        jtrace, record_id, user, exclude_self=exclude_self
+        jtrace,
+        record_id,
+        user,
+        nationalid_type=nationalid_type,
+        exclude_self=exclude_self,
     ).all()
 
     record_audit = audit.add_event(

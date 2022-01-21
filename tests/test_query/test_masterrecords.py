@@ -39,9 +39,31 @@ def test_masterrecord_related(jtrace_session, superuser):
     # Check MR3 is identified as related to MR1
     assert {record.id for record in records} == {1, 4, 101, 104}
 
-    records_excl_self = masterrecords.get_masterrecords_related_to_masterrecord(
+
+def test_masterrecord_related_exclude_self(jtrace_session, superuser):
+    records = masterrecords.get_masterrecords_related_to_masterrecord(
         jtrace_session, 1, superuser, exclude_self=True
     )
 
     # Check MR3 is identified as related to MR1
-    assert {record.id for record in records_excl_self} == {4, 101, 104}
+    assert {record.id for record in records} == {4, 101, 104}
+
+
+def test_masterrecord_related_filter_nationalid_type(jtrace_session, superuser):
+    records = masterrecords.get_masterrecords_related_to_masterrecord(
+        jtrace_session, 1, superuser, nationalid_type="UKRDC"
+    )
+
+    # Check MR3 is identified as related to MR1
+    assert {record.id for record in records} == {1, 4}
+
+
+def test_masterrecord_related_exclude_self_filter_nationalid_type(
+    jtrace_session, superuser
+):
+    records = masterrecords.get_masterrecords_related_to_masterrecord(
+        jtrace_session, 1, superuser, exclude_self=True, nationalid_type="UKRDC"
+    )
+
+    # Check MR3 is identified as related to MR1
+    assert {record.id for record in records} == {4}

@@ -77,7 +77,11 @@ def get_masterrecord(jtrace: Session, record_id: int, user: UKRDCUser) -> Master
 
 
 def get_masterrecords_related_to_masterrecord(
-    jtrace: Session, record_id: int, user: UKRDCUser, exclude_self: bool = False
+    jtrace: Session,
+    record_id: int,
+    user: UKRDCUser,
+    exclude_self: bool = False,
+    nationalid_type: Optional[str] = None,
 ) -> Query:
     """Get a query of MasterRecords related via the LinkRecord network to a given MasterRecord
 
@@ -85,6 +89,8 @@ def get_masterrecords_related_to_masterrecord(
         jtrace (Session): JTRACE SQLAlchemy session
         record_id (int): MasterRecord ID
         user (UKRDCUser): Logged-in user
+        nationalid_type (str, optional): National ID type to filter by. E.g. "UKRDC"
+        exclude_self (bool, optional): Exclude the given MasterRecord from the results
 
     Returns:
         Query: SQLAlchemy query
@@ -97,6 +103,10 @@ def get_masterrecords_related_to_masterrecord(
     # Exclude self from related items
     if exclude_self:
         records = records.filter(MasterRecord.id != record_id)
+
+    # Optionally filter by record type
+    if nationalid_type:
+        records = records.filter(MasterRecord.nationalid_type == nationalid_type)
 
     return _apply_query_permissions(records, user)
 
