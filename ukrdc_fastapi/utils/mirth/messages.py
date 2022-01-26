@@ -184,3 +184,20 @@ def build_export_radar_message(pid: str) -> str:
     pid_element.text = str(pid)
 
     return tostring(root, encoding="unicode")
+
+
+def build_pkb_membership_message(ukrdcid: int) -> str:
+    """Build rawData to add a PKB membership to a given UKRDCID
+
+    Args:
+        ukrdcid (int): Patients UKRDC ID
+
+    Returns:
+        str: XML rawData for Mirth message
+    """
+    root = Element("result")
+
+    ukrdcid_element = SubElement(root, "ukrdcid")
+    ukrdcid_element.text = str(ukrdcid)
+
+    return tostring(root, encoding="unicode")

@@ -1,15 +1,13 @@
 from typing import Optional
 
-from fastapi.exceptions import HTTPException
-from mirth_client.exceptions import MirthPostError
 from mirth_client.mirth import MirthAPI
 from redis import Redis
 from sqlalchemy.orm.session import Session
 
 from ukrdc_fastapi.dependencies.auth import UKRDCUser
-from ukrdc_fastapi.exceptions import MirthChannelError
+from ukrdc_fastapi.query.mirth.base import safe_send_mirth_message_to_name
 from ukrdc_fastapi.query.workitems import get_workitem
-from ukrdc_fastapi.utils.mirth import MirthMessageResponseSchema, get_channel_from_name
+from ukrdc_fastapi.utils.mirth import MirthMessageResponseSchema
 from ukrdc_fastapi.utils.mirth.messages import (
     build_close_workitem_message,
     build_update_workitem_message,
@@ -41,25 +39,17 @@ async def update_workitem(
     """
     workitem = get_workitem(jtrace, workitem_id, user)
 
-    channel = get_channel_from_name("WorkItemUpdate", mirth, redis)
-
-    if not channel:
-        raise MirthChannelError(
-            "ID for WorkItemUpdate channel not found"
-        )  # pragma: no cover
-
-    message: str = build_update_workitem_message(
-        workitem.id,
-        status or workitem.status,
-        comment or workitem.description,
-        user.email,
+    return await safe_send_mirth_message_to_name(
+        "WorkItemUpdate",
+        build_update_workitem_message(
+            workitem.id,
+            status or workitem.status,
+            comment or workitem.description,
+            user.email,
+        ),
+        mirth,
+        redis,
     )
-    try:
-        await channel.post_message(message)
-    except MirthPostError as e:
-        raise HTTPException(500, str(e)) from e  # pragma: no cover
-
-    return MirthMessageResponseSchema(status="success", message=message)
 
 
 async def close_workitem(
@@ -85,16 +75,9 @@ async def close_workitem(
     """
     workitem = get_workitem(jtrace, workitem_id, user)
 
-    channel = get_channel_from_name("WorkItemUpdate", mirth, redis)
-    if not channel:
-        raise MirthChannelError(
-            "ID for WorkItemUpdate channel not found"
-        )  # pragma: no cover
-
-    message: str = build_close_workitem_message(workitem.id, comment or "", user.email)
-    try:
-        await channel.post_message(message)
-    except MirthPostError as e:
-        raise HTTPException(500, str(e)) from e  # pragma: no cover
-
-    return MirthMessageResponseSchema(status="success", message=message)
+    return await safe_send_mirth_message_to_name(
+        "WorkItemUpdate",
+        build_close_workitem_message(workitem.id, comment or "", user.email),
+        mirth,
+        redis,
+    )

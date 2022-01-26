@@ -1,26 +1,23 @@
-from fastapi import APIRouter, Depends, HTTPException, Security
-from mirth_client.exceptions import MirthPostError
+from fastapi import APIRouter, Depends, Security
 from mirth_client.mirth import MirthAPI
 from redis import Redis
-from ukrdc_sqla.ukrdc import PatientRecord
+from sqlalchemy.orm import Session
 
-from ukrdc_fastapi.dependencies import get_mirth, get_redis
+from ukrdc_fastapi.dependencies import get_mirth, get_redis, get_ukrdc3
 from ukrdc_fastapi.dependencies.audit import (
     Auditer,
     RecordOperation,
     Resource,
     get_auditer,
 )
-from ukrdc_fastapi.dependencies.auth import Permissions, auth
-from ukrdc_fastapi.utils.mirth import MirthMessageResponseSchema, get_channel_from_name
-from ukrdc_fastapi.utils.mirth.messages import (
-    build_export_all_message,
-    build_export_docs_message,
-    build_export_radar_message,
-    build_export_tests_message,
+from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
+from ukrdc_fastapi.query.mirth.export import (
+    export_all_to_pv,
+    export_all_to_radar,
+    export_docs_to_pv,
+    export_tests_to_pv,
 )
-
-from .dependencies import _get_patientrecord
+from ukrdc_fastapi.utils.mirth import MirthMessageResponseSchema
 
 router = APIRouter(tags=["Patient Records/Export"])
 
@@ -31,29 +28,17 @@ router = APIRouter(tags=["Patient Records/Export"])
     dependencies=[Security(auth.permission(Permissions.EXPORT_RECORDS))],
 )
 async def patient_export_pv(
-    patient_record: PatientRecord = Depends(_get_patientrecord),
+    pid: str,
+    user: UKRDCUser = Security(auth.get_user()),
+    ukrdc3: Session = Depends(get_ukrdc3),
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
     audit: Auditer = Depends(get_auditer),
 ):
     """Export a specific patient's data to PV"""
-    channel = get_channel_from_name("PV Outbound", mirth, redis)
-    if not channel:
-        raise HTTPException(
-            500, detail="ID for PV Outbound channel not found"
-        )  # pragma: no cover
-
-    message: str = build_export_all_message(patient_record.pid)
-    try:
-        await channel.post_message(message)
-    except MirthPostError as e:
-        raise HTTPException(500, str(e)) from e  # pragma: no cover
-
-    audit.add_event(
-        Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.EXPORT_PV
-    )
-
-    return MirthMessageResponseSchema(status="success", message=message)
+    response = await export_all_to_pv(pid, user, ukrdc3, mirth, redis)
+    audit.add_event(Resource.PATIENT_RECORD, pid, RecordOperation.EXPORT_PV)
+    return response
 
 
 @router.post(
@@ -62,29 +47,17 @@ async def patient_export_pv(
     dependencies=[Security(auth.permission(Permissions.EXPORT_RECORDS))],
 )
 async def patient_export_pv_tests(
-    patient_record: PatientRecord = Depends(_get_patientrecord),
+    pid: str,
+    user: UKRDCUser = Security(auth.get_user()),
+    ukrdc3: Session = Depends(get_ukrdc3),
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
     audit: Auditer = Depends(get_auditer),
 ):
     """Export a specific patient's test data to PV"""
-    channel = get_channel_from_name("PV Outbound", mirth, redis)
-    if not channel:
-        raise HTTPException(
-            500, detail="ID for PV Outbound channel not found"
-        )  # pragma: no cover
-
-    message: str = build_export_tests_message(patient_record.pid)
-    try:
-        await channel.post_message(message)
-    except MirthPostError as e:
-        raise HTTPException(500, str(e)) from e  # pragma: no cover
-
-    audit.add_event(
-        Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.EXPORT_PV_TESTS
-    )
-
-    return MirthMessageResponseSchema(status="success", message=message)
+    response = await export_tests_to_pv(pid, user, ukrdc3, mirth, redis)
+    audit.add_event(Resource.PATIENT_RECORD, pid, RecordOperation.EXPORT_PV_TESTS)
+    return response
 
 
 @router.post(
@@ -93,29 +66,17 @@ async def patient_export_pv_tests(
     dependencies=[Security(auth.permission(Permissions.EXPORT_RECORDS))],
 )
 async def patient_export_pv_docs(
-    patient_record: PatientRecord = Depends(_get_patientrecord),
+    pid: str,
+    user: UKRDCUser = Security(auth.get_user()),
+    ukrdc3: Session = Depends(get_ukrdc3),
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
     audit: Auditer = Depends(get_auditer),
 ):
     """Export a specific patient's documents data to PV"""
-    channel = get_channel_from_name("PV Outbound", mirth, redis)
-    if not channel:
-        raise HTTPException(
-            500, detail="ID for PV Outbound channel not found"
-        )  # pragma: no cover
-
-    message: str = build_export_docs_message(patient_record.pid)
-    try:
-        await channel.post_message(message)
-    except MirthPostError as e:
-        raise HTTPException(500, str(e)) from e  # pragma: no cover
-
-    audit.add_event(
-        Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.EXPORT_PV_DOCS
-    )
-
-    return MirthMessageResponseSchema(status="success", message=message)
+    response = await export_docs_to_pv(pid, user, ukrdc3, mirth, redis)
+    audit.add_event(Resource.PATIENT_RECORD, pid, RecordOperation.EXPORT_PV_DOCS)
+    return response
 
 
 @router.post(
@@ -124,26 +85,14 @@ async def patient_export_pv_docs(
     dependencies=[Security(auth.permission(Permissions.EXPORT_RECORDS))],
 )
 async def patient_export_radar(
-    patient_record: PatientRecord = Depends(_get_patientrecord),
+    pid: str,
+    user: UKRDCUser = Security(auth.get_user()),
+    ukrdc3: Session = Depends(get_ukrdc3),
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
     audit: Auditer = Depends(get_auditer),
 ):
     """Export a specific patient's data to RaDaR"""
-    channel = get_channel_from_name("RADAR Outbound", mirth, redis)
-    if not channel:
-        raise HTTPException(
-            500, detail="ID for RADAR Outbound channel not found"
-        )  # pragma: no cover
-
-    message: str = build_export_radar_message(patient_record.pid)
-    try:
-        await channel.post_message(message)
-    except MirthPostError as e:
-        raise HTTPException(500, str(e)) from e  # pragma: no cover
-
-    audit.add_event(
-        Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.EXPORT_RADAR
-    )
-
-    return MirthMessageResponseSchema(status="success", message=message)
+    response = await export_all_to_radar(pid, user, ukrdc3, mirth, redis)
+    audit.add_event(Resource.PATIENT_RECORD, pid, RecordOperation.EXPORT_RADAR)
+    return response
