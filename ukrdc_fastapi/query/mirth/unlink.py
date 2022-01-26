@@ -13,7 +13,8 @@ from ukrdc_fastapi.exceptions import MirthChannelError
 from ukrdc_fastapi.query.masterrecords import get_masterrecord
 from ukrdc_fastapi.query.persons import get_person
 from ukrdc_fastapi.schemas.empi import LinkRecordSchema
-from ukrdc_fastapi.utils.mirth import build_unlink_message, get_channel_from_name
+from ukrdc_fastapi.utils.mirth import get_channel_from_name
+from ukrdc_fastapi.utils.mirth.messages import build_unlink_message
 
 
 async def unlink_person_from_master_record(

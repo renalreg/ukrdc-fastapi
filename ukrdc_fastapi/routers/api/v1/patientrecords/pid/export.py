@@ -12,13 +12,12 @@ from ukrdc_fastapi.dependencies.audit import (
     get_auditer,
 )
 from ukrdc_fastapi.dependencies.auth import Permissions, auth
-from ukrdc_fastapi.utils.mirth import (
-    MirthMessageResponseSchema,
+from ukrdc_fastapi.utils.mirth import MirthMessageResponseSchema, get_channel_from_name
+from ukrdc_fastapi.utils.mirth.messages import (
     build_export_all_message,
     build_export_docs_message,
     build_export_radar_message,
     build_export_tests_message,
-    get_channel_from_name,
 )
 
 from .dependencies import _get_patientrecord

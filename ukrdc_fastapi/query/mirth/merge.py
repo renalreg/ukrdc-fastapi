@@ -8,11 +8,8 @@ from ukrdc_sqla.empi import MasterRecord
 from ukrdc_fastapi.dependencies.auth import UKRDCUser
 from ukrdc_fastapi.exceptions import MirthChannelError
 from ukrdc_fastapi.query.masterrecords import get_masterrecord
-from ukrdc_fastapi.utils.mirth import (
-    MirthMessageResponseSchema,
-    build_merge_message,
-    get_channel_from_name,
-)
+from ukrdc_fastapi.utils.mirth import MirthMessageResponseSchema, get_channel_from_name
+from ukrdc_fastapi.utils.mirth.messages import build_merge_message
 
 
 async def merge_master_records(

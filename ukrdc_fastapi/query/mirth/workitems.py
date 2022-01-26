@@ -9,11 +9,10 @@ from sqlalchemy.orm.session import Session
 from ukrdc_fastapi.dependencies.auth import UKRDCUser
 from ukrdc_fastapi.exceptions import MirthChannelError
 from ukrdc_fastapi.query.workitems import get_workitem
-from ukrdc_fastapi.utils.mirth import (
-    MirthMessageResponseSchema,
+from ukrdc_fastapi.utils.mirth import MirthMessageResponseSchema, get_channel_from_name
+from ukrdc_fastapi.utils.mirth.messages import (
     build_close_workitem_message,
     build_update_workitem_message,
-    get_channel_from_name,
 )
 
 
