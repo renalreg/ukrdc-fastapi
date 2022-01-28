@@ -7,6 +7,7 @@ from .base import OrmModel
 class NameSchema(OrmModel):
     given: str
     family: str
+    nameuse: Optional[str]
 
 
 class NumberSchema(OrmModel):
@@ -22,7 +23,12 @@ class AddressSchema(OrmModel):
     town: Optional[str]
     county: Optional[str]
     postcode: Optional[str]
+
+    country_code: Optional[str]
+    country_code_std: Optional[str]
     country_description: Optional[str]
+
+    addressuse: Optional[str]
 
 
 class ContactDetailSchema(OrmModel):
