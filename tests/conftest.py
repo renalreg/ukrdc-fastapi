@@ -910,7 +910,7 @@ def app(
             "cid": "PYTEST",
             "sub": "TEST@UKRDC_FASTAPI",
             "scp": ["openid", "profile", "email", "offline_access"],
-            settings.user_permission_key: auth.Permissions.all(),
+            "org.ukrdc.permissions": auth.Permissions.all(),
         }
 
     # Override FastAPI dependencies to point to function-scoped sessions

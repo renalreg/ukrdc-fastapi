@@ -89,7 +89,7 @@ class URKDCAuth:
         audience: str,
         client_ids: list[str],
         scope_key: str = "scope",
-        permission_key: str = "permission",
+        permission_key: str = "org.ukrdc.permissions",
     ) -> None:
         self.issuer = issuer.rstrip("/")
         self.audience = audience
@@ -175,5 +175,4 @@ auth = URKDCAuth(
     settings.oauth_issuer,
     settings.oauth_audience,
     [settings.app_client_id, settings.swagger_client_id],
-    permission_key=settings.user_permission_key,
 )
