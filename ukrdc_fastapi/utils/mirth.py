@@ -130,8 +130,10 @@ def get_cached_channels(redis: Redis) -> list[ChannelModel]:
     channel_info: list[ChannelModel]
 
     channel_info_json: dict[str, str] = redis.hgetall(redis_key)
+    print(channel_info_json)
     channel_info = [
-        ChannelModel.parse_raw(channel) for channel in channel_info_json.values()
+        ChannelModel.parse_raw(channel, content_type="json")
+        for channel in channel_info_json.values()
     ]
 
     return channel_info
@@ -151,7 +153,10 @@ def get_cached_groups(redis: Redis) -> list[ChannelGroup]:
     groups: list[ChannelGroup]
 
     groups_json: dict[str, str] = redis.hgetall(redis_key)
-    groups = [ChannelGroup.parse_raw(group) for group in groups_json.values()]
+    groups = [
+        ChannelGroup.parse_raw(group, content_type="json")
+        for group in groups_json.values()
+    ]
 
     return groups
 
@@ -171,7 +176,8 @@ def get_cached_statistics(redis: Redis) -> list[ChannelStatistics]:
 
     statistics_json: dict[str, str] = redis.hgetall(redis_key)
     statistics = [
-        ChannelStatistics.parse_raw(stat) for stat in statistics_json.values()
+        ChannelStatistics.parse_raw(stat, content_type="json")
+        for stat in statistics_json.values()
     ]
 
     return statistics
