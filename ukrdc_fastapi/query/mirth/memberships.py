@@ -7,7 +7,7 @@ from ukrdc_fastapi.dependencies.auth import UKRDCUser
 from ukrdc_fastapi.query.masterrecords import get_masterrecord_from_ukrdcid
 from ukrdc_fastapi.query.mirth.base import safe_send_mirth_message_to_name
 from ukrdc_fastapi.utils.mirth import MirthMessageResponseSchema
-from ukrdc_fastapi.utils.mirth.messages import build_pkb_membership_message
+from ukrdc_fastapi.utils.mirth.messages.pkb import build_pkb_membership_message
 
 
 async def create_pkb_membership(
@@ -20,7 +20,7 @@ async def create_pkb_membership(
     """Export a specific patient's data to PV"""
     master_record: MasterRecord = get_masterrecord_from_ukrdcid(jtrace, ukrdcid, user)
     return await safe_send_mirth_message_to_name(
-        "PKB Outbound - Memberships",
+        "PKB - New Patients",
         build_pkb_membership_message(master_record.nationalid),
         mirth,
         redis,
