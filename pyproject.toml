@@ -95,6 +95,7 @@ omit = ["ukrdc_fastapi/dependencies/*", "ukrdc_fastapi/main.py", "ukrdc_fastapi/
 
 [tool.pytest.ini_options]
 addopts = "--cov=ukrdc_fastapi"
+asyncio_mode = "auto"
 minversion = "6.0"
 testpaths = [
   "tests",

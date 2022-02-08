@@ -5,6 +5,7 @@ from pathlib import Path
 
 import fakeredis
 import pytest
+import pytest_asyncio
 from fastapi.testclient import TestClient
 from mirth_client import MirthAPI
 from pytest_httpx import HTTPXMock
@@ -35,6 +36,7 @@ from ukrdc_sqla.ukrdc import (
     Level,
     Medication,
     Observation,
+    ProgramMembership,
     Question,
     RenalDiagnosis,
     ResultItem,
@@ -43,7 +45,6 @@ from ukrdc_sqla.ukrdc import (
     Treatment,
 )
 
-from ukrdc_fastapi.config import settings
 from ukrdc_fastapi.dependencies import (
     auth,
     get_auditdb,
@@ -267,6 +268,23 @@ def populate_codes(ukrdc3):
 
 
 def populate_patient_1_extra(session):
+    membership_1 = ProgramMembership(
+        id="MEMBERSHIP_1",
+        pid=PID_1,
+        program_name="PROGRAM_NAME_1",
+        from_time=days_ago(365),
+        to_time=None,
+    )
+    membership_2 = ProgramMembership(
+        id="MEMBERSHIP_2",
+        pid=PID_1,
+        program_name="PROGRAM_NAME_2",
+        from_time=days_ago(365),
+        to_time=days_ago(1),
+    )
+    session.add(membership_1)
+    session.add(membership_2)
+
     diagnosis_1 = Diagnosis(
         id="DIAGNOSIS1",
         pid=PID_1,
@@ -846,7 +864,7 @@ def audit_session(sessions):
     return sessions[4]
 
 
-@pytest.fixture(scope="function")
+@pytest_asyncio.fixture(scope="function")
 async def mirth_session():
     """Create a fresh in-memory Mirth session"""
     async with MirthAPI("mock://mirth.url") as api:
@@ -860,8 +878,7 @@ from ukrdc_fastapi.utils.mirth import (
 )
 
 
-@pytest.fixture(scope="function")
-@pytest.mark.asyncio
+@pytest_asyncio.fixture(scope="function")
 async def redis_session(mirth_session, httpx_session):
     """Create a fresh in-memory Redis database session"""
     redis = fakeredis.FakeStrictRedis(decode_responses=True)
