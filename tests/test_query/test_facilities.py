@@ -1,5 +1,5 @@
 import pytest
-from ukrdc_sqla.ukrdc import Code
+from ukrdc_sqla.ukrdc import Code, Facility
 
 from ukrdc_fastapi.query import facilities
 from ukrdc_fastapi.query.common import PermissionsError
@@ -33,11 +33,28 @@ def test_get_facility(ukrdc3_session, stats_session, superuser):
         "TEST_SENDING_FACILITY_1",
         superuser,
     )
+
     assert facility.id == "TEST_SENDING_FACILITY_1"
     assert facility.description == "TEST_SENDING_FACILITY_1_DESCRIPTION"
-    assert facility.data_flow.pkb_message_exclusions == ["MDM_T02_CP"]
-
     assert facility.statistics.last_updated
+
+
+def test_get_facility_data_flow(ukrdc3_session, stats_session, superuser):
+    facility_object = ukrdc3_session.query(Facility).get("TEST_SENDING_FACILITY_1")
+    facility_object.pkb_msg_exclusions = ["MDM_T02_CP"]
+    facility_object.pkb_msg_exclusions.append("MDM_T02_DOC")
+    ukrdc3_session.commit()
+
+    facility = facilities.get_facility(
+        ukrdc3_session,
+        stats_session,
+        "TEST_SENDING_FACILITY_1",
+        superuser,
+    )
+
+    assert not facility.data_flow.pkb_in
+    assert facility.data_flow.pkb_out
+    assert facility.data_flow.pkb_message_exclusions == ["MDM_T02_CP", "MDM_T02_DOC"]
 
 
 def test_get_facility_denied(ukrdc3_session, stats_session, test_user):
