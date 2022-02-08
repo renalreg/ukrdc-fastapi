@@ -1,4 +1,4 @@
-from typing import Literal, get_args
+from typing import Literal, Optional, get_args
 
 # Override Bandit warnings, since we use this to generate XML, not parse
 from xml.etree.ElementTree import Element, SubElement, tostring  # nosec
@@ -17,7 +17,7 @@ MessageType = Literal[
     "ADT_A28", "MDM_T02_CP", "MDM_T02_DOC", "ORU_R01_LAB", "ORU_R01_OBS"
 ]
 
-ALL_MSG_TYPES: list[MessageType] = get_args(MessageType)
+ALL_MSG_TYPES: list[MessageType] = list(get_args(MessageType))
 
 EXCLUDED_EXTRACTS = ["RADAR", "SURVEY", "HSMIG"]
 
@@ -57,14 +57,8 @@ def _get_facility_exclusions(facility: Facility) -> list[str]:
     """
     if not facility:
         return []
-    excl = facility.pkb_msg_exclusions
-    if not excl:
-        return []
-    elif isinstance(excl, list):
-        return excl
-    elif isinstance(excl, str):
-        return excl.strip("{}").split(",")
-    return []
+    excl: Optional[list[str]] = facility.pkb_msg_exclusions
+    return excl or []
 
 
 def _build_pkb_sync_base_xml(record: PatientRecord, msg_type: MessageType) -> Element:
@@ -200,11 +194,11 @@ def build_pkb_sync_messages(record: PatientRecord, ukrdc3: Session) -> list[str]
 
     # Check facility-level overrides
 
-    facility = ukrdc3.query(Facility).get(record.sending_facility)
+    facility = ukrdc3.query(Facility).get(record.sendingfacility)
 
     if not facility:
         raise MissingFacilityError(
-            f"No facility configuration found for {facility.code}"
+            f"No facility configuration found for {record.sendingfacility}"
         )
 
     if not facility.pkb_out:
