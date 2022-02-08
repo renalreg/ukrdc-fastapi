@@ -113,7 +113,7 @@ def populate_facilities(ukrdc3, statsdb, errorsdb):
         ukrdc3,
         pkb_in=False,
         pkb_out=True,
-        pkb_msg_exclusions=["MDM_T02_CP"],
+        pkb_msg_exclusions=None,
     )
 
     create_basic_facility(
