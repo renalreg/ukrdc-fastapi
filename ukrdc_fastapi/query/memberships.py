@@ -21,8 +21,6 @@ def get_active_memberships_for_patientrecord(
         .join(PatientRecord)
         .filter(PatientRecord.ukrdcid == record.ukrdcid)
         .filter(ProgramMembership.to_time == None)  # noqa: E711
-        .order_by(ProgramMembership.from_time.asc())
-        .all()
     )
 
 
