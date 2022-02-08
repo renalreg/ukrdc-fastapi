@@ -31,8 +31,8 @@
         <revision>3</revision>
     </channel>
     <channel>
-        <id>37d02152-e73a-4f27-a674-77b45c7a507f</id>
-        <name>PKB Outbound - Memberships</name>
+        <id>10ced363-c437-4421-ab30-db6a35c59553</id>
+        <name>PKB - New Patients</name>
         <description>Channel description</description>
         <revision>9</revision>
     </channel>
