@@ -6,11 +6,20 @@ from xml.etree.ElementTree import Element, SubElement, tostring  # nosec
 from sqlalchemy.orm import Session
 from ukrdc_sqla.ukrdc import Facility, PatientRecord
 
+from ukrdc_fastapi.exceptions import (
+    MissingFacilityError,
+    NoActiveMembershipError,
+    PKBOutboundDisabledError,
+)
+from ukrdc_fastapi.query.memberships import record_has_active_membership
+
 MessageType = Literal[
     "ADT_A28", "MDM_T02_CP", "MDM_T02_DOC", "ORU_R01_LAB", "ORU_R01_OBS"
 ]
 
 ALL_MSG_TYPES: list[MessageType] = get_args(MessageType)
+
+EXCLUDED_EXTRACTS = ["RADAR", "SURVEY", "HSMIG"]
 
 # PKB Memberships
 
@@ -35,19 +44,17 @@ def build_pkb_membership_message(ukrdcid: str) -> str:
 # PKB record data
 
 
-def _get_facility_exclusions(sending_facility_code: str, ukrdc3: Session) -> list[str]:
+def _get_facility_exclusions(facility: Facility) -> list[str]:
     """
     Fetch a list of PKB HL7 message types that should be excluded for
     a given sending facility
 
     Args:
-        sending_facility_code (str): Sending facility code
-        ukrdc3 (Session): UKRDC3 session
+        facility (Facility): Sending facility
 
     Returns:
         [type]: [description]
     """
-    facility = ukrdc3.query(Facility).get(sending_facility_code)
     if not facility:
         return []
     excl = facility.pkb_msg_exclusions
@@ -183,17 +190,42 @@ def build_pkb_sync_messages(record: PatientRecord, ukrdc3: Session) -> list[str]
         list[str]: XML rawData for Mirth messages
     """
     # TODO: Check user permissions for record/record.sending_facility (likely upstream check)
-    # TODO: Check for PKB membership
-    # TODO: Check if sending facility is enabled
-    # TODO: Check if sending extract is valid
 
-    # Compute which message types to send
-    msg_type_exclusions = _get_facility_exclusions(record.sending_facility, ukrdc3)
+    # Check memberships
+
+    if not record_has_active_membership(ukrdc3, record, "PKB"):
+        raise NoActiveMembershipError(
+            f"Patient {record.pid} has no active PKB membership"
+        )
+
+    # Check facility-level overrides
+
+    facility = ukrdc3.query(Facility).get(record.sending_facility)
+
+    if not facility:
+        raise MissingFacilityError(
+            f"No facility configuration found for {facility.code}"
+        )
+
+    if not facility.pkb_out:
+        raise PKBOutboundDisabledError(
+            f"PKB outbound sending disabled for {facility.code}"
+        )
+
+    msg_type_exclusions = _get_facility_exclusions(facility)
     includes_message_types: list[str] = [
         t for t in ALL_MSG_TYPES if t not in msg_type_exclusions
     ]
 
+    # Check for excluded sending extracts
+
+    if record.sendingextract in EXCLUDED_EXTRACTS:
+        raise PKBOutboundDisabledError(
+            f"PKB outbound sending disabled for {record.sendingextract}"
+        )
+
     # Start generating messages
+
     messages: list[str] = []
 
     if "ADT_A28" in includes_message_types:

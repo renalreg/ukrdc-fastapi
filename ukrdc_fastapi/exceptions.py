@@ -14,3 +14,15 @@ class EmptyQueryError(RuntimeError):
 
 class MirthChannelError(RuntimeError):
     """Error getting Mirth channel info"""
+
+
+class NoActiveMembershipError(RuntimeError):
+    """No active membership of the required type was found on this record"""
+
+
+class MissingFacilityError(RuntimeError):
+    """No facility configuration found for this facility code"""
+
+
+class PKBOutboundDisabledError(RuntimeError):
+    """PKB outbound sending disabled for this facility"""
