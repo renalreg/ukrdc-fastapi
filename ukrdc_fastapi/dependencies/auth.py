@@ -56,6 +56,7 @@ class Permissions:
             cls.WRITE_EMPI,
             cls.EXPORT_RECORDS,
             cls.DELETE_RECORDS,
+            cls.CREATE_MEMBERSHIPS,
             cls.UNIT_PREFIX + cls.UNIT_WILDCARD,
         ]
 
