@@ -124,3 +124,23 @@ async def test_masterrecord_patientrecords(client):
     records = [PatientRecordSummarySchema(**item) for item in response.json()]
     pids = {record.pid for record in records}
     assert pids == {"PYTEST01:PV:00000000A", "PYTEST04:PV:00000000A"}
+
+
+async def test_master_record_memberships_create_pkb(client):
+    response = await client.post(
+        f"{configuration.base_url}/v1/masterrecords/1/memberships/create/pkb"
+    )
+    assert response.status_code == 200
+    resp = MirthMessageResponseSchema(**response.json())
+    assert resp.status == "success"
+    assert resp.message == "<result><ukrdcid>999999999</ukrdcid></result>"
+
+
+async def test_master_record_memberships_create_pkb_non_ukrdc(client):
+    response = await client.post(
+        f"{configuration.base_url}/v1/masterrecords/101/memberships/create/pkb"
+    )
+    assert response.status_code == 200
+    resp = MirthMessageResponseSchema(**response.json())
+    assert resp.status == "success"
+    assert resp.message == "<result><ukrdcid>999999999</ukrdcid></result>"
