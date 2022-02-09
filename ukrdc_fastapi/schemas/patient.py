@@ -1,7 +1,9 @@
 import datetime
-from typing import Optional
+from typing import Literal, Optional
 
 from .base import OrmModel
+
+GenderType = Literal["1", "2", "9"]
 
 
 class NameSchema(OrmModel):
@@ -17,8 +19,8 @@ class NumberSchema(OrmModel):
 
 
 class AddressSchema(OrmModel):
-    from_time: Optional[datetime.datetime]
-    to_time: Optional[datetime.datetime]
+    from_time: Optional[datetime.date]
+    to_time: Optional[datetime.date]
     street: Optional[str]
     town: Optional[str]
     county: Optional[str]
@@ -82,7 +84,7 @@ class PatientSchema(OrmModel):
 
     birth_time: datetime.date
     death_time: Optional[datetime.date]
-    gender: str
+    gender: GenderType
 
     ethnic_group_code: Optional[str]
     ethnic_group_description: Optional[str]
