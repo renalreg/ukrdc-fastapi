@@ -1,14 +1,23 @@
 import datetime
 from typing import Optional
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi import Query as QueryParam
 from fastapi import Response, Security
+from mirth_client import MirthAPI
+from redis import Redis
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_204_NO_CONTENT
 from ukrdc_sqla.empi import LinkRecord, MasterRecord
 
-from ukrdc_fastapi.dependencies import get_auditdb, get_errorsdb, get_jtrace, get_ukrdc3
+from ukrdc_fastapi.dependencies import (
+    get_auditdb,
+    get_errorsdb,
+    get_jtrace,
+    get_mirth,
+    get_redis,
+    get_ukrdc3,
+)
 from ukrdc_fastapi.dependencies.audit import (
     Auditer,
     AuditOperation,
@@ -27,6 +36,7 @@ from ukrdc_fastapi.query.messages import (
     get_last_message_on_masterrecord,
     get_messages_related_to_masterrecord,
 )
+from ukrdc_fastapi.query.mirth.memberships import create_pkb_membership
 from ukrdc_fastapi.query.patientrecords import (
     get_patientrecords_related_to_masterrecord,
 )
@@ -42,6 +52,7 @@ from ukrdc_fastapi.schemas.empi import (
 )
 from ukrdc_fastapi.schemas.message import MessageSchema, MinimalMessageSchema
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordSummarySchema
+from ukrdc_fastapi.utils.mirth import MirthMessageResponseSchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
 from ukrdc_fastapi.utils.sort import SQLASorter, make_sqla_sorter
 
@@ -384,3 +395,54 @@ def master_record_audit(
         item.populate_identifiers(jtrace, ukrdc3)
 
     return page
+
+
+@router.post(
+    "/memberships/create/pkb",
+    response_model=MirthMessageResponseSchema,
+    dependencies=[Security(auth.permission(Permissions.CREATE_MEMBERSHIPS))],
+)
+async def master_record_memberships_create_pkb(
+    record_id: int,
+    user: UKRDCUser = Security(auth.get_user()),
+    jtrace: Session = Depends(get_jtrace),
+    mirth: MirthAPI = Depends(get_mirth),
+    audit: Auditer = Depends(get_auditer),
+    redis: Redis = Depends(get_redis),
+):
+    """
+    Create a new PKB membership for a master record.
+    """
+    record = get_masterrecord(jtrace, record_id, user)
+
+    # If the request was not triggered from a UKRDC MasterRecord
+    if record.nationalid_type != "UKRDC":
+        # Find all linked UKRDC MasterRecords
+        records = get_masterrecords_related_to_masterrecord(
+            jtrace,
+            record_id,
+            user,
+            nationalid_type="UKRDC",
+        ).all()
+        if len(records) > 1:
+            raise HTTPException(
+                500,
+                "Cannot create PKB membership for a patient with multiple UKRDC IDs",
+            )
+        elif len(records) == 0:
+            raise HTTPException(
+                500,
+                "Cannot create PKB membership for a patient with no UKRDC ID",
+            )
+        else:
+            # Use the UKRDC MasterRecord to create the PKB membership
+            record = records[0]
+
+    audit.add_event(
+        Resource.MEMBERSHIP,
+        "PKB",
+        AuditOperation.CREATE,
+        parent=audit.add_event(Resource.MASTER_RECORD, record_id, AuditOperation.READ),
+    )
+
+    return await create_pkb_membership(record, mirth, redis)
