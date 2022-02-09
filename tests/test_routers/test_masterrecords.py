@@ -128,19 +128,19 @@ async def test_masterrecord_patientrecords(client):
 
 async def test_master_record_memberships_create_pkb(client):
     response = await client.post(
-        f"{configuration.base_url}/v1/masterrecords/1/memberships/create/pkb"
+        f"{configuration.base_url}/v1/masterrecords/2/memberships/create/pkb"
     )
     assert response.status_code == 200
     resp = MirthMessageResponseSchema(**response.json())
     assert resp.status == "success"
-    assert resp.message == "<result><ukrdcid>999999999</ukrdcid></result>"
+    assert resp.message == "<result><ukrdcid>999999911</ukrdcid></result>"
 
 
 async def test_master_record_memberships_create_pkb_non_ukrdc(client):
     response = await client.post(
-        f"{configuration.base_url}/v1/masterrecords/101/memberships/create/pkb"
+        f"{configuration.base_url}/v1/masterrecords/102/memberships/create/pkb"
     )
     assert response.status_code == 200
     resp = MirthMessageResponseSchema(**response.json())
     assert resp.status == "success"
-    assert resp.message == "<result><ukrdcid>999999999</ukrdcid></result>"
+    assert resp.message == "<result><ukrdcid>999999911</ukrdcid></result>"
