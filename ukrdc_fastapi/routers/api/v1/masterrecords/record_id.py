@@ -429,14 +429,13 @@ async def master_record_memberships_create_pkb(
                 500,
                 "Cannot create PKB membership for a patient with multiple UKRDC IDs",
             )
-        elif len(records) == 0:
+        if len(records) == 0:
             raise HTTPException(
                 500,
                 "Cannot create PKB membership for a patient with no UKRDC ID",
             )
-        else:
-            # Use the UKRDC MasterRecord to create the PKB membership
-            record = records[0]
+        # Use the UKRDC MasterRecord to create the PKB membership
+        record = records[0]
 
     audit.add_event(
         Resource.MEMBERSHIP,
