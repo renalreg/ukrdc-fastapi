@@ -26,3 +26,7 @@ class MissingFacilityError(RuntimeError):
 
 class PKBOutboundDisabledError(RuntimeError):
     """PKB outbound sending disabled for this facility"""
+
+
+class RecordTypeError(RuntimeError):
+    """Record type not supported"""
