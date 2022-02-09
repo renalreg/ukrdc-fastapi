@@ -17,7 +17,20 @@ def build_demographic_update_message(
     dob: Optional[datetime.date],
     gender: Optional[GenderType],
     address: Optional[AddressSchema],
-):
+) -> str:
+    """
+    Build an RDA XML message to update the demographic data of a given patient record
+
+    Args:
+        record (PatientRecord): Base patient record to update
+        name (Optional[NameSchema]): New name to set
+        dob (Optional[datetime.date]): New date of birth to set
+        gender (Optional[GenderType]): New gender code to set
+        address (Optional[AddressSchema]): New address to set
+
+    Returns:
+        str: RDA XML string
+    """
     # Build imutable section of the message (i.e. record parameters we don't allow to change)
     patient_numbers = [
         types.PatientNumber(
@@ -74,12 +87,14 @@ def build_demographic_update_message(
         )
     )
 
+    new_dob = dob or record.patient.birth_time
+
     # Build RDA message
     rda_record = RDAPatientRecord(
         sending_facility=record.sendingfacility,
         sending_extract=record.sendingextract,
         patient=RDAPatient(
-            birth_time=XmlDate.from_date(dob or record.patient.birth_time),
+            birth_time=XmlDate.from_date(new_dob) if new_dob else None,
             gender=gender or record.patient.gender,
             names=new_names,
             addresses=RDAPatient.Addresses(address=[new_address])
