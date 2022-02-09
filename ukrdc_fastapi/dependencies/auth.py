@@ -17,6 +17,8 @@ class Permissions:
     EXPORT_RECORDS = "ukrdc:records:export"
     DELETE_RECORDS = "ukrdc:records:delete"
 
+    CREATE_MEMBERSHIPS = "ukrdc:memberships:create"
+
     WRITE_EMPI = "ukrdc:empi:write"
 
     READ_MESSAGES = "ukrdc:messages:read"
