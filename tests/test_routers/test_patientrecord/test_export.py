@@ -1,8 +1,8 @@
 from ukrdc_fastapi.config import configuration
 
 
-def test_record_export_data(client, httpx_session):
-    response = client.post(
+async def test_record_export_data(client):
+    response = await client.post(
         f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/export/pv/",
         json={},
     )
@@ -12,8 +12,8 @@ def test_record_export_data(client, httpx_session):
     }
 
 
-def test_record_export_tests(client, httpx_session):
-    response = client.post(
+async def test_record_export_tests(client):
+    response = await client.post(
         f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/export/pv-tests/",
         json={},
     )
@@ -23,8 +23,8 @@ def test_record_export_tests(client, httpx_session):
     }
 
 
-def test_record_export_docs(client, httpx_session):
-    response = client.post(
+async def test_record_export_docs(client):
+    response = await client.post(
         f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/export/pv-docs/",
         json={},
     )
@@ -34,8 +34,8 @@ def test_record_export_docs(client, httpx_session):
     }
 
 
-def test_record_export_radar(client, httpx_session):
-    response = client.post(
+async def test_record_export_radar(client):
+    response = await client.post(
         f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/export/radar/",
         json={},
     )

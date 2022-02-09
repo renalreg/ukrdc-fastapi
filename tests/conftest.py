@@ -6,7 +6,7 @@ from pathlib import Path
 import fakeredis
 import pytest
 import pytest_asyncio
-from fastapi.testclient import TestClient
+from httpx import AsyncClient
 from mirth_client import MirthAPI
 from pytest_httpx import HTTPXMock
 from pytest_postgresql import factories
@@ -944,9 +944,15 @@ def app(
     return app
 
 
-@pytest.fixture(scope="function")
-def client(app):
-    return TestClient(app)
+@pytest_asyncio.fixture(scope="function")
+async def client(app):
+    async with AsyncClient(app=app, base_url="http://test") as ac:
+        yield ac
+
+
+@pytest.fixture
+def non_mocked_hosts() -> list:
+    return ["test"]
 
 
 @pytest.fixture(scope="function")

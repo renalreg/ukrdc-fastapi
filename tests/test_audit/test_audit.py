@@ -1,10 +1,10 @@
-from ukrdc_fastapi.models.audit import AuditEvent
 from ukrdc_fastapi.config import configuration
+from ukrdc_fastapi.models.audit import AuditEvent
 
 
-def test_access_event(client, audit_session):
+async def test_access_event(client, audit_session):
     path = f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/"
-    response = client.get(path)
+    response = await client.get(path)
     assert response.status_code == 200
 
     events = audit_session.query(AuditEvent).all()
@@ -18,7 +18,7 @@ def test_access_event(client, audit_session):
     assert event.children == []
 
     access_event = events[0].access_event
-    assert access_event.path == "http://testserver" + path
+    assert access_event.path == "http://test" + path
     assert access_event.sub == "TEST@UKRDC_FASTAPI"
     assert access_event.uid == "TEST_ID"
     assert access_event.cid == "PYTEST"

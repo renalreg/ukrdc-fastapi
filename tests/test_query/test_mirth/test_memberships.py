@@ -1,25 +1,24 @@
 import pytest
+from ukrdc_sqla.empi import MasterRecord
 
-from ukrdc_fastapi.query.common import PermissionsError
+from ukrdc_fastapi.exceptions import RecordTypeError
 from ukrdc_fastapi.query.mirth import memberships
 
 
 @pytest.mark.asyncio
-async def test_create_pkb_membership(
-    jtrace_session, redis_session, mirth_session, superuser, httpx_session
-):
+async def test_create_pkb_membership(jtrace_session, redis_session, mirth_session):
+    record = jtrace_session.query(MasterRecord).get(1)
     response = await memberships.create_pkb_membership(
-        "999999999", superuser, jtrace_session, mirth_session, redis_session
+        record, mirth_session, redis_session
     )
     assert response.status == "success"
     assert response.message == "<result><ukrdcid>999999999</ukrdcid></result>"
 
 
 @pytest.mark.asyncio
-async def test_merge_master_records_permission_denied(
-    jtrace_session, redis_session, mirth_session, test_user, httpx_session
+async def test_create_pkb_membership_non_ukrdc(
+    jtrace_session, redis_session, mirth_session
 ):
-    with pytest.raises(PermissionsError):
-        await memberships.create_pkb_membership(
-            "999999911", test_user, jtrace_session, mirth_session, redis_session
-        )
+    record = jtrace_session.query(MasterRecord).get(101)
+    with pytest.raises(RecordTypeError):
+        await memberships.create_pkb_membership(record, mirth_session, redis_session)

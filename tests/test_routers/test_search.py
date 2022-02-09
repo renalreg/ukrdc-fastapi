@@ -54,7 +54,7 @@ def _commit_extra_patients(ukrdc3, jtrace):
         )
 
 
-def test_search_all(ukrdc3_session, jtrace_session, client):
+async def test_search_all(ukrdc3_session, jtrace_session, client):
     # Add extra test items
     _commit_extra_patients(ukrdc3_session, jtrace_session)
 
@@ -62,7 +62,7 @@ def test_search_all(ukrdc3_session, jtrace_session, client):
     for index, number in enumerate(TEST_NUMBERS):
         url = f"{configuration.base_url}/v1/search/?search={number}"
 
-        response = client.get(url)
+        response = await client.get(url)
         assert response.status_code == 200
 
         returned_ids = {item["id"] for item in response.json()["items"]}
@@ -70,14 +70,14 @@ def test_search_all(ukrdc3_session, jtrace_session, client):
 
         url = f"{configuration.base_url}/v1/search/?search={number}&include_ukrdc=true"
 
-        response = client.get(url)
+        response = await client.get(url)
         assert response.status_code == 200
 
         returned_ids = {item["id"] for item in response.json()["items"]}
         assert returned_ids == {index + BUMPER, index + BUMPER + 100}
 
 
-def test_search_pid(ukrdc3_session, jtrace_session, client):
+async def test_search_pid(ukrdc3_session, jtrace_session, client):
     # Add extra test items
     _commit_extra_patients(ukrdc3_session, jtrace_session)
 
@@ -85,14 +85,14 @@ def test_search_pid(ukrdc3_session, jtrace_session, client):
     for index, number in enumerate(TEST_NUMBERS):
         url = f"{configuration.base_url}/v1/search/?pid={number}&include_ukrdc=true"
 
-        response = client.get(url)
+        response = await client.get(url)
         assert response.status_code == 200
 
         returned_ids = {item["id"] for item in response.json()["items"]}
         assert returned_ids == {index + BUMPER, index + BUMPER + 100}
 
 
-def test_search_mrn(ukrdc3_session, jtrace_session, client):
+async def test_search_mrn(ukrdc3_session, jtrace_session, client):
     # Add extra test items
     _commit_extra_patients(ukrdc3_session, jtrace_session)
 
@@ -100,14 +100,14 @@ def test_search_mrn(ukrdc3_session, jtrace_session, client):
     for index, number in enumerate(TEST_NUMBERS):
         url = f"{configuration.base_url}/v1/search/?mrn_number={number}&include_ukrdc=true"
 
-        response = client.get(url)
+        response = await client.get(url)
         assert response.status_code == 200
 
         returned_ids = {item["id"] for item in response.json()["items"]}
         assert returned_ids == {index + BUMPER, index + BUMPER + 100}
 
 
-def test_search_ukrdc_number(ukrdc3_session, jtrace_session, client):
+async def test_search_ukrdc_number(ukrdc3_session, jtrace_session, client):
     # Add extra test items
     _commit_extra_patients(ukrdc3_session, jtrace_session)
 
@@ -115,14 +115,14 @@ def test_search_ukrdc_number(ukrdc3_session, jtrace_session, client):
     for index, _ in enumerate(TEST_NUMBERS):
         url = f"{configuration.base_url}/v1/search/?ukrdc_number={100000000 + index}&include_ukrdc=true"
 
-        response = client.get(url)
+        response = await client.get(url)
         assert response.status_code == 200
 
         returned_ids = {item["id"] for item in response.json()["items"]}
         assert returned_ids == {index + BUMPER, index + BUMPER + 100}
 
 
-def test_search_facility(ukrdc3_session, jtrace_session, client):
+async def test_search_facility(ukrdc3_session, jtrace_session, client):
     # Add extra test items
     _commit_extra_patients(ukrdc3_session, jtrace_session)
 
@@ -130,14 +130,14 @@ def test_search_facility(ukrdc3_session, jtrace_session, client):
     for index, _ in enumerate(TEST_NUMBERS):
         url = f"{configuration.base_url}/v1/search/?facility=TEST_SENDING_FACILITY_{index + BUMPER}&include_ukrdc=true"
 
-        response = client.get(url)
+        response = await client.get(url)
         assert response.status_code == 200
 
         returned_ids = {item["id"] for item in response.json()["items"]}
         assert returned_ids == {index + BUMPER, index + BUMPER + 100}
 
 
-def test_search_name(ukrdc3_session, jtrace_session, client):
+async def test_search_name(ukrdc3_session, jtrace_session, client):
     # Add extra test items
     _commit_extra_patients(ukrdc3_session, jtrace_session)
 
@@ -146,14 +146,14 @@ def test_search_name(ukrdc3_session, jtrace_session, client):
         full_name = quote(f"NAME{index} SURNAME{index}")
         url = f"{configuration.base_url}/v1/search/?full_name={full_name}&include_ukrdc=true"
 
-        response = client.get(url)
+        response = await client.get(url)
         assert response.status_code == 200
 
         returned_ids = {item["id"] for item in response.json()["items"]}
         assert returned_ids == {index + BUMPER, index + BUMPER + 100}
 
 
-def test_search_dob(ukrdc3_session, jtrace_session, client):
+async def test_search_dob(ukrdc3_session, jtrace_session, client):
     # Add extra test items
     _commit_extra_patients(ukrdc3_session, jtrace_session)
 
@@ -162,14 +162,14 @@ def test_search_dob(ukrdc3_session, jtrace_session, client):
         dob = f"1950-01-{str((index + 11) % 28).zfill(2)}"
         url = f"{configuration.base_url}/v1/search/?dob={dob}&include_ukrdc=true"
 
-        response = client.get(url)
+        response = await client.get(url)
         assert response.status_code == 200
 
         returned_ids = {item["id"] for item in response.json()["items"]}
         assert returned_ids == {index + BUMPER, index + BUMPER + 100}
 
 
-def test_search_multiple_mrn(ukrdc3_session, jtrace_session, client):
+async def test_search_multiple_mrn(ukrdc3_session, jtrace_session, client):
     # Add extra test items
     _commit_extra_patients(ukrdc3_session, jtrace_session)
 
@@ -179,14 +179,14 @@ def test_search_multiple_mrn(ukrdc3_session, jtrace_session, client):
         path += f"mrn_number={number}&"
     path = path.rstrip("&")
 
-    response = client.get(path)
+    response = await client.get(path)
     assert response.status_code == 200
 
     returned_ids = {item["id"] for item in response.json()["items"]}
     assert returned_ids == {i + BUMPER + 100 for i in range(5)}
 
 
-def test_search_implicit_dob(ukrdc3_session, jtrace_session, client):
+async def test_search_implicit_dob(ukrdc3_session, jtrace_session, client):
     # Add extra test items
     _commit_extra_patients(ukrdc3_session, jtrace_session)
 
@@ -195,14 +195,14 @@ def test_search_implicit_dob(ukrdc3_session, jtrace_session, client):
         dob = f"1950-01-{str((index + 11) % 28).zfill(2)}"
         url = f"{configuration.base_url}/v1/search/?search={dob}&include_ukrdc=true"
 
-        response = client.get(url)
+        response = await client.get(url)
         assert response.status_code == 200
 
         returned_ids = {item["id"] for item in response.json()["items"]}
         assert returned_ids == {index + BUMPER, index + BUMPER + 100}
 
 
-def test_search_implicit_facility(ukrdc3_session, jtrace_session, client):
+async def test_search_implicit_facility(ukrdc3_session, jtrace_session, client):
     # Add extra test items
     _commit_extra_patients(ukrdc3_session, jtrace_session)
 
@@ -210,7 +210,7 @@ def test_search_implicit_facility(ukrdc3_session, jtrace_session, client):
     for index, _ in enumerate(TEST_NUMBERS):
         url = f"{configuration.base_url}/v1/search/?search=TEST_SENDING_FACILITY_{index + BUMPER}&include_ukrdc=true"
 
-        response = client.get(url)
+        response = await client.get(url)
         assert response.status_code == 200
 
         returned_ids = {item["id"] for item in response.json()["items"]}

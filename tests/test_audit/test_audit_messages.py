@@ -1,10 +1,10 @@
+from ukrdc_fastapi.config import configuration
 from ukrdc_fastapi.models.audit import AuditEvent
 from ukrdc_fastapi.schemas.empi import WorkItemSchema
-from ukrdc_fastapi.config import configuration
 
 
-def test_messages_list(client, audit_session):
-    response = client.get(f"{configuration.base_url}/v1/messages/")
+async def test_messages_list(client, audit_session):
+    response = await client.get(f"{configuration.base_url}/v1/messages/")
     assert response.status_code == 200
 
     events = audit_session.query(AuditEvent).all()
@@ -19,8 +19,8 @@ def test_messages_list(client, audit_session):
     assert event.parent_id == None
 
 
-def test_message_detail(client, audit_session):
-    response = client.get(f"{configuration.base_url}/v1/messages/1")
+async def test_message_detail(client, audit_session):
+    response = await client.get(f"{configuration.base_url}/v1/messages/1")
     assert response.status_code == 200
 
     events = audit_session.query(AuditEvent).all()
@@ -35,8 +35,8 @@ def test_message_detail(client, audit_session):
     assert event.parent_id == None
 
 
-def test_message_workitems(client, audit_session):
-    response = client.get(f"{configuration.base_url}/v1/messages/2/workitems")
+async def test_message_workitems(client, audit_session):
+    response = await client.get(f"{configuration.base_url}/v1/messages/2/workitems")
     workitems = [WorkItemSchema(**item) for item in response.json()]
 
     events = audit_session.query(AuditEvent).all()
@@ -71,8 +71,8 @@ def test_message_workitems(client, audit_session):
         assert person_event.resource_id == str(workitems[i].person.id)
 
 
-def test_message_masterrecords(client, audit_session):
-    response = client.get(f"{configuration.base_url}/v1/messages/1/masterrecords")
+async def test_message_masterrecords(client, audit_session):
+    response = await client.get(f"{configuration.base_url}/v1/messages/1/masterrecords")
     assert response.status_code == 200
     returned_ids = {item.get("id") for item in response.json()}
     assert returned_ids == {1}

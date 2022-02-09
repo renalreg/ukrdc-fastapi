@@ -2,8 +2,8 @@ from tests.utils import days_ago
 from ukrdc_fastapi.config import configuration
 
 
-def test_record_surveys(client):
-    response = client.get(
+async def test_record_surveys(client):
+    response = await client.get(
         f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/surveys"
     )
     assert response.status_code == 200
