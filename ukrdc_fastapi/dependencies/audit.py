@@ -63,6 +63,7 @@ class RecordOperation(Enum):
     EXPORT_PV_TESTS = "EXPORT_PV_TESTS"
     EXPORT_PV_DOCS = "EXPORT_PV_DOCS"
     EXPORT_RADAR = "EXPORT_RADAR"
+    EXPORT_PKB = "EXPORT_PKB"
 
 
 class MessageOperation(Enum):

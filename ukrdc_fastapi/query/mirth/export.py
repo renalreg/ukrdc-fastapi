@@ -1,3 +1,5 @@
+from typing import AsyncGenerator
+
 from mirth_client.mirth import MirthAPI
 from redis import Redis
 from sqlalchemy.orm import Session
@@ -13,6 +15,7 @@ from ukrdc_fastapi.utils.mirth.messages import (
     build_export_radar_message,
     build_export_tests_message,
 )
+from ukrdc_fastapi.utils.mirth.messages.pkb import build_pkb_sync_messages
 
 
 async def export_all_to_pv(
@@ -69,3 +72,29 @@ async def export_all_to_radar(
     return await safe_send_mirth_message_to_name(
         "RADAR Outbound", build_export_radar_message(record.pid), mirth, redis
     )
+
+
+async def export_all_to_pkb(
+    pid: str,
+    user: UKRDCUser,
+    ukrdc3: Session,
+    mirth: MirthAPI,
+    redis: Redis,
+) -> AsyncGenerator[MirthMessageResponseSchema, None]:
+    """
+    Export a specific patient's data to PKB.
+
+    Notes:
+    - Unlike other export functions, this sends multiple messages to Mirth
+    in order to sync the patient record with PKB.
+    - Because of this, it may take a while to complete.
+    - Upstream functions calling export_all_to_pkb should probably run this
+    function in the background (thread or asyncio etc.)
+    """
+    record: PatientRecord = get_patientrecord(ukrdc3, pid, user)
+    messages = build_pkb_sync_messages(record, ukrdc3)
+
+    for message in messages:
+        yield await safe_send_mirth_message_to_name(
+            "PKB Outbound", message, mirth, redis
+        )
