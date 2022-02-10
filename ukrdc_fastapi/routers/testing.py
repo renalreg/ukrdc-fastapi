@@ -85,6 +85,7 @@ class TrackableTask:
 
         self.created = datetime.datetime.now()
         self.started = None
+        self.finished = None
 
         self._func = func
         self._lock_key = f"_LOCK_{self.lock}" if self.lock else None
@@ -170,6 +171,9 @@ class TrackableTask:
                 # Expire the task after the configured time
                 self.redis.expire(self.id, settings.redis_tasks_expire_error)
             finally:
+                self.finished = datetime.datetime.now()
+                # Sync to redis
+                self._sync()
                 # Release the lock
                 self._release()
 
