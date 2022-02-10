@@ -32,34 +32,12 @@ async def task_bad(n: int):
     raise RuntimeError("bad task finished")
 
 
-class TaskSubmitModel(BaseModel):
-    n: int
-    bad: bool = False
+class TaskLockError(Exception):
+    pass
 
 
 VisibilityType = typing.Literal["public", "private"]
 StatusType = typing.Literal["pending", "running", "finished", "failed"]
-
-
-class TaskInfo(BaseModel):
-    id: str
-    lock: str
-    name: str
-    visibility: VisibilityType
-    owner: str
-    status: StatusType
-    error: typing.Optional[str]
-
-    def redis_dict(self):
-        data = self.dict()
-        converted_data = {}
-        for k, v in data.items():
-            converted_data[k] = v if v is not None else ""
-        return converted_data
-
-
-class TaskLockError(Exception):
-    pass
 
 
 class TrackableTask:
@@ -75,30 +53,34 @@ class TrackableTask:
         self.redis = redis
         self.user = user
 
-        self.id = uuid.uuid4().hex
-        self.name = name or func.__name__
-        self.lock = lock
-        self.visibility = visibility
-        self.owner = self.user.email
-        self.status = "pending"
-        self.error = None
+        self.id: uuid.UUID = uuid.uuid4()
+        self._key: str = self.id.hex
 
-        self.created = datetime.datetime.now()
-        self.started = None
-        self.finished = None
+        self.name: str = name or func.__name__
+        self.lock: typing.Optional[str] = lock
+        self.visibility: VisibilityType = visibility
+        self.owner: typing.Optional[str] = self.user.email
+        self.status: StatusType = "pending"
+        self.error: typing.Optional[str] = None
 
-        self._func = func
-        self._lock_key = f"_LOCK_{self.lock}" if self.lock else None
+        self.created: datetime.datetime = datetime.datetime.now()
+        self.started: typing.Optional[datetime.datetime] = None
+        self.finished: typing.Optional[datetime.datetime] = None
+
+        self._func: typing.Callable = func
+        self._lock_key: typing.Optional[str] = (
+            f"_LOCK_{self.lock}" if self.lock else None
+        )
 
         self._prime()
         self._sync()
 
     def _sync(self):
-        self.redis.hmset(self.id, self.dict())
+        self.redis.hmset(self._key, self.dict())
 
     def dict(self):
         return {
-            "id": self.id or "",
+            "id": self.id.hex or "",
             "lock": self.lock or "",
             "name": self.name or "",
             "visibility": self.visibility,
@@ -126,7 +108,7 @@ class TrackableTask:
                 # If lock is already acquired, raise an error
                 raise TaskLockError(f"Task {self.name} is locked by task {active_lock}")
             # Acquire the lock
-            self.redis.set(self._lock_key, self.id)
+            self.redis.set(self._lock_key, self._key)
 
     def _release(self):
         if self.lock:
@@ -159,7 +141,7 @@ class TrackableTask:
                 self.status = "finished"
                 self._sync()
                 # Expire the task after the configured time
-                self.redis.expire(self.id, settings.redis_tasks_expire)
+                self.redis.expire(self._key, settings.redis_tasks_expire)
             except Exception as e:  # 4
                 print(f"[{self.id}] Failed Permanently {self.name} with error: {e}")
                 # Mark the task as errored
@@ -169,7 +151,7 @@ class TrackableTask:
                 # Sync to redis
                 self._sync()
                 # Expire the task after the configured time
-                self.redis.expire(self.id, settings.redis_tasks_expire_error)
+                self.redis.expire(self._key, settings.redis_tasks_expire_error)
             finally:
                 self.finished = datetime.datetime.now()
                 # Sync to redis
@@ -216,6 +198,11 @@ def get_task_tracker(user: UKRDCUser = Security(auth.get_user())) -> TaskTracker
         ),
         user,
     )
+
+
+class TaskSubmitModel(BaseModel):
+    n: int
+    bad: bool = False
 
 
 @router.post("/tasks/", status_code=202)
