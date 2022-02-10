@@ -1,4 +1,5 @@
 import asyncio
+import datetime
 import inspect
 import typing
 import uuid
@@ -82,11 +83,16 @@ class TrackableTask:
         self.status = "pending"
         self.error = None
 
+        self.created = datetime.datetime.now()
+        self.started = None
+
         self._func = func
         self._lock_key = f"_LOCK_{self.lock}" if self.lock else None
 
-        self.prime()
+        self._prime()
+        self._sync()
 
+    def _sync(self):
         self.redis.hmset(self.id, self.dict())
 
     def dict(self):
@@ -98,17 +104,19 @@ class TrackableTask:
             "owner": self.owner or "",
             "status": self.status or "",
             "error": self.error or "",
+            "created": self.created.isoformat(),
+            "started": self.started.isoformat() if self.started else "",
         }
 
-    def prime(self):
+    def _prime(self):
         """
         Acquire the tasks lock prior to running.
         The lock will automatically release after 60 seconds if the task is not started.
         """
-        self.acquire()
+        self._acquire()
         self.redis.expire(self._lock_key, settings.redis_tasks_expire_lock)
 
-    def acquire(self):
+    def _acquire(self):
         # If we're working with a lockable function
         if self.lock:
             # Check if the lock is already acquired
@@ -119,7 +127,7 @@ class TrackableTask:
             # Acquire the lock
             self.redis.set(self._lock_key, self.id)
 
-    def release(self):
+    def _release(self):
         if self.lock:
             # Release the lock
             self.redis.delete(self._lock_key)
@@ -135,7 +143,9 @@ class TrackableTask:
 
             # Update the task status to running
             print(f"[{self.id}] Started {self.name} with arguments: {func_args_str}")
-            self.redis.hset(self.id, "status", "running")
+            self.status = "running"
+            self.started = datetime.datetime.now()
+            self._sync()
 
             # Remove the lock expiry now the task is running
             if self.lock:
@@ -145,20 +155,23 @@ class TrackableTask:
                 await self._func(*args, **kwargs)
                 print(f"[{self.id}] Finished {self.name} Successfully")
                 # Mark the task as finished
-                self.redis.hset(self.id, "status", "finished")
+                self.status = "finished"
+                self._sync()
                 # Expire the task after the configured time
                 self.redis.expire(self.id, settings.redis_tasks_expire)
             except Exception as e:  # 4
                 print(f"[{self.id}] Failed Permanently {self.name} with error: {e}")
                 # Mark the task as errored
-                self.redis.hset(self.id, "status", "error")
+                self.status = "failed"
                 # Set the error message
-                self.redis.hset(self.id, "error", str(e))
+                self.error = str(e)
+                # Sync to redis
+                self._sync()
                 # Expire the task after the configured time
                 self.redis.expire(self.id, settings.redis_tasks_expire_error)
             finally:
                 # Release the lock
-                self.release()
+                self._release()
 
         return wrapper
 
