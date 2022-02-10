@@ -17,7 +17,7 @@ from ukrdc_fastapi.dependencies.auth import auth
 from ukrdc_fastapi.dependencies.database import ukrdc3_session
 from ukrdc_fastapi.dependencies.mirth import mirth_session
 from ukrdc_fastapi.dependencies.sentry import add_sentry
-from ukrdc_fastapi.routers import api
+from ukrdc_fastapi.routers import api, testing
 
 # Create app
 
@@ -42,6 +42,12 @@ app = FastAPI(
 app.include_router(
     api.router,
     prefix=configuration.base_url,
+    dependencies=[Depends(auth.okta_jwt_scheme)],
+)
+
+app.include_router(
+    testing.router,
+    prefix="/testing",
     dependencies=[Depends(auth.okta_jwt_scheme)],
 )
 
