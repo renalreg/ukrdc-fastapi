@@ -13,7 +13,7 @@ def test_build_demographic_update_message(ukrdc3_session):
     message = build_demographic_update_message(
         record,
         name=NameSchema(given="NEWGIVEN", family="NEWFAMILY"),
-        dob=datetime.date(1985, 1, 1),
+        birth_time=datetime.date(1985, 1, 1),
         gender="9",
         address=AddressSchema(postcode="XX0 1TT"),
     )
@@ -32,7 +32,7 @@ def test_build_demographic_update_message_no_changes(ukrdc3_session):
     record = ukrdc3_session.query(PatientRecord).get(PID_1)
 
     message = build_demographic_update_message(
-        record, name=None, dob=None, gender=None, address=None
+        record, name=None, birth_time=None, gender=None, address=None
     )
 
     assert (
@@ -51,7 +51,7 @@ def test_build_demographic_update_message_full_address(ukrdc3_session):
     message = build_demographic_update_message(
         record,
         name=None,
-        dob=None,
+        birth_time=None,
         gender=None,
         address=AddressSchema(
             street="1 TEST STREET",

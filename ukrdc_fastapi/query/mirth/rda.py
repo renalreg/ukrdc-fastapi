@@ -14,16 +14,30 @@ from ukrdc_fastapi.utils.mirth.messages.rda import build_demographic_update_mess
 async def update_patient_demographics(
     record: PatientRecord,
     name: Optional[NameSchema],
-    dob: Optional[datetime.date],
+    birth_time: Optional[datetime.date],
     gender: Optional[GenderType],
     address: Optional[AddressSchema],
     mirth: MirthAPI,
     redis: Redis,
 ) -> MirthMessageResponseSchema:
-    """Update the demographic data of a given patient record"""
+    """
+    Update the demographic data of a given patient record
+
+    Args:
+        record (PatientRecord): Base patient record to update
+        name (Optional[NameSchema]): New name to set
+        dob (Optional[datetime.date]): New date of birth to set
+        gender (Optional[GenderType]): New gender code to set
+        address (Optional[AddressSchema]): New address to set
+        mirth (MirthAPI): Mirth API session
+        redis (Redis): Redis session
+
+    Returns:
+        MirthMessageResponseSchema: Mirth message response
+    """
     return await safe_send_mirth_message_to_name(
         "Generic RDA Inbound",
-        build_demographic_update_message(record, name, dob, gender, address),
+        build_demographic_update_message(record, name, birth_time, gender, address),
         mirth,
         redis,
     )

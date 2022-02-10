@@ -14,7 +14,7 @@ from ukrdc_fastapi.schemas.patient import AddressSchema, GenderType, NameSchema
 def build_demographic_update_message(
     record: PatientRecord,
     name: Optional[NameSchema],
-    dob: Optional[datetime.date],
+    birth_time: Optional[datetime.date],
     gender: Optional[GenderType],
     address: Optional[AddressSchema],
 ) -> str:
@@ -87,14 +87,14 @@ def build_demographic_update_message(
         )
     )
 
-    new_dob = dob or record.patient.birth_time
+    new_birth_time = birth_time or record.patient.birth_time
 
     # Build RDA message
     rda_record = RDAPatientRecord(
         sending_facility=record.sendingfacility,
         sending_extract=record.sendingextract,
         patient=RDAPatient(
-            birth_time=XmlDate.from_date(new_dob) if new_dob else None,
+            birth_time=XmlDate.from_date(new_birth_time) if new_birth_time else None,
             gender=gender or record.patient.gender,
             names=new_names,
             addresses=RDAPatient.Addresses(address=[new_address])
