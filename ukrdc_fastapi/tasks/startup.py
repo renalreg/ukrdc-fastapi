@@ -1,5 +1,6 @@
 import logging
 
+import redis
 from fastapi_utils.tasks import repeat_every
 
 from ukrdc_fastapi.config import settings
@@ -40,3 +41,21 @@ async def cache_mirth_channel_statistics() -> None:
         redis = get_redis()
         logging.info("Refreshing Mirth channel statistics")
         await cache_channel_statistics(mirth, redis)
+
+
+def clear_task_tracker() -> None:
+    """Clear the task tracker"""
+    logging.info("Flushing tasks from task tracker")
+    tasks_redis = redis.Redis(
+        host=settings.redis_host,
+        port=settings.redis_port,
+        db=settings.redis_tasks_db,
+    )
+    tasks_redis.flushdb()
+    logging.info("Flushing locks from task tracker")
+    locks_redis = redis.Redis(
+        host=settings.redis_host,
+        port=settings.redis_port,
+        db=settings.redis_locks_db,
+    )
+    locks_redis.flushdb()

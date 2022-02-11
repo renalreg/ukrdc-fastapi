@@ -61,6 +61,7 @@ HyperModel.init_app(app)
 
 # Attach event handlers
 
+app.router.add_event_handler("startup", startup.clear_task_tracker)
 if not settings.skip_cache:
     app.router.add_event_handler("startup", startup.cache_mirth_channel_info)
     app.router.add_event_handler("startup", startup.cache_mirth_channel_groups)
