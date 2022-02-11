@@ -80,7 +80,7 @@ async def export_all_to_pkb(
     ukrdc3: Session,
     mirth: MirthAPI,
     redis: Redis,
-) -> AsyncGenerator[MirthMessageResponseSchema, None]:
+) -> list[MirthMessageResponseSchema]:
     """
     Export a specific patient's data to PKB.
 
@@ -94,7 +94,11 @@ async def export_all_to_pkb(
     record: PatientRecord = get_patientrecord(ukrdc3, pid, user)
     messages = build_pkb_sync_messages(record, ukrdc3)
 
+    responses: list[MirthMessageResponseSchema] = []
+
     for message in messages:
-        yield await safe_send_mirth_message_to_name(
-            "PKB Outbound", message, mirth, redis
+        responses.append(
+            await safe_send_mirth_message_to_name("PKB Outbound", message, mirth, redis)
         )
+
+    return responses

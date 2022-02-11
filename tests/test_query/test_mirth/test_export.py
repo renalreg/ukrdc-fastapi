@@ -74,7 +74,7 @@ async def test_record_export_pkb(
     messages = []
 
     # Iterate over each message response
-    async for response in export.export_all_to_pkb(
+    for response in await export.export_all_to_pkb(
         PID_1, superuser, ukrdc3_session, mirth_session, redis_session
     ):
         messages.append(response.message)
