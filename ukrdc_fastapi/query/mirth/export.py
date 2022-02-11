@@ -1,5 +1,3 @@
-from typing import AsyncGenerator
-
 from mirth_client.mirth import MirthAPI
 from redis import Redis
 from sqlalchemy.orm import Session
