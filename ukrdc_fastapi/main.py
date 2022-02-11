@@ -10,7 +10,6 @@ from httpx import ConnectError
 from mirth_client import MirthAPI
 from mirth_client.models import LoginResponse
 
-from ukrdc_fastapi import tasks
 from ukrdc_fastapi.config import configuration, settings
 from ukrdc_fastapi.dependencies import get_redis
 from ukrdc_fastapi.dependencies.auth import auth
@@ -18,6 +17,7 @@ from ukrdc_fastapi.dependencies.database import ukrdc3_session
 from ukrdc_fastapi.dependencies.mirth import mirth_session
 from ukrdc_fastapi.dependencies.sentry import add_sentry
 from ukrdc_fastapi.routers import api, testing
+from ukrdc_fastapi.tasks import startup
 
 # Create app
 
@@ -68,9 +68,9 @@ HyperModel.init_app(app)
 # Attach event handlers
 
 if not settings.skip_cache:
-    app.router.add_event_handler("startup", tasks.cache_mirth_channel_info)
-    app.router.add_event_handler("startup", tasks.cache_mirth_channel_groups)
-    app.router.add_event_handler("startup", tasks.cache_mirth_channel_statistics)
+    app.router.add_event_handler("startup", startup.cache_mirth_channel_info)
+    app.router.add_event_handler("startup", startup.cache_mirth_channel_groups)
+    app.router.add_event_handler("startup", startup.cache_mirth_channel_statistics)
 else:
     logging.warning("Skipping cache startup tasks")
 

@@ -1,16 +1,11 @@
 import asyncio
-import datetime
-import inspect
-import typing
-import uuid
-from functools import wraps
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Security
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel
-from redis import Redis
 
-from ukrdc_fastapi.config import settings
-from ukrdc_fastapi.dependencies.auth import UKRDCUser, auth
+from ukrdc_fastapi.dependencies import get_task_tracker
+from ukrdc_fastapi.exceptions import TaskLockError
+from ukrdc_fastapi.tasks.background import TaskTracker, TrackableTaskSchema
 
 router = APIRouter()
 
@@ -20,192 +15,24 @@ def testing_hello():
     return "Hello world"
 
 
-async def task_good(n: int):
+async def task_good(time_to_wait: int):
     print("starting good task")
-    await asyncio.sleep(n)
+    await asyncio.sleep(time_to_wait)
     print("good task finished")
 
 
-async def task_bad(n: int):
+async def task_bad(time_to_wait: int):
     print("starting bad task")
-    await asyncio.sleep(n)
+    await asyncio.sleep(time_to_wait)
     raise RuntimeError("bad task finished")
 
 
-class TaskLockError(Exception):
-    pass
-
-
-VisibilityType = typing.Literal["public", "private"]
-StatusType = typing.Literal["pending", "running", "finished", "failed"]
-
-
-class TrackableTask:
-    def __init__(
-        self,
-        redis: Redis,
-        user: UKRDCUser,
-        func: typing.Callable,
-        name: typing.Optional[str] = None,
-        lock: typing.Optional[str] = None,
-        visibility: VisibilityType = "public",
-    ):
-        self.redis = redis
-        self.user = user
-
-        self.id: uuid.UUID = uuid.uuid4()
-        self._key: str = self.id.hex
-
-        self.name: str = name or func.__name__
-        self.lock: typing.Optional[str] = lock
-        self.visibility: VisibilityType = visibility
-        self.owner: typing.Optional[str] = self.user.email
-        self.status: StatusType = "pending"
-        self.error: typing.Optional[str] = None
-
-        self.created: datetime.datetime = datetime.datetime.now()
-        self.started: typing.Optional[datetime.datetime] = None
-        self.finished: typing.Optional[datetime.datetime] = None
-
-        self._func: typing.Callable = func
-        self._lock_key: typing.Optional[str] = (
-            f"_LOCK_{self.lock}" if self.lock else None
-        )
-
-        self._prime()
-        self._sync()
-
-    def _sync(self):
-        self.redis.hmset(self._key, self.dict())
-
-    def dict(self):
-        return {
-            "id": self.id.hex or "",
-            "lock": self.lock or "",
-            "name": self.name or "",
-            "visibility": self.visibility,
-            "owner": self.owner or "",
-            "status": self.status or "",
-            "error": self.error or "",
-            "created": self.created.isoformat(),
-            "started": self.started.isoformat() if self.started else "",
-        }
-
-    def _prime(self):
-        """
-        Acquire the tasks lock prior to running.
-        The lock will automatically release after 60 seconds if the task is not started.
-        """
-        self._acquire()
-        self.redis.expire(self._lock_key, settings.redis_tasks_expire_lock)
-
-    def _acquire(self):
-        # If we're working with a lockable function
-        if self.lock:
-            # Check if the lock is already acquired
-            active_lock = self.redis.get(self._lock_key)
-            if active_lock:
-                # If lock is already acquired, raise an error
-                raise TaskLockError(f"Task {self.name} is locked by task {active_lock}")
-            # Acquire the lock
-            self.redis.set(self._lock_key, self._key)
-
-    def _release(self):
-        if self.lock:
-            # Release the lock
-            self.redis.delete(self._lock_key)
-
-    @property
-    def tracked(self) -> typing.Callable:
-        @wraps(self._func)
-        async def wrapper(*args: typing.Any, **kwargs: typing.Any) -> None:
-            func_args = inspect.signature(self._func).bind(*args, **kwargs).arguments
-            func_args_str = ", ".join(
-                "{}={!r}".format(*item) for item in func_args.items()
-            )
-
-            # Update the task status to running
-            print(f"[{self.id}] Started {self.name} with arguments: {func_args_str}")
-            self.status = "running"
-            self.started = datetime.datetime.now()
-            self._sync()
-
-            # Remove the lock expiry now the task is running
-            if self.lock:
-                self.redis.persist(self._lock_key)
-
-            try:
-                await self._func(*args, **kwargs)
-                print(f"[{self.id}] Finished {self.name} Successfully")
-                # Mark the task as finished
-                self.status = "finished"
-                self._sync()
-                # Expire the task after the configured time
-                self.redis.expire(self._key, settings.redis_tasks_expire)
-            except Exception as e:  # 4
-                print(f"[{self.id}] Failed Permanently {self.name} with error: {e}")
-                # Mark the task as errored
-                self.status = "failed"
-                # Set the error message
-                self.error = str(e)
-                # Sync to redis
-                self._sync()
-                # Expire the task after the configured time
-                self.redis.expire(self._key, settings.redis_tasks_expire_error)
-            finally:
-                self.finished = datetime.datetime.now()
-                # Sync to redis
-                self._sync()
-                # Release the lock
-                self._release()
-
-        return wrapper
-
-
-class TaskTracker:
-    def __init__(self, redis: Redis, user: UKRDCUser):
-        self.redis = redis
-        self.user = user
-
-    def get_all():
-        pass
-
-    def create(
-        self,
-        func: typing.Callable,
-        name: typing.Optional[str] = None,
-        lock: typing.Optional[str] = None,
-        visibility: VisibilityType = "public",
-    ) -> TrackableTask:
-        return TrackableTask(
-            redis=self.redis,
-            user=self.user,
-            func=func,
-            name=name,
-            lock=lock,
-            visibility=visibility,
-        )
-
-
-def get_task_tracker(user: UKRDCUser = Security(auth.get_user())) -> TaskTracker:
-    """Creates a TaskTracker pre-populated with a User and Redis session"""
-    return TaskTracker(
-        Redis(
-            host=settings.redis_host,
-            port=settings.redis_port,
-            db=settings.redis_tasks_db,
-            decode_responses=True,
-        ),
-        user,
-    )
-
-
 class TaskSubmitModel(BaseModel):
-    n: int
+    time_to_wait: int
     bad: bool = False
 
 
-@router.post("/tasks/", status_code=202)
+@router.post("/start_task/", status_code=202, response_model=TrackableTaskSchema)
 async def send_task(
     params: TaskSubmitModel,
     background_tasks: BackgroundTasks,
@@ -218,7 +45,8 @@ async def send_task(
 
     try:
         task = tracker.create(
-            task_func, lock=f"task-{params.n}-{'bad' if params.bad else 'good'}"
+            task_func,
+            lock=f"task-{params.time_to_wait}-{'bad' if params.bad else 'good'}",
         )
     except TaskLockError as e:
         raise HTTPException(
@@ -226,6 +54,6 @@ async def send_task(
             detail=str(e),
         ) from e
 
-    background_tasks.add_task(task.tracked, params.n)
+    background_tasks.add_task(task.tracked, params.time_to_wait)
 
-    return {"message": "A task has been started"}
+    return task.response()

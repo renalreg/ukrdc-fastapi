@@ -1,10 +1,13 @@
 from typing import AsyncGenerator, Generator
 
 import redis
+from fastapi import Security
 from mirth_client import MirthAPI
 from sqlalchemy.orm import Session
 
 from ukrdc_fastapi.config import settings
+from ukrdc_fastapi.dependencies import auth
+from ukrdc_fastapi.tasks.background import TaskTracker
 
 from .database import (
     audit_session,
@@ -91,4 +94,24 @@ def get_redis() -> redis.Redis:
         port=settings.redis_port,
         db=settings.redis_db,
         decode_responses=True,
+    )
+
+
+def get_task_tracker(
+    user: auth.UKRDCUser = Security(auth.auth.get_user()),
+) -> TaskTracker:
+    """Creates a TaskTracker pre-populated with a User and Redis session"""
+    return TaskTracker(
+        redis.Redis(
+            host=settings.redis_host,
+            port=settings.redis_port,
+            db=settings.redis_tasks_db,
+            decode_responses=True,
+        ),
+        redis.Redis(
+            host=settings.redis_host,
+            port=settings.redis_port,
+            db=settings.redis_locks_db,
+        ),
+        user,
     )
