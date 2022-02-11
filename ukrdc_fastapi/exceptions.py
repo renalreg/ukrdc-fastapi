@@ -30,3 +30,11 @@ class PKBOutboundDisabledError(RuntimeError):
 
 class RecordTypeError(RuntimeError):
     """Record type not supported"""
+
+
+class TaskLockError(Exception):
+    """Backbground task lock could not be acquired"""
+
+
+class TaskNotFoundError(Exception):
+    """Requested background task does not exist"""

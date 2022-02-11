@@ -74,7 +74,7 @@ use_parentheses = true
 
 [tool.pylint.'MESSAGES CONTROL']
 # unsubscriptable-object is disabled until proper Python 3.9 support is fixed in PyLint
-disable = "duplicate-code, pointless-string-statement, unsubscriptable-object, fixme, missing-module-docstring, missing-class-docstring, too-few-public-methods, too-many-arguments, line-too-long, too-many-locals, too-many-ancestors"
+disable = "duplicate-code, pointless-string-statement, unsubscriptable-object, fixme, missing-module-docstring, missing-class-docstring, too-few-public-methods, too-many-arguments, line-too-long, too-many-locals, too-many-ancestors, too-many-instance-attributes"
 max-line-length = 88
 
 [tool.pylint.'TYPECHECK']
@@ -84,7 +84,7 @@ ignored-classes = "Session" # PyLint struggles with dynamic SQLAlchemy sessions
 extension-pkg-whitelist = "pydantic" # PyLint struggles with Pydantic in GH Actions
 
 [tool.pylint.'BASIC']
-good-names = "ni,i,e,logger"
+good-names = "id,ni,i,e,logger"
 
 [tool.pylint.'SIMILARITIES']
 ignore-imports = "yes"

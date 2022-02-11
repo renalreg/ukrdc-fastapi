@@ -61,7 +61,19 @@ class Settings(BaseSettings):
 
     redis_host: str = "localhost"
     redis_port: int = 6379
+
+    # Database for Redis caching
     redis_db: int = 0
+
+    # Database for Redis task tracking
+    redis_tasks_db: int = 1
+    redis_locks_db: int = 2
+
+    redis_tasks_expire: int = 86400
+    redis_tasks_expire_error: int = 259200
+    redis_tasks_expire_lock: int = 60
+
+    # Database connections
 
     ukrdc_host: str = "localhost"
     ukrdc_port: int = 5432

@@ -6,6 +6,7 @@ from pathlib import Path
 import fakeredis
 import pytest
 import pytest_asyncio
+from fastapi import Security
 from httpx import AsyncClient
 from mirth_client import MirthAPI
 from pytest_httpx import HTTPXMock
@@ -53,10 +54,12 @@ from ukrdc_fastapi.dependencies import (
     get_mirth,
     get_redis,
     get_statsdb,
+    get_task_tracker,
     get_ukrdc3,
 )
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
 from ukrdc_fastapi.models.audit import Base as AuditBase
+from ukrdc_fastapi.tasks.background import TaskTracker
 
 from .utils import create_basic_facility, create_basic_patient, days_ago
 
@@ -881,11 +884,20 @@ from ukrdc_fastapi.utils.mirth import (
 @pytest_asyncio.fixture(scope="function")
 async def redis_session(mirth_session, httpx_session):
     """Create a fresh in-memory Redis database session"""
-    redis = fakeredis.FakeStrictRedis(decode_responses=True)
+    redis = fakeredis.FakeStrictRedis(decode_responses=True, db=0)
     await cache_channel_info(mirth_session, redis)
     await cache_channel_groups(mirth_session, redis)
     await cache_channel_statistics(mirth_session, redis)
     return redis
+
+
+@pytest.fixture(scope="function")
+def task_redis_sessions():
+    """Create fresh in-memory Redis database sessions for task tracking"""
+    return (
+        fakeredis.FakeStrictRedis(decode_responses=True, db=1),
+        fakeredis.FakeStrictRedis(decode_responses=True, db=2),
+    )
 
 
 @pytest.fixture(scope="function")
@@ -896,6 +908,7 @@ def app(
     stats_session,
     audit_session,
     redis_session,
+    task_redis_sessions,
 ):
     from ukrdc_fastapi.main import app
 
@@ -921,6 +934,11 @@ def app(
     def _get_auditdb():
         return audit_session
 
+    def _get_task_tracker(
+        user: auth.UKRDCUser = Security(auth.auth.get_user()),
+    ):
+        return TaskTracker(*task_redis_sessions, user)
+
     def _get_token():
         return {
             "uid": "TEST_ID",
@@ -938,6 +956,7 @@ def app(
     app.dependency_overrides[get_errorsdb] = _get_errorsdb
     app.dependency_overrides[get_statsdb] = _get_statsdb
     app.dependency_overrides[get_auditdb] = _get_auditdb
+    app.dependency_overrides[get_task_tracker] = _get_task_tracker
 
     app.dependency_overrides[auth.auth.okta_jwt_scheme] = _get_token
 
