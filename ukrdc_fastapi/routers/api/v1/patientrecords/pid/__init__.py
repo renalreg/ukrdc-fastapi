@@ -48,11 +48,12 @@ from ukrdc_fastapi.schemas.treatment import TreatmentSchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
 from ukrdc_fastapi.utils.sort import SQLASorter, make_sqla_sorter
 
-from . import export
+from . import export, update
 from .dependencies import _get_patientrecord
 
 router = APIRouter(prefix="/{pid}")
 router.include_router(export.router, prefix="/export")
+router.include_router(update.router, prefix="/update")
 
 
 # Self-resources

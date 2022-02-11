@@ -1,6 +1,6 @@
+from ukrdc_fastapi.config import configuration
 from ukrdc_fastapi.models.audit import AuditEvent
 from ukrdc_fastapi.schemas.empi import WorkItemExtendedSchema, WorkItemSchema
-from ukrdc_fastapi.config import configuration
 
 
 def _verify_workitem_audit(workitem: WorkItemSchema, workitem_event: AuditEvent):
@@ -54,8 +54,8 @@ def _verify_extended_workitem_audit(
         assert master_record_event.resource_id in expected_master_ids
 
 
-def test_workitems_list(client, audit_session):
-    response = client.get(f"{configuration.base_url}/v1/workitems")
+async def test_workitems_list(client, audit_session):
+    response = await client.get(f"{configuration.base_url}/v1/workitems")
     assert response.status_code == 200
     workitems = [WorkItemSchema(**wi) for wi in response.json().get("items")]
 
@@ -68,8 +68,8 @@ def test_workitems_list(client, audit_session):
         _verify_workitem_audit(workitem, workitem_events.pop(0))
 
 
-def test_workitem_detail(client, audit_session):
-    response = client.get(f"{configuration.base_url}/v1/workitems/1")
+async def test_workitem_detail(client, audit_session):
+    response = await client.get(f"{configuration.base_url}/v1/workitems/1")
     assert response.status_code == 200
     wi = WorkItemExtendedSchema(**response.json())
 
@@ -82,8 +82,8 @@ def test_workitem_detail(client, audit_session):
     _verify_extended_workitem_audit(wi, primary_event)
 
 
-def test_workitem_update(client, httpx_session, audit_session):
-    response = client.put(
+async def test_workitem_update(client, audit_session):
+    response = await client.put(
         f"{configuration.base_url}/v1/workitems/1/",
         json={"status": 3, "comment": "UPDATE COMMENT"},
     )
@@ -100,8 +100,10 @@ def test_workitem_update(client, httpx_session, audit_session):
     assert event.resource_id == "1"
 
 
-def test_workitem_close(client, httpx_session, audit_session):
-    response = client.post(f"{configuration.base_url}/v1/workitems/1/close/", json={})
+async def test_workitem_close(client, audit_session):
+    response = await client.post(
+        f"{configuration.base_url}/v1/workitems/1/close/", json={}
+    )
     assert response.status_code == 200
 
     events = audit_session.query(AuditEvent).all()
@@ -114,8 +116,8 @@ def test_workitem_close(client, httpx_session, audit_session):
     assert event.resource_id == "1"
 
 
-def test_workitems_related(client, audit_session):
-    response = client.get(f"{configuration.base_url}/v1/workitems/1/related")
+async def test_workitems_related(client, audit_session):
+    response = await client.get(f"{configuration.base_url}/v1/workitems/1/related")
     assert response.status_code == 200
     workitems = [WorkItemSchema(**wi) for wi in response.json()]
     returned_ids = {item.id for item in workitems}
@@ -130,8 +132,8 @@ def test_workitems_related(client, audit_session):
         _verify_workitem_audit(workitem, workitem_events.pop(0))
 
 
-def test_workitem_messages(client, audit_session):
-    response = client.get(f"{configuration.base_url}/v1/workitems/1/messages")
+async def test_workitem_messages(client, audit_session):
+    response = await client.get(f"{configuration.base_url}/v1/workitems/1/messages")
     assert response.status_code == 200
 
     events = audit_session.query(AuditEvent).all()

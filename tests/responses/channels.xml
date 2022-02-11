@@ -30,4 +30,22 @@
         <description>Channel description</description>
         <revision>3</revision>
     </channel>
+    <channel>
+        <id>10ced363-c437-4421-ab30-db6a35c59553</id>
+        <name>PKB - New Patients</name>
+        <description>Channel description</description>
+        <revision>9</revision>
+    </channel>
+    <channel>
+        <id>8062f518-7e86-4af6-8283-1e95e6ab65bd</id>
+        <name>PKB Outbound</name>
+        <description>Channel description</description>
+        <revision>9</revision>
+    </channel>
+    <channel>
+        <id>734cb3a0-2b4a-4746-ac2a-f353b5b9f491</id>
+        <name>Generic RDA Inbound</name>
+        <description>Channel description</description>
+        <revision>1</revision>
+    </channel>
 </list>

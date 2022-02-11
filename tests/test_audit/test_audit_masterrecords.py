@@ -1,11 +1,11 @@
+from ukrdc_fastapi.config import configuration
 from ukrdc_fastapi.models.audit import AuditEvent
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema, PersonSchema, WorkItemSchema
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordSummarySchema
-from ukrdc_fastapi.config import configuration
 
 
-def test_masterrecord_detail(client, audit_session):
-    response = client.get(f"{configuration.base_url}/v1/masterrecords/1")
+async def test_masterrecord_detail(client, audit_session):
+    response = await client.get(f"{configuration.base_url}/v1/masterrecords/1")
     assert response.status_code == 200
 
     events = audit_session.query(AuditEvent).all()
@@ -20,10 +20,10 @@ def test_masterrecord_detail(client, audit_session):
     assert event.parent_id == None
 
 
-def test_masterrecord_related(client, audit_session):
+async def test_masterrecord_related(client, audit_session):
     # Check expected links
 
-    response = client.get(f"{configuration.base_url}/v1/masterrecords/1/related")
+    response = await client.get(f"{configuration.base_url}/v1/masterrecords/1/related")
     assert response.status_code == 200
     mrecs = [MasterRecordSchema(**item) for item in response.json()]
     returned_ids = {item.id for item in mrecs}
@@ -47,8 +47,10 @@ def test_masterrecord_related(client, audit_session):
         assert child_event.parent_id == primary_event.id
 
 
-def test_masterrecord_statistics(client, audit_session):
-    response = client.get(f"{configuration.base_url}/v1/masterrecords/1/statistics")
+async def test_masterrecord_statistics(client, audit_session):
+    response = await client.get(
+        f"{configuration.base_url}/v1/masterrecords/1/statistics"
+    )
     assert response.status_code == 200
 
     events = audit_session.query(AuditEvent).all()
@@ -69,8 +71,10 @@ def test_masterrecord_statistics(client, audit_session):
     assert child_event.parent_id == event.id
 
 
-def test_masterrecord_linkrecords(client, audit_session):
-    response = client.get(f"{configuration.base_url}/v1/masterrecords/1/linkrecords")
+async def test_masterrecord_linkrecords(client, audit_session):
+    response = await client.get(
+        f"{configuration.base_url}/v1/masterrecords/1/linkrecords"
+    )
     assert response.status_code == 200
 
     events = audit_session.query(AuditEvent).all()
@@ -108,8 +112,8 @@ def test_masterrecord_linkrecords(client, audit_session):
     assert master_record_event_ids == {"1", "101", "104", "4"}
 
 
-def test_masterrecord_messages(client, audit_session):
-    response = client.get(f"{configuration.base_url}/v1/masterrecords/1/messages")
+async def test_masterrecord_messages(client, audit_session):
+    response = await client.get(f"{configuration.base_url}/v1/masterrecords/1/messages")
     assert response.status_code == 200
 
     events = audit_session.query(AuditEvent).all()
@@ -129,8 +133,10 @@ def test_masterrecord_messages(client, audit_session):
     assert child_event.parent_id == event.id
 
 
-def test_masterrecord_workitems(client, audit_session):
-    response = client.get(f"{configuration.base_url}/v1/masterrecords/1/workitems")
+async def test_masterrecord_workitems(client, audit_session):
+    response = await client.get(
+        f"{configuration.base_url}/v1/masterrecords/1/workitems"
+    )
     assert response.status_code == 200
     workitems = [WorkItemSchema(**item) for item in response.json()]
 
@@ -166,8 +172,8 @@ def test_masterrecord_workitems(client, audit_session):
         assert person_event.resource_id == str(workitems[i].person.id)
 
 
-def test_masterrecord_persons(client, audit_session):
-    response = client.get(f"{configuration.base_url}/v1/masterrecords/1/persons")
+async def test_masterrecord_persons(client, audit_session):
+    response = await client.get(f"{configuration.base_url}/v1/masterrecords/1/persons")
     assert response.status_code == 200
     persons = [PersonSchema(**item) for item in response.json()]
     returned_ids = {item.id for item in persons}
@@ -191,8 +197,10 @@ def test_masterrecord_persons(client, audit_session):
         assert child_event.parent_id == primary_event.id
 
 
-def test_masterrecord_patientrecords(client, audit_session):
-    response = client.get(f"{configuration.base_url}/v1/masterrecords/1/patientrecords")
+async def test_masterrecord_patientrecords(client, audit_session):
+    response = await client.get(
+        f"{configuration.base_url}/v1/masterrecords/1/patientrecords"
+    )
     assert response.status_code == 200
     records = [PatientRecordSummarySchema(**item) for item in response.json()]
     returned_pids = {item.pid for item in records}

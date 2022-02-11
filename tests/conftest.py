@@ -5,7 +5,9 @@ from pathlib import Path
 
 import fakeredis
 import pytest
-from fastapi.testclient import TestClient
+import pytest_asyncio
+from fastapi import Security
+from httpx import AsyncClient
 from mirth_client import MirthAPI
 from pytest_httpx import HTTPXMock
 from pytest_postgresql import factories
@@ -35,6 +37,7 @@ from ukrdc_sqla.ukrdc import (
     Level,
     Medication,
     Observation,
+    ProgramMembership,
     Question,
     RenalDiagnosis,
     ResultItem,
@@ -43,7 +46,6 @@ from ukrdc_sqla.ukrdc import (
     Treatment,
 )
 
-from ukrdc_fastapi.config import settings
 from ukrdc_fastapi.dependencies import (
     auth,
     get_auditdb,
@@ -52,10 +54,12 @@ from ukrdc_fastapi.dependencies import (
     get_mirth,
     get_redis,
     get_statsdb,
+    get_task_tracker,
     get_ukrdc3,
 )
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
 from ukrdc_fastapi.models.audit import Base as AuditBase
+from ukrdc_fastapi.tasks.background import TaskTracker
 
 from .utils import create_basic_facility, create_basic_patient, days_ago
 
@@ -112,7 +116,7 @@ def populate_facilities(ukrdc3, statsdb, errorsdb):
         ukrdc3,
         pkb_in=False,
         pkb_out=True,
-        pkb_msg_exclusions=["MDM_T02_CP"],
+        pkb_msg_exclusions=None,
     )
 
     create_basic_facility(
@@ -267,6 +271,23 @@ def populate_codes(ukrdc3):
 
 
 def populate_patient_1_extra(session):
+    membership_1 = ProgramMembership(
+        id="MEMBERSHIP_1",
+        pid=PID_1,
+        program_name="PROGRAM_NAME_1",
+        from_time=days_ago(365),
+        to_time=None,
+    )
+    membership_2 = ProgramMembership(
+        id="MEMBERSHIP_2",
+        pid=PID_1,
+        program_name="PROGRAM_NAME_2",
+        from_time=days_ago(365),
+        to_time=days_ago(1),
+    )
+    session.add(membership_1)
+    session.add(membership_2)
+
     diagnosis_1 = Diagnosis(
         id="DIAGNOSIS1",
         pid=PID_1,
@@ -846,7 +867,7 @@ def audit_session(sessions):
     return sessions[4]
 
 
-@pytest.fixture(scope="function")
+@pytest_asyncio.fixture(scope="function")
 async def mirth_session():
     """Create a fresh in-memory Mirth session"""
     async with MirthAPI("mock://mirth.url") as api:
@@ -860,15 +881,23 @@ from ukrdc_fastapi.utils.mirth import (
 )
 
 
-@pytest.fixture(scope="function")
-@pytest.mark.asyncio
+@pytest_asyncio.fixture(scope="function")
 async def redis_session(mirth_session, httpx_session):
     """Create a fresh in-memory Redis database session"""
-    redis = fakeredis.FakeStrictRedis(decode_responses=True)
+    redis = fakeredis.FakeStrictRedis(decode_responses=True, db=0)
     await cache_channel_info(mirth_session, redis)
     await cache_channel_groups(mirth_session, redis)
     await cache_channel_statistics(mirth_session, redis)
     return redis
+
+
+@pytest.fixture(scope="function")
+def task_redis_sessions():
+    """Create fresh in-memory Redis database sessions for task tracking"""
+    return (
+        fakeredis.FakeStrictRedis(decode_responses=True, db=1),
+        fakeredis.FakeStrictRedis(decode_responses=True, db=2),
+    )
 
 
 @pytest.fixture(scope="function")
@@ -879,6 +908,7 @@ def app(
     stats_session,
     audit_session,
     redis_session,
+    task_redis_sessions,
 ):
     from ukrdc_fastapi.main import app
 
@@ -904,6 +934,11 @@ def app(
     def _get_auditdb():
         return audit_session
 
+    def _get_task_tracker(
+        user: auth.UKRDCUser = Security(auth.auth.get_user()),
+    ):
+        return TaskTracker(*task_redis_sessions, user)
+
     def _get_token():
         return {
             "uid": "TEST_ID",
@@ -921,15 +956,22 @@ def app(
     app.dependency_overrides[get_errorsdb] = _get_errorsdb
     app.dependency_overrides[get_statsdb] = _get_statsdb
     app.dependency_overrides[get_auditdb] = _get_auditdb
+    app.dependency_overrides[get_task_tracker] = _get_task_tracker
 
     app.dependency_overrides[auth.auth.okta_jwt_scheme] = _get_token
 
     return app
 
 
-@pytest.fixture(scope="function")
-def client(app):
-    return TestClient(app)
+@pytest_asyncio.fixture(scope="function")
+async def client(app):
+    async with AsyncClient(app=app, base_url="http://test") as ac:
+        yield ac
+
+
+@pytest.fixture
+def non_mocked_hosts() -> list:
+    return ["test"]
 
 
 @pytest.fixture(scope="function")

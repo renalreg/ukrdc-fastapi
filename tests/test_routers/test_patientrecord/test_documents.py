@@ -1,9 +1,9 @@
-from ukrdc_fastapi.schemas.patientrecord import DocumentSchema, DocumentSummarySchema
 from ukrdc_fastapi.config import configuration
+from ukrdc_fastapi.schemas.patientrecord import DocumentSchema, DocumentSummarySchema
 
 
-def test_record_documents(client):
-    response = client.get(
+async def test_record_documents(client):
+    response = await client.get(
         f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/documents"
     )
     assert response.status_code == 200
@@ -14,8 +14,8 @@ def test_record_documents(client):
     }
 
 
-def test_record_document_detail(client):
-    response = client.get(
+async def test_record_document_detail(client):
+    response = await client.get(
         f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/documents/DOCUMENT_PDF"
     )
     assert response.status_code == 200
@@ -24,8 +24,8 @@ def test_record_document_detail(client):
     assert document.id == "DOCUMENT_PDF"
 
 
-def test_record_document_download_txt(client):
-    response = client.get(
+async def test_record_document_download_txt(client):
+    response = await client.get(
         f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/documents/DOCUMENT_TXT/download"
     )
     assert response.status_code == 200
@@ -36,8 +36,8 @@ def test_record_document_download_txt(client):
     assert response.content == b"DOCUMENT_TXT_NOTETEXT"
 
 
-def test_record_document_download_pdf(client, minimal_pdf):
-    response = client.get(
+async def test_record_document_download_pdf(client, minimal_pdf):
+    response = await client.get(
         f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/documents/DOCUMENT_PDF/download"
     )
     assert response.status_code == 200

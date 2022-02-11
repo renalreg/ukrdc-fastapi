@@ -11,7 +11,7 @@ from ...utils import days_ago
 
 @pytest.mark.asyncio
 async def test_merge_master_records(
-    jtrace_session, redis_session, mirth_session, superuser, httpx_session
+    jtrace_session, redis_session, mirth_session, superuser
 ):
     # Create new master records
     master_record_30 = MasterRecord(
@@ -51,7 +51,7 @@ async def test_merge_master_records(
 
 @pytest.mark.asyncio
 async def test_merge_master_records_permission_denied(
-    jtrace_session, redis_session, mirth_session, test_user, httpx_session
+    jtrace_session, redis_session, mirth_session, test_user
 ):
     with pytest.raises(PermissionsError):
         await merge_master_records(

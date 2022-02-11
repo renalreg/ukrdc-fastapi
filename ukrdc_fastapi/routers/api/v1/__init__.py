@@ -14,6 +14,7 @@ from . import (
     persons,
     search,
     system,
+    tasks,
     workitems,
 )
 
@@ -48,3 +49,6 @@ router.include_router(masterrecords.router, prefix="/masterrecords")
 
 # ErrorsDB/Message Records
 router.include_router(messages.router, prefix="/messages")
+
+# Task management
+router.include_router(tasks.router, prefix="/tasks")

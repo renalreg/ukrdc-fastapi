@@ -4,9 +4,7 @@ from ukrdc_fastapi.query.mirth import workitems
 
 
 @pytest.mark.asyncio
-async def test_update_workitem(
-    jtrace_session, redis_session, mirth_session, superuser, httpx_session
-):
+async def test_update_workitem(jtrace_session, redis_session, mirth_session, superuser):
     response = await workitems.update_workitem(
         jtrace_session,
         1,

@@ -1,8 +1,9 @@
-from ukrdc_fastapi.models.audit import AuditEvent
 from ukrdc_fastapi.config import configuration
+from ukrdc_fastapi.models.audit import AuditEvent
 
-def test_facility_messages(client, audit_session):
-    response = client.get(
+
+async def test_facility_messages(client, audit_session):
+    response = await client.get(
         f"{configuration.base_url}/v1/facilities/TEST_SENDING_FACILITY_1/patients_latest_errors/"
     )
     assert response.status_code == 200

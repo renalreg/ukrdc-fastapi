@@ -1,10 +1,10 @@
 from ukrdc_fastapi.config import configuration
 
 
-def test_datahealth_multiple_ukrdcids(client):
+async def test_datahealth_multiple_ukrdcids(client):
     # Check expected links
 
-    response = client.get(
+    response = await client.get(
         f"{configuration.base_url}/v1/admin/datahealth/multiple_ukrdcids"
     )
     assert response.status_code == 200

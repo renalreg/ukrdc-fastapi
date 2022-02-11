@@ -1,10 +1,10 @@
+from ukrdc_fastapi.config import configuration
 from ukrdc_fastapi.models.audit import AuditEvent
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema
-from ukrdc_fastapi.config import configuration
 
 
-def test_person_detail(client, audit_session):
-    response = client.get(f"{configuration.base_url}/v1/persons/1")
+async def test_person_detail(client, audit_session):
+    response = await client.get(f"{configuration.base_url}/v1/persons/1")
     assert response.status_code == 200
 
     events = audit_session.query(AuditEvent).all()
@@ -19,8 +19,8 @@ def test_person_detail(client, audit_session):
     assert event.parent_id == None
 
 
-def test_person_masterrecords(client, audit_session):
-    response = client.get(f"{configuration.base_url}/v1/persons/1/masterrecords")
+async def test_person_masterrecords(client, audit_session):
+    response = await client.get(f"{configuration.base_url}/v1/persons/1/masterrecords")
     assert response.status_code == 200
     mrecs = [MasterRecordSchema(**item) for item in response.json()]
     returned_ids = {item.id for item in mrecs}

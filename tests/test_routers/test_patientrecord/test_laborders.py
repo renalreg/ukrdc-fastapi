@@ -1,12 +1,12 @@
 from ukrdc_sqla.ukrdc import LabOrder, ResultItem
 
 from tests.utils import days_ago
-from ukrdc_fastapi.schemas.laborder import LabOrderSchema, LabOrderShortSchema
 from ukrdc_fastapi.config import configuration
+from ukrdc_fastapi.schemas.laborder import LabOrderSchema, LabOrderShortSchema
 
 
-def test_record_laborders(client):
-    response = client.get(
+async def test_record_laborders(client):
+    response = await client.get(
         f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/laborders"
     )
     assert response.status_code == 200
@@ -17,8 +17,8 @@ def test_record_laborders(client):
     }
 
 
-def test_laborder(client):
-    response = client.get(
+async def test_laborder(client):
+    response = await client.get(
         f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/laborders/LABORDER1"
     )
     assert response.status_code == 200
@@ -27,7 +27,7 @@ def test_laborder(client):
     assert order.id == "LABORDER1"
 
 
-def test_laborder_delete(client, ukrdc3_session):
+async def test_laborder_delete(client, ukrdc3_session):
     laborder = LabOrder(
         id="LABORDER_TEMP",
         pid="PYTEST01:PV:00000000A",
@@ -52,19 +52,19 @@ def test_laborder_delete(client, ukrdc3_session):
     # Make sure the laborder was created
     assert ukrdc3_session.query(LabOrder).get("LABORDER_TEMP")
     assert ukrdc3_session.query(ResultItem).get("RESULTITEM_TEMP")
-    response = client.get(
+    response = await client.get(
         f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/laborders/LABORDER_TEMP"
     )
     assert response.status_code == 200
 
     # Delete the lab order
-    response = client.delete(
+    response = await client.delete(
         f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/laborders/LABORDER_TEMP/"
     )
     assert response.status_code == 204
 
     # Make sure the lab order was deleted
-    response = client.get(
+    response = await client.get(
         f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/laborders/LABORDER_TEMP/"
     )
     assert response.status_code == 404

@@ -1,9 +1,9 @@
-from ukrdc_fastapi.schemas.laborder import ResultItemSchema
 from ukrdc_fastapi.config import configuration
+from ukrdc_fastapi.schemas.laborder import ResultItemSchema
 
 
-def test_record_resultitems(client):
-    response = client.get(
+async def test_record_resultitems(client):
+    response = await client.get(
         f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/results"
     )
     assert response.status_code == 200
@@ -14,9 +14,9 @@ def test_record_resultitems(client):
     }
 
 
-def test_resultitems_list_filtered_serviceId(client):
+async def test_resultitems_list_filtered_serviceId(client):
     # Filter by NI
-    response = client.get(
+    response = await client.get(
         f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/results?service_id=SERVICE_ID_2"
     )
     assert response.status_code == 200
@@ -25,8 +25,8 @@ def test_resultitems_list_filtered_serviceId(client):
     assert items[0].service_id == "SERVICE_ID_2"
 
 
-def test_resultitem_detail(client):
-    response = client.get(
+async def test_resultitem_detail(client):
+    response = await client.get(
         f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/results/RESULTITEM1"
     )
     assert response.status_code == 200
@@ -34,20 +34,20 @@ def test_resultitem_detail(client):
     assert item.id == "RESULTITEM1"
 
 
-def test_resultitem_delete(client):
-    response = client.delete(
+async def test_resultitem_delete(client):
+    response = await client.delete(
         f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/results/RESULTITEM1/"
     )
     assert response.status_code == 204
 
     # Check the resultitem was deleted
-    response = client.get(
+    response = await client.get(
         f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/results/RESULTITEM1/"
     )
     assert response.status_code == 404
 
     # Check the orphaned laborder was deleted
-    response = client.get(
+    response = await client.get(
         f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/laborders/LABORDER1/"
     )
     assert response.status_code == 404
