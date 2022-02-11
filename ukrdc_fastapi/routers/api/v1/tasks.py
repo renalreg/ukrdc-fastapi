@@ -1,8 +1,9 @@
 import uuid
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 
 from ukrdc_fastapi.dependencies import get_task_tracker
+from ukrdc_fastapi.exceptions import TaskNotFoundError
 from ukrdc_fastapi.tasks.background import TaskTracker, TrackableTaskSchema
 
 router = APIRouter(tags=["Background Tasks"])
@@ -38,4 +39,7 @@ async def get_task(
     Returns:
         TrackableTaskSchema: Task resource
     """
-    return tracker.get(task_id.hex)
+    try:
+        return tracker.get(task_id.hex)
+    except TaskNotFoundError:
+        raise HTTPException(status_code=404, detail="fTask {task_id} not found")

@@ -238,9 +238,6 @@ class TaskTracker:
         Returns:
             TrackableTaskSchema: Task resource representation
         """
-        print("GET")
-        print(self.task_redis)
-        print(self.lock_redis)
         if not self.task_redis.exists(key):
             raise TaskNotFoundError(f"Task {key} does not exist")
         return TrackableTaskSchema.from_redis(self.task_redis.hgetall(key))
@@ -263,9 +260,6 @@ class TaskTracker:
         Returns:
             TrackableTask: Task tracker object
         """
-        print("CREATE")
-        print(self.task_redis)
-        print(self.lock_redis)
         return TrackableTask(
             task_redis=self.task_redis,
             lock_redis=self.lock_redis,
@@ -297,11 +291,9 @@ class TaskTracker:
             TrackableTask: Task tracker object
         """
         try:
-            task = self.create(func, name=name, lock=lock, visibility=visibility)
+            return self.create(func, name=name, lock=lock, visibility=visibility)
         except TaskLockError as e:
             raise HTTPException(
                 status_code=409,
                 detail=str(e),
             ) from e
-
-        return task
