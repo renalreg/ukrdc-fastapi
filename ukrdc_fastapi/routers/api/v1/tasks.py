@@ -41,5 +41,5 @@ async def get_task(
     """
     try:
         return tracker.get(task_id.hex)
-    except TaskNotFoundError:
-        raise HTTPException(status_code=404, detail="fTask {task_id} not found")
+    except TaskNotFoundError as e:
+        raise HTTPException(status_code=404, detail="fTask {task_id} not found") from e
