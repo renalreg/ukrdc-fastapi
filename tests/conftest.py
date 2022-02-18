@@ -411,6 +411,7 @@ def populate_patient_1_extra(session):
         value="VALUE",
         value_units="VALUE_UNITS",
         observation_time=days_ago(365),
+        pre_post="PRE_POST",
     )
     laborder_2 = LabOrder(
         id="LABORDER2",
@@ -444,6 +445,7 @@ def populate_patient_1_extra(session):
         observation_value="OBSERVATION_VALUE",
         observation_units="OBSERVATION_UNITS",
         observation_time=days_ago(365),
+        pre_post="PRE_POST",
     )
 
     session.add(observation_1)

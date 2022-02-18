@@ -34,5 +34,5 @@ async def test_record_observations(client):
         "observationTime": days_ago(365).isoformat(),
         "observationUnits": "OBSERVATION_UNITS",
         "observationValue": "OBSERVATION_VALUE",
-        "prePost": None,
+        "prePost": "PRE_POST",
     } in response.json()["items"]
