@@ -29,6 +29,7 @@ class ResultItemSchema(OrmModel):
     value: Optional[str]
     value_units: Optional[str]
     result_type: Optional[str]
+    pre_post: Optional[str]
     observation_time: Optional[datetime.datetime]
 
     links = LinkSet(
