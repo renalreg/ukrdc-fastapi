@@ -262,13 +262,13 @@ SQLAlchemy = {version = ">=1.3.20", optional = true, markers = "extra == \"gino\
 
 [package.extras]
 gino = ["gino[starlette] (>=1.0.1)", "SQLAlchemy (>=1.3.20)"]
-all = ["gino[starlette] (>=1.0.1)", "SQLAlchemy (>=1.3.20)", "databases[sqlite,mysql,postgresql] (>=0.4.0)", "orm (>=0.1.5)", "tortoise-orm[aiosqlite,aiomysql,asyncpg] (>=0.16.18,<0.18.0)", "asyncpg (>=0.24.0)", "ormar (>=0.10.5)", "Django (<3.3.0)", "piccolo (>=0.29,<0.35)", "motor (>=2.5.1,<3.0.0)"]
+all = ["gino[starlette] (>=1.0.1)", "SQLAlchemy (>=1.3.20)", "databases[mysql,postgresql,sqlite] (>=0.4.0)", "orm (>=0.1.5)", "tortoise-orm[aiomysql,asyncpg,aiosqlite] (>=0.16.18,<0.18.0)", "asyncpg (>=0.24.0)", "ormar (>=0.10.5)", "Django (<3.3.0)", "piccolo (>=0.29,<0.35)", "motor (>=2.5.1,<3.0.0)"]
 sqlalchemy = ["SQLAlchemy (>=1.3.20)"]
 asyncpg = ["SQLAlchemy (>=1.3.20)", "asyncpg (>=0.24.0)"]
-databases = ["databases[sqlite,mysql,postgresql] (>=0.4.0)"]
-orm = ["databases[sqlite,mysql,postgresql] (>=0.4.0)", "orm (>=0.1.5)", "typesystem (>=0.2.0,<0.3.0)"]
-django = ["databases[sqlite,mysql,postgresql] (>=0.4.0)", "Django (<3.3.0)"]
-tortoise = ["tortoise-orm[aiosqlite,aiomysql,asyncpg] (>=0.16.18,<0.18.0)"]
+databases = ["databases[mysql,postgresql,sqlite] (>=0.4.0)"]
+orm = ["databases[mysql,postgresql,sqlite] (>=0.4.0)", "orm (>=0.1.5)", "typesystem (>=0.2.0,<0.3.0)"]
+django = ["databases[mysql,postgresql,sqlite] (>=0.4.0)", "Django (<3.3.0)"]
+tortoise = ["tortoise-orm[aiomysql,asyncpg,aiosqlite] (>=0.16.18,<0.18.0)"]
 ormar = ["ormar (>=0.10.5)"]
 piccolo = ["piccolo (>=0.29,<0.35)"]
 motor = ["motor (>=2.5.1,<3.0.0)"]
@@ -1055,7 +1055,7 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "ukrdc-sqla"
-version = "1.10.1"
+version = "1.10.2"
 description = "SQLAlchemy models for the UKRDC"
 category = "main"
 optional = false
@@ -1156,7 +1156,7 @@ test = ["codecov", "pre-commit", "pytest", "pytest-benchmark", "pytest-cov", "to
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "dce9047fc06a7912f2442764bcc7d3af74aa9b93d369469dd64359646cf31dcd"
+content-hash = "127b3a0f155b7b984a9be99842dd78d8e309957f8b85828899f517e43b2ebe39"
 
 [metadata.files]
 anyio = [
@@ -1846,8 +1846,8 @@ typing-extensions = [
     {file = "typing_extensions-4.0.1.tar.gz", hash = "sha256:4ca091dea149f945ec56afb48dae714f21e8692ef22a395223bcd328961b6a0e"},
 ]
 ukrdc-sqla = [
-    {file = "ukrdc-sqla-1.10.1.tar.gz", hash = "sha256:da77c09775c92c2f8767b0f970deb73173ffb2030803dff28c48d94bd0fb45b3"},
-    {file = "ukrdc_sqla-1.10.1-py3-none-any.whl", hash = "sha256:eaf65c5d1a216066a1aa75f377da95dcfed0a1f335cadb9e4c4b54fb1066116d"},
+    {file = "ukrdc-sqla-1.10.2.tar.gz", hash = "sha256:3b40d26b6937ed9190a0af4b67e750b8d0163564f8151162243172aebfef43f3"},
+    {file = "ukrdc_sqla-1.10.2-py3-none-any.whl", hash = "sha256:4b09cdc7f1c89046a6219c95fab5af7850105f68679f3ecf09f3673687eb2c44"},
 ]
 ukrdc-xsdata = [
     {file = "ukrdc-xsdata-3.3.0.post1.tar.gz", hash = "sha256:fc4ef1dfe94b00e0edeb97101dc4b02e3eb3a7ac4ff10e02a54528075e22261b"},
