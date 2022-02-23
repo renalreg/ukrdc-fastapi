@@ -7,7 +7,7 @@ async def test_record_export_data(client):
             "family": "NEWFAMILY",
             "given": "NEWGIVEN",
         },
-        "birth_time": "1985-01-01",
+        "birth_time": "1985-01-01T00:00:00",
         "gender": "9",
         "address": {
             "street": "1 TEST STREET",

@@ -26,7 +26,7 @@ router = APIRouter(tags=["Patient Records/Update"])
 
 class DemographicUpdateSchema(JSONModel):
     name: Optional[NameSchema]
-    birth_time: Optional[datetime.date]
+    birth_time: Optional[datetime.datetime]
     gender: Optional[GenderType]
     address: Optional[AddressSchema]
 
