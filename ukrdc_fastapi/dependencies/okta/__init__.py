@@ -10,7 +10,7 @@ from fastapi.openapi.models import OAuth2 as OAuth2Model
 from fastapi.openapi.models import OAuthFlows as OAuthFlowsModel
 from fastapi.security.base import SecurityBase
 from fastapi.security.utils import get_authorization_scheme_param
-from okta_jwt.jwt import validate_token as validate_locally
+from okta_jwt_verifier import BaseJWTVerifier
 from starlette.requests import Request
 from starlette.status import HTTP_401_UNAUTHORIZED
 
@@ -30,6 +30,8 @@ class OktaJWTBearer(SecurityBase):
         self.issuer = issuer.rstrip("/")
         self.audience = audience
         self.client_ids = client_ids
+
+        self.verifier = BaseJWTVerifier(issuer=self.issuer, audience=self.audience)
 
         # Flows and scopes for Swagger UI
         if not scopes:
@@ -70,15 +72,11 @@ class OktaJWTBearer(SecurityBase):
                 return None
         # Validate the token
         try:
-            payload = validate_locally(
-                credentials,
-                self.issuer,
-                self.audience,
-                self.client_ids,
-            )
+            await self.verifier.verify_access_token(credentials)
+            _, claims, _, _ = self.verifier.parse_token(credentials)
         except Exception as e:
             raise HTTPException(
                 status_code=HTTP_401_UNAUTHORIZED, detail="Invalid authentication token"
             ) from e
 
-        return payload
+        return claims

@@ -6,7 +6,7 @@ from ukrdc_xsdata.ukrdc import Patient as RDAPatient
 from ukrdc_xsdata.ukrdc import PatientRecord as RDAPatientRecord
 from ukrdc_xsdata.ukrdc import types
 from xsdata.formats.dataclass.serializers.xml import XmlSerializer
-from xsdata.models.datatype import XmlDate
+from xsdata.models.datatype import XmlDate, XmlDateTime
 
 from ukrdc_fastapi.schemas.patient import AddressSchema, GenderType, NameSchema
 
@@ -14,7 +14,7 @@ from ukrdc_fastapi.schemas.patient import AddressSchema, GenderType, NameSchema
 def build_demographic_update_message(
     record: PatientRecord,
     name: Optional[NameSchema],
-    birth_time: Optional[datetime.date],
+    birth_time: Optional[datetime.datetime],
     gender: Optional[GenderType],
     address: Optional[AddressSchema],
 ) -> str:
@@ -94,7 +94,9 @@ def build_demographic_update_message(
         sending_facility=record.sendingfacility,
         sending_extract=record.sendingextract,
         patient=RDAPatient(
-            birth_time=XmlDate.from_date(new_birth_time) if new_birth_time else None,
+            birth_time=XmlDateTime.from_datetime(new_birth_time)
+            if new_birth_time
+            else None,
             gender=gender or record.patient.gender,
             names=new_names,
             addresses=RDAPatient.Addresses(address=[new_address])

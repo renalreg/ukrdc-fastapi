@@ -15,7 +15,7 @@ async def test_create_pkb_membership(ukrdc3_session, redis_session, mirth_sessio
     response = await rda.update_patient_demographics(
         record,
         NameSchema(given="NEWGIVEN", family="NEWFAMILY"),
-        datetime.date(1985, 1, 1),
+        datetime.datetime(1985, 1, 1),
         "9",
         AddressSchema(postcode="XX0 1TT"),
         mirth_session,
@@ -26,6 +26,6 @@ async def test_create_pkb_membership(ukrdc3_session, redis_session, mirth_sessio
         response.message
         == """
 <?xml version="1.0" encoding="UTF-8"?>
-<ns0:PatientRecord xmlns:ns0="http://www.rixg.org.uk/"><SendingFacility>TEST_SENDING_FACILITY_1</SendingFacility><SendingExtract>PV</SendingExtract><Patient><PatientNumbers><PatientNumber><Number>888888888</Number><Organization>NHS</Organization><NumberType>NI</NumberType></PatientNumber></PatientNumbers><Names><Name use="L"><Family>NEWFAMILY</Family><Given>NEWGIVEN</Given></Name></Names><BirthTime>1985-01-01</BirthTime><Gender>9</Gender><Addresses><Address><Postcode>XX0 1TT</Postcode></Address></Addresses></Patient></ns0:PatientRecord>
+<ns0:PatientRecord xmlns:ns0="http://www.rixg.org.uk/"><SendingFacility>TEST_SENDING_FACILITY_1</SendingFacility><SendingExtract>PV</SendingExtract><Patient><PatientNumbers><PatientNumber><Number>888888888</Number><Organization>NHS</Organization><NumberType>NI</NumberType></PatientNumber></PatientNumbers><Names><Name use="L"><Family>NEWFAMILY</Family><Given>NEWGIVEN</Given></Name></Names><BirthTime>1985-01-01T00:00:00</BirthTime><Gender>9</Gender><Addresses><Address><Postcode>XX0 1TT</Postcode></Address></Addresses></Patient></ns0:PatientRecord>
     """.strip()
     )

@@ -14,7 +14,7 @@ from ukrdc_fastapi.utils.mirth.messages.rda import build_demographic_update_mess
 async def update_patient_demographics(
     record: PatientRecord,
     name: Optional[NameSchema],
-    birth_time: Optional[datetime.date],
+    birth_time: Optional[datetime.datetime],
     gender: Optional[GenderType],
     address: Optional[AddressSchema],
     mirth: MirthAPI,

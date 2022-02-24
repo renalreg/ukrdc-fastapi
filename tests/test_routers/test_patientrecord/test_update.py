@@ -7,7 +7,7 @@ async def test_record_export_data(client):
             "family": "NEWFAMILY",
             "given": "NEWGIVEN",
         },
-        "birth_time": "1985-01-01",
+        "birth_time": "1985-01-01T00:00:00",
         "gender": "9",
         "address": {
             "street": "1 TEST STREET",
@@ -28,6 +28,6 @@ async def test_record_export_data(client):
         response.json().get("message")
         == """
 <?xml version="1.0" encoding="UTF-8"?>
-<ns0:PatientRecord xmlns:ns0="http://www.rixg.org.uk/"><SendingFacility>TEST_SENDING_FACILITY_1</SendingFacility><SendingExtract>PV</SendingExtract><Patient><PatientNumbers><PatientNumber><Number>888888888</Number><Organization>NHS</Organization><NumberType>NI</NumberType></PatientNumber></PatientNumbers><Names><Name use="L"><Family>NEWFAMILY</Family><Given>NEWGIVEN</Given></Name></Names><BirthTime>1985-01-01</BirthTime><Gender>9</Gender><Addresses><Address><Street>1 TEST STREET</Street><Town>TEST TOWN</Town><County>TESTFORDSHIRE</County><Postcode>XX0 1TT</Postcode><Country><CodingStandard>ISO3166-1</CodingStandard><Code>GB</Code><Description>United Kingdom</Description></Country></Address></Addresses></Patient></ns0:PatientRecord>
+<ns0:PatientRecord xmlns:ns0="http://www.rixg.org.uk/"><SendingFacility>TEST_SENDING_FACILITY_1</SendingFacility><SendingExtract>PV</SendingExtract><Patient><PatientNumbers><PatientNumber><Number>888888888</Number><Organization>NHS</Organization><NumberType>NI</NumberType></PatientNumber></PatientNumbers><Names><Name use="L"><Family>NEWFAMILY</Family><Given>NEWGIVEN</Given></Name></Names><BirthTime>1985-01-01T00:00:00</BirthTime><Gender>9</Gender><Addresses><Address><Street>1 TEST STREET</Street><Town>TEST TOWN</Town><County>TESTFORDSHIRE</County><Postcode>XX0 1TT</Postcode><Country><CodingStandard>ISO3166-1</CodingStandard><Code>GB</Code><Description>United Kingdom</Description></Country></Address></Addresses></Patient></ns0:PatientRecord>
     """.strip()
     )
