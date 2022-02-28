@@ -27,7 +27,7 @@ ukrdc-xsdata = "^3.3.0"
 uvicorn = "^0.17.5" 
 
 [tool.poetry.dev-dependencies]
-bandit = "^1.7.1"
+bandit = "^1.7.3"
 black = {version = "^22.1", allow-prereleases = true}
 coverage = {extras = ["toml"], version = "^6.1"}
 fakeredis = "^1.7.1"
