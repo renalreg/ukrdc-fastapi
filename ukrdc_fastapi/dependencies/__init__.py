@@ -115,3 +115,21 @@ def get_task_tracker(
         ),
         user,
     )
+
+
+def get_root_task_tracker() -> TaskTracker:
+    """Creates a TaskTracker pre-populated with a SuperUser and Redis session"""
+    return TaskTracker(
+        redis.Redis(
+            host=settings.redis_host,
+            port=settings.redis_port,
+            db=settings.redis_tasks_db,
+            decode_responses=True,
+        ),
+        redis.Redis(
+            host=settings.redis_host,
+            port=settings.redis_port,
+            db=settings.redis_locks_db,
+        ),
+        auth.auth.superuser,
+    )
