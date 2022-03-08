@@ -121,8 +121,9 @@ class TrackableTask:
         Acquire the tasks lock prior to running.
         The lock will automatically release after 60 seconds if the task is not started.
         """
-        self._acquire()
-        self.lock_redis.expire(self._lock_key, settings.redis_tasks_expire_lock)
+        if self.lock:
+            self._acquire()
+            self.lock_redis.expire(self._lock_key, settings.redis_tasks_expire_lock)
 
     def _acquire(self):
         """
