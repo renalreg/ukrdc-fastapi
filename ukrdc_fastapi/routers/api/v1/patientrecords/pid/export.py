@@ -125,7 +125,9 @@ async def patient_export_pkb(
     Export a specific patient's data to PKB.
     This export runs as a background task since the split sending can take a while.
     """
-    task = tracker.http_create(export_all_to_pkb, lock=f"task-export-pkb-{pid}")
+    task = tracker.http_create(
+        export_all_to_pkb, lock=f"task-export-pkb-{pid}", visibility="private"
+    )
 
     background_tasks.add_task(task.tracked, pid, user, ukrdc3, mirth, redis)
     audit.add_event(Resource.PATIENT_RECORD, pid, RecordOperation.EXPORT_PKB)
