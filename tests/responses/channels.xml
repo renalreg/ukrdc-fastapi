@@ -38,7 +38,7 @@
     </channel>
     <channel>
         <id>8062f518-7e86-4af6-8283-1e95e6ab65bd</id>
-        <name>PKB Outbound</name>
+        <name>PKB Outbound - Partner</name>
         <description>Channel description</description>
         <revision>9</revision>
     </channel>
