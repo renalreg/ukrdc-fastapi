@@ -32,7 +32,7 @@ def _create_root_task_tracker() -> TaskTracker:
     )
 
 
-@repeat_every(seconds=settings.cache_channel_seconds, raise_exceptions=True)
+@repeat_every(seconds=settings.cache_channel_seconds)
 async def cache_mirth_channel_info() -> None:
     """FastAPI Utils task to refresh Mirth channel info"""
 
