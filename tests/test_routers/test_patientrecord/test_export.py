@@ -11,10 +11,14 @@ async def test_record_export_data(client):
         f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/export/pv/",
         json={},
     )
-    assert response.json() == {
-        "message": "<result><pid>PYTEST01:PV:00000000A</pid><tests>FULL</tests><documents>FULL</documents></result>",
-        "status": "success",
-    }
+
+    assert response.status_code == 202
+    task = TrackableTaskSchema(**response.json())
+    assert task.status == "pending"
+
+    task_status = await client.get(f"{configuration.base_url}/v1/tasks/{task.id}/")
+    assert task_status.status_code == 200
+    assert task_status.json().get("status") == "finished"
 
 
 async def test_record_export_tests(client):
@@ -22,10 +26,14 @@ async def test_record_export_tests(client):
         f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/export/pv-tests/",
         json={},
     )
-    assert response.json() == {
-        "status": "success",
-        "message": "<result><pid>PYTEST01:PV:00000000A</pid><tests>FULL</tests></result>",
-    }
+
+    assert response.status_code == 202
+    task = TrackableTaskSchema(**response.json())
+    assert task.status == "pending"
+
+    task_status = await client.get(f"{configuration.base_url}/v1/tasks/{task.id}/")
+    assert task_status.status_code == 200
+    assert task_status.json().get("status") == "finished"
 
 
 async def test_record_export_docs(client):
@@ -33,10 +41,14 @@ async def test_record_export_docs(client):
         f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/export/pv-docs/",
         json={},
     )
-    assert response.json() == {
-        "message": "<result><pid>PYTEST01:PV:00000000A</pid><documents>FULL</documents></result>",
-        "status": "success",
-    }
+
+    assert response.status_code == 202
+    task = TrackableTaskSchema(**response.json())
+    assert task.status == "pending"
+
+    task_status = await client.get(f"{configuration.base_url}/v1/tasks/{task.id}/")
+    assert task_status.status_code == 200
+    assert task_status.json().get("status") == "finished"
 
 
 async def test_record_export_radar(client):
@@ -44,10 +56,14 @@ async def test_record_export_radar(client):
         f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/export/radar/",
         json={},
     )
-    assert response.json() == {
-        "message": "<result><pid>PYTEST01:PV:00000000A</pid></result>",
-        "status": "success",
-    }
+
+    assert response.status_code == 202
+    task = TrackableTaskSchema(**response.json())
+    assert task.status == "pending"
+
+    task_status = await client.get(f"{configuration.base_url}/v1/tasks/{task.id}/")
+    assert task_status.status_code == 200
+    assert task_status.json().get("status") == "finished"
 
 
 @pytest.mark.asyncio
