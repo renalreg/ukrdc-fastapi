@@ -173,6 +173,7 @@ class PatientRecordSummarySchema(OrmModel):
             "exportPVTests": UrlFor("patient_export_pv_tests", {"pid": "<pid>"}),
             "exportPVDocs": UrlFor("patient_export_pv_docs", {"pid": "<pid>"}),
             "exportRADAR": UrlFor("patient_export_radar", {"pid": "<pid>"}),
+            "exportPKB": UrlFor("patient_export_pkb", {"pid": "<pid>"}),
         }
     )
 
