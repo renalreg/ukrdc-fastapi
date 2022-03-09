@@ -14,6 +14,12 @@ class DebugCreateTaskInput(JSONModel):
 
 
 async def wait_for(time: int):
+    """
+    Wait for a given time
+
+    Args:
+        time (int): Time to wait in seconds
+    """
     await asyncio.sleep(time)
     return {"time": time}
 
@@ -24,6 +30,9 @@ def debug_create_task(
     background_tasks: BackgroundTasks,
     tracker: TaskTracker = Depends(get_task_tracker),
 ):
+    """
+    Create a task to wait for a given time
+    """
     task = tracker.http_create(wait_for, visibility="private")
     background_tasks.add_task(task.tracked, args.time)
     return task.response()

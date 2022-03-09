@@ -13,7 +13,7 @@ router = APIRouter(tags=["Background Tasks"])
 @router.get("/", response_model=Page[TrackableTaskSchema])
 async def get_tasks(
     tracker: TaskTracker = Depends(get_task_tracker),
-) -> Page[TrackableTaskSchema]:
+):
     """Return a list of all non-expired background tasks
 
     Args:
