@@ -46,7 +46,10 @@ async def patient_export_pv(
 ):
     """Export a specific patient's data to PV"""
     task = tracker.http_create(
-        export_all_to_pv, lock=f"task-export-pv-{pid}", visibility="private"
+        export_all_to_pv,
+        lock=f"task-export-pv-{pid}",
+        visibility="private",
+        name=f"Export {pid} to PV",
     )
 
     background_tasks.add_task(task.tracked, pid, user, ukrdc3, mirth, redis)
@@ -73,7 +76,10 @@ async def patient_export_pv_tests(
 ):
     """Export a specific patient's test data to PV"""
     task = tracker.http_create(
-        export_tests_to_pv, lock=f"task-export-pv-tests-{pid}", visibility="private"
+        export_tests_to_pv,
+        lock=f"task-export-pv-tests-{pid}",
+        visibility="private",
+        name=f"Export {pid} tests to PV",
     )
 
     background_tasks.add_task(task.tracked, pid, user, ukrdc3, mirth, redis)
@@ -100,7 +106,10 @@ async def patient_export_pv_docs(
 ):
     """Export a specific patient's documents data to PV"""
     task = tracker.http_create(
-        export_docs_to_pv, lock=f"task-export-pv-docs-{pid}", visibility="private"
+        export_docs_to_pv,
+        lock=f"task-export-pv-docs-{pid}",
+        visibility="private",
+        name=f"Export {pid} documents to PV",
     )
 
     background_tasks.add_task(task.tracked, pid, user, ukrdc3, mirth, redis)
@@ -127,7 +136,10 @@ async def patient_export_radar(
 ):
     """Export a specific patient's data to RaDaR"""
     task = tracker.http_create(
-        export_all_to_radar, lock=f"task-export-radar-{pid}", visibility="private"
+        export_all_to_radar,
+        lock=f"task-export-radar-{pid}",
+        visibility="private",
+        name=f"Export {pid} to RaDaR",
     )
 
     background_tasks.add_task(task.tracked, pid, user, ukrdc3, mirth, redis)
@@ -157,7 +169,10 @@ async def patient_export_pkb(
     This export runs as a background task since the split sending can take a while.
     """
     task = tracker.http_create(
-        export_all_to_pkb, lock=f"task-export-pkb-{pid}", visibility="private"
+        export_all_to_pkb,
+        lock=f"task-export-pkb-{pid}",
+        visibility="private",
+        name=f"Export {pid} to PKB",
     )
 
     background_tasks.add_task(task.tracked, pid, user, ukrdc3, mirth, redis)
