@@ -96,7 +96,9 @@ async def export_all_to_pkb(
 
     for message in messages:
         responses.append(
-            await safe_send_mirth_message_to_name("PKB Outbound", message, mirth, redis)
+            await safe_send_mirth_message_to_name(
+                "PKB Outbound - Partner", message, mirth, redis
+            )
         )
 
     return responses

@@ -35,6 +35,9 @@ class Settings(BaseSettings):
     # Application name used in database connections
     application_name: str = "ukrdc_fastapi"
 
+    # Optional debug mode
+    debug: bool = False
+
     # Optionally skip data caching on startup
     skip_cache: bool = False
 

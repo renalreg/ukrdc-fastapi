@@ -93,7 +93,13 @@ ignore-imports = "yes"
 # Both dependencies and main contain a lot of production-specific code, such as
 # real DB connections and Sentry reporting. We can't run these lines in our unit
 # tests so we exclude them from coverage reports.
-omit = ["ukrdc_fastapi/dependencies/*", "ukrdc_fastapi/main.py", "ukrdc_fastapi/tasks.py"]
+omit = [
+  "ukrdc_fastapi/dependencies/*",
+  "ukrdc_fastapi/main.py",
+  "ukrdc_fastapi/tasks/shutdown.py",
+  "ukrdc_fastapi/tasks/repeated.py",
+  "ukrdc_fastapi/routers/api/v1/debug.py",
+]
 
 [tool.pytest.ini_options]
 addopts = "--cov=ukrdc_fastapi"

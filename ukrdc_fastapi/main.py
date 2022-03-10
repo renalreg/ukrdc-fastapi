@@ -17,7 +17,7 @@ from ukrdc_fastapi.dependencies.database import ukrdc3_session
 from ukrdc_fastapi.dependencies.mirth import mirth_session
 from ukrdc_fastapi.dependencies.sentry import add_sentry
 from ukrdc_fastapi.routers import api
-from ukrdc_fastapi.tasks import startup
+from ukrdc_fastapi.tasks import repeated, shutdown
 
 # Create app
 
@@ -61,13 +61,16 @@ HyperModel.init_app(app)
 
 # Attach event handlers
 
-app.router.add_event_handler("startup", startup.clear_task_tracker)
+# Async startup functions and event handlers
 if not settings.skip_cache:
-    app.router.add_event_handler("startup", startup.cache_mirth_channel_info)
-    app.router.add_event_handler("startup", startup.cache_mirth_channel_groups)
-    app.router.add_event_handler("startup", startup.cache_mirth_channel_statistics)
+    app.router.add_event_handler("startup", repeated.cache_mirth_channel_info)
+    app.router.add_event_handler("startup", repeated.cache_mirth_channel_groups)
+    app.router.add_event_handler("startup", repeated.cache_mirth_channel_statistics)
 else:
     logging.warning("Skipping cache startup tasks")
+
+# Async shutdown functions and event handler
+app.router.add_event_handler("shutdown", shutdown.clear_task_tracker)
 
 
 class StartupError(RuntimeError):

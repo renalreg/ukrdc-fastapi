@@ -53,6 +53,7 @@ from ukrdc_fastapi.dependencies import (
     get_jtrace,
     get_mirth,
     get_redis,
+    get_root_task_tracker,
     get_statsdb,
     get_task_tracker,
     get_ukrdc3,
@@ -902,6 +903,9 @@ def task_redis_sessions():
     )
 
 
+from ukrdc_fastapi.tasks import repeated
+
+
 @pytest.fixture(scope="function")
 def app(
     jtrace_session,
@@ -941,6 +945,9 @@ def app(
     ):
         return TaskTracker(*task_redis_sessions, user)
 
+    def _get_root_task_tracker():
+        return TaskTracker(*task_redis_sessions, auth.auth.superuser)
+
     def _get_token():
         return {
             "uid": "TEST_ID",
@@ -959,6 +966,7 @@ def app(
     app.dependency_overrides[get_statsdb] = _get_statsdb
     app.dependency_overrides[get_auditdb] = _get_auditdb
     app.dependency_overrides[get_task_tracker] = _get_task_tracker
+    app.dependency_overrides[get_root_task_tracker] = _get_root_task_tracker
 
     app.dependency_overrides[auth.auth.okta_jwt_scheme] = _get_token
 

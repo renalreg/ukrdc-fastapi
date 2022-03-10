@@ -1,3 +1,5 @@
+import re
+
 import pytest
 from ukrdc_sqla.ukrdc import ProgramMembership
 
@@ -6,48 +8,98 @@ from ukrdc_fastapi.config import configuration
 from ukrdc_fastapi.tasks.background import TrackableTaskSchema
 
 
-async def test_record_export_data(client):
+def _last_sent_mirth_message(httpx_mock) -> str:
+    raw_message = httpx_mock.get_requests(method="POST")[-1].read().decode("utf-8")
+    raw_data_matches = re.findall(r"\<rawData>(.*?)</rawData>", raw_message)
+    if not raw_data_matches:
+        return ""
+    raw_data = raw_data_matches[-1]
+    decoded_data = raw_data.replace("&lt;", "<").replace("&gt;", ">")
+    return decoded_data
+
+
+@pytest.mark.asyncio
+async def test_record_export_data(client, httpx_mock):
     response = await client.post(
         f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/export/pv/",
         json={},
     )
-    assert response.json() == {
-        "message": "<result><pid>PYTEST01:PV:00000000A</pid><tests>FULL</tests><documents>FULL</documents></result>",
-        "status": "success",
-    }
+
+    assert response.status_code == 202
+    task = TrackableTaskSchema(**response.json())
+    assert task.status == "pending"
+
+    task_status = await client.get(f"{configuration.base_url}/v1/tasks/{task.id}/")
+    assert task_status.status_code == 200
+    assert task_status.json().get("status") == "finished"
+
+    assert (
+        _last_sent_mirth_message(httpx_mock)
+        == "<result><pid>PYTEST01:PV:00000000A</pid><tests>FULL</tests><documents>FULL</documents></result>"
+    )
 
 
-async def test_record_export_tests(client):
+@pytest.mark.asyncio
+async def test_record_export_tests(client, httpx_mock):
     response = await client.post(
         f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/export/pv-tests/",
         json={},
     )
-    assert response.json() == {
-        "status": "success",
-        "message": "<result><pid>PYTEST01:PV:00000000A</pid><tests>FULL</tests></result>",
-    }
+
+    assert response.status_code == 202
+    task = TrackableTaskSchema(**response.json())
+    assert task.status == "pending"
+
+    task_status = await client.get(f"{configuration.base_url}/v1/tasks/{task.id}/")
+    assert task_status.status_code == 200
+    assert task_status.json().get("status") == "finished"
+
+    assert (
+        _last_sent_mirth_message(httpx_mock)
+        == "<result><pid>PYTEST01:PV:00000000A</pid><tests>FULL</tests></result>"
+    )
 
 
-async def test_record_export_docs(client):
+@pytest.mark.asyncio
+async def test_record_export_docs(client, httpx_mock):
     response = await client.post(
         f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/export/pv-docs/",
         json={},
     )
-    assert response.json() == {
-        "message": "<result><pid>PYTEST01:PV:00000000A</pid><documents>FULL</documents></result>",
-        "status": "success",
-    }
+
+    assert response.status_code == 202
+    task = TrackableTaskSchema(**response.json())
+    assert task.status == "pending"
+
+    task_status = await client.get(f"{configuration.base_url}/v1/tasks/{task.id}/")
+    assert task_status.status_code == 200
+    assert task_status.json().get("status") == "finished"
+
+    assert (
+        _last_sent_mirth_message(httpx_mock)
+        == "<result><pid>PYTEST01:PV:00000000A</pid><documents>FULL</documents></result>"
+    )
 
 
-async def test_record_export_radar(client):
+@pytest.mark.asyncio
+async def test_record_export_radar(client, httpx_mock):
     response = await client.post(
         f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/export/radar/",
         json={},
     )
-    assert response.json() == {
-        "message": "<result><pid>PYTEST01:PV:00000000A</pid></result>",
-        "status": "success",
-    }
+
+    assert response.status_code == 202
+    task = TrackableTaskSchema(**response.json())
+    assert task.status == "pending"
+
+    task_status = await client.get(f"{configuration.base_url}/v1/tasks/{task.id}/")
+    assert task_status.status_code == 200
+    assert task_status.json().get("status") == "finished"
+
+    assert (
+        _last_sent_mirth_message(httpx_mock)
+        == "<result><pid>PYTEST01:PV:00000000A</pid></result>"
+    )
 
 
 @pytest.mark.asyncio

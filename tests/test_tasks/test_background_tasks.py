@@ -134,7 +134,7 @@ async def test_get_tasks_list(client_with_tasks):
 
     tasks_list = await client_with_tasks.get(f"{configuration.base_url}/v1/tasks/")
     assert tasks_list.status_code == 200
-    assert len(tasks_list.json()) == 3
+    assert len(tasks_list.json().get("items")) == 3
 
 
 @pytest.mark.asyncio
@@ -156,7 +156,7 @@ async def test_get_tasks_private(client_with_tasks):
     tasks_list = await client_with_tasks.get(f"{configuration.base_url}/v1/tasks/")
     assert tasks_list.status_code == 200
     # Assert the private task started by another user is excluded
-    assert len(tasks_list.json()) == 2
+    assert len(tasks_list.json().get("items")) == 2
 
 
 @pytest.mark.asyncio

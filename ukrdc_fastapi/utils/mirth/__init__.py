@@ -127,7 +127,6 @@ def get_cached_channels(redis: Redis) -> list[ChannelModel]:
     channel_info: list[ChannelModel]
 
     channel_info_json: dict[str, str] = redis.hgetall(redis_key)
-    print(channel_info_json)
     channel_info = [
         ChannelModel.parse_raw(channel, content_type="json")
         for channel in channel_info_json.values()

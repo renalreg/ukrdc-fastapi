@@ -1,10 +1,13 @@
 from fastapi import APIRouter
 from starlette.responses import RedirectResponse
 
+from ukrdc_fastapi.config import settings
+
 from . import (
     admin,
     codes,
     dashboard,
+    debug,
     empi,
     facilities,
     masterrecords,
@@ -52,3 +55,7 @@ router.include_router(messages.router, prefix="/messages")
 
 # Task management
 router.include_router(tasks.router, prefix="/tasks")
+
+# Debug routes
+if settings.debug:
+    router.include_router(debug.router, prefix="/debug")
