@@ -5,7 +5,7 @@ from .base import OrmModel
 
 
 class MedicationSchema(OrmModel):
-    from_time: datetime.datetime
+    from_time: Optional[datetime.datetime]
     to_time: Optional[datetime.datetime]
     drug_product_generic: str
     comment: Optional[str]
