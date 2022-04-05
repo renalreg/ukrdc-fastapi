@@ -8,8 +8,8 @@ packages = [
 version = "0.1.0"
 
 [tool.poetry.dependencies]
-SQLAlchemy = "^1.4.32" 
-fastapi = "^0.75.0" 
+SQLAlchemy = "^1.4.34" 
+fastapi = "^0.75.1" 
 fastapi-hypermodel = "^0.3.2" 
 fastapi-pagination = {extras = ["sqlalchemy"], version = "^0.9.1"} 
 fastapi-utils = "^0.2.1" 
@@ -21,10 +21,10 @@ pydantic = {extras = ["dotenv"], version = "^1.9.0"}
 python = "^3.9" 
 python-stdnum = "^1.16" 
 redis = "^4.0.2" 
-sentry-sdk = "^1.5.5" 
+sentry-sdk = "^1.5.8" 
 ukrdc-sqla = "^1.10.0" 
 ukrdc-xsdata = "^3.3.0" 
-uvicorn = "^0.17.5" 
+uvicorn = "^0.17.6" 
 
 [tool.poetry.dev-dependencies]
 bandit = "^1.7.4"
