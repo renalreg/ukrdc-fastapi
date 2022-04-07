@@ -35,6 +35,13 @@ class MasterRecordSchema(OrmModel):
                 "master_record_patientrecords", {"record_id": "<id>"}
             ),
             "audit": UrlFor("master_record_audit", {"record_id": "<id>"}),
+            "memberships": LinkSet(
+                {
+                    "createPKB": UrlFor(
+                        "master_record_memberships_create_pkb", {"record_id": "<id>"}
+                    ),
+                }
+            ),
         }
     )
 
