@@ -141,7 +141,9 @@ def get_facilities(
     # Exclude inactive facilities from the stats query
     if not include_inactive:
         stats_query = stats_query.filter(
-            FacilityLatestMessages.last_message_received_at != None
+            # pylint: disable=singleton-comparison
+            FacilityLatestMessages.last_message_received_at
+            != None
         )
 
     # Execute the stats query and store in a facility-code-keyed dictionary
