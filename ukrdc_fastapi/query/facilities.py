@@ -112,6 +112,7 @@ def get_facilities(
     Returns:
         list[FacilityDetailsSchema]: List of units/facilities
     """
+    # TODO: This badly needs optimization and cleanup. This whole submodule could do with some TLC
 
     facilities = ukrdc3.query(Facility)
 
