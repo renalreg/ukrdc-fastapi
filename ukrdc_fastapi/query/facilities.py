@@ -135,7 +135,7 @@ def get_facilities(
                     [facility.code for facility in available_facilities]
                 )
             )
-            .join(
+            .outerjoin(
                 FacilityLatestMessages,
                 FacilityLatestMessages.facility == FacilityStats.facility,
             )
@@ -203,7 +203,7 @@ def get_facility(
     stats, latest_messages = (
         statsdb.query(FacilityStats, FacilityLatestMessages)
         .filter(FacilityStats.facility == facility_code)
-        .join(
+        .outerjoin(
             FacilityLatestMessages,
             FacilityLatestMessages.facility == FacilityStats.facility,
         )
