@@ -112,7 +112,7 @@ def get_facilities(
     Returns:
         list[FacilityDetailsSchema]: List of units/facilities
     """
-    # TODO: This badly needs optimization and cleanup. This whole submodule could do with some TLC
+    # TODO: This badly needs optimization and cleanup. Need a profiler to profile the final comprehension
 
     facilities = ukrdc3.query(Facility)
 
@@ -124,51 +124,52 @@ def get_facilities(
     # Execute statement to retreive available facilities list for this user
     available_facilities = facilities.all()
 
-    # Create a list to store our response
-    facility_list: list[FacilityDetailsSchema] = []
-
-    facility_stats_dict: dict[str, Tuple[FacilityStats, FacilityLatestMessages]] = {
-        row[0].facility: row
-        for row in (
-            statsdb.query(FacilityStats, FacilityLatestMessages)
-            .filter(
-                FacilityStats.facility.in_(
-                    [facility.code for facility in available_facilities]
-                )
+    # Get all stats from all tables for all facilities
+    stats_query = (
+        statsdb.query(FacilityStats, FacilityLatestMessages)
+        .filter(
+            FacilityStats.facility.in_(
+                [facility.code for facility in available_facilities]
             )
-            .outerjoin(
-                FacilityLatestMessages,
-                FacilityLatestMessages.facility == FacilityStats.facility,
-            )
-            .all()
         )
+        .outerjoin(
+            FacilityLatestMessages,
+            FacilityLatestMessages.facility == FacilityStats.facility,
+        )
+    )
+
+    # Exclude inactive facilities from the stats query
+    if not include_inactive:
+        stats_query = stats_query.filter(
+            FacilityLatestMessages.last_message_received_at != None
+        )
+
+    # Execute the stats query and store in a facility-code-keyed dictionary
+    facility_stats_dict: dict[str, Tuple[FacilityStats, FacilityLatestMessages]] = {
+        row[0].facility: row for row in stats_query
     }
 
-    for facility in available_facilities:
-        # Find the stats for this specific facility
-        stats, latest_messages = facility_stats_dict.get(facility.code, (None, None))
-        # If stats exist, expand them and add this facility to the response
+    facilities_details = [
+        FacilityDetailsSchema(
+            id=facility.code,
+            description=facility.description,
+            latest_message=_expand_latest_messages(
+                facility_stats_dict.get(facility.code, (None, None))[1]
+            ),
+            statistics=_expand_facility_statistics(
+                facility_stats_dict.get(facility.code, (None, None))[0]
+            ),
+            data_flow=FacilityDataFlowSchema(
+                pkb_in=facility.pkb_in,
+                pkb_out=facility.pkb_out,
+                pkb_message_exclusions=facility.pkb_msg_exclusions or [],
+            ),
+        )
+        for facility in available_facilities
+        if facility.code in facility_stats_dict
+    ]
 
-        # Always include all facilities if include_inactive==True
-        # Otherwise, only include facilities with active incoming files
-        if include_inactive or (
-            latest_messages and latest_messages.last_message_received_at
-        ):
-            facility_list.append(
-                FacilityDetailsSchema(
-                    id=facility.code,
-                    description=facility.description,
-                    latest_message=_expand_latest_messages(latest_messages),
-                    statistics=_expand_facility_statistics(stats),
-                    data_flow=FacilityDataFlowSchema(
-                        pkb_in=facility.pkb_in,
-                        pkb_out=facility.pkb_out,
-                        pkb_message_exclusions=facility.pkb_msg_exclusions or [],
-                    ),
-                )
-            )
-
-    return facility_list
+    return facilities_details
 
 
 # Facility error statistics
