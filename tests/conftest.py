@@ -22,6 +22,7 @@ from ukrdc_sqla.pkb import PKBLink
 from ukrdc_sqla.stats import Base as StatsBase
 from ukrdc_sqla.stats import (
     ErrorHistory,
+    FacilityLatestMessages,
     FacilityStats,
     MultipleUKRDCID,
     PatientsLatestErrors,
@@ -60,6 +61,7 @@ from ukrdc_fastapi.dependencies import (
 )
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
 from ukrdc_fastapi.models.audit import Base as AuditBase
+from ukrdc_fastapi.query.facilities import FacilityLatestMessageSchema
 from ukrdc_fastapi.tasks.background import TaskTracker
 
 from .utils import create_basic_facility, create_basic_patient, days_ago
@@ -188,6 +190,12 @@ def populate_facilities(ukrdc3, statsdb, errorsdb):
         patients_receiving_errors=1,
         last_updated=days_ago(0),
     )
+    latests_1 = FacilityLatestMessages(
+        facility="TEST_SENDING_FACILITY_1",
+        last_updated=days_ago(0),
+        last_message_received_at=days_ago(1),
+        last_message_received_id=3,
+    )
     stats_2 = FacilityStats(
         facility="TEST_SENDING_FACILITY_2",
         total_patients=1,
@@ -196,7 +204,7 @@ def populate_facilities(ukrdc3, statsdb, errorsdb):
         last_updated=days_ago(0),
     )
 
-    latest_1 = PatientsLatestErrors(
+    patient_latest_1 = PatientsLatestErrors(
         ni=UKRDCID_1,
         facility="TEST_SENDING_FACILITY_1",
         id=3,
@@ -209,7 +217,8 @@ def populate_facilities(ukrdc3, statsdb, errorsdb):
 
     statsdb.add(stats_1)
     statsdb.add(stats_2)
-    statsdb.add(latest_1)
+    statsdb.add(latests_1)
+    statsdb.add(patient_latest_1)
     statsdb.add(history_1)
 
     statsdb.commit()

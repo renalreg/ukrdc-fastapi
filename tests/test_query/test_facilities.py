@@ -26,16 +26,19 @@ def test_get_facilities_user(ukrdc3_session, stats_session, test_user):
     assert {facil.id for facil in all_facils} == {"TEST_SENDING_FACILITY_1"}
 
 
-def test_get_facility(ukrdc3_session, stats_session, superuser):
+@pytest.mark.parametrize(
+    "facility_code", ["TEST_SENDING_FACILITY_1", "TEST_SENDING_FACILITY_2"]
+)
+def test_get_facility(facility_code, ukrdc3_session, stats_session, superuser):
     facility = facilities.get_facility(
         ukrdc3_session,
         stats_session,
-        "TEST_SENDING_FACILITY_1",
+        facility_code,
         superuser,
     )
 
-    assert facility.id == "TEST_SENDING_FACILITY_1"
-    assert facility.description == "TEST_SENDING_FACILITY_1_DESCRIPTION"
+    assert facility.id == facility_code
+    assert facility.description == f"{facility_code}_DESCRIPTION"
     assert facility.statistics.last_updated
 
 
