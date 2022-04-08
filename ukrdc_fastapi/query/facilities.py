@@ -1,11 +1,16 @@
 import datetime
-from typing import Optional
+from typing import Optional, Tuple
 
 from fastapi.exceptions import HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.query import Query
 from ukrdc_sqla.errorsdb import Message
-from ukrdc_sqla.stats import ErrorHistory, FacilityStats, PatientsLatestErrors
+from ukrdc_sqla.stats import (
+    ErrorHistory,
+    FacilityLatestMessages,
+    FacilityStats,
+    PatientsLatestErrors,
+)
 from ukrdc_sqla.ukrdc import Code, Facility
 
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
@@ -40,7 +45,15 @@ class FacilityStatisticsSchema(OrmModel):
     patients_receiving_message_error: Optional[int]
 
 
+class FacilityLatestMessageSchema(OrmModel):
+    last_updated: Optional[datetime.datetime]
+
+    # Date of the most recent message received for the facility
+    last_message_received_at: Optional[datetime.datetime]
+
+
 class FacilityDetailsSchema(FacilitySchema):
+    latest_message: FacilityLatestMessageSchema
     statistics: FacilityStatisticsSchema
     data_flow: FacilityDataFlowSchema
 
@@ -74,11 +87,20 @@ def _expand_facility_statistics(
     )
 
 
+def _expand_latest_messages(latest_messages: Optional[FacilityLatestMessages]):
+    return FacilityLatestMessageSchema(
+        last_updated=latest_messages.last_updated if latest_messages else None,
+        last_message_received_at=latest_messages.last_message_received_at
+        if latest_messages
+        else None,
+    )
+
+
 # Facility list
 
 
 def get_facilities(
-    ukrdc3: Session, statsdb: Session, user: UKRDCUser, include_empty: bool = False
+    ukrdc3: Session, statsdb: Session, user: UKRDCUser, include_inactive: bool = False
 ) -> list[FacilityDetailsSchema]:
     """Get a list of all unit/facility summaries available to the current user
 
@@ -104,30 +126,38 @@ def get_facilities(
     # Create a list to store our response
     facility_list: list[FacilityDetailsSchema] = []
 
-    # Fetch stats for facilities we're listing
-    facility_stats_dict: dict[str, FacilityStats] = {
-        row.facility: row
-        for row in statsdb.query(FacilityStats)
-        .filter(
-            FacilityStats.facility.in_(
-                [facility.code for facility in available_facilities]
+    facility_stats_dict: dict[str, Tuple[FacilityStats, FacilityLatestMessages]] = {
+        row[0].facility: row
+        for row in (
+            statsdb.query(FacilityStats, FacilityLatestMessages)
+            .filter(
+                FacilityStats.facility.in_(
+                    [facility.code for facility in available_facilities]
+                )
             )
+            .join(
+                FacilityLatestMessages,
+                FacilityLatestMessages.facility == FacilityStats.facility,
+            )
+            .all()
         )
-        .all()
     }
 
     for facility in available_facilities:
-        # Find the stats for this specific favility
-        stats = facility_stats_dict.get(facility.code)
+        # Find the stats for this specific facility
+        stats, latest_messages = facility_stats_dict.get(facility.code, (None, None))
         # If stats exist, expand them and add this facility to the response
 
-        # Always include all facilities if include_empty==True
-        # Otherwise, only include facilities with patients
-        if include_empty or (stats and (stats.total_patients or 0) > 0):
+        # Always include all facilities if include_inactive==True
+        # Otherwise, only include facilities with active incoming files
+        if include_inactive or (
+            latest_messages and latest_messages.last_message_received_at
+        ):
             facility_list.append(
                 FacilityDetailsSchema(
                     id=facility.code,
                     description=facility.description,
+                    latest_message=_expand_latest_messages(latest_messages),
                     statistics=_expand_facility_statistics(stats),
                     data_flow=FacilityDataFlowSchema(
                         pkb_in=facility.pkb_in,
@@ -170,15 +200,20 @@ def get_facility(
         raise PermissionsError()
 
     # Get cached statistics
-    stats = (
-        statsdb.query(FacilityStats)
+    stats, latest_messages = (
+        statsdb.query(FacilityStats, FacilityLatestMessages)
         .filter(FacilityStats.facility == facility_code)
+        .join(
+            FacilityLatestMessages,
+            FacilityLatestMessages.facility == FacilityStats.facility,
+        )
         .first()
     )
 
     return FacilityDetailsSchema(
         id=facility.code,
         description=facility.description,
+        latest_message=_expand_latest_messages(latest_messages),
         statistics=_expand_facility_statistics(stats),
         data_flow=FacilityDataFlowSchema(
             pkb_in=facility.pkb_in,

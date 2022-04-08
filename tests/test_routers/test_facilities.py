@@ -5,7 +5,7 @@ from ..utils import days_ago
 
 async def test_facilities(client):
     response = await client.get(
-        f"{configuration.base_url}/v1/facilities/?include_empty=true"
+        f"{configuration.base_url}/v1/facilities/?include_inactive=true"
     )
     ids = {item.get("id") for item in response.json()}
     assert ids == {
