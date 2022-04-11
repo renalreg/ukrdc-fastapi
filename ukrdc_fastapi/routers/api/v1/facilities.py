@@ -40,6 +40,7 @@ def facility_list(
                 "statistics.total_patients",
                 "statistics.patients_receiving_message_error",
                 "data_flow.pkb_out",
+                "latest_message.last_message_received_at",
             ],
         )
     ),
