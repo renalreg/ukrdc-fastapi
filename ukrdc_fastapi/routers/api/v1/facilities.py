@@ -31,6 +31,7 @@ router = APIRouter(tags=["Facilities"])
 @router.get("/", response_model=list[FacilityDetailsSchema])
 def facility_list(
     include_inactive: bool = False,
+    include_empty: bool = False,
     sorter: ObjectSorter = Depends(
         make_object_sorter(
             "FacilityEnum",
@@ -48,7 +49,11 @@ def facility_list(
 ):
     """Retreive a list of on-record facilities"""
     facilities = get_facilities(
-        ukrdc3, statsdb, user, include_inactive=include_inactive
+        ukrdc3,
+        statsdb,
+        user,
+        include_inactive=include_inactive,
+        include_empty=include_empty,
     )
 
     return sorter.sort(facilities)

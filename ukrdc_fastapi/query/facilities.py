@@ -100,7 +100,11 @@ def _expand_latest_messages(latest_messages: Optional[FacilityLatestMessages]):
 
 
 def get_facilities(
-    ukrdc3: Session, statsdb: Session, user: UKRDCUser, include_inactive: bool = False
+    ukrdc3: Session,
+    statsdb: Session,
+    user: UKRDCUser,
+    include_inactive: bool = False,
+    include_empty: bool = False,
 ) -> list[FacilityDetailsSchema]:
     """Get a list of all unit/facility summaries available to the current user
 
@@ -124,7 +128,19 @@ def get_facilities(
     # Execute statement to retreive available facilities list for this user
     available_facilities = facilities.all()
 
-    # Get all stats from all tables for all facilities
+    # Pre-fetch descriptions for all facilities available to the user
+    # We want to avoid using facility.description as this is an associationproxy,
+    # meaning that a new query is generated for each access, in this case for each
+    # facility in the list. We speed this up by orders of magnitude by fetching ALL
+    # descriptions in one query.
+    descriptions = {
+        code.code: code.description
+        for code in ukrdc3.query(Code)
+        .filter(Code.coding_standard == "RR1+")
+        .filter(Code.code in [facility.code for facility in available_facilities])
+    }
+
+    # Get all stats from all tables for all facilities available to the user
     stats_query = (
         statsdb.query(FacilityStats, FacilityLatestMessages)
         .filter(
@@ -138,40 +154,40 @@ def get_facilities(
         )
     )
 
-    # Exclude inactive facilities from the stats query
-    if not include_inactive:
-        stats_query = stats_query.filter(
-            # pylint: disable=singleton-comparison
-            FacilityLatestMessages.last_message_received_at
-            != None
-        )
-
     # Execute the stats query and store in a facility-code-keyed dictionary
     facility_stats_dict: dict[str, Tuple[FacilityStats, FacilityLatestMessages]] = {
         row[0].facility: row for row in stats_query
     }
 
-    facilities_details = [
-        FacilityDetailsSchema(
-            id=facility.code,
-            description=facility.description,
-            latest_message=_expand_latest_messages(
-                facility_stats_dict.get(facility.code, (None, None))[1]
-            ),
-            statistics=_expand_facility_statistics(
-                facility_stats_dict.get(facility.code, (None, None))[0]
-            ),
-            data_flow=FacilityDataFlowSchema(
-                pkb_in=facility.pkb_in,
-                pkb_out=facility.pkb_out,
-                pkb_message_exclusions=facility.pkb_msg_exclusions or [],
-            ),
-        )
-        for facility in available_facilities
-        if facility.code in facility_stats_dict
-    ]
+    facility_list: list[FacilityDetailsSchema] = []
 
-    return facilities_details
+    for facility in available_facilities:
+        # Find pre-fetched stats for this facility
+        stats, latests = facility_stats_dict.get(facility.code, (None, None))
+        # Find pre-fetched description for this facility
+        description = descriptions.get(facility.code, None)
+
+        # Should this facility be included in the list?
+        include_this_facility = (
+            include_inactive or (latests and latests.last_message_received_at)
+        ) and (include_empty or (stats and (stats.total_patients or 0) > 0))
+
+        if include_this_facility:
+            facility_list.append(
+                FacilityDetailsSchema(
+                    id=facility.code,
+                    description=description,
+                    data_flow=FacilityDataFlowSchema(
+                        pkb_in=facility.pkb_in,
+                        pkb_out=facility.pkb_out,
+                        pkb_message_exclusions=facility.pkb_msg_exclusions or [],
+                    ),
+                    latest_message=_expand_latest_messages(latests),
+                    statistics=_expand_facility_statistics(stats),
+                )
+            )
+
+    return facility_list
 
 
 # Facility error statistics
