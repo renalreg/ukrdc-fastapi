@@ -137,7 +137,7 @@ def get_facilities(
         code.code: code.description
         for code in ukrdc3.query(Code)
         .filter(Code.coding_standard == "RR1+")
-        .filter(Code.code in [facility.code for facility in available_facilities])
+        .filter(Code.code.in_([facility.code for facility in available_facilities]))
     }
 
     # Get all stats from all tables for all facilities available to the user
