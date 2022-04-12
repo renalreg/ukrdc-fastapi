@@ -150,9 +150,14 @@ class ObjectSorter:
         if sort_attr not in self.columns:
             raise HTTPException(400, f"Invalid sort key '{self.sort_by}'")
 
+        def keyfunc(item: Any) -> Any:
+            """Sort key function, see https://stackoverflow.com/a/48235298"""
+            value = rgetattr(item, sort_attr)
+            return (value is not None, value)
+
         return sorted(
             items,
-            key=lambda item: rgetattr(item, sort_attr),
+            key=keyfunc,
             reverse=(self.order_by or self.default_order_by) == OrderBy.DESC,
         )
 
