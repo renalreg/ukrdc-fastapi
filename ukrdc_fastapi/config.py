@@ -7,7 +7,7 @@ class Configuration(BaseSettings):
     # Built-time configuration, designed to be read-only
 
     # Used to correct linking when behind a reverse proxy
-    base_url: str = "/new/api"
+    base_url: str = "/api"
 
     # Deployment environment, used for error logging etc
     deployment_env: str = "development"
