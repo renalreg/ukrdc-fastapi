@@ -113,7 +113,7 @@ class Settings(BaseSettings):
     audit_name: str = "auditdb"
     audit_driver: str = "postgresql+psycopg2"
 
-    allowed_origins: list[str] = []
+    allow_origins: list[str] = []
 
     class Config:
         env_file = ".env"

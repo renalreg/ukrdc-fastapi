@@ -51,7 +51,7 @@ poetry run pre-commit install
 
 ### Local CORS
 
-On some oeprating systems and environments, it may be difficult to properly set a CORS policy for local development. In these cases, add `ALLOWED_ORIGINS=["*"]` to your `.env` file.
+On some oeprating systems and environments, it may be difficult to properly set a CORS policy for local development. In these cases, add `allow_origins=["*"]` to your `.env` file.
 
 ### VSCode config for auto-formatting
 
