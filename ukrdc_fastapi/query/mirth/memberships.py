@@ -18,7 +18,7 @@ async def create_pkb_membership(
         raise RecordTypeError("Cannot create PKB membership from a non-UKRDC record")
     return await safe_send_mirth_message_to_name(
         "PKB - New Patients",
-        build_pkb_membership_message(master_record.nationalid),
+        build_pkb_membership_message(master_record.nationalid.strip()),
         mirth,
         redis,
     )

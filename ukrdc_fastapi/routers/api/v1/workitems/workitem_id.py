@@ -163,7 +163,7 @@ def workitem_messages(
     ]
 
     if workitem.master_record:
-        workitem_nis.append(workitem.master_record.nationalid)
+        workitem_nis.append(workitem.master_record.nationalid.strip())
 
     audit.add_event(
         Resource.MESSAGES,

@@ -68,7 +68,7 @@ class AuditEventSchema(OrmModel):
                 self.identifiers = [
                     f"{master_record.givenname} {master_record.surname}",
                     master_record.nationalid_type,
-                    master_record.nationalid,
+                    master_record.nationalid.strip(),
                 ]
 
         if self.children:
