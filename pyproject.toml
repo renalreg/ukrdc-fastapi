@@ -30,7 +30,7 @@ uvicorn = "^0.17.6"
 bandit = "^1.7.4"
 black = {version = "^22.1", allow-prereleases = true}
 coverage = {extras = ["toml"], version = "^6.1"}
-fakeredis = "^1.7.4"
+fakeredis = "^1.7.5"
 isort = "^5.10.0"
 mypy = "^0.950"
 pre-commit = "^2.19.0"
