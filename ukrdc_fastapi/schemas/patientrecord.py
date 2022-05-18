@@ -151,6 +151,9 @@ class PatientRecordSummarySchema(OrmModel):
     program_memberships: list[ProgramMembershipSchema]
     patient: Optional[PatientSchema]
 
+    repository_creation_date: datetime.datetime
+    repository_update_date: datetime.datetime
+
     links = LinkSet(
         {
             # Self-resources
@@ -180,9 +183,6 @@ class PatientRecordSummarySchema(OrmModel):
 
 class PatientRecordSchema(PatientRecordSummarySchema):
     """Schema for PatientRecord resources"""
-
-    repository_creation_date: datetime.datetime
-    repository_update_date: datetime.datetime
 
     master_id: Optional[int]
 
