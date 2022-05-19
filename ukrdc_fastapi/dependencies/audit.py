@@ -99,7 +99,7 @@ class Auditer:
             uid=user.id,
             cid=user.cid,
             sub=user.email,
-            client_host=request.client.host,
+            client_host=request.client.host if request.client else None,
             path=str(request.url),
             method=request.method,
             body=None,
