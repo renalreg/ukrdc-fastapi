@@ -1,11 +1,9 @@
-import pytest
 from ukrdc_sqla.ukrdc import ProgramMembership
 
 from tests.utils import days_ago
 from ukrdc_fastapi.query.mirth import export
 
 
-@pytest.mark.asyncio
 async def test_export_all_to_pv(
     ukrdc3_session, redis_session, mirth_session, superuser
 ):
