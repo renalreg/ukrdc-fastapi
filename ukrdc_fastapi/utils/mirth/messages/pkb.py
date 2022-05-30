@@ -181,8 +181,6 @@ def build_pkb_sync_messages(record: PatientRecord, ukrdc3: Session) -> list[str]
     Returns:
         list[str]: XML rawData for Mirth messages
     """
-    # TODO: Check user permissions for record/record.sending_facility (likely upstream check)
-
     # Check memberships
 
     if not record_has_active_membership(ukrdc3, record, "PKB"):
