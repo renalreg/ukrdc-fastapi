@@ -270,11 +270,11 @@ gmpy2 = ["gmpy2"]
 
 [[package]]
 name = "fakeredis"
-version = "1.7.6.1"
+version = "1.8"
 description = "Fake implementation of redis API for testing purposes."
 category = "dev"
 optional = false
-python-versions = ">=3.8,<4.0"
+python-versions = ">=3.7,<4.0"
 
 [package.dependencies]
 redis = "<=4.3.1"
@@ -1257,7 +1257,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "bcd76fb9bf209c1bdc230fc0734acc0c6a058853b1b816302ca28915d925929a"
+content-hash = "b939e7ede560068e8160f27226b349fa064a741c20df8e532a97440e786ab2d2"
 
 [metadata.files]
 acachecontrol = [
@@ -1479,8 +1479,8 @@ ecdsa = [
     {file = "ecdsa-0.17.0.tar.gz", hash = "sha256:b9f500bb439e4153d0330610f5d26baaf18d17b8ced1bc54410d189385ea68aa"},
 ]
 fakeredis = [
-    {file = "fakeredis-1.7.6.1-py3-none-any.whl", hash = "sha256:2bc92cece6535961a465991d01841888e0fe2b742ca49aa97ce247b04c9a0ecc"},
-    {file = "fakeredis-1.7.6.1.tar.gz", hash = "sha256:e71ca849167052f42f5469a764def9ef35ccffd04773d30b017a7adcc12940c1"},
+    {file = "fakeredis-1.8-py3-none-any.whl", hash = "sha256:65dcd78c0cd29d17daccce9f58698f6ab61ad7a404eab373fcad2b76fe8db03d"},
+    {file = "fakeredis-1.8.tar.gz", hash = "sha256:cbf8d74ae06672d40b2fa88b9ee4f1d6efd56b06b2e7f0be2c639647f00643f1"},
 ]
 fastapi = [
     {file = "fastapi-0.78.0-py3-none-any.whl", hash = "sha256:15fcabd5c78c266fa7ae7d8de9b384bfc2375ee0503463a6febbe3bab69d6f65"},
