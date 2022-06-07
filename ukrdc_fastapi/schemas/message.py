@@ -58,7 +58,7 @@ class MessageSchema(MinimalMessageSchema):
         cls._channel_id_name_map = cinm
 
     @validator("channel")
-    def channel_name(cls, _, values):  # pylint: disable=no-self-argument,no-self-use
+    def channel_name(cls, _, values):  # pylint: disable=no-self-argument
         """
         Dynamically generates the channel name field
         by reading the class Mirth Channel ID-Name map.

@@ -136,9 +136,7 @@ class WorkItemSchema(OrmModel):
     )
 
     @validator("attributes")
-    def normalise_attributes(
-        cls, value
-    ):  # pylint: disable=no-self-argument,no-self-use
+    def normalise_attributes(cls, value):  # pylint: disable=no-self-argument
         """
         Convert attributes JSON keys into MasterRecord property keys
         """
