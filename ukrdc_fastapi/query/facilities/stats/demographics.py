@@ -70,6 +70,7 @@ def get_facility_stats_demographics(
     )
 
     age_distribution = [AgePoint(age=int(row[0]), count=row[1]) for row in q_ages]
+    age_distribution.sort(key=lambda x: x.age, reverse=True)
 
     # Gender distribution
     gender_count_func = func.count(Patient.gender)
@@ -84,6 +85,7 @@ def get_facility_stats_demographics(
     gender_distribution = [
         GenderPoint(gender=row[0], count=row[1]) for row in q_genders
     ]
+    gender_distribution.sort(key=lambda x: x.count, reverse=True)
 
     # Ethnicity distribution
     eth_count_func = func.count(Patient.ethnic_group_description)
@@ -96,6 +98,7 @@ def get_facility_stats_demographics(
     )
 
     eth_distribution = [EthnicityPoint(ethnicity=row[0], count=row[1]) for row in q_eth]
+    eth_distribution.sort(key=lambda x: x.count, reverse=True)
 
     # Composite
     return FacilityDemographicStats(
