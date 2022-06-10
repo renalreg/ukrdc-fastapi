@@ -70,7 +70,6 @@ def get_facility_stats_demographics(
     )
 
     age_distribution = [AgePoint(age=int(row[0]), count=row[1]) for row in q_ages]
-    age_distribution.sort(key=lambda x: x.age, reverse=True)
 
     # Gender distribution
     gender_count_func = func.count(Patient.gender)
