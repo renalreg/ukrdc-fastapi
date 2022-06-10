@@ -55,7 +55,12 @@ def create_basic_patient(
         country_description="Pacific Ocean",
     )
 
-    patient = Patient(pid=pid, birth_time=birth_time, gender=f"{id_%2 + 1}")
+    patient = Patient(
+        pid=pid,
+        birth_time=birth_time,
+        gender=f"{id_%2 + 1}",
+        ethnic_group_description="ETHNICITY_GROUP",
+    )
     patient_number = PatientNumber(
         id=id_, pid=pid, patientid=nhs_number, organization="NHS", numbertype="NI"
     )

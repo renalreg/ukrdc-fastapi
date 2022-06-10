@@ -14,10 +14,16 @@ from ukrdc_fastapi.dependencies.audit import (
 from ukrdc_fastapi.dependencies.auth import UKRDCUser, auth
 from ukrdc_fastapi.query.facilities import (
     FacilityDetailsSchema,
-    get_errors_history,
     get_facilities,
     get_facility,
+)
+from ukrdc_fastapi.query.facilities.errors import (
+    get_errors_history,
     get_patients_latest_errors,
+)
+from ukrdc_fastapi.query.facilities.stats.demographics import (
+    FacilityDemographicStats,
+    get_facility_stats_demographics,
 )
 from ukrdc_fastapi.query.messages import ERROR_SORTER
 from ukrdc_fastapi.schemas.common import HistoryPoint
@@ -105,3 +111,13 @@ def facility_patients_latest_errors(
     )
 
     return paginate(sorter.sort(query))
+
+
+@router.get("/{code}/stats/demographics", response_model=FacilityDemographicStats)
+def facility_stats_demographics(
+    code: str,
+    ukrdc3: Session = Depends(get_ukrdc3),
+    user: UKRDCUser = Security(auth.get_user()),
+):
+    """Retreive demographic distributions for a given facility"""
+    return get_facility_stats_demographics(ukrdc3, code, user)
