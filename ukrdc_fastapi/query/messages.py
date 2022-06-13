@@ -155,7 +155,7 @@ def get_last_message_on_masterrecord(
     jtrace: Session, errorsdb: Session, record_id: int, user: UKRDCUser
 ) -> Optional[Message]:
     """
-    Return a summary of the most recent file recieved for a MasterRecord,
+    Return a summary of the most recent file received for a MasterRecord,
     within the last year
 
     Args:
