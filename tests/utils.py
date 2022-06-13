@@ -59,6 +59,7 @@ def create_basic_patient(
         pid=pid,
         birth_time=birth_time,
         gender=f"{id_%2 + 1}",
+        ethnic_group_code="G",
         ethnic_group_description="ETHNICITY_GROUP",
     )
     patient_number = PatientNumber(

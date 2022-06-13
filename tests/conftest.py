@@ -268,6 +268,13 @@ def populate_codes(ukrdc3):
         coding_standard="CODING_STANDARD_2", code="CODE_2", system="SYSTEM_2"
     )
 
+    code_eth_1 = Code(
+        coding_standard="NHS_DATA_DICTIONARY",
+        code="G",
+        description="ETHNICITY_GROUP_CODE_DESCRIPTION",
+        creation_date=days_ago(365),
+    )
+
     ukrdc3.add(code3)
     ukrdc3.add(code4)
     ukrdc3.add(code5)
@@ -276,6 +283,7 @@ def populate_codes(ukrdc3):
     ukrdc3.add(codeexc1)
     ukrdc3.add(codeexc2)
     ukrdc3.add(codeexc3)
+    ukrdc3.add(code_eth_1)
 
     ukrdc3.commit()
 

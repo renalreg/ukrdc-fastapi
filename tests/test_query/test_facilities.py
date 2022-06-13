@@ -161,7 +161,10 @@ def test_get_facility_stats_demographics(ukrdc3_session, superuser):
     assert [point.count for point in stats.gender_dist] == [1, 1]
 
     assert len(stats.ethnicity_dist) == 1
-    assert stats.ethnicity_dist[0].ethnicity == "ETHNICITY_GROUP"
+
+    # Ensure we prefertially use the ethnicity Code.code description over free-text
+    assert stats.ethnicity_dist[0].ethnicity == "ETHNICITY_GROUP_CODE_DESCRIPTION"
+
     assert stats.ethnicity_dist[0].count == 2
 
 
