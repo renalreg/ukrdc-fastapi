@@ -10,6 +10,7 @@ async def test_codes_list(client):
         "CODE_1",
         "CODE_2",
         "CODE_3",
+        "G",
     }
 
 
@@ -35,7 +36,7 @@ async def test_code_list_export(client):
     response = await client.get(f"{configuration.base_url}/v1/codes/export/list/")
     assert (
         response.content
-        == b'"RR1+","TEST_SENDING_FACILITY_1","TEST_SENDING_FACILITY_1_DESCRIPTION"\r\n"RR1+","TEST_SENDING_FACILITY_2","TEST_SENDING_FACILITY_2_DESCRIPTION"\r\n"CODING_STANDARD_1","CODE_1","DESCRIPTION_1"\r\n"CODING_STANDARD_2","CODE_2","DESCRIPTION_2"\r\n"CODING_STANDARD_2","CODE_3","DESCRIPTION_3"\r\n'
+        == b'"RR1+","TEST_SENDING_FACILITY_1","TEST_SENDING_FACILITY_1_DESCRIPTION"\r\n"RR1+","TEST_SENDING_FACILITY_2","TEST_SENDING_FACILITY_2_DESCRIPTION"\r\n"CODING_STANDARD_1","CODE_1","DESCRIPTION_1"\r\n"CODING_STANDARD_2","CODE_2","DESCRIPTION_2"\r\n"CODING_STANDARD_2","CODE_3","DESCRIPTION_3"\r\n"NHS_DATA_DICTIONARY","G","ETHNICITY_GROUP_CODE_DESCRIPTION"\r\n'
     )
 
 
