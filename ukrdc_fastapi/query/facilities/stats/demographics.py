@@ -101,7 +101,6 @@ def get_facility_stats_demographics(
             Patient.ethnic_group_code,
             Patient.ethnic_group_description,
         )
-        .order_by(eth_count_func.desc())
     ).subquery()
 
     # Fetch code descriptions for ethnicity codes
