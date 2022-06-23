@@ -24,7 +24,7 @@ redis = "^4.3.3"
 sentry-sdk = "^1.5.12" 
 ukrdc-sqla = "^1.10.0" 
 ukrdc-xsdata = "^3.3.0" 
-uvicorn = "^0.17.6" 
+uvicorn = "^0.18.1" 
 
 [tool.poetry.dev-dependencies]
 bandit = "^1.7.4"
