@@ -16,5 +16,12 @@ class FacilitySchema(OrmModel):
             "patientsLatestErrors": UrlFor(
                 "facility_patients_latest_errors", {"code": "<id>"}
             ),
+            "stats": LinkSet(
+                {
+                    "demographics": UrlFor(
+                        "facility_stats_demographics", {"code": "<id>"}
+                    ),
+                }
+            ),
         }
     )

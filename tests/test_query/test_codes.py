@@ -12,6 +12,7 @@ def test_get_codes(ukrdc3_session):
         "CODE_1",
         "CODE_2",
         "CODE_3",
+        "G",
     }
 
 
@@ -52,7 +53,12 @@ def test_get_codes_filter_standard_and_search(ukrdc3_session):
 
 def test_get_coding_standards(ukrdc3_session):
     standards = codes.get_coding_standards(ukrdc3_session)
-    assert standards == ["CODING_STANDARD_1", "CODING_STANDARD_2", "RR1+"]
+    assert standards == [
+        "NHS_DATA_DICTIONARY",
+        "CODING_STANDARD_1",
+        "CODING_STANDARD_2",
+        "RR1+",
+    ]
 
 
 def test_get_code_maps(ukrdc3_session):

@@ -1,14 +1,21 @@
 import pytest
 from ukrdc_sqla.ukrdc import Code, Facility
 
-from ukrdc_fastapi.query import facilities
 from ukrdc_fastapi.query.common import PermissionsError
+from ukrdc_fastapi.query.facilities import get_facilities, get_facility
+from ukrdc_fastapi.query.facilities.errors import (
+    get_errors_history,
+    get_patients_latest_errors,
+)
+from ukrdc_fastapi.query.facilities.stats.demographics import (
+    get_facility_stats_demographics,
+)
 
 from ..utils import days_ago
 
 
 def test_get_facilities_superuser(ukrdc3_session, stats_session, superuser):
-    all_facils = facilities.get_facilities(
+    all_facils = get_facilities(
         ukrdc3_session, stats_session, superuser, include_inactive=True
     )
     # Superuser should see all facilities
@@ -19,7 +26,7 @@ def test_get_facilities_superuser(ukrdc3_session, stats_session, superuser):
 
 
 def test_get_facilities_user(ukrdc3_session, stats_session, test_user):
-    all_facils = facilities.get_facilities(
+    all_facils = get_facilities(
         ukrdc3_session, stats_session, test_user, include_inactive=True
     )
     # Test user should see only TEST_SENDING_FACILITY_1
@@ -30,7 +37,7 @@ def test_get_facilities_user(ukrdc3_session, stats_session, test_user):
     "facility_code", ["TEST_SENDING_FACILITY_1", "TEST_SENDING_FACILITY_2"]
 )
 def test_get_facility(facility_code, ukrdc3_session, stats_session, superuser):
-    facility = facilities.get_facility(
+    facility = get_facility(
         ukrdc3_session,
         stats_session,
         facility_code,
@@ -47,7 +54,7 @@ def test_get_facility_data_flow(ukrdc3_session, stats_session, superuser):
     facility_object.pkb_msg_exclusions = ["MDM_T02_CP", "MDM_T02_DOC"]
     ukrdc3_session.commit()
 
-    facility = facilities.get_facility(
+    facility = get_facility(
         ukrdc3_session,
         stats_session,
         "TEST_SENDING_FACILITY_1",
@@ -61,7 +68,7 @@ def test_get_facility_data_flow(ukrdc3_session, stats_session, superuser):
 
 def test_get_facility_denied(ukrdc3_session, stats_session, test_user):
     with pytest.raises(PermissionsError):
-        facilities.get_facility(
+        get_facility(
             ukrdc3_session,
             stats_session,
             "TEST_SENDING_FACILITY_2",
@@ -74,7 +81,7 @@ def test_get_facility_history(ukrdc3_session, stats_session, superuser):
         code="TEST_SENDING_FACILITY_1", description="Test sending facility 1"
     )
 
-    history = facilities.get_errors_history(
+    history = get_errors_history(
         ukrdc3_session,
         stats_session,
         test_code.code,
@@ -90,7 +97,7 @@ def test_get_facility_history_range(ukrdc3_session, stats_session, superuser):
         code="TEST_SENDING_FACILITY_1", description="Test sending facility 1"
     )
 
-    history = facilities.get_errors_history(
+    history = get_errors_history(
         ukrdc3_session,
         stats_session,
         test_code.code,
@@ -99,7 +106,7 @@ def test_get_facility_history_range(ukrdc3_session, stats_session, superuser):
     )
     assert len(history) == 0
 
-    history = facilities.get_errors_history(
+    history = get_errors_history(
         ukrdc3_session,
         stats_session,
         test_code.code,
@@ -108,7 +115,7 @@ def test_get_facility_history_range(ukrdc3_session, stats_session, superuser):
     )
     assert len(history) == 0
 
-    history = facilities.get_errors_history(
+    history = get_errors_history(
         ukrdc3_session,
         stats_session,
         test_code.code,
@@ -121,7 +128,7 @@ def test_get_facility_history_range(ukrdc3_session, stats_session, superuser):
 
 def test_get_facility_history_denied(ukrdc3_session, stats_session, test_user):
     with pytest.raises(PermissionsError):
-        facilities.get_errors_history(
+        get_errors_history(
             ukrdc3_session,
             stats_session,
             "TEST_SENDING_FACILITY_2",
@@ -132,7 +139,7 @@ def test_get_facility_history_denied(ukrdc3_session, stats_session, test_user):
 def test_get_patients_latest_errors(
     ukrdc3_session, stats_session, errorsdb_session, test_user
 ):
-    messages = facilities.get_patients_latest_errors(
+    messages = get_patients_latest_errors(
         ukrdc3_session,
         errorsdb_session,
         stats_session,
@@ -141,3 +148,28 @@ def test_get_patients_latest_errors(
     ).all()
     assert len(messages) == 1
     assert messages[0].id == 3
+
+
+def test_get_facility_stats_demographics(ukrdc3_session, superuser):
+    stats = get_facility_stats_demographics(
+        ukrdc3_session, "TEST_SENDING_FACILITY_1", superuser
+    )
+    assert len(stats.age_dist) == 2
+    assert [point.count for point in stats.age_dist] == [1, 1]
+
+    assert len(stats.gender_dist) == 2
+    assert [point.count for point in stats.gender_dist] == [1, 1]
+
+    assert len(stats.ethnicity_dist) == 1
+
+    # Ensure we prefertially use the ethnicity Code.code description over free-text
+    assert stats.ethnicity_dist[0].ethnicity == "ETHNICITY_GROUP_CODE_DESCRIPTION"
+
+    assert stats.ethnicity_dist[0].count == 2
+
+
+def test_get_facility_stats_demographics_denied(ukrdc3_session, test_user):
+    with pytest.raises(PermissionsError):
+        get_facility_stats_demographics(
+            ukrdc3_session, "TEST_SENDING_FACILITY_2", test_user
+        )

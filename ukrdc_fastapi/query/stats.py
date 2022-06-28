@@ -5,7 +5,7 @@ from sqlalchemy.orm.session import Session
 from ukrdc_sqla.empi import MasterRecord
 from ukrdc_sqla.stats import ErrorHistory, MultipleUKRDCID
 
-from ukrdc_fastapi.query.facilities import HistoryPoint
+from ukrdc_fastapi.query.facilities.errors import HistoryPoint
 from ukrdc_fastapi.schemas.admin import MultipleUKRDCIDGroup, MultipleUKRDCIDGroupItem
 
 
