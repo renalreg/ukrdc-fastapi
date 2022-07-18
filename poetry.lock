@@ -294,11 +294,11 @@ test = ["pytest (>=6.2.4,<7.0.0)", "pytest-cov (>=2.12.0,<4.0.0)", "mypy (==0.91
 
 [[package]]
 name = "fastapi-hypermodel"
-version = "0.3.3"
+version = "0.4.0"
 description = "A FastAPI + Pydantic extension for simplifying hypermedia-driven API development."
 category = "main"
 optional = false
-python-versions = ">=3.6.2,<4.0"
+python-versions = ">=3.7,<4.0"
 
 [package.dependencies]
 fastapi = ">=0.65.2"
@@ -1255,7 +1255,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "a0510bfcfc288bbacac6528a90e332b69e0bd42f95aaf96046a32d160eef2e2d"
+content-hash = "08f8b2977e41652cc6462203fb11ce864cfa16f5817dc7b56f7e058aa7e33ab2"
 
 [metadata.files]
 acachecontrol = [
@@ -1481,8 +1481,8 @@ fastapi = [
     {file = "fastapi-0.78.0.tar.gz", hash = "sha256:3233d4a789ba018578658e2af1a4bb5e38bdd122ff722b313666a9b2c6786a83"},
 ]
 fastapi-hypermodel = [
-    {file = "fastapi-hypermodel-0.3.3.tar.gz", hash = "sha256:27cd6b33b0308711ae57a529ccb60b7b935db10b3d4b25359d1bc87535fee608"},
-    {file = "fastapi_hypermodel-0.3.3-py3-none-any.whl", hash = "sha256:a853ee4343bab9f37075ebe6209eb119363bc3a662b16494bda2411d11c9f095"},
+    {file = "fastapi-hypermodel-0.4.0.tar.gz", hash = "sha256:a5f27826bb11c495593dfe8c903323db2da289f0ecf345f8b5c4cd5a0a00717b"},
+    {file = "fastapi_hypermodel-0.4.0-py3-none-any.whl", hash = "sha256:9cb3f3db1ecd58bb54e95d6c0139ffc19821ccd7d669abdb1f769ebb42726c29"},
 ]
 fastapi-pagination = [
     {file = "fastapi-pagination-0.9.3.tar.gz", hash = "sha256:bf2bd538786b5804130b01b1a0b3bdab5917e3409ef729e86f9e8224055e9432"},
