@@ -61,7 +61,7 @@ from ukrdc_fastapi.dependencies import (
 )
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
 from ukrdc_fastapi.models.audit import Base as AuditBase
-from ukrdc_fastapi.query.facilities import FacilityLatestMessageSchema
+from ukrdc_fastapi.models.users import Base as UsersBase
 from ukrdc_fastapi.tasks.background import TaskTracker
 
 from .utils import create_basic_facility, create_basic_patient, days_ago
@@ -833,12 +833,25 @@ def auditdb_sessionmaker(postgresql_my):
 
 
 @pytest.fixture(scope="function")
+def usersdb_sessionmaker():
+    """
+    Create a new function-scoped in-memory USERS database and return the session class
+    """
+
+    engine = create_engine("sqlite://", connect_args={"check_same_thread": False})
+    UsersTestSession = sessionmaker(bind=engine)
+    UsersBase.metadata.create_all(bind=engine)
+    return UsersTestSession
+
+
+@pytest.fixture(scope="function")
 def sessions(
     ukrdc3_sessionmaker,
     jtrace_sessionmaker,
     errorsdb_sessionmaker,
     statsdb_sessionmaker,
     auditdb_sessionmaker,
+    usersdb_sessionmaker,
 ):
     """
     Create a new function-scoped in-memory UKRDC3, JTRACE, ERRORS and STATS databases,
@@ -850,16 +863,18 @@ def sessions(
     errorsdb = errorsdb_sessionmaker()
     statsdb = statsdb_sessionmaker()
     auditdb = auditdb_sessionmaker()
+    usersdb = usersdb_sessionmaker()
 
     populate_all(ukrdc3, jtrace, errorsdb, statsdb)
 
-    yield ukrdc3, jtrace, errorsdb, statsdb, auditdb
+    yield ukrdc3, jtrace, errorsdb, statsdb, auditdb, usersdb
 
     ukrdc3.close()
     jtrace.close()
     errorsdb.close()
     statsdb.close()
     auditdb.close()
+    usersdb.close()
 
 
 @pytest.fixture(scope="function")
@@ -885,6 +900,11 @@ def stats_session(sessions):
 @pytest.fixture(scope="function")
 def audit_session(sessions):
     return sessions[4]
+
+
+@pytest.fixture(scope="function")
+def users_session(sessions):
+    return sessions[5]
 
 
 @pytest_asyncio.fixture(scope="function")
