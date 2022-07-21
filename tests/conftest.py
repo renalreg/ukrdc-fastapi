@@ -58,6 +58,7 @@ from ukrdc_fastapi.dependencies import (
     get_statsdb,
     get_task_tracker,
     get_ukrdc3,
+    get_usersdb,
 )
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
 from ukrdc_fastapi.models.audit import Base as AuditBase
@@ -950,6 +951,7 @@ def app(
     errorsdb_session,
     stats_session,
     audit_session,
+    users_session,
     redis_session,
     task_redis_sessions,
 ):
@@ -977,6 +979,9 @@ def app(
     def _get_auditdb():
         return audit_session
 
+    def _get_usersdb():
+        return users_session
+
     def _get_task_tracker(
         user: auth.UKRDCUser = Security(auth.auth.get_user()),
     ):
@@ -1002,6 +1007,7 @@ def app(
     app.dependency_overrides[get_errorsdb] = _get_errorsdb
     app.dependency_overrides[get_statsdb] = _get_statsdb
     app.dependency_overrides[get_auditdb] = _get_auditdb
+    app.dependency_overrides[get_usersdb] = _get_usersdb
     app.dependency_overrides[get_task_tracker] = _get_task_tracker
     app.dependency_overrides[get_root_task_tracker] = _get_root_task_tracker
 
