@@ -4,7 +4,7 @@ from fastapi import Security
 from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import LinkRecord, MasterRecord
 
-from ukrdc_fastapi.dependencies import get_jtrace, get_ukrdc3
+from ukrdc_fastapi.dependencies import get_jtrace, get_ukrdc3, get_usersdb
 from ukrdc_fastapi.dependencies.audit import (
     Auditer,
     AuditOperation,
@@ -13,6 +13,7 @@ from ukrdc_fastapi.dependencies.audit import (
 )
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.query.masterrecords import get_masterrecords
+from ukrdc_fastapi.query.users import get_user_preferences
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
 from ukrdc_fastapi.utils.search.masterrecords import search_masterrecord_ids
@@ -34,10 +35,10 @@ def search_masterrecords(
     facility: list[str] = QueryParam([]),
     search: list[str] = QueryParam([]),
     number_type: list[str] = QueryParam([]),
-    include_ukrdc: bool = False,
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
     ukrdc3: Session = Depends(get_ukrdc3),
+    usersdb: Session = Depends(get_usersdb),
     audit: Auditer = Depends(get_auditer),
 ):
     """Search the EMPI for a particular master record"""
@@ -69,11 +70,14 @@ def search_masterrecords(
             MasterRecord.nationalid_type.in_(number_type)
         )
 
+    # Filter UKRDC results based on user preferences
+    include_ukrdc = get_user_preferences(usersdb, user).search_show_ukrdc
     if not include_ukrdc:
         matched_records = matched_records.filter(
             MasterRecord.nationalid_type != "UKRDC"
         )
 
+    # Paginate results
     page: Page = paginate(matched_records)  # type: ignore
 
     for record in page.items:
