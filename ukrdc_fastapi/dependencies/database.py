@@ -1,3 +1,4 @@
+import os
 from contextlib import contextmanager
 from typing import Generator
 
@@ -157,6 +158,29 @@ def audit_session() -> Generator[Session, None, None]:
         [Session]: AUDITDB database session
     """
     session = AuditSession()
+    try:
+        yield session
+    finally:
+        session.close()
+
+
+UsersSession = sessionmaker(
+    bind=create_engine(
+        build_db_uri(
+            "sqlite", name=os.path.join(settings.sqlite_data_dir, settings.usersdb_name)
+        )
+    )
+)
+
+
+@contextmanager
+def users_session() -> Generator[Session, None, None]:
+    """Yeild a new Users database session
+
+    Yields:
+        [Session]: Users database session
+    """
+    session = UsersSession()
     try:
         yield session
     finally:
