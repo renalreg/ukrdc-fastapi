@@ -2,8 +2,6 @@ from datetime import datetime
 from urllib.parse import quote
 
 from ukrdc_fastapi.config import configuration
-from ukrdc_fastapi.query.users import update_user_preferences
-from ukrdc_fastapi.schemas.user import UpdateUserPreferences
 
 from ..utils import create_basic_facility, create_basic_patient
 
@@ -70,21 +68,7 @@ async def test_search_all(ukrdc3_session, jtrace_session, client):
         returned_ids = {item["id"] for item in response.json()["items"]}
         assert returned_ids == {index + BUMPER + 100}
 
-
-async def test_search_all_include_ukrdc(
-    ukrdc3_session, jtrace_session, users_session, superuser, client
-):
-    # Add extra test items
-    _commit_extra_patients(ukrdc3_session, jtrace_session)
-
-    # Set preferences
-    update_user_preferences(
-        users_session, superuser, UpdateUserPreferences(search_show_ukrdc=True)
-    )
-
-    # Search for each item individually
-    for index, number in enumerate(TEST_NUMBERS):
-        url = f"{configuration.base_url}/v1/search/?search={number}"
+        url = f"{configuration.base_url}/v1/search/?search={number}&include_ukrdc=true"
 
         response = await client.get(url)
         assert response.status_code == 200
@@ -99,13 +83,13 @@ async def test_search_pid(ukrdc3_session, jtrace_session, client):
 
     # Search for each item individually
     for index, number in enumerate(TEST_NUMBERS):
-        url = f"{configuration.base_url}/v1/search/?pid={number}"
+        url = f"{configuration.base_url}/v1/search/?pid={number}&include_ukrdc=true"
 
         response = await client.get(url)
         assert response.status_code == 200
 
         returned_ids = {item["id"] for item in response.json()["items"]}
-        assert returned_ids == {index + BUMPER + 100}
+        assert returned_ids == {index + BUMPER, index + BUMPER + 100}
 
 
 async def test_search_mrn(ukrdc3_session, jtrace_session, client):
@@ -114,13 +98,13 @@ async def test_search_mrn(ukrdc3_session, jtrace_session, client):
 
     # Search for each item individually
     for index, number in enumerate(TEST_NUMBERS):
-        url = f"{configuration.base_url}/v1/search/?mrn_number={number}"
+        url = f"{configuration.base_url}/v1/search/?mrn_number={number}&include_ukrdc=true"
 
         response = await client.get(url)
         assert response.status_code == 200
 
         returned_ids = {item["id"] for item in response.json()["items"]}
-        assert returned_ids == {index + BUMPER + 100}
+        assert returned_ids == {index + BUMPER, index + BUMPER + 100}
 
 
 async def test_search_ukrdc_number(ukrdc3_session, jtrace_session, client):
@@ -129,13 +113,13 @@ async def test_search_ukrdc_number(ukrdc3_session, jtrace_session, client):
 
     # Search for each item individually
     for index, _ in enumerate(TEST_NUMBERS):
-        url = f"{configuration.base_url}/v1/search/?ukrdc_number={100000000 + index}"
+        url = f"{configuration.base_url}/v1/search/?ukrdc_number={100000000 + index}&include_ukrdc=true"
 
         response = await client.get(url)
         assert response.status_code == 200
 
         returned_ids = {item["id"] for item in response.json()["items"]}
-        assert returned_ids == {index + BUMPER + 100}
+        assert returned_ids == {index + BUMPER, index + BUMPER + 100}
 
 
 async def test_search_facility(ukrdc3_session, jtrace_session, client):
@@ -144,13 +128,13 @@ async def test_search_facility(ukrdc3_session, jtrace_session, client):
 
     # Search for each item individually
     for index, _ in enumerate(TEST_NUMBERS):
-        url = f"{configuration.base_url}/v1/search/?facility=TEST_SENDING_FACILITY_{index + BUMPER}"
+        url = f"{configuration.base_url}/v1/search/?facility=TEST_SENDING_FACILITY_{index + BUMPER}&include_ukrdc=true"
 
         response = await client.get(url)
         assert response.status_code == 200
 
         returned_ids = {item["id"] for item in response.json()["items"]}
-        assert returned_ids == {index + BUMPER + 100}
+        assert returned_ids == {index + BUMPER, index + BUMPER + 100}
 
 
 async def test_search_name(ukrdc3_session, jtrace_session, client):
@@ -160,13 +144,13 @@ async def test_search_name(ukrdc3_session, jtrace_session, client):
     # Search for each item individually
     for index, _ in enumerate(TEST_NUMBERS):
         full_name = quote(f"NAME{index} SURNAME{index}")
-        url = f"{configuration.base_url}/v1/search/?full_name={full_name}"
+        url = f"{configuration.base_url}/v1/search/?full_name={full_name}&include_ukrdc=true"
 
         response = await client.get(url)
         assert response.status_code == 200
 
         returned_ids = {item["id"] for item in response.json()["items"]}
-        assert returned_ids == {index + BUMPER + 100}
+        assert returned_ids == {index + BUMPER, index + BUMPER + 100}
 
 
 async def test_search_dob(ukrdc3_session, jtrace_session, client):
@@ -176,13 +160,13 @@ async def test_search_dob(ukrdc3_session, jtrace_session, client):
     # Search for each item individually
     for index, _ in enumerate(TEST_NUMBERS):
         dob = f"1950-01-{str((index + 11) % 28).zfill(2)}"
-        url = f"{configuration.base_url}/v1/search/?dob={dob}"
+        url = f"{configuration.base_url}/v1/search/?dob={dob}&include_ukrdc=true"
 
         response = await client.get(url)
         assert response.status_code == 200
 
         returned_ids = {item["id"] for item in response.json()["items"]}
-        assert returned_ids == {index + BUMPER + 100}
+        assert returned_ids == {index + BUMPER, index + BUMPER + 100}
 
 
 async def test_search_multiple_mrn(ukrdc3_session, jtrace_session, client):
@@ -209,13 +193,13 @@ async def test_search_implicit_dob(ukrdc3_session, jtrace_session, client):
     # Search for each item individually
     for index, _ in enumerate(TEST_NUMBERS):
         dob = f"1950-01-{str((index + 11) % 28).zfill(2)}"
-        url = f"{configuration.base_url}/v1/search/?search={dob}"
+        url = f"{configuration.base_url}/v1/search/?search={dob}&include_ukrdc=true"
 
         response = await client.get(url)
         assert response.status_code == 200
 
         returned_ids = {item["id"] for item in response.json()["items"]}
-        assert returned_ids == {index + BUMPER + 100}
+        assert returned_ids == {index + BUMPER, index + BUMPER + 100}
 
 
 async def test_search_implicit_facility(ukrdc3_session, jtrace_session, client):
@@ -224,10 +208,10 @@ async def test_search_implicit_facility(ukrdc3_session, jtrace_session, client):
 
     # Search for each item individually
     for index, _ in enumerate(TEST_NUMBERS):
-        url = f"{configuration.base_url}/v1/search/?search=TEST_SENDING_FACILITY_{index + BUMPER}"
+        url = f"{configuration.base_url}/v1/search/?search=TEST_SENDING_FACILITY_{index + BUMPER}&include_ukrdc=true"
 
         response = await client.get(url)
         assert response.status_code == 200
 
         returned_ids = {item["id"] for item in response.json()["items"]}
-        assert returned_ids == {index + BUMPER + 100}
+        assert returned_ids == {index + BUMPER, index + BUMPER + 100}

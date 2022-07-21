@@ -3,14 +3,16 @@ from ukrdc_fastapi.models.audit import AuditEvent
 
 
 async def test_search_pid(client, audit_session):
-    response = await client.get(f"{configuration.base_url}/v1/search/?search=999999999")
+    response = await client.get(
+        f"{configuration.base_url}/v1/search/?search=999999999&include_ukrdc=true"
+    )
     assert response.status_code == 200
 
     returned_ids = {item["id"] for item in response.json()["items"]}
-    assert returned_ids == {104, 101}
+    assert returned_ids == {104, 1, 4, 101}
 
     events = audit_session.query(AuditEvent).all()
-    assert len(events) == 2
+    assert len(events) == 4
 
     for event in events:
         assert event.resource == "MASTER_RECORD"
