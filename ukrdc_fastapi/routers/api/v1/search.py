@@ -38,7 +38,6 @@ def search_masterrecords(
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
     ukrdc3: Session = Depends(get_ukrdc3),
-    usersdb: Session = Depends(get_usersdb),
     audit: Auditer = Depends(get_auditer),
 ):
     """Search the EMPI for a particular master record"""
@@ -71,13 +70,6 @@ def search_masterrecords(
         matched_records = matched_records.filter(
             MasterRecord.nationalid_type.in_(number_type)
         )
-    else:
-        # Filter out UKRDC number type based on user preferences
-        include_ukrdc = get_user_preferences(usersdb, user).search_show_ukrdc
-        if not include_ukrdc:
-            matched_records = matched_records.filter(
-                MasterRecord.nationalid_type != "UKRDC"
-            )
 
     # Paginate results
     page: Page = paginate(matched_records)  # type: ignore
