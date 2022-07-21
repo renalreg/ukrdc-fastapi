@@ -1,5 +1,3 @@
-import pytest
-
 from ukrdc_fastapi.config import configuration
 from ukrdc_fastapi.dependencies.auth import Permissions
 from ukrdc_fastapi.schemas.user import ReadUserPreferences
