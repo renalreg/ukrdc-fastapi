@@ -65,17 +65,19 @@ def search_masterrecords(
         MasterRecord.id.in_(master_ids)
     )
 
+    # If a number type filter is explicitly given
     if number_type:
+        # Filter by number types
         matched_records = matched_records.filter(
             MasterRecord.nationalid_type.in_(number_type)
         )
-
-    # Filter UKRDC results based on user preferences
-    include_ukrdc = get_user_preferences(usersdb, user).search_show_ukrdc
-    if not include_ukrdc:
-        matched_records = matched_records.filter(
-            MasterRecord.nationalid_type != "UKRDC"
-        )
+    else:
+        # Filter out UKRDC number type based on user preferences
+        include_ukrdc = get_user_preferences(usersdb, user).search_show_ukrdc
+        if not include_ukrdc:
+            matched_records = matched_records.filter(
+                MasterRecord.nationalid_type != "UKRDC"
+            )
 
     # Paginate results
     page: Page = paginate(matched_records)  # type: ignore
