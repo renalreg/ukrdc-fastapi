@@ -13,6 +13,7 @@ from pytest_httpx import HTTPXMock
 from pytest_postgresql import factories
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.pool import StaticPool
 from ukrdc_sqla.empi import Base as JtraceBase
 from ukrdc_sqla.empi import LinkRecord, WorkItem
 from ukrdc_sqla.errorsdb import Base as ErrorsBase
@@ -839,7 +840,9 @@ def usersdb_sessionmaker():
     Create a new function-scoped in-memory USERS database and return the session class
     """
 
-    engine = create_engine("sqlite://", connect_args={"check_same_thread": False})
+    engine = create_engine(
+        "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
+    )
     UsersTestSession = sessionmaker(bind=engine)
     UsersBase.metadata.create_all(bind=engine)
     return UsersTestSession
