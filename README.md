@@ -14,6 +14,29 @@
 - Install Poetry
 - Run `poetry install`
 
+## Create local databases
+
+### Users Database
+
+If it doesn't already exist, we need to create an sqlite database used to store user information like preferences.
+
+#### Automatic
+
+```bash
+poetry run scripts/sqlite/create_databases.py
+```
+
+#### Manual
+
+```bash
+mkdir data
+sqlite3 data/users.sqlite
+```
+
+```sql
+CREATE TABLE user_preference (uid VARCHAR NOT NULL, "key" VARCHAR NOT NULL, val JSON, PRIMARY KEY (uid, "key"));
+```
+
 ## Run the server
 
 - `poetry run uvicorn ukrdc_fastapi.main:app`
