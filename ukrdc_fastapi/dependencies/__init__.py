@@ -15,6 +15,7 @@ from .database import (
     jtrace_session,
     stats_session,
     ukrdc3_session,
+    users_session,
 )
 from .mirth import mirth_session
 
@@ -81,6 +82,16 @@ def get_auditdb() -> Generator[Session, None, None]:
     """
     with audit_session() as auditdb:
         yield auditdb
+
+
+def get_usersdb() -> Generator[Session, None, None]:
+    """Yeild a new usersdb database session
+
+    Yields:
+        Generator[Session]: usersdb database session
+    """
+    with users_session() as usersdb:
+        yield usersdb
 
 
 def get_redis() -> redis.Redis:

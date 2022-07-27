@@ -66,14 +66,6 @@ async def test_search_all(ukrdc3_session, jtrace_session, client):
         assert response.status_code == 200
 
         returned_ids = {item["id"] for item in response.json()["items"]}
-        assert returned_ids == {index + BUMPER + 100}
-
-        url = f"{configuration.base_url}/v1/search/?search={number}&include_ukrdc=true"
-
-        response = await client.get(url)
-        assert response.status_code == 200
-
-        returned_ids = {item["id"] for item in response.json()["items"]}
         assert returned_ids == {index + BUMPER, index + BUMPER + 100}
 
 
@@ -83,7 +75,7 @@ async def test_search_pid(ukrdc3_session, jtrace_session, client):
 
     # Search for each item individually
     for index, number in enumerate(TEST_NUMBERS):
-        url = f"{configuration.base_url}/v1/search/?pid={number}&include_ukrdc=true"
+        url = f"{configuration.base_url}/v1/search/?pid={number}"
 
         response = await client.get(url)
         assert response.status_code == 200
@@ -98,7 +90,7 @@ async def test_search_mrn(ukrdc3_session, jtrace_session, client):
 
     # Search for each item individually
     for index, number in enumerate(TEST_NUMBERS):
-        url = f"{configuration.base_url}/v1/search/?mrn_number={number}&include_ukrdc=true"
+        url = f"{configuration.base_url}/v1/search/?mrn_number={number}"
 
         response = await client.get(url)
         assert response.status_code == 200
@@ -113,7 +105,7 @@ async def test_search_ukrdc_number(ukrdc3_session, jtrace_session, client):
 
     # Search for each item individually
     for index, _ in enumerate(TEST_NUMBERS):
-        url = f"{configuration.base_url}/v1/search/?ukrdc_number={100000000 + index}&include_ukrdc=true"
+        url = f"{configuration.base_url}/v1/search/?ukrdc_number={100000000 + index}"
 
         response = await client.get(url)
         assert response.status_code == 200
@@ -128,7 +120,7 @@ async def test_search_facility(ukrdc3_session, jtrace_session, client):
 
     # Search for each item individually
     for index, _ in enumerate(TEST_NUMBERS):
-        url = f"{configuration.base_url}/v1/search/?facility=TEST_SENDING_FACILITY_{index + BUMPER}&include_ukrdc=true"
+        url = f"{configuration.base_url}/v1/search/?facility=TEST_SENDING_FACILITY_{index + BUMPER}"
 
         response = await client.get(url)
         assert response.status_code == 200
@@ -144,7 +136,7 @@ async def test_search_name(ukrdc3_session, jtrace_session, client):
     # Search for each item individually
     for index, _ in enumerate(TEST_NUMBERS):
         full_name = quote(f"NAME{index} SURNAME{index}")
-        url = f"{configuration.base_url}/v1/search/?full_name={full_name}&include_ukrdc=true"
+        url = f"{configuration.base_url}/v1/search/?full_name={full_name}"
 
         response = await client.get(url)
         assert response.status_code == 200
@@ -160,7 +152,7 @@ async def test_search_dob(ukrdc3_session, jtrace_session, client):
     # Search for each item individually
     for index, _ in enumerate(TEST_NUMBERS):
         dob = f"1950-01-{str((index + 11) % 28).zfill(2)}"
-        url = f"{configuration.base_url}/v1/search/?dob={dob}&include_ukrdc=true"
+        url = f"{configuration.base_url}/v1/search/?dob={dob}"
 
         response = await client.get(url)
         assert response.status_code == 200
@@ -177,6 +169,8 @@ async def test_search_multiple_mrn(ukrdc3_session, jtrace_session, client):
     path = f"{configuration.base_url}/v1/search/?"
     for number in TEST_NUMBERS[:5]:
         path += f"mrn_number={number}&"
+    # Exclude UKRDC records
+    path += "number_type=NHS&number_type=HSC&number_type=CHI"
     path = path.rstrip("&")
 
     response = await client.get(path)
@@ -193,7 +187,7 @@ async def test_search_implicit_dob(ukrdc3_session, jtrace_session, client):
     # Search for each item individually
     for index, _ in enumerate(TEST_NUMBERS):
         dob = f"1950-01-{str((index + 11) % 28).zfill(2)}"
-        url = f"{configuration.base_url}/v1/search/?search={dob}&include_ukrdc=true"
+        url = f"{configuration.base_url}/v1/search/?search={dob}"
 
         response = await client.get(url)
         assert response.status_code == 200
@@ -208,7 +202,7 @@ async def test_search_implicit_facility(ukrdc3_session, jtrace_session, client):
 
     # Search for each item individually
     for index, _ in enumerate(TEST_NUMBERS):
-        url = f"{configuration.base_url}/v1/search/?search=TEST_SENDING_FACILITY_{index + BUMPER}&include_ukrdc=true"
+        url = f"{configuration.base_url}/v1/search/?search=TEST_SENDING_FACILITY_{index + BUMPER}"
 
         response = await client.get(url)
         assert response.status_code == 200

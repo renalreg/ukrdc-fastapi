@@ -34,7 +34,6 @@ def search_masterrecords(
     facility: list[str] = QueryParam([]),
     search: list[str] = QueryParam([]),
     number_type: list[str] = QueryParam([]),
-    include_ukrdc: bool = False,
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
     ukrdc3: Session = Depends(get_ukrdc3),
@@ -64,16 +63,14 @@ def search_masterrecords(
         MasterRecord.id.in_(master_ids)
     )
 
+    # If a number type filter is explicitly given
     if number_type:
+        # Filter by number types
         matched_records = matched_records.filter(
             MasterRecord.nationalid_type.in_(number_type)
         )
 
-    if not include_ukrdc:
-        matched_records = matched_records.filter(
-            MasterRecord.nationalid_type != "UKRDC"
-        )
-
+    # Paginate results
     page: Page = paginate(matched_records)  # type: ignore
 
     for record in page.items:

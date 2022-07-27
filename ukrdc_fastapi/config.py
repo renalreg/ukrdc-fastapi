@@ -76,6 +76,10 @@ class Settings(BaseSettings):
     redis_tasks_expire_error: int = 259200
     redis_tasks_expire_lock: int = 60
 
+    # SQLite databases
+    sqlite_data_dir: str = "./data"
+    usersdb_name: str = "users.sqlite"
+
     # Database connections
 
     ukrdc_host: str = "localhost"

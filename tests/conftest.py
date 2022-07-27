@@ -13,6 +13,7 @@ from pytest_httpx import HTTPXMock
 from pytest_postgresql import factories
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.pool import StaticPool
 from ukrdc_sqla.empi import Base as JtraceBase
 from ukrdc_sqla.empi import LinkRecord, WorkItem
 from ukrdc_sqla.errorsdb import Base as ErrorsBase
@@ -58,10 +59,11 @@ from ukrdc_fastapi.dependencies import (
     get_statsdb,
     get_task_tracker,
     get_ukrdc3,
+    get_usersdb,
 )
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
 from ukrdc_fastapi.models.audit import Base as AuditBase
-from ukrdc_fastapi.query.facilities import FacilityLatestMessageSchema
+from ukrdc_fastapi.models.users import Base as UsersBase
 from ukrdc_fastapi.tasks.background import TaskTracker
 
 from .utils import create_basic_facility, create_basic_patient, days_ago
@@ -833,12 +835,27 @@ def auditdb_sessionmaker(postgresql_my):
 
 
 @pytest.fixture(scope="function")
+def usersdb_sessionmaker():
+    """
+    Create a new function-scoped in-memory USERS database and return the session class
+    """
+
+    engine = create_engine(
+        "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
+    )
+    UsersTestSession = sessionmaker(bind=engine)
+    UsersBase.metadata.create_all(bind=engine)
+    return UsersTestSession
+
+
+@pytest.fixture(scope="function")
 def sessions(
     ukrdc3_sessionmaker,
     jtrace_sessionmaker,
     errorsdb_sessionmaker,
     statsdb_sessionmaker,
     auditdb_sessionmaker,
+    usersdb_sessionmaker,
 ):
     """
     Create a new function-scoped in-memory UKRDC3, JTRACE, ERRORS and STATS databases,
@@ -850,16 +867,18 @@ def sessions(
     errorsdb = errorsdb_sessionmaker()
     statsdb = statsdb_sessionmaker()
     auditdb = auditdb_sessionmaker()
+    usersdb = usersdb_sessionmaker()
 
     populate_all(ukrdc3, jtrace, errorsdb, statsdb)
 
-    yield ukrdc3, jtrace, errorsdb, statsdb, auditdb
+    yield ukrdc3, jtrace, errorsdb, statsdb, auditdb, usersdb
 
     ukrdc3.close()
     jtrace.close()
     errorsdb.close()
     statsdb.close()
     auditdb.close()
+    usersdb.close()
 
 
 @pytest.fixture(scope="function")
@@ -885,6 +904,11 @@ def stats_session(sessions):
 @pytest.fixture(scope="function")
 def audit_session(sessions):
     return sessions[4]
+
+
+@pytest.fixture(scope="function")
+def users_session(sessions):
+    return sessions[5]
 
 
 @pytest_asyncio.fixture(scope="function")
@@ -930,6 +954,7 @@ def app(
     errorsdb_session,
     stats_session,
     audit_session,
+    users_session,
     redis_session,
     task_redis_sessions,
 ):
@@ -957,6 +982,9 @@ def app(
     def _get_auditdb():
         return audit_session
 
+    def _get_usersdb():
+        return users_session
+
     def _get_task_tracker(
         user: auth.UKRDCUser = Security(auth.auth.get_user()),
     ):
@@ -982,6 +1010,7 @@ def app(
     app.dependency_overrides[get_errorsdb] = _get_errorsdb
     app.dependency_overrides[get_statsdb] = _get_statsdb
     app.dependency_overrides[get_auditdb] = _get_auditdb
+    app.dependency_overrides[get_usersdb] = _get_usersdb
     app.dependency_overrides[get_task_tracker] = _get_task_tracker
     app.dependency_overrides[get_root_task_tracker] = _get_root_task_tracker
 
