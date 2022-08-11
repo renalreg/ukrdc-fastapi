@@ -47,8 +47,6 @@ def get_facility_stats_demographics(
     Returns:
         FacilityDemographicStats: Facility demographic distribution statistics
     """
-    # TODO: Consider caching the responses here, e.g. https://github.com/long2ice/fastapi-cache
-
     facility = ukrdc3.query(Facility).filter(Facility.code == facility_code).first()
 
     if not facility:
