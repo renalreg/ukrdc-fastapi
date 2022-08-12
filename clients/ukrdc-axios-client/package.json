@@ -1,13 +1,14 @@
 {
   "name": "@ukkidney/ukrdc-axios-client",
+  "repository": "github:renalreg/ukrdc-fastapi",
   "version": "1.0.0-beta.1",
-  "description": "",
+  "description": "Auto-generated Axios-based client library for the UKRDC API",
   "main": "index.js",
   "scripts": {
     "generate-client": "openapi --input ../openapi.json --output ./src/ --client axios --useOptions"
   },
-  "author": "",
-  "license": "",
+  "author": "UKKA Systems <rrsystems@renalregistry.nhs.uk>",
+  "license": "MIT",
   "devDependencies": {
     "openapi-typescript-codegen": "^0.20.1",
     "typescript": "^4.6.2"
