@@ -22,6 +22,7 @@ class SystemInfoSchema(JSONModel):
     github_sha: Optional[str] = configuration.github_sha
     github_ref: Optional[str] = configuration.github_ref
     deployment_env: str = configuration.deployment_env
+    version: str = configuration.version
 
 
 @router.get("/user/", response_model=UserSchema)
