@@ -61,7 +61,13 @@ E.g.
 
 ### Build client libraries
 
-`openapi-generator-cli generate -c ./config.json -i ./openapi.json -g typescript-axios --additional-properties=snapshot=true`
+Client libraries are automatically built and published on every release.
+
+For development purposes, you can manually trigger the Build Client Libraries workflow to publish a snapshot release.
+
+#### Local `typescript-axios-client` snapshot
+
+`openapi-generator-cli generate -c ./clients/config.json -i ./clients/openapi.json -g typescript-axios -o ./clients/typescript-axios-client --additional-properties=snapshot=true`
 
 ### Pre-commit hooks
 
