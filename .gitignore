@@ -151,3 +151,8 @@ cython_debug/
 
 # Persistent data files
 data/
+
+# Client files
+openapitools.json
+clients/openapi.json
+clients/typescript-axios-client
