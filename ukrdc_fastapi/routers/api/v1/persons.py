@@ -29,9 +29,9 @@ def person(
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a particular Person record from the EMPI"""
-    person = get_person(jtrace, person_id, user)
-    audit.add_event(Resource.PERSON, person.id, AuditOperation.READ)
-    return person
+    person_obj = get_person(jtrace, person_id, user)
+    audit.add_event(Resource.PERSON, person_obj.id, AuditOperation.READ)
+    return person_obj
 
 
 @router.get(
@@ -46,8 +46,8 @@ def person_masterrecords(
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive MasterRecords directly linked to a particular Person record"""
-    person: Person = get_person(jtrace, person_id, user)
-    related_master_ids = [link.master_id for link in person.link_records]
+    person_obj: Person = get_person(jtrace, person_id, user)
+    related_master_ids = [link.master_id for link in person_obj.link_records]
     records = (
         get_masterrecords(jtrace, user)
         .filter(MasterRecord.id.in_(related_master_ids))

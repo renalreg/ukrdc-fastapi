@@ -86,9 +86,9 @@ def message(
     # For some reason the fastAPI response_model doesn't call our channel_name
     # validator, meaning we don't get a populated channel name unless we explicitly
     # call it here.
-    message = get_message(errorsdb, message_id, user)
-    audit.add_event(Resource.MESSAGE, message.id, MessageOperation.READ)
-    return MessageSchema.from_orm(message)
+    message_obj = get_message(errorsdb, message_id, user)
+    audit.add_event(Resource.MESSAGE, message_obj.id, MessageOperation.READ)
+    return MessageSchema.from_orm(message_obj)
 
 
 @router.get(
@@ -109,14 +109,14 @@ async def message_source(
     if not error.channel_id:
         raise HTTPException(404, "Channel ID not found in Mirth")
 
-    message = await mirth.channel(error.channel_id).get_message(
+    message_obj = await mirth.channel(error.channel_id).get_message(
         str(error.message_id), include_content=True
     )
-    if not message:
+    if not message_obj:
         raise HTTPException(404, "Message not found in Mirth")
 
     first_connector_message: ConnectorMessageModel = list(
-        message.connector_messages.values()
+        message_obj.connector_messages.values()
     )[0]
 
     message_data: Optional[ConnectorMessageData] = None
@@ -155,13 +155,15 @@ async def message_workitems(
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive WorkItems associated with a specific error message"""
-    message = get_message(errorsdb, message_id, user)
+    message_obj = get_message(errorsdb, message_id, user)
 
     workitems = get_workitems_related_to_message(
-        jtrace, errorsdb, str(message.id), user
+        jtrace, errorsdb, str(message_obj.id), user
     ).all()
 
-    message_audit = audit.add_event(Resource.MESSAGE, message.id, MessageOperation.READ)
+    message_audit = audit.add_event(
+        Resource.MESSAGE, message_obj.id, MessageOperation.READ
+    )
     for item in workitems:
         audit.add_workitem(item, parent=message_audit)
 
@@ -183,14 +185,18 @@ async def message_masterrecords(
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive MasterRecords associated with a specific error message"""
-    message = get_message(errorsdb, message_id, user)
+    message_obj = get_message(errorsdb, message_id, user)
 
     # Get masterrecords directly referenced by the error
     records = (
-        jtrace.query(MasterRecord).filter(MasterRecord.nationalid == message.ni).all()
+        jtrace.query(MasterRecord)
+        .filter(MasterRecord.nationalid == message_obj.ni)
+        .all()
     )
 
-    message_audit = audit.add_event(Resource.MESSAGE, message.id, MessageOperation.READ)
+    message_audit = audit.add_event(
+        Resource.MESSAGE, message_obj.id, MessageOperation.READ
+    )
     for record in records:
         audit.add_event(
             Resource.MASTER_RECORD,

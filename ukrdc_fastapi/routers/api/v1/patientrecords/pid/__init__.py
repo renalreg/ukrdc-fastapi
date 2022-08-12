@@ -529,8 +529,8 @@ def document(
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's document information"""
-    document = patient_record.documents.filter(Document.id == document_id).first()
-    if not document:
+    document_obj = patient_record.documents.filter(Document.id == document_id).first()
+    if not document_obj:
         raise HTTPException(404, detail="Document not found")
 
     audit.add_event(
@@ -542,7 +542,7 @@ def document(
         ),
     )
 
-    return document
+    return document_obj
 
 
 @router.get(
@@ -555,10 +555,10 @@ def document_download(
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's document file"""
-    document: Optional[Document] = patient_record.documents.filter(
+    document_obj: Optional[Document] = patient_record.documents.filter(
         Document.id == document_id
     ).first()
-    if not document:
+    if not document_obj:
         raise HTTPException(404, detail="Document not found")
 
     audit.add_event(
@@ -573,14 +573,14 @@ def document_download(
     media_type: str
     stream: bytes
     filename: str
-    if not document.filetype:
+    if not document_obj.filetype:
         media_type = "text/csv"
-        stream = (document.notetext or "").encode()
-        filename = f"{document.documentname}.txt"
+        stream = (document_obj.notetext or "").encode()
+        filename = f"{document_obj.documentname}.txt"
     else:
-        media_type = document.filetype
-        stream = document.stream or b""
-        filename = document.filename or document.documentname or "NoFileName"
+        media_type = document_obj.filetype
+        stream = document_obj.stream or b""
+        filename = document_obj.filename or document_obj.documentname or "NoFileName"
 
     response = Response(content=stream, media_type=media_type)
     response.headers["Content-Disposition"] = f"attachment; filename={filename}"
