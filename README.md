@@ -61,7 +61,7 @@ E.g.
 
 ### Build client libraries
 
-The API application includes functionality to build and publish API client libraries automatically. Currently, only the typescript/Axios client is enabled.
+The API application includes functionality to build and publish API client libraries automatically. Currently, only the [typescript/Axios client](https://www.npmjs.com/package/@ukkidney/ukrdc-axios-client) is enabled.
 
 Client libraries currently get built and published on every tag/release. Releasing a new API version for deployment will create an up to date client library.
 
