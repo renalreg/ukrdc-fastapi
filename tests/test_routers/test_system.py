@@ -15,6 +15,7 @@ async def test_info(client):
         "githubSha": None,
         "githubRef": None,
         "deploymentEnv": "development",
+        "version": configuration.version,
     }
 
 
