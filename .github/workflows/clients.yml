@@ -2,6 +2,7 @@ name: Build Client Libraries
 
 on:
   workflow_dispatch:
+  push:
   release:
     types: [published]
 
@@ -95,7 +96,7 @@ jobs:
 
       - name: Re-version prereleases
         # Only re-version with the commit hash if not triggered by a tag/release
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name != 'release'
         working-directory: clients/ukrdc-axios-client
         run: npm version "$(npm pkg get version | sed 's/[",]//g')-$(git rev-parse --short "$GITHUB_SHA")"
 
