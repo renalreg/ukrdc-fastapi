@@ -61,11 +61,7 @@ E.g.
 
 ### Build client libraries
 
-The API application includes functionality to build and publish API client libraries automatically. Currently, only the [typescript/Axios client](https://www.npmjs.com/package/@ukkidney/ukrdc-axios-client) is enabled.
-
-Client libraries currently get built and published on every tag/release. Releasing a new API version for deployment will create an up to date client library.
-
-For development purposes you can manually trigger a commit-tagged client release by [manually running the workflow](https://docs.github.com/en/actions/managing-workflow-runs/manually-running-a-workflow).
+`openapi-generator-cli generate -c ./config.json -i ./openapi.json -g typescript-axios --additional-properties=snapshot=true`
 
 ### Pre-commit hooks
 
