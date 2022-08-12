@@ -29,10 +29,10 @@ class MessageSchema(MinimalMessageSchema):
     status: Optional[str]
     links = LinkSet(
         {
-            "self": UrlFor("error_detail", {"message_id": "<id>"}),
-            "source": UrlFor("error_source", {"message_id": "<id>"}),
-            "workitems": UrlFor("error_workitems", {"message_id": "<id>"}),
-            "masterrecords": UrlFor("error_masterrecords", {"message_id": "<id>"}),
+            "self": UrlFor("message", {"message_id": "<id>"}),
+            "source": UrlFor("message_source", {"message_id": "<id>"}),
+            "workitems": UrlFor("message_workitems", {"message_id": "<id>"}),
+            "masterrecords": UrlFor("message_masterrecords", {"message_id": "<id>"}),
             "mirth": UrlFor(
                 "mirth_channel_message",
                 {"channel_id": "<channel_id>", "message_id": "<message_id>"},

@@ -64,7 +64,7 @@ router.include_router(update.router, prefix="/update")
     response_model=PatientRecordSchema,
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
-def patient_get(
+def patient(
     patient_record: PatientRecord = Depends(_get_patientrecord),
     jtrace: Session = Depends(get_jtrace),
     audit: Auditer = Depends(get_auditer),
@@ -292,7 +292,7 @@ def patient_laborders(
     response_model=LabOrderSchema,
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
-def laborder_get(
+def laborder(
     order_id: str,
     patient_record: PatientRecord = Depends(_get_patientrecord),
     audit: Auditer = Depends(get_auditer),
@@ -411,7 +411,7 @@ def patient_resultitems(
     response_model=ResultItemSchema,
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
-def resultitem_get(
+def resultitem(
     resultitem_id: str,
     patient_record: PatientRecord = Depends(_get_patientrecord),
     audit: Auditer = Depends(get_auditer),
@@ -523,7 +523,7 @@ def patient_documents(
     response_model=DocumentSchema,
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
-def document_get(
+def document(
     document_id: str,
     patient_record: PatientRecord = Depends(_get_patientrecord),
     audit: Auditer = Depends(get_auditer),

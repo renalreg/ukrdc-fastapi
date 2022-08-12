@@ -14,9 +14,7 @@ class LabOrderShortSchema(OrmModel):
     entered_at: Optional[str]
     specimen_collected_time: Optional[datetime.datetime]
 
-    links = LinkSet(
-        {"self": UrlFor("laborder_get", {"pid": "<pid>", "order_id": "<id>"})}
-    )
+    links = LinkSet({"self": UrlFor("laborder", {"pid": "<pid>", "order_id": "<id>"})})
 
 
 class ResultItemSchema(OrmModel):
@@ -34,10 +32,8 @@ class ResultItemSchema(OrmModel):
 
     links = LinkSet(
         {
-            "self": UrlFor("resultitem_get", {"pid": "<pid>", "resultitem_id": "<id>"}),
-            "laborder": UrlFor(
-                "laborder_get", {"pid": "<pid>", "order_id": "<order_id>"}
-            ),
+            "self": UrlFor("resultitem", {"pid": "<pid>", "resultitem_id": "<id>"}),
+            "laborder": UrlFor("laborder", {"pid": "<pid>", "order_id": "<order_id>"}),
         }
     )
 

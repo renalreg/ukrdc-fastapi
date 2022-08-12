@@ -22,7 +22,7 @@ router = APIRouter(tags=["Persons"])
     response_model=PersonSchema,
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
-def person_detail(
+def person(
     person_id: int,
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),

@@ -40,7 +40,7 @@ class MessageSourceSchema(OrmModel):
     response_model=Page[MessageSchema],
     dependencies=[Security(auth.permission(Permissions.READ_MESSAGES))],
 )
-def error_messages(
+def messages(
     facility: Optional[str] = None,
     since: Optional[datetime.datetime] = None,
     until: Optional[datetime.datetime] = None,
@@ -76,7 +76,7 @@ def error_messages(
     response_model=MessageSchema,
     dependencies=[Security(auth.permission(Permissions.READ_MESSAGES))],
 )
-def error_detail(
+def message(
     message_id: str,
     user: UKRDCUser = Security(auth.get_user()),
     errorsdb: Session = Depends(get_errorsdb),
@@ -96,7 +96,7 @@ def error_detail(
     response_model=MessageSourceSchema,
     dependencies=[Security(auth.permission(Permissions.READ_MESSAGES))],
 )
-async def error_source(
+async def message_source(
     message_id: str,
     user: UKRDCUser = Security(auth.get_user()),
     errorsdb: Session = Depends(get_errorsdb),
@@ -147,7 +147,7 @@ async def error_source(
         )
     ],
 )
-async def error_workitems(
+async def message_workitems(
     message_id: str,
     user: UKRDCUser = Security(auth.get_user()),
     errorsdb: Session = Depends(get_errorsdb),
@@ -175,7 +175,7 @@ async def error_workitems(
         Security(auth.permission([Permissions.READ_MESSAGES, Permissions.READ_RECORDS]))
     ],
 )
-async def error_masterrecords(
+async def message_masterrecords(
     message_id: str,
     user: UKRDCUser = Security(auth.get_user()),
     errorsdb: Session = Depends(get_errorsdb),

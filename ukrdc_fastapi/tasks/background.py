@@ -33,7 +33,7 @@ class TrackableTaskSchema(JSONModel):
 
     links = LinkSet(
         {
-            "self": UrlFor("get_task", {"task_id": "<id>"}),
+            "self": UrlFor("task", {"task_id": "<id>"}),
         }
     )
 

@@ -31,7 +31,7 @@ def system_user(user: UKRDCUser = Security(auth.get_user())):
 
 
 @router.get("/user/preferences", response_model=ReadUserPreferences)
-def read_system_user_preferences(
+def system_user_preferences(
     user: UKRDCUser = Security(auth.get_user()), usersdb: Session = Depends(get_usersdb)
 ):
     """Retreive user preferences"""

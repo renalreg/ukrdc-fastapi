@@ -21,7 +21,7 @@ class MasterRecordSchema(OrmModel):
 
     links = LinkSet(
         {
-            "self": UrlFor("master_record_detail", {"record_id": "<id>"}),
+            "self": UrlFor("master_record", {"record_id": "<id>"}),
             "latestMessage": UrlFor(
                 "master_record_latest_message", {"record_id": "<id>"}
             ),
@@ -68,8 +68,8 @@ class PersonSchema(OrmModel):
 
     links = LinkSet(
         {
-            "self": UrlFor("person_detail", {"person_id": "<id>"}),
-            "patientrecord": UrlFor("patient_get", {"pid": "<localid>"}),
+            "self": UrlFor("person", {"person_id": "<id>"}),
+            "patientrecord": UrlFor("patient", {"pid": "<localid>"}),
             "masterrecords": UrlFor("person_masterrecords", {"person_id": "<id>"}),
         }
     )
@@ -127,7 +127,7 @@ class WorkItemSchema(OrmModel):
 
     links = LinkSet(
         {
-            "self": UrlFor("workitem_detail", {"workitem_id": "<id>"}),
+            "self": UrlFor("workitem", {"workitem_id": "<id>"}),
             "collection": UrlFor("workitem_collection", {"workitem_id": "<id>"}),
             "related": UrlFor("workitem_related", {"workitem_id": "<id>"}),
             "messages": UrlFor("workitem_messages", {"workitem_id": "<id>"}),

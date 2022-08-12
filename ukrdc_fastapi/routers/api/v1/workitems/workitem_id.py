@@ -48,7 +48,7 @@ class UpdateWorkItemRequestSchema(JSONModel):
     response_model=WorkItemExtendedSchema,
     dependencies=[Security(auth.permission(Permissions.READ_WORKITEMS))],
 )
-def workitem_detail(
+def workitem(
     workitem_id: int,
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
