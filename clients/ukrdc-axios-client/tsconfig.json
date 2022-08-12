@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "outDir": "lib",
+    "declaration": true,
+
+    "lib": ["es2022", "dom"],
+    "module": "commonjs",
+    "target": "es2022",
+
+    "allowSyntheticDefaultImports": true
+  }
+}
