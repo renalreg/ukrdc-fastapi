@@ -437,7 +437,7 @@ def patient_result(
     "/results/{resultitem_id}/",
     dependencies=[Security(auth.permission(Permissions.WRITE_RECORDS))],
 )
-def result_delete(
+def patient_result_delete(
     resultitem_id: str,
     patient_record: PatientRecord = Depends(_get_patientrecord),
     ukrdc3: Session = Depends(get_ukrdc3),
@@ -523,7 +523,7 @@ def patient_documents(
     response_model=DocumentSchema,
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
-def document(
+def patient_document(
     document_id: str,
     patient_record: PatientRecord = Depends(_get_patientrecord),
     audit: Auditer = Depends(get_auditer),
@@ -549,7 +549,7 @@ def document(
     "/documents/{document_id}/download",
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
-def document_download(
+def patient_document_download(
     document_id: str,
     patient_record: PatientRecord = Depends(_get_patientrecord),
     audit: Auditer = Depends(get_auditer),
