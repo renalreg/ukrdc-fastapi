@@ -292,7 +292,7 @@ def patient_laborders(
     response_model=LabOrderSchema,
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
-def laborder(
+def patient_laborder(
     order_id: str,
     patient_record: PatientRecord = Depends(_get_patientrecord),
     audit: Auditer = Depends(get_auditer),
@@ -318,7 +318,7 @@ def laborder(
     "/laborders/{order_id}/",
     dependencies=[Security(auth.permission(Permissions.WRITE_RECORDS))],
 )
-def laborder_delete(
+def patient_laborder_delete(
     order_id: str,
     patient_record: PatientRecord = Depends(_get_patientrecord),
     ukrdc3: Session = Depends(get_ukrdc3),
@@ -367,7 +367,7 @@ def laborder_delete(
     response_model=Page[ResultItemSchema],
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
-def patient_resultitems(
+def patient_results(
     patient_record: PatientRecord = Depends(_get_patientrecord),
     service_id: Optional[list[str]] = QueryParam([]),
     order_id: Optional[list[str]] = QueryParam([]),
@@ -411,7 +411,7 @@ def patient_resultitems(
     response_model=ResultItemSchema,
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
-def resultitem(
+def patient_result(
     resultitem_id: str,
     patient_record: PatientRecord = Depends(_get_patientrecord),
     audit: Auditer = Depends(get_auditer),
@@ -437,7 +437,7 @@ def resultitem(
     "/results/{resultitem_id}/",
     dependencies=[Security(auth.permission(Permissions.WRITE_RECORDS))],
 )
-def resultitem_delete(
+def result_delete(
     resultitem_id: str,
     patient_record: PatientRecord = Depends(_get_patientrecord),
     ukrdc3: Session = Depends(get_ukrdc3),

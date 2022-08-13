@@ -168,7 +168,7 @@ class PatientRecordSummarySchema(OrmModel):
             # Complex internal resources
             "observations": UrlFor("patient_observations", {"pid": "<pid>"}),
             "observationCodes": UrlFor("patient_observation_codes", {"pid": "<pid>"}),
-            "results": UrlFor("patient_resultitems", {"pid": "<pid>"}),
+            "results": UrlFor("patient_results", {"pid": "<pid>"}),
             "resultServices": UrlFor("patient_result_services", {"pid": "<pid>"}),
             "laborders": UrlFor("patient_laborders", {"pid": "<pid>"}),
             # Exports
