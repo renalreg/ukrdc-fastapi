@@ -80,9 +80,9 @@ class DocumentSummarySchema(OrmModel):
 
     links = LinkSet(
         {
-            "self": UrlFor("document", {"pid": "<pid>", "document_id": "<id>"}),
+            "self": UrlFor("patient_document", {"pid": "<pid>", "document_id": "<id>"}),
             "download": UrlFor(
-                "document_download", {"pid": "<pid>", "document_id": "<id>"}
+                "patient_document_download", {"pid": "<pid>", "document_id": "<id>"}
             ),
         }
     )
