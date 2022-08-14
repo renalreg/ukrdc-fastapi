@@ -44,20 +44,15 @@ CREATE TABLE user_preference (uid VARCHAR NOT NULL, "key" VARCHAR NOT NULL, val 
 
 ## Developer notes
 
-### Setting package versions
+### Application and API versioning
 
-This repository includes both the Python API application and code to generate client libraries.
-Version numbers of the application and all client libraries should remain synchronized.
+The application version will be used as the API version in all documentation and clients. Therefore, the application should follow semantic versioning for the API functionality, that is:
 
-The version number will effectively become the API version,
-so should remain 1.x.x unless breaking API changes are introduced (i.e. API v2).
+- Major version changes should be accompanied by a breaking change in the API.
+- Minor version changes should be accompanied by a non-breaking change in the API.
+- Patch version changes should be accompanied by fixes or updates introducing no new API functionality.
 
-To quickly set the version of the application and all libraries, call `./version.sh ${version}`.
-
-E.g.
-
-- `./version.sh 1.1.0` to set the version to v1.1.0
-- `./version.sh patch` to iterate the version by a patch bump (or `minor` or `major`)
+[Use Poetry to set the application version.](https://python-poetry.org/docs/cli/#version)
 
 ### Build client libraries
 
