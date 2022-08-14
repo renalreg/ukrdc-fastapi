@@ -58,7 +58,7 @@ The application version will be used as the API version in all documentation and
 
 Client libraries are automatically built and published on every release.
 
-For development purposes, you can manually trigger the Build Client Libraries workflow to publish a snapshot release.
+For development purposes, you can [manually trigger the Build Client Libraries workflow](https://docs.github.com/en/actions/managing-workflow-runs/manually-running-a-workflow) to publish a snapshot release.
 
 #### Local `typescript-axios-client` snapshot
 
