@@ -17,7 +17,7 @@ httpx = "^0.19"
 mirth-client = "^3.0.0" 
 okta-jwt-verifier = "^0.2.3" 
 psycopg2-binary = "^2.9.3" # Needed for postgres
-pydantic = {extras = ["dotenv"], version = "^1.9.1"} 
+pydantic = {extras = ["dotenv"], version = "^1.9.2"} 
 python = "^3.9" 
 python-stdnum = "^1.16" 
 redis = "^4.3.3" 
