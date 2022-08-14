@@ -84,7 +84,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: openapi-spec
-          path: clients/openapi.json
+          path: clients/
 
       - name: Install Node
         uses: actions/setup-node@v2
