@@ -46,7 +46,7 @@ CREATE TABLE user_preference (uid VARCHAR NOT NULL, "key" VARCHAR NOT NULL, val 
 
 ### Application and API versioning
 
-The application version will be used as the API version in all documentation and clients. Therefore, the application should follow semantic versioning for the API functionality, that is:
+The application version will be used as the API version in all documentation and clients. Therefore, the application should follow [semantic versioning](https://semver.org/) for the API functionality, that is:
 
 - Major version changes should be accompanied by a breaking change in the API.
 - Minor version changes should be accompanied by a non-breaking change in the API.
