@@ -229,7 +229,7 @@ def get_workitems_related_to_workitem(
 
 
 def get_workitems_related_to_message(
-    jtrace: Session, errorsdb: Session, message_id: str, user: UKRDCUser
+    jtrace: Session, errorsdb: Session, message_id: int, user: UKRDCUser
 ) -> Query:
     """Get a list of WorkItems related via the Patient Number to a given Message
 

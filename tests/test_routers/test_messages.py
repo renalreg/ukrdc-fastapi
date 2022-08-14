@@ -43,6 +43,7 @@ async def test_messages_list_facility(client):
 async def test_message_detail(client):
     response = await client.get(f"{configuration.base_url}/v1/messages/1")
     assert response.status_code == 200
+    print(response.json())
     error = MessageSchema(**response.json())
     assert error.id == 1
 

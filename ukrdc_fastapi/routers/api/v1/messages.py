@@ -77,7 +77,7 @@ def messages(
     dependencies=[Security(auth.permission(Permissions.READ_MESSAGES))],
 )
 def message(
-    message_id: str,
+    message_id: int,
     user: UKRDCUser = Security(auth.get_user()),
     errorsdb: Session = Depends(get_errorsdb),
     audit: Auditer = Depends(get_auditer),
@@ -97,7 +97,7 @@ def message(
     dependencies=[Security(auth.permission(Permissions.READ_MESSAGES))],
 )
 async def message_source(
-    message_id: str,
+    message_id: int,
     user: UKRDCUser = Security(auth.get_user()),
     errorsdb: Session = Depends(get_errorsdb),
     mirth: MirthAPI = Depends(get_mirth),
@@ -148,7 +148,7 @@ async def message_source(
     ],
 )
 async def message_workitems(
-    message_id: str,
+    message_id: int,
     user: UKRDCUser = Security(auth.get_user()),
     errorsdb: Session = Depends(get_errorsdb),
     jtrace: Session = Depends(get_jtrace),
@@ -158,7 +158,7 @@ async def message_workitems(
     message_obj = get_message(errorsdb, message_id, user)
 
     workitems = get_workitems_related_to_message(
-        jtrace, errorsdb, str(message_obj.id), user
+        jtrace, errorsdb, message_obj.id, user
     ).all()
 
     message_audit = audit.add_event(
@@ -178,7 +178,7 @@ async def message_workitems(
     ],
 )
 async def message_masterrecords(
-    message_id: str,
+    message_id: int,
     user: UKRDCUser = Security(auth.get_user()),
     errorsdb: Session = Depends(get_errorsdb),
     jtrace: Session = Depends(get_jtrace),

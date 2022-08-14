@@ -1,7 +1,7 @@
 import datetime
 from typing import Optional
 
-from pydantic import validator
+from pydantic import Field, validator
 
 from .base import OrmModel
 
@@ -27,9 +27,10 @@ class MessageSchema(MinimalMessageSchema):
     status: Optional[str]
 
     # Mirth message
-    message_id: str
-    channel_id: str
-    channel: Optional[str]
+    # Field names are determined by ORM, but we alias to something more useful for the API
+    message_id: str = Field(alias="mirthMessageId")
+    channel_id: str = Field(alias="mirthChannelId")
+    mirth_channel: Optional[str]
 
     _channel_id_name_map: dict[str, str]
 
@@ -45,7 +46,7 @@ class MessageSchema(MinimalMessageSchema):
         """
         cls._channel_id_name_map = cinm
 
-    @validator("channel")
+    @validator("mirth_channel")
     def channel_name(cls, _, values):  # pylint: disable=no-self-argument
         """
         Dynamically generates the channel name field
