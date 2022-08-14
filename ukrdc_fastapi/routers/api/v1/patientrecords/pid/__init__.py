@@ -28,7 +28,7 @@ from ukrdc_fastapi.query.delete import delete_pid, summarise_delete_pid
 from ukrdc_fastapi.query.patientrecords import (
     get_patientrecords_related_to_patientrecord,
 )
-from ukrdc_fastapi.schemas.delete import DeletePIDRequestSchema, DeletePIDResponseSchema
+from ukrdc_fastapi.schemas.delete import DeletePidRequest, DeletePIDResponseSchema
 from ukrdc_fastapi.schemas.laborder import (
     LabOrderSchema,
     LabOrderShortSchema,
@@ -94,7 +94,7 @@ def patient_delete(
     ukrdc3: Session = Depends(get_ukrdc3),
     jtrace: Session = Depends(get_jtrace),
     audit: Auditer = Depends(get_auditer),
-    args: Optional[DeletePIDRequestSchema] = None,
+    args: Optional[DeletePidRequest] = None,
 ):
     """Delete a specific patient record and all its associated data"""
     summary: DeletePIDResponseSchema

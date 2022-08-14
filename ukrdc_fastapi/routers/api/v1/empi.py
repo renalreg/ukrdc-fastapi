@@ -17,18 +17,18 @@ from ukrdc_fastapi.utils.mirth import MirthMessageResponseSchema
 router = APIRouter(tags=["Patient Index Operations"])
 
 
-class MergeRequestSchema(JSONModel):
+class MergeRequest(JSONModel):
     superseding: int = Field(..., title="Superseding master-record ID")
     superseded: int = Field(..., title="Superseded master-record ID")
 
 
-class UnlinkRequestSchema(JSONModel):
+class UnlinkRequest(JSONModel):
     person_id: int = Field(..., title="ID of the person-record to be unlinked")
     master_id: int = Field(..., title="ID of the master-record to unlink from")
     comment: Optional[str] = Field(None, max_length=100)
 
 
-class UnlinkPatientRequestSchema(JSONModel):
+class UnlinkPatientRequest(JSONModel):
     pid: str = Field(..., title="PID of the patient-record to be unlinked")
     master_id: int = Field(..., title="ID of the master-record to unlink from")
 
@@ -41,7 +41,7 @@ class UnlinkPatientRequestSchema(JSONModel):
     ],
 )
 async def empi_merge(
-    args: MergeRequestSchema,
+    args: MergeRequest,
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
     mirth: MirthAPI = Depends(get_mirth),
@@ -62,7 +62,7 @@ async def empi_merge(
     ],
 )
 async def empi_unlink(
-    args: UnlinkRequestSchema,
+    args: UnlinkRequest,
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
     mirth: MirthAPI = Depends(get_mirth),

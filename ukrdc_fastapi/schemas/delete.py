@@ -12,11 +12,11 @@ from ukrdc_fastapi.schemas.patientrecord import PatientRecordFullSchema
 from .base import OrmModel
 
 
-class DeletePIDRequestSchema(OrmModel):
+class DeletePidRequest(OrmModel):
     hash: Optional[str]
 
 
-class DeletePIDFromEMPISchema(OrmModel):
+class DeletePidFromEmpiRequest(OrmModel):
     persons: list[PersonSchema]
     master_records: list[MasterRecordSchema]
     pidxrefs: list[PidXRefSchema]
@@ -26,7 +26,7 @@ class DeletePIDFromEMPISchema(OrmModel):
 
 class DeletePIDPreviewSchema(OrmModel):
     patient_record: Optional[PatientRecordFullSchema]
-    empi: Optional[DeletePIDFromEMPISchema]
+    empi: Optional[DeletePidFromEmpiRequest]
 
 
 class DeletePIDResponseSchema(DeletePIDPreviewSchema):

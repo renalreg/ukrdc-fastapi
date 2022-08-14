@@ -34,11 +34,11 @@ from ukrdc_fastapi.utils.paginate import Page, paginate
 router = APIRouter(prefix="/{workitem_id}")
 
 
-class CloseWorkItemRequestSchema(JSONModel):
+class CloseWorkItemRequest(JSONModel):
     comment: Optional[str] = Field(None, max_length=100)
 
 
-class UpdateWorkItemRequestSchema(JSONModel):
+class UpdateWorkItemRequest(JSONModel):
     status: Optional[int] = None
     comment: Optional[str] = Field(None, max_length=100)
 
@@ -77,7 +77,7 @@ def workitem(
 )
 async def workitem_update(
     workitem_id: int,
-    args: UpdateWorkItemRequestSchema,
+    args: UpdateWorkItemRequest,
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
     mirth: MirthAPI = Depends(get_mirth),
@@ -196,7 +196,7 @@ def workitem_messages(
 )
 async def workitem_close(
     workitem_id: int,
-    args: Optional[CloseWorkItemRequestSchema],
+    args: Optional[CloseWorkItemRequest],
     jtrace: Session = Depends(get_jtrace),
     user: UKRDCUser = Security(auth.get_user()),
     mirth: MirthAPI = Depends(get_mirth),
