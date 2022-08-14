@@ -24,7 +24,6 @@ class MinimalMessageSchema(OrmModel):
 
 
 class MessageSchema(MinimalMessageSchema):
-    message_id: int
     error: Optional[str]
     status: Optional[str]
     links = LinkSet(
@@ -40,6 +39,8 @@ class MessageSchema(MinimalMessageSchema):
         }
     )
 
+    # Mirth message
+    message_id: str
     channel_id: str
     channel: Optional[str]
 
