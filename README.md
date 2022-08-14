@@ -43,6 +43,21 @@ CREATE TABLE user_preference (uid VARCHAR NOT NULL, "key" VARCHAR NOT NULL, val 
 
 ## Developer notes
 
+### Setting package versions
+
+This repository includes both the Python API application and code to generate client libraries.
+Version numbers of the application and all client libraries should remain synchronized.
+
+The version number will effectively become the API version, 
+so should remain 1.x.x unless breaking API changes are introduced (i.e. API v2).
+
+To quickly set the version of the application and all libraries, call `./version.sh ${version}`.
+
+E.g.
+
+- `./version.sh 1.1.0` to set the version to v1.1.0
+- `./version.sh patch` to iterate the version by a patch bump (or `minor` or `major`)
+
 ### Pre-commit hooks
 
 Included in the repo is a pre-commit config to run Black and isort before committing.

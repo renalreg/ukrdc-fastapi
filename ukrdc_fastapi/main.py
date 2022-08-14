@@ -1,4 +1,5 @@
 import logging
+import re
 
 import redis
 import sqlalchemy
@@ -18,8 +19,15 @@ from ukrdc_fastapi.dependencies.mirth import mirth_session
 from ukrdc_fastapi.dependencies.sentry import add_sentry
 from ukrdc_fastapi.routers import api
 from ukrdc_fastapi.tasks import repeated, shutdown
+from fastapi.routing import APIRoute
 
 # Create app
+def custom_generate_unique_id(route: APIRoute):
+    operation_id = route.name
+    operation_id = re.sub("[^0-9a-zA-Z_]", "_", operation_id)
+    assert route.methods
+    operation_id = list(route.methods)[0].lower() + "_" + operation_id
+    return operation_id
 
 
 app = FastAPI(
@@ -35,6 +43,7 @@ app = FastAPI(
         "clientId": settings.swagger_client_id,
         "scopes": ["openid", "profile", "email", "offline_access"],
     },
+    generate_unique_id_function=custom_generate_unique_id,
 )
 
 # Add routes
