@@ -1,8 +1,9 @@
 import datetime
+import json
 from typing import Optional, Union
 
 from fastapi_hypermodel import LinkSet, UrlFor
-from pydantic import Json, validator
+from pydantic import validator
 
 from .base import OrmModel
 
@@ -88,11 +89,11 @@ class LinkRecordSchema(OrmModel):
 
 
 WORKITEM_ATTRIBUTE_MAP: dict[str, str] = {
-    "SE": "sendingExtract",
-    "SF": "sendingFacility",
+    "SE": "sending_extract",
+    "SF": "sending_facility",
     "MRN": "localid",
-    "DOB": "dateOfBirth",
-    "DOD": "dateOfDeath",
+    "DOB": "date_of_birth",
+    "DOD": "date_of_death",
     "Gender": "gender",
     "GivenName": "givenname",
     "Surname": "surname",
@@ -107,6 +108,17 @@ class WorkItemSummarySchema(OrmModel):
     status: int
 
 
+class WorkItemAttributes(OrmModel):
+    sending_extract: Optional[str]
+    sending_facility: Optional[str]
+    localid: Optional[str]
+    date_of_birth: Optional[str]
+    date_of_death: Optional[str]
+    gender: Optional[str]
+    givenname: Optional[str]
+    surname: Optional[str]
+
+
 class WorkItemSchema(OrmModel):
     id: int
 
@@ -119,7 +131,7 @@ class WorkItemSchema(OrmModel):
     last_updated: datetime.datetime
     updated_by: Optional[str]
 
-    attributes: Optional[Union[Json, dict]]
+    attributes: Optional[WorkItemAttributes]
     update_description: Optional[str]
 
     person: Optional[PersonSchema]
@@ -135,17 +147,24 @@ class WorkItemSchema(OrmModel):
         }
     )
 
-    @validator("attributes")
-    def normalise_attributes(cls, value):  # pylint: disable=no-self-argument
+    @validator("attributes", pre=True)
+    def normalise_attributes(
+        cls, value: Union[str, dict, WorkItemAttributes]
+    ):  # pylint: disable=no-self-argument
         """
         Convert attributes JSON keys into MasterRecord property keys
         """
-        if not isinstance(value, dict):
-            return value
-        return {
-            WORKITEM_ATTRIBUTE_MAP.get(key, key): attribute
-            for key, attribute in value.items()
-        }
+        # Convert raw JSON string into a dictionary
+        if isinstance(value, str):
+            value = json.loads(value)
+        # Re-map dictionary keys
+        if isinstance(value, dict):
+            return {
+                WORKITEM_ATTRIBUTE_MAP.get(key, key): attribute
+                for key, attribute in value.items()
+            }
+        # Return existing value
+        return value
 
 
 class WorkItemIncomingSchema(OrmModel):
