@@ -1,4 +1,7 @@
 {
   "npmName": "@ukkidney/ukrdc-axios-ts",
+  "gitHost": "github.com",
+  "gitUserId": "renalreg",
+  "gitRepoId": "ukrdc-fastapi",
   "useSingleRequestParameter": true
 }
