@@ -107,7 +107,7 @@ jobs:
 
       - name: Publish Axios client
         working-directory: clients/ukrdc-axios-client
-        run: npm publish
+        run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
