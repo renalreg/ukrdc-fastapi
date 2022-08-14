@@ -1,8 +1,6 @@
 import datetime
 from typing import Optional
 
-from fastapi_hypermodel import LinkSet, UrlFor
-
 from .base import OrmModel
 
 
@@ -13,10 +11,6 @@ class LabOrderShortSchema(OrmModel):
     entered_at_description: Optional[str]
     entered_at: Optional[str]
     specimen_collected_time: Optional[datetime.datetime]
-
-    links = LinkSet(
-        {"self": UrlFor("patient_laborder", {"pid": "<pid>", "order_id": "<id>"})}
-    )
 
 
 class ResultItemSchema(OrmModel):
@@ -31,15 +25,6 @@ class ResultItemSchema(OrmModel):
     result_type: Optional[str]
     pre_post: Optional[str]
     observation_time: Optional[datetime.datetime]
-
-    links = LinkSet(
-        {
-            "self": UrlFor("patient_result", {"pid": "<pid>", "resultitem_id": "<id>"}),
-            "laborder": UrlFor(
-                "patient_laborder", {"pid": "<pid>", "order_id": "<order_id>"}
-            ),
-        }
-    )
 
 
 class ResultItemServiceSchema(OrmModel):

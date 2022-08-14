@@ -1,5 +1,4 @@
-from fastapi_hypermodel import HyperModel
-from pydantic import validator
+from pydantic import BaseModel, validator
 from sqlalchemy.orm import Query
 
 
@@ -8,7 +7,7 @@ def _to_camel(snake_str: str) -> str:
     return components[0] + "".join(x.title() for x in components[1:])
 
 
-class JSONModel(HyperModel):
+class JSONModel(BaseModel):
     class Config:
         orm_mode = True
         alias_generator = _to_camel

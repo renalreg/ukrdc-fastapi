@@ -2,7 +2,6 @@ import datetime
 import json
 from typing import Optional, Union
 
-from fastapi_hypermodel import LinkSet, UrlFor
 from pydantic import validator
 
 from .base import OrmModel
@@ -19,32 +18,6 @@ class MasterRecordSchema(OrmModel):
     surname: Optional[str]
     status: int
     effective_date: datetime.datetime
-
-    links = LinkSet(
-        {
-            "self": UrlFor("master_record", {"record_id": "<id>"}),
-            "latestMessage": UrlFor(
-                "master_record_latest_message", {"record_id": "<id>"}
-            ),
-            "statistics": UrlFor("master_record_statistics", {"record_id": "<id>"}),
-            "related": UrlFor("master_record_related", {"record_id": "<id>"}),
-            "messages": UrlFor("master_record_messages", {"record_id": "<id>"}),
-            "linkrecords": UrlFor("master_record_linkrecords", {"record_id": "<id>"}),
-            "persons": UrlFor("master_record_persons", {"record_id": "<id>"}),
-            "workitems": UrlFor("master_record_workitems", {"record_id": "<id>"}),
-            "patientrecords": UrlFor(
-                "master_record_patientrecords", {"record_id": "<id>"}
-            ),
-            "audit": UrlFor("master_record_audit", {"record_id": "<id>"}),
-            "memberships": LinkSet(
-                {
-                    "createPKB": UrlFor(
-                        "master_record_memberships_create_pkb", {"record_id": "<id>"}
-                    ),
-                }
-            ),
-        }
-    )
 
 
 class PidXRefSchema(OrmModel):
@@ -66,14 +39,6 @@ class PersonSchema(OrmModel):
     givenname: Optional[str]
     surname: Optional[str]
     xref_entries: list[PidXRefSchema]
-
-    links = LinkSet(
-        {
-            "self": UrlFor("person", {"person_id": "<id>"}),
-            "patientrecord": UrlFor("patient", {"pid": "<localid>"}),
-            "masterrecords": UrlFor("person_masterrecords", {"person_id": "<id>"}),
-        }
-    )
 
 
 class LinkRecordSummarySchema(OrmModel):
@@ -136,16 +101,6 @@ class WorkItemSchema(OrmModel):
 
     person: Optional[PersonSchema]
     master_record: Optional[MasterRecordSchema]
-
-    links = LinkSet(
-        {
-            "self": UrlFor("workitem", {"workitem_id": "<id>"}),
-            "collection": UrlFor("workitem_collection", {"workitem_id": "<id>"}),
-            "related": UrlFor("workitem_related", {"workitem_id": "<id>"}),
-            "messages": UrlFor("workitem_messages", {"workitem_id": "<id>"}),
-            "close": UrlFor("workitem_close", {"workitem_id": "<id>"}),
-        }
-    )
 
     @validator("attributes", pre=True)
     def normalise_attributes(

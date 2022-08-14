@@ -5,7 +5,6 @@ from typing import Any, Callable, Literal, Optional
 from uuid import UUID, uuid4
 
 from fastapi import HTTPException
-from fastapi_hypermodel import LinkSet, UrlFor
 from redis import Redis
 
 from ukrdc_fastapi.config import settings
@@ -30,12 +29,6 @@ class TrackableTaskSchema(JSONModel):
     created: datetime.datetime
     started: Optional[datetime.datetime] = None
     finished: Optional[datetime.datetime] = None
-
-    links = LinkSet(
-        {
-            "self": UrlFor("task", {"task_id": "<id>"}),
-        }
-    )
 
     @classmethod
     def from_redis(cls, redis_dict: dict):

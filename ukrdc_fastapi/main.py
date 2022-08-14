@@ -6,7 +6,6 @@ import sqlalchemy
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.routing import APIRoute
-from fastapi_hypermodel import HyperModel
 from fastapi_pagination import add_pagination
 from httpx import ConnectError
 from mirth_client import MirthAPI
@@ -70,7 +69,6 @@ app.add_middleware(
 
 add_sentry(app)
 add_pagination(app)
-HyperModel.init_app(app)
 
 # Attach event handlers
 

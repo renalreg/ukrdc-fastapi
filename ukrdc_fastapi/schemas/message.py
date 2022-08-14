@@ -1,7 +1,6 @@
 import datetime
 from typing import Optional
 
-from fastapi_hypermodel import LinkSet, UrlFor
 from pydantic import validator
 
 from .base import OrmModel
@@ -26,18 +25,6 @@ class MinimalMessageSchema(OrmModel):
 class MessageSchema(MinimalMessageSchema):
     error: Optional[str]
     status: Optional[str]
-    links = LinkSet(
-        {
-            "self": UrlFor("message", {"message_id": "<id>"}),
-            "source": UrlFor("message_source", {"message_id": "<id>"}),
-            "workitems": UrlFor("message_workitems", {"message_id": "<id>"}),
-            "masterrecords": UrlFor("message_masterrecords", {"message_id": "<id>"}),
-            "mirth": UrlFor(
-                "mirth_channel_message",
-                {"channel_id": "<channel_id>", "message_id": "<message_id>"},
-            ),
-        }
-    )
 
     # Mirth message
     message_id: str
