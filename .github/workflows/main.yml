@@ -77,6 +77,9 @@ jobs:
     needs: build-spec
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
       - name: Download OpenAPI spec
         uses: actions/download-artifact@v3
         with:
