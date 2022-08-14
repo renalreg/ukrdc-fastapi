@@ -93,6 +93,7 @@ jobs:
         with:
           node-version: '16'
           check-latest: true
+          registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
         working-directory: clients/ukrdc-axios-client
