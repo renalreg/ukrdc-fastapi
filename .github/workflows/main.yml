@@ -76,6 +76,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-spec
 
+    if: github.event_name != 'pull_request'
+
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -106,7 +108,6 @@ jobs:
         run: npm version prerelease --preid=$(git rev-parse --short "$GITHUB_SHA")
 
       - name: Publish Axios client
-        if: github.event_name != 'pull_request'
         working-directory: clients/ukrdc-axios-client
         run: npm publish --access public
         env:
