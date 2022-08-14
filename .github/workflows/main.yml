@@ -106,7 +106,7 @@ jobs:
       - name: Re-version prereleases
         if: (github.event_name == 'push' && contains(github.ref, 'refs/tags/')) == false
         working-directory: clients/ukrdc-axios-client
-        run: npm version prerelease --preid=$(git rev-parse --short "$GITHUB_SHA")
+        run: npm version "$(npm pkg get version | sed 's/[",]//g')-$(git rev-parse --short "$GITHUB_SHA")"
 
       - name: Publish Axios client
         working-directory: clients/ukrdc-axios-client
