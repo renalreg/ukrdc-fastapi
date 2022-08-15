@@ -11,8 +11,8 @@ from ukrdc_fastapi.schemas.base import OrmModel
 from ukrdc_fastapi.utils.mirth import (
     ChannelFullModel,
     ChannelGroupModel,
-    get_cached_all,
-    get_cached_channels_with_statistics,
+    get_channels_with_statistics,
+    get_mirth_all,
 )
 
 router = APIRouter(tags=["Mirth"])
@@ -34,9 +34,11 @@ class MessagePage(MirthPage):
     response_model=list[ChannelFullModel],
     dependencies=[Security(auth.permission(Permissions.READ_MIRTH))],
 )
-async def mirth_channels(redis: Redis = Depends(get_redis)):
+async def mirth_channels(
+    mirth: MirthAPI = Depends(get_mirth), redis: Redis = Depends(get_redis)
+):
     """Retrieve a list of Mirth channels"""
-    return get_cached_channels_with_statistics(redis)
+    return await get_channels_with_statistics(mirth, redis)
 
 
 @router.get(
@@ -45,10 +47,11 @@ async def mirth_channels(redis: Redis = Depends(get_redis)):
     dependencies=[Security(auth.permission(Permissions.READ_MIRTH))],
 )
 async def mirth_groups(
+    mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
 ) -> list[ChannelGroupModel]:
     """Retrieve a list of Mirth channel groups"""
-    return get_cached_all(redis)
+    return await get_mirth_all(mirth, redis)
 
 
 @router.get(
@@ -58,10 +61,11 @@ async def mirth_groups(
 )
 async def mirth_channel(
     channel_id: str,
+    mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
 ):
     """Get details and statistics about a specific Mirth channel"""
-    channels = get_cached_channels_with_statistics(redis)
+    channels = await get_channels_with_statistics(mirth, redis)
     channel_map = {str(channel.id): channel for channel in channels}
 
     channel: Optional[ChannelFullModel] = channel_map.get(channel_id)

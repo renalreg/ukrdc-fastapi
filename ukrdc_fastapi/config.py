@@ -32,9 +32,6 @@ class Settings(BaseSettings):
     # Optional debug mode
     debug: bool = False
 
-    # Optionally skip data caching on startup
-    skip_cache: bool = False
-
     # Messages to display on user dashboards
     motd: list[str] = []
     # Warnings to display on user dashboards
