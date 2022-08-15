@@ -6,7 +6,7 @@ on:
     types: [published]
 
 jobs:
-  test:
+  clients-test:
     name: Run tests
 
     runs-on: ubuntu-latest
@@ -32,7 +32,7 @@ jobs:
       - name: Run Tox
         run: poetry run tox
 
-  build-spec:
+  clients-build-spec:
     name: Build OpenAPI spec
 
     runs-on: ubuntu-latest
@@ -62,7 +62,7 @@ jobs:
           name: openapi-spec
           path: clients/openapi.json
 
-  axios-client:
+  clients-axios-client:
     name: Build Axios client
 
     runs-on: ubuntu-latest
