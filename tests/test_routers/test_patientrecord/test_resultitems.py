@@ -36,18 +36,18 @@ async def test_resultitem_detail(client):
 
 async def test_resultitem_delete(client):
     response = await client.delete(
-        f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/results/RESULTITEM1/"
+        f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/results/RESULTITEM1"
     )
     assert response.status_code == 204
 
     # Check the resultitem was deleted
     response = await client.get(
-        f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/results/RESULTITEM1/"
+        f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/results/RESULTITEM1"
     )
     assert response.status_code == 404
 
     # Check the orphaned laborder was deleted
     response = await client.get(
-        f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/laborders/LABORDER1/"
+        f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/laborders/LABORDER1"
     )
     assert response.status_code == 404

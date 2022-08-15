@@ -63,11 +63,11 @@ class MasterRecordStatisticsSchema(OrmModel):
     ukrdcids: int
 
 
-router = APIRouter(prefix="/{record_id}")
+router = APIRouter()
 
 
 @router.get(
-    "/",
+    "/{record_id}",
     response_model=MasterRecordSchema,
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
@@ -86,7 +86,7 @@ def master_record(
 
 
 @router.get(
-    "/related/",
+    "/{record_id}/related",
     response_model=list[MasterRecordSchema],
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
@@ -122,7 +122,7 @@ def master_record_related(
 
 
 @router.get(
-    "/latest_message/",
+    "/{record_id}/latest_message",
     response_model=MinimalMessageSchema,
     responses={204: {"model": None}},
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
@@ -144,7 +144,7 @@ def master_record_latest_message(
 
 
 @router.get(
-    "/statistics/",
+    "/{record_id}/statistics",
     response_model=MasterRecordStatisticsSchema,
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
@@ -195,7 +195,7 @@ def master_record_statistics(
 
 
 @router.get(
-    "/linkrecords/",
+    "/{record_id}/linkrecords",
     response_model=list[LinkRecordSchema],
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
@@ -240,7 +240,7 @@ def master_record_linkrecords(
 
 
 @router.get(
-    "/messages/",
+    "/{record_id}/messages",
     response_model=Page[MessageSchema],
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
@@ -276,7 +276,7 @@ def master_record_messages(
 
 
 @router.get(
-    "/workitems/",
+    "/{record_id}/workitems",
     response_model=list[WorkItemSchema],
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
@@ -305,7 +305,7 @@ def master_record_workitems(
 
 
 @router.get(
-    "/persons/",
+    "/{record_id}/persons",
     response_model=list[PersonSchema],
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
@@ -330,7 +330,7 @@ def master_record_persons(
 
 
 @router.get(
-    "/patientrecords/",
+    "/{record_id}/patientrecords",
     response_model=list[PatientRecordSummarySchema],
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
@@ -361,7 +361,7 @@ def master_record_patientrecords(
 
 
 @router.get(
-    "/audit/",
+    "/{record_id}/audit",
     response_model=Page[AuditEventSchema],
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS_AUDIT))],
 )
@@ -398,7 +398,7 @@ def master_record_audit(
 
 
 @router.post(
-    "/memberships/create/pkb",
+    "/{record_id}/memberships/create/pkb",
     response_model=MirthMessageResponseSchema,
     dependencies=[Security(auth.permission(Permissions.CREATE_MEMBERSHIPS))],
 )

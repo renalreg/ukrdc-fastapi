@@ -7,7 +7,7 @@ from ..utils import days_ago
 
 
 async def test_record_read_audit(client, audit_session):
-    path = f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/"
+    path = f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A"
     response = await client.get(path)
     assert response.status_code == 200
 
@@ -255,7 +255,7 @@ async def test_record_delete_laborder(client, ukrdc3_session, audit_session):
     assert ukrdc3_session.query(ResultItem).get("RESULTITEM_TEMP")
 
     response = await client.delete(
-        f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/laborders/LABORDER_TEMP/"
+        f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/laborders/LABORDER_TEMP"
     )
     assert response.status_code == 204
 
@@ -337,7 +337,7 @@ async def test_record_read_resultitem(client, audit_session):
 
 async def test_record_delete_resultitem(client, audit_session):
     response = await client.delete(
-        f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/results/RESULTITEM1/"
+        f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/results/RESULTITEM1"
     )
     assert response.status_code == 204
 
@@ -433,7 +433,7 @@ async def test_record_download_document(client, audit_session):
 
 async def test_record_export_data(client, audit_session):
     response = await client.post(
-        f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/export/pv/",
+        f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/export/pv",
         json={},
     )
     assert response.status_code == 202
@@ -452,7 +452,7 @@ async def test_record_export_data(client, audit_session):
 
 async def test_record_export_tests(client, audit_session):
     response = await client.post(
-        f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/export/pv-tests/",
+        f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/export/pv-tests",
         json={},
     )
     assert response.status_code == 202
@@ -471,7 +471,7 @@ async def test_record_export_tests(client, audit_session):
 
 async def test_record_export_docs(client, audit_session):
     response = await client.post(
-        f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/export/pv-docs/",
+        f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/export/pv-docs",
         json={},
     )
     assert response.status_code == 202
@@ -490,7 +490,7 @@ async def test_record_export_docs(client, audit_session):
 
 async def test_record_export_radar(client, audit_session):
     response = await client.post(
-        f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/export/radar/",
+        f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/export/radar",
         json={},
     )
     assert response.status_code == 202

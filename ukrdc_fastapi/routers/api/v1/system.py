@@ -25,7 +25,7 @@ class SystemInfoSchema(JSONModel):
     version: str = configuration.version
 
 
-@router.get("/user/", response_model=UserSchema)
+@router.get("/user", response_model=UserSchema)
 def system_user(user: UKRDCUser = Security(auth.get_user())):
     """Retreive basic user info"""
     return UserSchema(email=user.email, permissions=user.permissions)
@@ -49,7 +49,7 @@ def update_system_user_preferences(
     return update_user_preferences(usersdb, user, prefs)
 
 
-@router.get("/info/", response_model=SystemInfoSchema)
+@router.get("/info", response_model=SystemInfoSchema)
 def system_info():
     """Retreive basic system info"""
     return SystemInfoSchema()

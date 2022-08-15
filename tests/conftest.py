@@ -944,9 +944,6 @@ def task_redis_sessions():
     )
 
 
-from ukrdc_fastapi.tasks import repeated
-
-
 @pytest.fixture(scope="function")
 def app(
     jtrace_session,

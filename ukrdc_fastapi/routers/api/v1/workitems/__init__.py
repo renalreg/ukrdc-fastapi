@@ -27,7 +27,7 @@ class UnlinkWorkItemRequestSchema(BaseModel):
 
 
 @router.get(
-    "/",
+    "",
     response_model=Page[WorkItemSchema],
     dependencies=[Security(auth.permission(Permissions.READ_WORKITEMS))],
 )

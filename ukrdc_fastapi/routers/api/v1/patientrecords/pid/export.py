@@ -29,7 +29,7 @@ router = APIRouter(tags=["Patient Records/Export"])
 
 
 @router.post(
-    "/pv/",
+    "/pv",
     status_code=202,
     response_model=TrackableTaskSchema,
     dependencies=[Security(auth.permission(Permissions.EXPORT_RECORDS))],
@@ -59,7 +59,7 @@ async def patient_export_pv(
 
 
 @router.post(
-    "/pv-tests/",
+    "/pv-tests",
     status_code=202,
     response_model=TrackableTaskSchema,
     dependencies=[Security(auth.permission(Permissions.EXPORT_RECORDS))],
@@ -89,7 +89,7 @@ async def patient_export_pv_tests(
 
 
 @router.post(
-    "/pv-docs/",
+    "/pv-docs",
     status_code=202,
     response_model=TrackableTaskSchema,
     dependencies=[Security(auth.permission(Permissions.EXPORT_RECORDS))],
@@ -119,7 +119,7 @@ async def patient_export_pv_docs(
 
 
 @router.post(
-    "/radar/",
+    "/radar",
     status_code=202,
     response_model=TrackableTaskSchema,
     dependencies=[Security(auth.permission(Permissions.EXPORT_RECORDS))],
@@ -149,7 +149,7 @@ async def patient_export_radar(
 
 
 @router.post(
-    "/pkb/",
+    "/pkb",
     status_code=202,
     response_model=TrackableTaskSchema,
     dependencies=[Security(auth.permission(Permissions.EXPORT_RECORDS))],

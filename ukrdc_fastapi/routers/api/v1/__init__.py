@@ -24,7 +24,7 @@ from . import (
 router = APIRouter()
 
 
-@router.get("/", include_in_schema=False)
+@router.get("", include_in_schema=False)
 def root():
     """Redirect to documentation"""
     return RedirectResponse(url="./docs")

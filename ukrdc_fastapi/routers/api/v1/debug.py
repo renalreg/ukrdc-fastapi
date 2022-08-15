@@ -24,7 +24,7 @@ async def wait_for(time: int):
     return {"time": time}
 
 
-@router.post("/create_task/", status_code=202, response_model=TrackableTaskSchema)
+@router.post("/create_task", status_code=202, response_model=TrackableTaskSchema)
 def debug_create_task(
     args: DebugCreateTaskInput,
     background_tasks: BackgroundTasks,

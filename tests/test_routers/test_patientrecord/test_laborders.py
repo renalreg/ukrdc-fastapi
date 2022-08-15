@@ -59,13 +59,13 @@ async def test_laborder_delete(client, ukrdc3_session):
 
     # Delete the lab order
     response = await client.delete(
-        f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/laborders/LABORDER_TEMP/"
+        f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/laborders/LABORDER_TEMP"
     )
     assert response.status_code == 204
 
     # Make sure the lab order was deleted
     response = await client.get(
-        f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/laborders/LABORDER_TEMP/"
+        f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/laborders/LABORDER_TEMP"
     )
     assert response.status_code == 404
     assert not ukrdc3_session.query(LabOrder).get("LABORDER_TEMP")

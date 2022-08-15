@@ -34,7 +34,7 @@ class UnlinkPatientRequest(JSONModel):
 
 
 @router.post(
-    "/merge/",
+    "/merge",
     response_model=MirthMessageResponseSchema,
     dependencies=[
         Security(auth.permission([Permissions.READ_RECORDS, Permissions.WRITE_RECORDS]))
@@ -55,7 +55,7 @@ async def empi_merge(
 
 
 @router.post(
-    "/unlink/",
+    "/unlink",
     response_model=LinkRecordSchema,
     dependencies=[
         Security(auth.permission([Permissions.WRITE_EMPI, Permissions.WRITE_RECORDS]))

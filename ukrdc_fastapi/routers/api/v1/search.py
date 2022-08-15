@@ -21,7 +21,7 @@ router = APIRouter(tags=["Search"])
 
 
 @router.get(
-    "/",
+    "",
     response_model=Page[MasterRecordSchema],
     dependencies=[Security(auth.permission([Permissions.READ_RECORDS]))],
 )

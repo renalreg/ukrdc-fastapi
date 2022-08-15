@@ -36,7 +36,7 @@ class MessageSourceSchema(OrmModel):
 
 
 @router.get(
-    "/",
+    "",
     response_model=Page[MessageSchema],
     dependencies=[Security(auth.permission(Permissions.READ_MESSAGES))],
 )
@@ -72,7 +72,7 @@ def messages(
 
 
 @router.get(
-    "/{message_id}/",
+    "/{message_id}",
     response_model=MessageSchema,
     dependencies=[Security(auth.permission(Permissions.READ_MESSAGES))],
 )

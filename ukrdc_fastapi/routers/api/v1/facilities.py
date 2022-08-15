@@ -34,7 +34,7 @@ from ukrdc_fastapi.utils.sort import ObjectSorter, SQLASorter, make_object_sorte
 router = APIRouter(tags=["Facilities"])
 
 
-@router.get("/", response_model=list[FacilityDetailsSchema])
+@router.get("", response_model=list[FacilityDetailsSchema])
 def facility_list(
     include_inactive: bool = False,
     include_empty: bool = False,
