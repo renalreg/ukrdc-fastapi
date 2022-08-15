@@ -54,6 +54,13 @@ The application version will be used as the API version in all documentation and
 
 [Use Poetry to set the application version.](https://python-poetry.org/docs/cli/#version)
 
+### Github Release Versions
+
+Github releases should use tags that follow the application version. E.g. application version 1.0.1 will be tagged with `v1.0.1`.
+
+This will publish a container image tagged with the version number, and `latest` (except pre-release versions e.g. `1.0.1-beta.1`).
+
+
 ### Build client libraries
 
 Client libraries are automatically built and published on every release.
