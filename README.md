@@ -41,6 +41,7 @@ CREATE TABLE user_preference (uid VARCHAR NOT NULL, "key" VARCHAR NOT NULL, val 
 
 - `poetry run uvicorn ukrdc_fastapi.main:app`
 
+
 ## Developer notes
 
 ### Setting package versions
@@ -48,7 +49,7 @@ CREATE TABLE user_preference (uid VARCHAR NOT NULL, "key" VARCHAR NOT NULL, val 
 This repository includes both the Python API application and code to generate client libraries.
 Version numbers of the application and all client libraries should remain synchronized.
 
-The version number will effectively become the API version, 
+The version number will effectively become the API version,
 so should remain 1.x.x unless breaking API changes are introduced (i.e. API v2).
 
 To quickly set the version of the application and all libraries, call `./version.sh ${version}`.
@@ -57,6 +58,14 @@ E.g.
 
 - `./version.sh 1.1.0` to set the version to v1.1.0
 - `./version.sh patch` to iterate the version by a patch bump (or `minor` or `major`)
+
+### Build client libraries
+
+The API application includes functionality to build and publish API client libraries automatically. Currently, only the typescript/Axios client is enabled.
+
+Client libraries currently get built and published on every tag/release. Releasing a new API version for deployment will create an up to date client library.
+
+For development purposes you can manually trigger a commit-tagged client release by [manually running the workflow](https://docs.github.com/en/actions/managing-workflow-runs/manually-running-a-workflow).
 
 ### Pre-commit hooks
 

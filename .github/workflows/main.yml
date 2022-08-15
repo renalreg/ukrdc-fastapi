@@ -3,6 +3,7 @@ name: Test and Publish
 on:
   push:
   pull_request:
+  workflow_dispatch:
 
 jobs:
   test:
@@ -76,7 +77,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-spec
 
-    if: github.event_name != 'pull_request'
+    # Only build clients on tags/releases or if manually triggered
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push' && contains(github.ref, 'refs/tags/')
 
     steps:
       - name: Checkout
@@ -104,6 +106,7 @@ jobs:
         run: npm run generate-client
 
       - name: Re-version prereleases
+        # Only re-version with the commit hash if not triggered by a tag/release
         if: (github.event_name == 'push' && contains(github.ref, 'refs/tags/')) == false
         working-directory: clients/ukrdc-axios-client
         run: npm version "$(npm pkg get version | sed 's/[",]//g')-$(git rev-parse --short "$GITHUB_SHA")"
@@ -120,6 +123,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: test
 
+    # Only publish container image on tags/releases
     if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
 
     steps:
