@@ -32,7 +32,7 @@ jobs:
       - name: Run Tox
         run: poetry run tox
 
-  clients-build-spec:
+  build-spec:
     name: Build OpenAPI spec
 
     runs-on: ubuntu-latest
@@ -62,7 +62,7 @@ jobs:
           name: openapi-spec
           path: clients/openapi.json
 
-  clients-axios-client:
+  axios-client:
     name: Build Axios client
 
     runs-on: ubuntu-latest
