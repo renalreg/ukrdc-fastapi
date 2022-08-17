@@ -87,7 +87,7 @@ def get_messages(
     return query
 
 
-def get_message(errorsdb: Session, message_id: str, user: UKRDCUser) -> Message:
+def get_message(errorsdb: Session, message_id: int, user: UKRDCUser) -> Message:
     """Get an error by message_id
 
     Args:

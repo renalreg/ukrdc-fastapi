@@ -1,8 +1,7 @@
 import datetime
 from typing import Optional
 
-from fastapi_hypermodel import LinkSet, UrlFor
-from pydantic import validator
+from pydantic import Field, validator
 
 from .base import OrmModel
 
@@ -24,24 +23,14 @@ class MinimalMessageSchema(OrmModel):
 
 
 class MessageSchema(MinimalMessageSchema):
-    message_id: int
     error: Optional[str]
     status: Optional[str]
-    links = LinkSet(
-        {
-            "self": UrlFor("error_detail", {"message_id": "<id>"}),
-            "source": UrlFor("error_source", {"message_id": "<id>"}),
-            "workitems": UrlFor("error_workitems", {"message_id": "<id>"}),
-            "masterrecords": UrlFor("error_masterrecords", {"message_id": "<id>"}),
-            "mirth": UrlFor(
-                "mirth_channel_message",
-                {"channel_id": "<channel_id>", "message_id": "<message_id>"},
-            ),
-        }
-    )
 
-    channel_id: str
-    channel: Optional[str]
+    # Mirth message
+    # Field names are determined by ORM, but we alias to something more useful for the API
+    message_id: str = Field(alias="mirthMessageId")
+    channel_id: str = Field(alias="mirthChannelId")
+    mirth_channel: Optional[str]
 
     _channel_id_name_map: dict[str, str]
 
@@ -57,7 +46,7 @@ class MessageSchema(MinimalMessageSchema):
         """
         cls._channel_id_name_map = cinm
 
-    @validator("channel")
+    @validator("mirth_channel")
     def channel_name(cls, _, values):  # pylint: disable=no-self-argument
         """
         Dynamically generates the channel name field

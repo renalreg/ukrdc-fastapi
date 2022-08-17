@@ -1,8 +1,8 @@
 import datetime
+import json
 from typing import Optional, Union
 
-from fastapi_hypermodel import LinkSet, UrlFor
-from pydantic import Json, validator
+from pydantic import validator
 
 from .base import OrmModel
 
@@ -18,32 +18,6 @@ class MasterRecordSchema(OrmModel):
     surname: Optional[str]
     status: int
     effective_date: datetime.datetime
-
-    links = LinkSet(
-        {
-            "self": UrlFor("master_record_detail", {"record_id": "<id>"}),
-            "latestMessage": UrlFor(
-                "master_record_latest_message", {"record_id": "<id>"}
-            ),
-            "statistics": UrlFor("master_record_statistics", {"record_id": "<id>"}),
-            "related": UrlFor("master_record_related", {"record_id": "<id>"}),
-            "messages": UrlFor("master_record_messages", {"record_id": "<id>"}),
-            "linkrecords": UrlFor("master_record_linkrecords", {"record_id": "<id>"}),
-            "persons": UrlFor("master_record_persons", {"record_id": "<id>"}),
-            "workitems": UrlFor("master_record_workitems", {"record_id": "<id>"}),
-            "patientrecords": UrlFor(
-                "master_record_patientrecords", {"record_id": "<id>"}
-            ),
-            "audit": UrlFor("master_record_audit", {"record_id": "<id>"}),
-            "memberships": LinkSet(
-                {
-                    "createPKB": UrlFor(
-                        "master_record_memberships_create_pkb", {"record_id": "<id>"}
-                    ),
-                }
-            ),
-        }
-    )
 
 
 class PidXRefSchema(OrmModel):
@@ -66,14 +40,6 @@ class PersonSchema(OrmModel):
     surname: Optional[str]
     xref_entries: list[PidXRefSchema]
 
-    links = LinkSet(
-        {
-            "self": UrlFor("person_detail", {"person_id": "<id>"}),
-            "patientrecord": UrlFor("patient_get", {"pid": "<localid>"}),
-            "masterrecords": UrlFor("person_masterrecords", {"person_id": "<id>"}),
-        }
-    )
-
 
 class LinkRecordSummarySchema(OrmModel):
     id: int
@@ -88,11 +54,11 @@ class LinkRecordSchema(OrmModel):
 
 
 WORKITEM_ATTRIBUTE_MAP: dict[str, str] = {
-    "SE": "sendingExtract",
-    "SF": "sendingFacility",
+    "SE": "sending_extract",
+    "SF": "sending_facility",
     "MRN": "localid",
-    "DOB": "dateOfBirth",
-    "DOD": "dateOfDeath",
+    "DOB": "date_of_birth",
+    "DOD": "date_of_death",
     "Gender": "gender",
     "GivenName": "givenname",
     "Surname": "surname",
@@ -107,6 +73,17 @@ class WorkItemSummarySchema(OrmModel):
     status: int
 
 
+class WorkItemAttributes(OrmModel):
+    sending_extract: Optional[str]
+    sending_facility: Optional[str]
+    localid: Optional[str]
+    date_of_birth: Optional[str]
+    date_of_death: Optional[str]
+    gender: Optional[str]
+    givenname: Optional[str]
+    surname: Optional[str]
+
+
 class WorkItemSchema(OrmModel):
     id: int
 
@@ -119,33 +96,30 @@ class WorkItemSchema(OrmModel):
     last_updated: datetime.datetime
     updated_by: Optional[str]
 
-    attributes: Optional[Union[Json, dict]]
+    attributes: Optional[WorkItemAttributes]
     update_description: Optional[str]
 
     person: Optional[PersonSchema]
     master_record: Optional[MasterRecordSchema]
 
-    links = LinkSet(
-        {
-            "self": UrlFor("workitem_detail", {"workitem_id": "<id>"}),
-            "collection": UrlFor("workitem_collection", {"workitem_id": "<id>"}),
-            "related": UrlFor("workitem_related", {"workitem_id": "<id>"}),
-            "messages": UrlFor("workitem_messages", {"workitem_id": "<id>"}),
-            "close": UrlFor("workitem_close", {"workitem_id": "<id>"}),
-        }
-    )
-
-    @validator("attributes")
-    def normalise_attributes(cls, value):  # pylint: disable=no-self-argument
+    @validator("attributes", pre=True)
+    def normalise_attributes(
+        cls, value: Union[str, dict, WorkItemAttributes]
+    ):  # pylint: disable=no-self-argument
         """
         Convert attributes JSON keys into MasterRecord property keys
         """
-        if not isinstance(value, dict):
-            return value
-        return {
-            WORKITEM_ATTRIBUTE_MAP.get(key, key): attribute
-            for key, attribute in value.items()
-        }
+        # Convert raw JSON string into a dictionary
+        if isinstance(value, str):
+            value = json.loads(value)
+        # Re-map dictionary keys
+        if isinstance(value, dict):
+            return {
+                WORKITEM_ATTRIBUTE_MAP.get(key, key): attribute
+                for key, attribute in value.items()
+            }
+        # Return existing value
+        return value
 
 
 class WorkItemIncomingSchema(OrmModel):

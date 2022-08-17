@@ -1,10 +1,11 @@
 import logging
+import re
 
 import redis
 import sqlalchemy
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi_hypermodel import HyperModel
+from fastapi.routing import APIRoute
 from fastapi_pagination import add_pagination
 from httpx import ConnectError
 from mirth_client import MirthAPI
@@ -19,7 +20,17 @@ from ukrdc_fastapi.dependencies.sentry import add_sentry
 from ukrdc_fastapi.routers import api
 from ukrdc_fastapi.tasks import repeated, shutdown
 
+
 # Create app
+def _custom_generate_unique_id(route: APIRoute):
+    """
+    Custom unique route ID function.
+    We use this to simplify the function names of our generated client libraries
+    """
+    operation_id = route.name
+    operation_id = re.sub("[^0-9a-zA-Z_]", "_", operation_id)
+    operation_id = list(route.methods)[0].lower() + "_" + operation_id
+    return operation_id
 
 
 app = FastAPI(
@@ -35,6 +46,7 @@ app = FastAPI(
         "clientId": settings.swagger_client_id,
         "scopes": ["openid", "profile", "email", "offline_access"],
     },
+    generate_unique_id_function=_custom_generate_unique_id,
 )
 
 # Add routes
@@ -57,7 +69,6 @@ app.add_middleware(
 
 add_sentry(app)
 add_pagination(app)
-HyperModel.init_app(app)
 
 # Attach event handlers
 

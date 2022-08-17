@@ -24,7 +24,7 @@ from .dependencies import _get_patientrecord
 router = APIRouter(tags=["Patient Records/Update"])
 
 
-class DemographicUpdateSchema(JSONModel):
+class DemographicUpdateRequest(JSONModel):
     name: Optional[NameSchema]
     birth_time: Optional[datetime.datetime]
     gender: Optional[GenderType]
@@ -37,7 +37,7 @@ class DemographicUpdateSchema(JSONModel):
     dependencies=[Security(auth.permission(Permissions.WRITE_RECORDS))],
 )
 async def patient_update_demographics(
-    demographics: DemographicUpdateSchema,
+    demographics: DemographicUpdateRequest,
     patient_record: PatientRecord = Depends(_get_patientrecord),
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),

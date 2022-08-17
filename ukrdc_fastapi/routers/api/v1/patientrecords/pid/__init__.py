@@ -28,7 +28,7 @@ from ukrdc_fastapi.query.delete import delete_pid, summarise_delete_pid
 from ukrdc_fastapi.query.patientrecords import (
     get_patientrecords_related_to_patientrecord,
 )
-from ukrdc_fastapi.schemas.delete import DeletePIDRequestSchema, DeletePIDResponseSchema
+from ukrdc_fastapi.schemas.delete import DeletePidRequest, DeletePIDResponseSchema
 from ukrdc_fastapi.schemas.laborder import (
     LabOrderSchema,
     LabOrderShortSchema,
@@ -64,7 +64,7 @@ router.include_router(update.router, prefix="/update")
     response_model=PatientRecordSchema,
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
-def patient_get(
+def patient(
     patient_record: PatientRecord = Depends(_get_patientrecord),
     jtrace: Session = Depends(get_jtrace),
     audit: Auditer = Depends(get_auditer),
@@ -94,7 +94,7 @@ def patient_delete(
     ukrdc3: Session = Depends(get_ukrdc3),
     jtrace: Session = Depends(get_jtrace),
     audit: Auditer = Depends(get_auditer),
-    args: Optional[DeletePIDRequestSchema] = None,
+    args: Optional[DeletePidRequest] = None,
 ):
     """Delete a specific patient record and all its associated data"""
     summary: DeletePIDResponseSchema
@@ -292,7 +292,7 @@ def patient_laborders(
     response_model=LabOrderSchema,
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
-def laborder_get(
+def patient_laborder(
     order_id: str,
     patient_record: PatientRecord = Depends(_get_patientrecord),
     audit: Auditer = Depends(get_auditer),
@@ -318,7 +318,7 @@ def laborder_get(
     "/laborders/{order_id}/",
     dependencies=[Security(auth.permission(Permissions.WRITE_RECORDS))],
 )
-def laborder_delete(
+def patient_laborder_delete(
     order_id: str,
     patient_record: PatientRecord = Depends(_get_patientrecord),
     ukrdc3: Session = Depends(get_ukrdc3),
@@ -367,7 +367,7 @@ def laborder_delete(
     response_model=Page[ResultItemSchema],
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
-def patient_resultitems(
+def patient_results(
     patient_record: PatientRecord = Depends(_get_patientrecord),
     service_id: Optional[list[str]] = QueryParam([]),
     order_id: Optional[list[str]] = QueryParam([]),
@@ -411,7 +411,7 @@ def patient_resultitems(
     response_model=ResultItemSchema,
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
-def resultitem_get(
+def patient_result(
     resultitem_id: str,
     patient_record: PatientRecord = Depends(_get_patientrecord),
     audit: Auditer = Depends(get_auditer),
@@ -437,7 +437,7 @@ def resultitem_get(
     "/results/{resultitem_id}/",
     dependencies=[Security(auth.permission(Permissions.WRITE_RECORDS))],
 )
-def resultitem_delete(
+def patient_result_delete(
     resultitem_id: str,
     patient_record: PatientRecord = Depends(_get_patientrecord),
     ukrdc3: Session = Depends(get_ukrdc3),
@@ -523,14 +523,14 @@ def patient_documents(
     response_model=DocumentSchema,
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
-def document_get(
+def patient_document(
     document_id: str,
     patient_record: PatientRecord = Depends(_get_patientrecord),
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's document information"""
-    document = patient_record.documents.filter(Document.id == document_id).first()
-    if not document:
+    document_obj = patient_record.documents.filter(Document.id == document_id).first()
+    if not document_obj:
         raise HTTPException(404, detail="Document not found")
 
     audit.add_event(
@@ -542,23 +542,23 @@ def document_get(
         ),
     )
 
-    return document
+    return document_obj
 
 
 @router.get(
     "/documents/{document_id}/download",
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
-def document_download(
+def patient_document_download(
     document_id: str,
     patient_record: PatientRecord = Depends(_get_patientrecord),
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's document file"""
-    document: Optional[Document] = patient_record.documents.filter(
+    document_obj: Optional[Document] = patient_record.documents.filter(
         Document.id == document_id
     ).first()
-    if not document:
+    if not document_obj:
         raise HTTPException(404, detail="Document not found")
 
     audit.add_event(
@@ -573,14 +573,14 @@ def document_download(
     media_type: str
     stream: bytes
     filename: str
-    if not document.filetype:
+    if not document_obj.filetype:
         media_type = "text/csv"
-        stream = (document.notetext or "").encode()
-        filename = f"{document.documentname}.txt"
+        stream = (document_obj.notetext or "").encode()
+        filename = f"{document_obj.documentname}.txt"
     else:
-        media_type = document.filetype
-        stream = document.stream or b""
-        filename = document.filename or document.documentname or "NoFileName"
+        media_type = document_obj.filetype
+        stream = document_obj.stream or b""
+        filename = document_obj.filename or document_obj.documentname or "NoFileName"
 
     response = Response(content=stream, media_type=media_type)
     response.headers["Content-Disposition"] = f"attachment; filename={filename}"

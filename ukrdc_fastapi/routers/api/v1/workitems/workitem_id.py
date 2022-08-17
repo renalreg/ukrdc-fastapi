@@ -34,11 +34,11 @@ from ukrdc_fastapi.utils.paginate import Page, paginate
 router = APIRouter(prefix="/{workitem_id}")
 
 
-class CloseWorkItemRequestSchema(JSONModel):
+class CloseWorkItemRequest(JSONModel):
     comment: Optional[str] = Field(None, max_length=100)
 
 
-class UpdateWorkItemRequestSchema(JSONModel):
+class UpdateWorkItemRequest(JSONModel):
     status: Optional[int] = None
     comment: Optional[str] = Field(None, max_length=100)
 
@@ -48,16 +48,16 @@ class UpdateWorkItemRequestSchema(JSONModel):
     response_model=WorkItemExtendedSchema,
     dependencies=[Security(auth.permission(Permissions.READ_WORKITEMS))],
 )
-def workitem_detail(
+def workitem(
     workitem_id: int,
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a particular work item from the EMPI"""
-    workitem = get_extended_workitem(jtrace, workitem_id, user)
-    audit.add_workitem(workitem)
-    return workitem
+    workitem_obj = get_extended_workitem(jtrace, workitem_id, user)
+    audit.add_workitem(workitem_obj)
+    return workitem_obj
 
 
 @router.put(
@@ -77,7 +77,7 @@ def workitem_detail(
 )
 async def workitem_update(
     workitem_id: int,
-    args: UpdateWorkItemRequestSchema,
+    args: UpdateWorkItemRequest,
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
     mirth: MirthAPI = Depends(get_mirth),
@@ -113,8 +113,8 @@ def workitem_collection(
     """Retreive a list of other work items related to a particular work item"""
     collection = get_workitem_collection(jtrace, workitem_id, user).all()
 
-    for workitem in collection:
-        audit.add_workitem(workitem)
+    for workitem_obj in collection:
+        audit.add_workitem(workitem_obj)
 
     return collection
 
@@ -133,8 +133,8 @@ def workitem_related(
     """Retreive a list of other work items related to a particular work item"""
     related = get_workitems_related_to_workitem(jtrace, workitem_id, user).all()
 
-    for workitem in related:
-        audit.add_workitem(workitem)
+    for workitem_obj in related:
+        audit.add_workitem(workitem_obj)
 
     return related
 
@@ -156,14 +156,14 @@ def workitem_messages(
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a list of other work items related to a particular work item"""
-    workitem = get_extended_workitem(jtrace, workitem_id, user)
+    workitem_obj = get_extended_workitem(jtrace, workitem_id, user)
 
     workitem_nis: list[str] = [
-        record.nationalid for record in workitem.incoming.master_records
+        record.nationalid for record in workitem_obj.incoming.master_records
     ]
 
-    if workitem.master_record:
-        workitem_nis.append(workitem.master_record.nationalid.strip())
+    if workitem_obj.master_record:
+        workitem_nis.append(workitem_obj.master_record.nationalid.strip())
 
     audit.add_event(
         Resource.MESSAGES,
@@ -196,7 +196,7 @@ def workitem_messages(
 )
 async def workitem_close(
     workitem_id: int,
-    args: Optional[CloseWorkItemRequestSchema],
+    args: Optional[CloseWorkItemRequest],
     jtrace: Session = Depends(get_jtrace),
     user: UKRDCUser = Security(auth.get_user()),
     mirth: MirthAPI = Depends(get_mirth),
@@ -204,13 +204,13 @@ async def workitem_close(
     audit: Auditer = Depends(get_auditer),
 ):
     """Update and close a particular work item"""
-    workitem = get_workitem(jtrace, workitem_id, user)
+    workitem_obj = get_workitem(jtrace, workitem_id, user)
 
-    audit.add_event(Resource.WORKITEM, workitem.id, AuditOperation.UPDATE)
+    audit.add_event(Resource.WORKITEM, workitem_obj.id, AuditOperation.UPDATE)
 
     return await close_workitem(
         jtrace,
-        workitem.id,
+        workitem_obj.id,
         user,
         mirth,
         redis,
