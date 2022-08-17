@@ -8,7 +8,7 @@ from ukrdc_fastapi.dependencies import get_usersdb
 from ukrdc_fastapi.dependencies.auth import UKRDCUser, auth
 from ukrdc_fastapi.query.users import get_user_preferences, update_user_preferences
 from ukrdc_fastapi.schemas.base import JSONModel
-from ukrdc_fastapi.schemas.user import ReadUserPreferences, UpdateUserPreferences
+from ukrdc_fastapi.schemas.user import UserPreferences, UserPreferencesRequest
 
 router = APIRouter(tags=["System Info"])
 
@@ -22,6 +22,7 @@ class SystemInfoSchema(JSONModel):
     github_sha: Optional[str] = configuration.github_sha
     github_ref: Optional[str] = configuration.github_ref
     deployment_env: str = configuration.deployment_env
+    version: str = configuration.version
 
 
 @router.get("/user/", response_model=UserSchema)
@@ -30,17 +31,17 @@ def system_user(user: UKRDCUser = Security(auth.get_user())):
     return UserSchema(email=user.email, permissions=user.permissions)
 
 
-@router.get("/user/preferences", response_model=ReadUserPreferences)
-def read_system_user_preferences(
+@router.get("/user/preferences", response_model=UserPreferences)
+def system_user_preferences(
     user: UKRDCUser = Security(auth.get_user()), usersdb: Session = Depends(get_usersdb)
 ):
     """Retreive user preferences"""
     return get_user_preferences(usersdb, user)
 
 
-@router.put("/user/preferences", response_model=ReadUserPreferences)
+@router.put("/user/preferences", response_model=UserPreferences)
 def update_system_user_preferences(
-    prefs: UpdateUserPreferences,
+    prefs: UserPreferencesRequest,
     user: UKRDCUser = Security(auth.get_user()),
     usersdb: Session = Depends(get_usersdb),
 ):

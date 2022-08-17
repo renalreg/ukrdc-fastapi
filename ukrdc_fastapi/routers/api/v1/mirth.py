@@ -2,12 +2,12 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Security
 from mirth_client import MirthAPI
+from mirth_client.models import ChannelMessageModel
 from redis import Redis
 
 from ukrdc_fastapi.dependencies import get_mirth, get_redis
 from ukrdc_fastapi.dependencies.auth import Permissions, auth
 from ukrdc_fastapi.schemas.base import OrmModel
-from ukrdc_fastapi.schemas.mirth import MirthChannelMessageModel
 from ukrdc_fastapi.utils.mirth import (
     ChannelFullModel,
     ChannelGroupModel,
@@ -26,7 +26,7 @@ class MirthPage(OrmModel):
 
 
 class MessagePage(MirthPage):
-    items: list[MirthChannelMessageModel]
+    items: list[ChannelMessageModel]
 
 
 @router.get(
@@ -92,7 +92,7 @@ async def mirth_channel_messages(
 
 @router.get(
     "/channels/{channel_id}/messages/{message_id}/",
-    response_model=MirthChannelMessageModel,
+    response_model=ChannelMessageModel,
     dependencies=[Security(auth.permission(Permissions.READ_MIRTH))],
 )
 async def mirth_channel_message(

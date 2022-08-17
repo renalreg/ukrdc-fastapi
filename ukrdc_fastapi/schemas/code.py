@@ -1,8 +1,6 @@
 import datetime
 from typing import Optional
 
-from fastapi_hypermodel.hypermodel import LinkSet, UrlFor
-
 from .base import OrmModel
 
 
@@ -16,15 +14,6 @@ class CodeSchema(OrmModel):
     update_date: Optional[datetime.datetime]
 
     units: Optional[str]
-
-    links = LinkSet(
-        {
-            "self": UrlFor(
-                "code_details",
-                {"coding_standard": "<coding_standard>", "code": "<code>"},
-            )
-        }
-    )
 
 
 class CodeMapSchema(OrmModel):

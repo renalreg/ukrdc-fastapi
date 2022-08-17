@@ -31,7 +31,7 @@ class UnlinkWorkItemRequestSchema(BaseModel):
     response_model=Page[WorkItemSchema],
     dependencies=[Security(auth.permission(Permissions.READ_WORKITEMS))],
 )
-def workitems_list(
+def workitems(
     since: Optional[datetime.datetime] = None,
     until: Optional[datetime.datetime] = None,
     status: Optional[list[int]] = Query([1]),
@@ -48,7 +48,7 @@ def workitems_list(
 ):
     """Retreive a list of open work items from the EMPI"""
     query = get_workitems(
-        jtrace, user, statuses=status, facility=facility, since=since, until=until
+        jtrace, user, statuses=status or [], facility=facility, since=since, until=until
     )
     page = paginate(sorter.sort(query))
 

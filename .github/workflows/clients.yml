@@ -1,0 +1,107 @@
+name: Build Client Libraries
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+jobs:
+  test:
+    name: Run tests
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v1
+
+      - uses: harmon758/postgresql-action@v1
+        with:
+          postgresql version: "13"
+
+      - name: Set up Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.9
+
+      - name: Install and configure Poetry
+        uses: snok/install-poetry@v1.1.8
+
+      - name: Install Dependencies
+        run: poetry install
+
+      - name: Run Tox
+        run: poetry run tox
+
+  build-spec:
+    name: Build OpenAPI spec
+
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.9
+
+      - name: Install and configure Poetry
+        uses: snok/install-poetry@v1.1.8
+
+      - name: Install Dependencies
+        run: poetry install
+      
+      - name: Generate API Spec
+        run: poetry run python clients/generate_spec.py
+
+      - name: Store API specification
+        uses: actions/upload-artifact@v3
+        with:
+          name: openapi-spec
+          path: clients/openapi.json
+
+  axios-client:
+    name: Build Axios client
+
+    runs-on: ubuntu-latest
+    needs: build-spec
+
+    env:
+      SNAPSHOT: ${{ github.event_name != 'release' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Download OpenAPI spec
+        uses: actions/download-artifact@v3
+        with:
+          name: openapi-spec
+          path: clients/
+
+      - name: Generate Axios Client
+        uses: openapi-generators/openapitools-generator-action@v1
+        with:
+          generator: typescript-axios
+          config-file: clients/config.json
+          openapi-file: clients/openapi.json
+          command-args: --additional-properties=snapshot=${SNAPSHOT}
+
+      - name: Install Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+          check-latest: true
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install Axios Client
+        working-directory: typescript-axios-client
+        run: npm install
+
+      - name: Publish Axios client
+        working-directory: typescript-axios-client
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

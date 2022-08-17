@@ -3,10 +3,10 @@ from sqlalchemy.orm.session import Session
 
 from ukrdc_fastapi.dependencies.auth import UKRDCUser
 from ukrdc_fastapi.models.users import UserPreference
-from ukrdc_fastapi.schemas.user import ReadUserPreferences, UpdateUserPreferences
+from ukrdc_fastapi.schemas.user import UserPreferences, UserPreferencesRequest
 
 
-def get_user_preferences(usersdb: Session, user: UKRDCUser) -> ReadUserPreferences:
+def get_user_preferences(usersdb: Session, user: UKRDCUser) -> UserPreferences:
     """
     Read current user preferences from the database, including default values where
     none have been explicitly set.
@@ -22,12 +22,12 @@ def get_user_preferences(usersdb: Session, user: UKRDCUser) -> ReadUserPreferenc
         usersdb.query(UserPreference).filter(UserPreference.uid == user.id).all()
     )
     raw_prefs_dict = {row.key: row.val for row in all_prefs}
-    return ReadUserPreferences(**raw_prefs_dict)
+    return UserPreferences(**raw_prefs_dict)
 
 
 def update_user_preferences(
-    usersdb: Session, user: UKRDCUser, prefs: UpdateUserPreferences
-) -> ReadUserPreferences:
+    usersdb: Session, user: UKRDCUser, prefs: UserPreferencesRequest
+) -> UserPreferences:
     """Update user preferences database
 
     Args:

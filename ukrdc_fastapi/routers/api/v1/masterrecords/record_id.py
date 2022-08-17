@@ -71,7 +71,7 @@ router = APIRouter(prefix="/{record_id}")
     response_model=MasterRecordSchema,
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
-def master_record_detail(
+def master_record(
     record_id: int,
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),

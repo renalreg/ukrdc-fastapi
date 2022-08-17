@@ -9,7 +9,7 @@ from ukrdc_sqla.ukrdc import PatientRecord
 from ukrdc_fastapi.dependencies.auth import UKRDCUser
 from ukrdc_fastapi.query.patientrecords import get_patientrecord
 from ukrdc_fastapi.schemas.delete import (
-    DeletePIDFromEMPISchema,
+    DeletePidFromEmpiRequest,
     DeletePIDPreviewSchema,
     DeletePIDResponseSchema,
 )
@@ -106,7 +106,7 @@ def _create_delete_pid_summary(
     committed: bool = False,
 ) -> DeletePIDResponseSchema:
 
-    empi_to_delete_summary = DeletePIDFromEMPISchema.from_orm(empi_to_delete)
+    empi_to_delete_summary = DeletePidFromEmpiRequest.from_orm(empi_to_delete)
     record_to_delete_summary = PatientRecordFullSchema.from_orm(record_to_delete)
 
     to_delete_summary = DeletePIDPreviewSchema(

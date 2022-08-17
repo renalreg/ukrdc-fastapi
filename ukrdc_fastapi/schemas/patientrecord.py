@@ -1,7 +1,6 @@
 import datetime
 from typing import Optional
 
-from fastapi_hypermodel import LinkSet, UrlFor
 from sqlalchemy.orm.session import Session
 from ukrdc_sqla.empi import MasterRecord
 from ukrdc_sqla.ukrdc import PatientRecord
@@ -78,15 +77,6 @@ class DocumentSummarySchema(OrmModel):
     enteredbydesc: Optional[str]
     enteredatcode: Optional[str]
 
-    links = LinkSet(
-        {
-            "self": UrlFor("document_get", {"pid": "<pid>", "document_id": "<id>"}),
-            "download": UrlFor(
-                "document_download", {"pid": "<pid>", "document_id": "<id>"}
-            ),
-        }
-    )
-
 
 class DocumentSchema(DocumentSummarySchema):
     idx: Optional[int]
@@ -153,32 +143,6 @@ class PatientRecordSummarySchema(OrmModel):
 
     repository_creation_date: datetime.datetime
     repository_update_date: datetime.datetime
-
-    links = LinkSet(
-        {
-            # Self-resources
-            "self": UrlFor("patient_get", {"pid": "<pid>"}),
-            "related": UrlFor("patient_related", {"pid": "<pid>"}),
-            "delete": UrlFor("patient_delete", {"pid": "<pid>"}),
-            # Internal resources
-            "medications": UrlFor("patient_medications", {"pid": "<pid>"}),
-            "treatments": UrlFor("patient_treatments", {"pid": "<pid>"}),
-            "surveys": UrlFor("patient_surveys", {"pid": "<pid>"}),
-            "documents": UrlFor("patient_documents", {"pid": "<pid>"}),
-            # Complex internal resources
-            "observations": UrlFor("patient_observations", {"pid": "<pid>"}),
-            "observationCodes": UrlFor("patient_observation_codes", {"pid": "<pid>"}),
-            "results": UrlFor("patient_resultitems", {"pid": "<pid>"}),
-            "resultServices": UrlFor("patient_result_services", {"pid": "<pid>"}),
-            "laborders": UrlFor("patient_laborders", {"pid": "<pid>"}),
-            # Exports
-            "exportPV": UrlFor("patient_export_pv", {"pid": "<pid>"}),
-            "exportPVTests": UrlFor("patient_export_pv_tests", {"pid": "<pid>"}),
-            "exportPVDocs": UrlFor("patient_export_pv_docs", {"pid": "<pid>"}),
-            "exportRADAR": UrlFor("patient_export_radar", {"pid": "<pid>"}),
-            "exportPKB": UrlFor("patient_export_pkb", {"pid": "<pid>"}),
-        }
-    )
 
 
 class PatientRecordSchema(PatientRecordSummarySchema):

@@ -40,7 +40,7 @@ class MessageSourceSchema(OrmModel):
     response_model=Page[MessageSchema],
     dependencies=[Security(auth.permission(Permissions.READ_MESSAGES))],
 )
-def error_messages(
+def messages(
     facility: Optional[str] = None,
     since: Optional[datetime.datetime] = None,
     until: Optional[datetime.datetime] = None,
@@ -76,8 +76,8 @@ def error_messages(
     response_model=MessageSchema,
     dependencies=[Security(auth.permission(Permissions.READ_MESSAGES))],
 )
-def error_detail(
-    message_id: str,
+def message(
+    message_id: int,
     user: UKRDCUser = Security(auth.get_user()),
     errorsdb: Session = Depends(get_errorsdb),
     audit: Auditer = Depends(get_auditer),
@@ -86,9 +86,9 @@ def error_detail(
     # For some reason the fastAPI response_model doesn't call our channel_name
     # validator, meaning we don't get a populated channel name unless we explicitly
     # call it here.
-    message = get_message(errorsdb, message_id, user)
-    audit.add_event(Resource.MESSAGE, message.id, MessageOperation.READ)
-    return MessageSchema.from_orm(message)
+    message_obj = get_message(errorsdb, message_id, user)
+    audit.add_event(Resource.MESSAGE, message_obj.id, MessageOperation.READ)
+    return MessageSchema.from_orm(message_obj)
 
 
 @router.get(
@@ -96,8 +96,8 @@ def error_detail(
     response_model=MessageSourceSchema,
     dependencies=[Security(auth.permission(Permissions.READ_MESSAGES))],
 )
-async def error_source(
-    message_id: str,
+async def message_source(
+    message_id: int,
     user: UKRDCUser = Security(auth.get_user()),
     errorsdb: Session = Depends(get_errorsdb),
     mirth: MirthAPI = Depends(get_mirth),
@@ -109,14 +109,14 @@ async def error_source(
     if not error.channel_id:
         raise HTTPException(404, "Channel ID not found in Mirth")
 
-    message = await mirth.channel(error.channel_id).get_message(
+    message_obj = await mirth.channel(error.channel_id).get_message(
         str(error.message_id), include_content=True
     )
-    if not message:
+    if not message_obj:
         raise HTTPException(404, "Message not found in Mirth")
 
     first_connector_message: ConnectorMessageModel = list(
-        message.connector_messages.values()
+        message_obj.connector_messages.values()
     )[0]
 
     message_data: Optional[ConnectorMessageData] = None
@@ -147,21 +147,23 @@ async def error_source(
         )
     ],
 )
-async def error_workitems(
-    message_id: str,
+async def message_workitems(
+    message_id: int,
     user: UKRDCUser = Security(auth.get_user()),
     errorsdb: Session = Depends(get_errorsdb),
     jtrace: Session = Depends(get_jtrace),
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive WorkItems associated with a specific error message"""
-    message = get_message(errorsdb, message_id, user)
+    message_obj = get_message(errorsdb, message_id, user)
 
     workitems = get_workitems_related_to_message(
-        jtrace, errorsdb, str(message.id), user
+        jtrace, errorsdb, message_obj.id, user
     ).all()
 
-    message_audit = audit.add_event(Resource.MESSAGE, message.id, MessageOperation.READ)
+    message_audit = audit.add_event(
+        Resource.MESSAGE, message_obj.id, MessageOperation.READ
+    )
     for item in workitems:
         audit.add_workitem(item, parent=message_audit)
 
@@ -175,22 +177,26 @@ async def error_workitems(
         Security(auth.permission([Permissions.READ_MESSAGES, Permissions.READ_RECORDS]))
     ],
 )
-async def error_masterrecords(
-    message_id: str,
+async def message_masterrecords(
+    message_id: int,
     user: UKRDCUser = Security(auth.get_user()),
     errorsdb: Session = Depends(get_errorsdb),
     jtrace: Session = Depends(get_jtrace),
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive MasterRecords associated with a specific error message"""
-    message = get_message(errorsdb, message_id, user)
+    message_obj = get_message(errorsdb, message_id, user)
 
     # Get masterrecords directly referenced by the error
     records = (
-        jtrace.query(MasterRecord).filter(MasterRecord.nationalid == message.ni).all()
+        jtrace.query(MasterRecord)
+        .filter(MasterRecord.nationalid == message_obj.ni)
+        .all()
     )
 
-    message_audit = audit.add_event(Resource.MESSAGE, message.id, MessageOperation.READ)
+    message_audit = audit.add_event(
+        Resource.MESSAGE, message_obj.id, MessageOperation.READ
+    )
     for record in records:
         audit.add_event(
             Resource.MASTER_RECORD,
