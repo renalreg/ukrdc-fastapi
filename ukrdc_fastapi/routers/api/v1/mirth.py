@@ -30,7 +30,7 @@ class MessagePage(MirthPage):
 
 
 @router.get(
-    "/channels/",
+    "/channels",
     response_model=list[ChannelFullModel],
     dependencies=[Security(auth.permission(Permissions.READ_MIRTH))],
 )
@@ -42,7 +42,7 @@ async def mirth_channels(
 
 
 @router.get(
-    "/groups/",
+    "/groups",
     response_model=list[ChannelGroupModel],
     dependencies=[Security(auth.permission(Permissions.READ_MIRTH))],
 )
@@ -55,7 +55,7 @@ async def mirth_groups(
 
 
 @router.get(
-    "/channels/{channel_id}/",
+    "/channels/{channel_id}",
     response_model=ChannelFullModel,
     dependencies=[Security(auth.permission(Permissions.READ_MIRTH))],
 )
@@ -76,7 +76,7 @@ async def mirth_channel(
 
 
 @router.get(
-    "/channels/{channel_id}/messages/",
+    "/channels/{channel_id}/messages",
     response_model=MessagePage,
     dependencies=[Security(auth.permission(Permissions.READ_MIRTH))],
 )
@@ -95,7 +95,7 @@ async def mirth_channel_messages(
 
 
 @router.get(
-    "/channels/{channel_id}/messages/{message_id}/",
+    "/channels/{channel_id}/messages/{message_id}",
     response_model=ChannelMessageModel,
     dependencies=[Security(auth.permission(Permissions.READ_MIRTH))],
 )

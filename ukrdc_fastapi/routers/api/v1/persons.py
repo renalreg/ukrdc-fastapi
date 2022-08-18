@@ -18,7 +18,7 @@ router = APIRouter(tags=["Persons"])
 
 
 @router.get(
-    "/{person_id}/",
+    "/{person_id}",
     response_model=PersonSchema,
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
@@ -35,7 +35,7 @@ def person(
 
 
 @router.get(
-    "/{person_id}/masterrecords/",
+    "/{person_id}/masterrecords",
     response_model=list[MasterRecordSchema],
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )

@@ -31,7 +31,7 @@ from ukrdc_fastapi.schemas.message import MessageSchema
 from ukrdc_fastapi.utils.mirth import MirthMessageResponseSchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
 
-router = APIRouter(prefix="/{workitem_id}")
+router = APIRouter()
 
 
 class CloseWorkItemRequest(JSONModel):
@@ -44,7 +44,7 @@ class UpdateWorkItemRequest(JSONModel):
 
 
 @router.get(
-    "/",
+    "/{workitem_id}",
     response_model=WorkItemExtendedSchema,
     dependencies=[Security(auth.permission(Permissions.READ_WORKITEMS))],
 )
@@ -61,7 +61,7 @@ def workitem(
 
 
 @router.put(
-    "/",
+    "/{workitem_id}",
     response_model=MirthMessageResponseSchema,
     dependencies=[
         Security(
@@ -100,7 +100,7 @@ async def workitem_update(
 
 
 @router.get(
-    "/colection/",
+    "/{workitem_id}/colection",
     response_model=list[WorkItemSchema],
     dependencies=[Security(auth.permission(Permissions.READ_WORKITEMS))],
 )
@@ -120,7 +120,7 @@ def workitem_collection(
 
 
 @router.get(
-    "/related/",
+    "/{workitem_id}/related",
     response_model=list[WorkItemSchema],
     dependencies=[Security(auth.permission(Permissions.READ_WORKITEMS))],
 )
@@ -140,7 +140,7 @@ def workitem_related(
 
 
 @router.get(
-    "/messages/",
+    "/{workitem_id}/messages",
     response_model=Page[MessageSchema],
     dependencies=[Security(auth.permission(Permissions.READ_WORKITEMS))],
 )
@@ -186,7 +186,7 @@ def workitem_messages(
 
 
 @router.post(
-    "/close/",
+    "/{workitem_id}/close",
     response_model=MirthMessageResponseSchema,
     dependencies=[
         Security(

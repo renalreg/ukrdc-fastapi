@@ -4,7 +4,7 @@ from ukrdc_fastapi.schemas.empi import WorkItemSchema
 
 
 async def test_messages_list(client, audit_session):
-    response = await client.get(f"{configuration.base_url}/v1/messages/")
+    response = await client.get(f"{configuration.base_url}/v1/messages")
     assert response.status_code == 200
 
     events = audit_session.query(AuditEvent).all()

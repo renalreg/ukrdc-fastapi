@@ -1038,26 +1038,26 @@ def httpx_session(httpx_mock: HTTPXMock):
         message_999_response: str = f.read()
 
     httpx_mock.add_response(
-        url=re.compile(r"mock:\/\/mirth.url\/channels"), data=channels_response
+        url=re.compile(r"mock:\/\/mirth.url\/channels"), content=channels_response
     )
     httpx_mock.add_response(
         url=re.compile(r"mock:\/\/mirth.url\/channels\/statistics"),
-        data=channel_statistics_response,
+        content=channel_statistics_response,
     )
     httpx_mock.add_response(
         url=re.compile(r"mock:\/\/mirth.url\/channelgroups"),
-        data=channel_groups_response,
+        content=channel_groups_response,
     )
 
     httpx_mock.add_response(
         method="POST",
-        data="<long>999</long>",
+        content="<long>999</long>",
         url=re.compile(r"mock:\/\/mirth.url\/channels\/.*\/messages"),
     )
 
     httpx_mock.add_response(
         method="GET",
-        data=message_999_response,
+        content=message_999_response,
         url=re.compile(r"mock:\/\/mirth.url\/channels\/.*\/messages\/999"),
     )
 

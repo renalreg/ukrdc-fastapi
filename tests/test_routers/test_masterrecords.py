@@ -88,7 +88,7 @@ async def test_masterrecord_workitems(client):
 
 async def test_masterrecord_errors(client):
     response = await client.get(
-        f"{configuration.base_url}/v1/masterrecords/1/messages/?status=ERROR"
+        f"{configuration.base_url}/v1/masterrecords/1/messages?status=ERROR"
     )
     assert response.status_code == 200
 

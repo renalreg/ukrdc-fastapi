@@ -27,7 +27,7 @@ router = APIRouter(tags=["Codes"])
 
 
 @router.get(
-    "/list/",
+    "/list",
     response_model=Page[CodeSchema],
     dependencies=[Security(auth.permission(Permissions.READ_CODES))],
 )
@@ -41,7 +41,7 @@ def code_list(
 
 
 @router.get(
-    "/list/{coding_standard}.{code}/",
+    "/list/{coding_standard}.{code}",
     response_model=ExtendedCodeSchema,
     dependencies=[Security(auth.permission(Permissions.READ_CODES))],
 )
@@ -55,7 +55,7 @@ def code_details(
 
 
 @router.get(
-    "/maps/",
+    "/maps",
     response_model=Page[CodeMapSchema],
     dependencies=[Security(auth.permission(Permissions.READ_CODES))],
 )
@@ -79,7 +79,7 @@ def code_maps(
 
 
 @router.get(
-    "/exclusions/",
+    "/exclusions",
     response_model=Page[CodeExclusionSchema],
     dependencies=[Security(auth.permission(Permissions.READ_CODES))],
 )
@@ -94,7 +94,7 @@ def code_exclusions(
 
 
 @router.get(
-    "/standards/",
+    "/standards",
     response_model=list[str],
     dependencies=[Security(auth.permission(Permissions.READ_CODES))],
 )
@@ -104,7 +104,7 @@ def coding_standards_list(ukrdc3: Session = Depends(get_ukrdc3)):
 
 
 @router.get(
-    "/export/list/",
+    "/export/list",
     response_class=CSVResponse,
     dependencies=[Security(auth.permission(Permissions.READ_CODES))],
 )
@@ -126,7 +126,7 @@ def code_list_export(
 
 
 @router.get(
-    "/export/maps/",
+    "/export/maps",
     response_class=CSVResponse,
     dependencies=[Security(auth.permission(Permissions.READ_CODES))],
 )
@@ -163,7 +163,7 @@ def code_maps_export(
 
 
 @router.get(
-    "/export/exclusions/",
+    "/export/exclusions",
     response_class=CSVResponse,
     dependencies=[Security(auth.permission(Permissions.READ_CODES))],
 )

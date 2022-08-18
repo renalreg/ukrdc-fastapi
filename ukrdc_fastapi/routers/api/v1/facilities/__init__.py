@@ -33,7 +33,7 @@ router = APIRouter(tags=["Facilities"])
 router.include_router(stats.router)
 
 
-@router.get("/", response_model=list[FacilityDetailsSchema])
+@router.get("", response_model=list[FacilityDetailsSchema])
 def facility_list(
     include_inactive: bool = False,
     include_empty: bool = False,

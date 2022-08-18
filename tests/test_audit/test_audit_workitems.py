@@ -84,7 +84,7 @@ async def test_workitem_detail(client, audit_session):
 
 async def test_workitem_update(client, audit_session):
     response = await client.put(
-        f"{configuration.base_url}/v1/workitems/1/",
+        f"{configuration.base_url}/v1/workitems/1",
         json={"status": 3, "comment": "UPDATE COMMENT"},
     )
     assert response.status_code == 200
@@ -102,7 +102,7 @@ async def test_workitem_update(client, audit_session):
 
 async def test_workitem_close(client, audit_session):
     response = await client.post(
-        f"{configuration.base_url}/v1/workitems/1/close/", json={}
+        f"{configuration.base_url}/v1/workitems/1/close", json={}
     )
     assert response.status_code == 200
 

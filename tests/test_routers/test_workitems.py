@@ -55,7 +55,7 @@ async def test_workitem_messages(client):
 
 async def test_workitem_errors(client):
     response = await client.get(
-        f"{configuration.base_url}/v1/workitems/1/messages/?status=ERROR"
+        f"{configuration.base_url}/v1/workitems/1/messages?status=ERROR"
     )
     assert response.status_code == 200
 
@@ -67,7 +67,7 @@ async def test_workitem_errors(client):
 @pytest.mark.parametrize("workitem_id", [1, 2, 3])
 async def test_workitem_close(client, workitem_id):
     response = await client.post(
-        f"{configuration.base_url}/v1/workitems/{workitem_id}/close/", json={}
+        f"{configuration.base_url}/v1/workitems/{workitem_id}/close", json={}
     )
     assert response.status_code == 200
 
@@ -80,7 +80,7 @@ async def test_workitem_close(client, workitem_id):
 
 async def test_workitem_update(client):
     response = await client.put(
-        f"{configuration.base_url}/v1/workitems/1/",
+        f"{configuration.base_url}/v1/workitems/1",
         json={"status": 3, "comment": "UPDATE COMMENT"},
     )
     assert response.status_code == 200

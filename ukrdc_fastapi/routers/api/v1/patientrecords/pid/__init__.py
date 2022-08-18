@@ -51,16 +51,16 @@ from ukrdc_fastapi.utils.sort import SQLASorter, make_sqla_sorter
 from . import export, update
 from .dependencies import _get_patientrecord
 
-router = APIRouter(prefix="/{pid}")
-router.include_router(export.router, prefix="/export")
-router.include_router(update.router, prefix="/update")
+router = APIRouter()
+router.include_router(export.router, prefix="/{pid}/export")
+router.include_router(update.router, prefix="/{pid}/update")
 
 
 # Self-resources
 
 
 @router.get(
-    "/",
+    "/{pid}",
     response_model=PatientRecordSchema,
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
@@ -81,7 +81,7 @@ def patient(
 
 
 @router.post(
-    "/delete",
+    "/{pid}/delete",
     dependencies=[
         Security(
             auth.permission([Permissions.READ_RECORDS, Permissions.DELETE_RECORDS])
@@ -120,7 +120,7 @@ def patient_delete(
 
 
 @router.get(
-    "/related/",
+    "/{pid}/related",
     response_model=list[PatientRecordSummarySchema],
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
@@ -152,7 +152,7 @@ def patient_related(
 
 
 @router.get(
-    "/medications/",
+    "/{pid}/medications",
     response_model=list[MedicationSchema],
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
@@ -173,7 +173,7 @@ def patient_medications(
 
 
 @router.get(
-    "/treatments/",
+    "/{pid}/treatments",
     response_model=list[TreatmentSchema],
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
@@ -194,7 +194,7 @@ def patient_treatments(
 
 
 @router.get(
-    "/surveys/",
+    "/{pid}/surveys",
     response_model=list[SurveySchema],
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
@@ -218,7 +218,7 @@ def patient_surveys(
 
 
 @router.get(
-    "/observations/",
+    "/{pid}/observations",
     response_model=Page[ObservationSchema],
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
@@ -251,7 +251,7 @@ def patient_observations(
 
 
 @router.get(
-    "/observation_codes",
+    "/{pid}/observation_codes",
     response_model=list[str],
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
@@ -264,7 +264,7 @@ def patient_observation_codes(
 
 
 @router.get(
-    "/laborders/",
+    "/{pid}/laborders",
     response_model=Page[LabOrderShortSchema],
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
@@ -288,7 +288,7 @@ def patient_laborders(
 
 
 @router.get(
-    "/laborders/{order_id}/",
+    "/{pid}/laborders/{order_id}",
     response_model=LabOrderSchema,
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
@@ -315,7 +315,7 @@ def patient_laborder(
 
 
 @router.delete(
-    "/laborders/{order_id}/",
+    "/{pid}/laborders/{order_id}",
     dependencies=[Security(auth.permission(Permissions.WRITE_RECORDS))],
 )
 def patient_laborder_delete(
@@ -363,7 +363,7 @@ def patient_laborder_delete(
 
 
 @router.get(
-    "/results/",
+    "/{pid}/results",
     response_model=Page[ResultItemSchema],
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
@@ -407,7 +407,7 @@ def patient_results(
 
 
 @router.get(
-    "/results/{resultitem_id}/",
+    "/{pid}/results/{resultitem_id}",
     response_model=ResultItemSchema,
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
@@ -434,7 +434,7 @@ def patient_result(
 
 
 @router.delete(
-    "/results/{resultitem_id}/",
+    "/{pid}/results/{resultitem_id}",
     dependencies=[Security(auth.permission(Permissions.WRITE_RECORDS))],
 )
 def patient_result_delete(
@@ -470,7 +470,7 @@ def patient_result_delete(
 
 
 @router.get(
-    "/result_services",
+    "/{pid}/result_services",
     response_model=list[ResultItemServiceSchema],
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
@@ -490,7 +490,7 @@ def patient_result_services(
 
 
 @router.get(
-    "/documents/",
+    "/{pid}/documents",
     response_model=Page[DocumentSummarySchema],
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
@@ -519,7 +519,7 @@ def patient_documents(
 
 
 @router.get(
-    "/documents/{document_id}/",
+    "/{pid}/documents/{document_id}",
     response_model=DocumentSchema,
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
@@ -546,7 +546,7 @@ def patient_document(
 
 
 @router.get(
-    "/documents/{document_id}/download",
+    "/{pid}/documents/{document_id}/download",
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
 def patient_document_download(

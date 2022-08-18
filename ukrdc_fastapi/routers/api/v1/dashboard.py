@@ -11,7 +11,7 @@ class DashboardSchema(BaseModel):
     warnings: list[str]
 
 
-@router.get("/", response_model=DashboardSchema)
+@router.get("", response_model=DashboardSchema)
 def dashboard():
     """Retreive basic statistics about recent records"""
     dash = DashboardSchema(messages=settings.motd, warnings=settings.wotd)

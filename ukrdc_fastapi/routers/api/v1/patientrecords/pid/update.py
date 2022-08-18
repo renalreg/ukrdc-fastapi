@@ -32,7 +32,7 @@ class DemographicUpdateRequest(JSONModel):
 
 
 @router.post(
-    "/demographics/",
+    "/demographics",
     response_model=MirthMessageResponseSchema,
     dependencies=[Security(auth.permission(Permissions.WRITE_RECORDS))],
 )
