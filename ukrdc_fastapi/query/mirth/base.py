@@ -40,7 +40,7 @@ async def safe_send_mirth_message_to_name(
     Returns:
         MirthMessageResponseSchema: Mirth response status
     """
-    channel = get_channel_from_name(channel_name, mirth, redis)
+    channel = await get_channel_from_name(channel_name, mirth, redis)
     if not channel:
         raise HTTPException(
             500, detail=f"ID for {channel_name} channel not found"

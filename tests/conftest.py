@@ -918,20 +918,10 @@ async def mirth_session():
         yield api
 
 
-from ukrdc_fastapi.utils.mirth import (
-    cache_channel_groups,
-    cache_channel_info,
-    cache_channel_statistics,
-)
-
-
 @pytest_asyncio.fixture(scope="function")
-async def redis_session(mirth_session, httpx_session):
+async def redis_session(httpx_session):
     """Create a fresh in-memory Redis database session"""
     redis = fakeredis.FakeStrictRedis(decode_responses=True, db=0)
-    await cache_channel_info(mirth_session, redis)
-    await cache_channel_groups(mirth_session, redis)
-    await cache_channel_statistics(mirth_session, redis)
     return redis
 
 
@@ -942,9 +932,6 @@ def task_redis_sessions():
         fakeredis.FakeStrictRedis(decode_responses=True, db=1),
         fakeredis.FakeStrictRedis(decode_responses=True, db=2),
     )
-
-
-from ukrdc_fastapi.tasks import repeated
 
 
 @pytest.fixture(scope="function")

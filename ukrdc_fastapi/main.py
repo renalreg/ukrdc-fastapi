@@ -73,12 +73,7 @@ add_pagination(app)
 # Attach event handlers
 
 # Async startup functions and event handlers
-if not settings.skip_cache:
-    app.router.add_event_handler("startup", repeated.cache_mirth_channel_info)
-    app.router.add_event_handler("startup", repeated.cache_mirth_channel_groups)
-    app.router.add_event_handler("startup", repeated.cache_mirth_channel_statistics)
-else:
-    logging.warning("Skipping cache startup tasks")
+app.router.add_event_handler("startup", repeated.update_channel_id_name_map)
 
 # Async shutdown functions and event handler
 app.router.add_event_handler("shutdown", shutdown.clear_task_tracker)
