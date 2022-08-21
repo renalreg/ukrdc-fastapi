@@ -168,7 +168,8 @@ UsersSession = sessionmaker(
     bind=create_engine(
         build_db_uri(
             "sqlite", name=os.path.join(settings.sqlite_data_dir, settings.usersdb_name)
-        )
+        ),
+        connect_args={"check_same_thread": False},
     )
 )
 
