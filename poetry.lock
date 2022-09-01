@@ -309,18 +309,18 @@ pydantic = ">=1.7.2"
 SQLAlchemy = {version = ">=1.3.20", optional = true, markers = "extra == \"gino\" or extra == \"sqlalchemy\" or extra == \"asyncpg\" or extra == \"all\""}
 
 [package.extras]
-all = ["Django (<3.3.0)", "SQLAlchemy (>=1.3.20)", "asyncpg (>=0.24.0)", "databases[postgresql,mysql,sqlite] (>=0.4.0)", "gino[starlette] (>=1.0.1)", "mongoengine (>=0.23.1,<0.25.0)", "motor (>=2.5.1,<3.0.0)", "orm (>=0.1.5)", "ormar (>=0.10.5)", "piccolo (>=0.29,<0.35)", "tortoise-orm[aiosqlite,asyncpg,aiomysql] (>=0.16.18,<0.20.0)"]
+all = ["Django (<3.3.0)", "SQLAlchemy (>=1.3.20)", "asyncpg (>=0.24.0)", "databases[mysql,sqlite,postgresql] (>=0.4.0)", "gino[starlette] (>=1.0.1)", "mongoengine (>=0.23.1,<0.25.0)", "motor (>=2.5.1,<3.0.0)", "orm (>=0.1.5)", "ormar (>=0.10.5)", "piccolo (>=0.29,<0.35)", "tortoise-orm[aiomysql,asyncpg,aiosqlite] (>=0.16.18,<0.20.0)"]
 asyncpg = ["SQLAlchemy (>=1.3.20)", "asyncpg (>=0.24.0)"]
-databases = ["databases[postgresql,mysql,sqlite] (>=0.4.0)"]
-django = ["Django (<3.3.0)", "databases[postgresql,mysql,sqlite] (>=0.4.0)"]
+databases = ["databases[mysql,sqlite,postgresql] (>=0.4.0)"]
+django = ["Django (<3.3.0)", "databases[mysql,sqlite,postgresql] (>=0.4.0)"]
 gino = ["SQLAlchemy (>=1.3.20)", "gino[starlette] (>=1.0.1)"]
 mongoengine = ["mongoengine (>=0.23.1,<0.25.0)"]
 motor = ["motor (>=2.5.1,<3.0.0)"]
-orm = ["databases[postgresql,mysql,sqlite] (>=0.4.0)", "orm (>=0.1.5)", "typesystem (>=0.2.0,<0.3.0)"]
+orm = ["databases[mysql,sqlite,postgresql] (>=0.4.0)", "orm (>=0.1.5)", "typesystem (>=0.2.0,<0.3.0)"]
 ormar = ["ormar (>=0.10.5)"]
 piccolo = ["piccolo (>=0.29,<0.35)"]
 sqlalchemy = ["SQLAlchemy (>=1.3.20)"]
-tortoise = ["tortoise-orm[aiosqlite,asyncpg,aiomysql] (>=0.16.18,<0.20.0)"]
+tortoise = ["tortoise-orm[aiomysql,asyncpg,aiosqlite] (>=0.16.18,<0.20.0)"]
 
 [[package]]
 name = "fastapi-utils"
@@ -951,7 +951,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
 [[package]]
 name = "sentry-sdk"
-version = "1.9.5"
+version = "1.9.6"
 description = "Python client for Sentry (https://sentry.io)"
 category = "main"
 optional = false
@@ -959,10 +959,7 @@ python-versions = "*"
 
 [package.dependencies]
 certifi = "*"
-urllib3 = [
-    {version = ">=1.26.9", markers = "python_version >= \"3.5\""},
-    {version = ">=1.26.11", markers = "python_version >= \"3.6\""},
-]
+urllib3 = {version = ">=1.26.11", markers = "python_version >= \"3.6\""}
 
 [package.extras]
 aiohttp = ["aiohttp (>=3.5)"]
@@ -1261,7 +1258,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "d9f2802d712f79a7c6e37aebcc649cab48d102d328b662555a9ff07b33799c12"
+content-hash = "01e575113bf7ba12b3799e7c432bd941dddf9d1cfe9e76c75a686e3dc7e7ccfb"
 
 [metadata.files]
 acachecontrol = [
@@ -2085,8 +2082,8 @@ semver = [
     {file = "semver-2.13.0.tar.gz", hash = "sha256:fa0fe2722ee1c3f57eac478820c3a5ae2f624af8264cbdf9000c980ff7f75e3f"},
 ]
 sentry-sdk = [
-    {file = "sentry-sdk-1.9.5.tar.gz", hash = "sha256:2d7ec7bc88ebbdf2c4b6b2650b3257893d386325a96c9b723adcd31033469b63"},
-    {file = "sentry_sdk-1.9.5-py2.py3-none-any.whl", hash = "sha256:b4b41f90951ed83e7b4c176eef021b19ecba39da5b73aca106c97a9b7e279a90"},
+    {file = "sentry-sdk-1.9.6.tar.gz", hash = "sha256:f713f33ff7f82658c30e7e8cdec72c432218e6dd41b0f004905733793bd9719b"},
+    {file = "sentry_sdk-1.9.6-py2.py3-none-any.whl", hash = "sha256:630faec958e09b1151d88b8655bb749274c6b1acd19baa6f7a5ec3106276f752"},
 ]
 single-source = [
     {file = "single-source-0.3.0.tar.gz", hash = "sha256:b12705af958ca99d56ea9ce40bd9cc749378f4fe7ad03b1f9067e29daceef27d"},
