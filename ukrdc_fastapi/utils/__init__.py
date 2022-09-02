@@ -1,6 +1,6 @@
 import datetime
 from time import time
-from typing import Optional
+from typing import Generator, Optional
 
 
 class Timer:
@@ -60,3 +60,21 @@ def parse_date(date_string: Optional[str]) -> Optional[datetime.datetime]:
         except ValueError:
             pass
     return None
+
+
+def daterange(
+    start_date: datetime.date, end_date: datetime.date
+) -> Generator[datetime.date, None, None]:
+    """
+    Generate a range of dates between two dates, separated by one day
+
+    Args:
+        start_date (datetime.date): Start date
+        end_date (datetime.date): End date
+
+    Yields:
+        datetime.date: Date between start and end
+    """
+    # Add one day to end date to include it in the range
+    for n in range(int(((end_date + datetime.timedelta(days=1)) - start_date).days)):
+        yield start_date + datetime.timedelta(n)
