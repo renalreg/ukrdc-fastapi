@@ -11,6 +11,7 @@ from ukrdc_sqla.ukrdc import Code, Facility
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
 from ukrdc_fastapi.query.common import PermissionsError
 from ukrdc_fastapi.schemas.common import HistoryPoint
+from ukrdc_fastapi.utils import daterange
 
 
 def get_patients_latest_errors(
@@ -91,21 +92,32 @@ def get_errors_history(
     if (Permissions.UNIT_WILDCARD not in units) and (code.code not in units):
         raise PermissionsError()
 
-    # Get cached statistics
-    history = statsdb.query(ErrorHistory).filter(ErrorHistory.facility == facility_code)
+    # Get range
+    rangeSince: datetime.date = since or datetime.date.today() - datetime.timedelta(
+        days=365
+    )
+    rangeUntil: datetime.date = until or datetime.date.today()
 
-    # Default to last year
-    history = history.filter(
-        ErrorHistory.date
-        >= (since or (datetime.datetime.utcnow() - datetime.timedelta(days=365)))
+    # Get history within range
+    history = (
+        statsdb.query(ErrorHistory)
+        .filter(ErrorHistory.facility == facility_code)
+        .filter(ErrorHistory.date >= rangeSince)
+        .filter(ErrorHistory.date <= rangeUntil)
     )
 
-    # Optionally filter by end date
-    if until:
-        history = history.filter(ErrorHistory.date <= until)
+    # Create an initially empty full history dictionary
+    full_history: dict[datetime.date, int] = {
+        date: 0 for date in daterange(rangeSince, rangeUntil)
+    }
+
+    # For each non-zero history point, add it to the full history
+    for history_point in history:
+        full_history[history_point.date] = history_point.count
 
     points = [
-        HistoryPoint(time=point.date, count=point.count) for point in history.all()
+        HistoryPoint(time=date, count=count) for date, count in full_history.items()
     ]
+    points.sort(key=lambda p: p.time)
 
     return points
