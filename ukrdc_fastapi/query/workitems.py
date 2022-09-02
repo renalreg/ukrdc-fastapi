@@ -16,6 +16,7 @@ from ukrdc_fastapi.query.messages import get_message
 from ukrdc_fastapi.query.persons import get_persons_related_to_masterrecord
 from ukrdc_fastapi.schemas.common import HistoryPoint
 from ukrdc_fastapi.schemas.empi import WorkItemExtendedSchema
+from ukrdc_fastapi.utils import daterange
 
 
 def _apply_query_permissions(query: Query, user: UKRDCUser):
@@ -271,26 +272,35 @@ def get_full_workitem_history(
     Returns:
         list[HistoryPoint]: Error history points.
     """
+
+    # Get range
+    range_since: datetime.date = since or datetime.date.today() - datetime.timedelta(
+        days=365
+    )
+    range_until: datetime.date = until or datetime.date.today()
+
+    # Get history within range
     trunc_func = func.date_trunc("day", WorkItem.creation_date)
     history = (
         jtrace.query(trunc_func, func.count(trunc_func))
-        .filter(
-            trunc_func
-            >= (since or (datetime.datetime.utcnow() - datetime.timedelta(days=365)))
-        )
+        .filter(trunc_func >= range_since)
+        .filter(trunc_func <= range_until)
         .group_by(trunc_func)
         .order_by(trunc_func)
     )
 
-    if until:
-        history = history.filter(trunc_func <= until)
+    # Create an initially empty full history dictionary
+    full_history: dict[datetime.date, int] = {
+        date: 0 for date in daterange(range_since, range_until)
+    }
+
+    # For each non-zero history point, add it to the full history
+    for history_point in history:
+        full_history[history_point[0]] = history_point[-1]
 
     points = [
-        HistoryPoint(
-            time=point[0],
-            count=point[-1],
-        )
-        for point in history.all()
+        HistoryPoint(time=date, count=count) for date, count in full_history.items()
     ]
+    points.sort(key=lambda p: p.time)
 
     return points
