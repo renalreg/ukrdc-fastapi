@@ -28,8 +28,8 @@ async def test_facility_error_history(client):
         f"{configuration.base_url}/v1/facilities/TEST_SENDING_FACILITY_1/error_history"
     )
     json = response.json()
-    assert len(json) == 1
-    assert json[0].get("time") == days_ago(1).date().isoformat()
+    assert len(json) == 365
+    assert json[-1].get("time") == days_ago(1).date().isoformat()
 
 
 async def test_facility_patients_latest_errors(client):

@@ -87,9 +87,9 @@ def test_get_facility_history(ukrdc3_session, stats_session, superuser):
         test_code.code,
         superuser,
     )
-    assert len(history) == 1
-    assert history[0].time == days_ago(1).date()
-    assert history[0].count == 1
+    assert len(history) == 365
+    assert history[-1].time == days_ago(1).date()
+    assert history[-1].count == 1
 
 
 def test_get_facility_history_range(ukrdc3_session, stats_session, superuser):
@@ -113,7 +113,7 @@ def test_get_facility_history_range(ukrdc3_session, stats_session, superuser):
         superuser,
         until=days_ago(5),
     )
-    assert len(history) == 0
+    assert len(history) == 360
 
     history = get_errors_history(
         ukrdc3_session,
@@ -123,7 +123,7 @@ def test_get_facility_history_range(ukrdc3_session, stats_session, superuser):
         since=days_ago(5),
         until=days_ago(0),
     )
-    assert len(history) == 1
+    assert len(history) == 5
 
 
 def test_get_facility_history_denied(ukrdc3_session, stats_session, test_user):
