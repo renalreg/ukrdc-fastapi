@@ -7,6 +7,7 @@ from ukrdc_sqla.stats import ErrorHistory, MultipleUKRDCID
 
 from ukrdc_fastapi.query.facilities.errors import HistoryPoint
 from ukrdc_fastapi.schemas.admin import MultipleUKRDCIDGroup, MultipleUKRDCIDGroupItem
+from ukrdc_fastapi.utils import daterange
 
 
 def get_full_errors_history(
@@ -24,18 +25,26 @@ def get_full_errors_history(
     Returns:
         list[HistoryPoint]: Error history points.
     """
-    combined_history: dict[datetime.date, int] = {}
 
-    # Default to last year
-    history = statsdb.query(ErrorHistory).filter(
-        ErrorHistory.date
-        >= (since or (datetime.datetime.utcnow() - datetime.timedelta(days=365)))
+    # Get range
+    rangeSince: datetime.date = since or datetime.date.today() - datetime.timedelta(
+        days=365
+    )
+    rangeUntil: datetime.date = until or datetime.date.today()
+
+    # Get history within range
+    history = (
+        statsdb.query(ErrorHistory)
+        .filter(ErrorHistory.date >= rangeSince)
+        .filter(ErrorHistory.date <= rangeUntil)
     )
 
-    # Optionally filter by end date
-    if until:
-        history = history.filter(ErrorHistory.date <= until)
+    # Create an initially empty full history dictionary
+    combined_history: dict[datetime.date, int] = {
+        date: 0 for date in daterange(rangeSince, rangeUntil)
+    }
 
+    # For each non-zero history point, add it to the full history
     for point in history:
         if point.count:
             if point.date not in combined_history:
