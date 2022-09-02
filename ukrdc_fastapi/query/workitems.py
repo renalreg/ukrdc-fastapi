@@ -274,24 +274,24 @@ def get_full_workitem_history(
     """
 
     # Get range
-    rangeSince: datetime.date = since or datetime.date.today() - datetime.timedelta(
+    range_since: datetime.date = since or datetime.date.today() - datetime.timedelta(
         days=365
     )
-    rangeUntil: datetime.date = until or datetime.date.today()
+    range_until: datetime.date = until or datetime.date.today()
 
     # Get history within range
     trunc_func = func.date_trunc("day", WorkItem.creation_date)
     history = (
         jtrace.query(trunc_func, func.count(trunc_func))
-        .filter(trunc_func >= rangeSince)
-        .filter(trunc_func <= rangeUntil)
+        .filter(trunc_func >= range_since)
+        .filter(trunc_func <= range_until)
         .group_by(trunc_func)
         .order_by(trunc_func)
     )
 
     # Create an initially empty full history dictionary
     full_history: dict[datetime.date, int] = {
-        date: 0 for date in daterange(rangeSince, rangeUntil)
+        date: 0 for date in daterange(range_since, range_until)
     }
 
     # For each non-zero history point, add it to the full history

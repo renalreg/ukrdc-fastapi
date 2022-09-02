@@ -93,27 +93,27 @@ def get_errors_history(
         raise PermissionsError()
 
     # Get range
-    rangeSince: datetime.date = since or datetime.date.today() - datetime.timedelta(
+    range_since: datetime.date = since or datetime.date.today() - datetime.timedelta(
         days=365
     )
-    rangeUntil: datetime.date = until or datetime.date.today()
+    range_until: datetime.date = until or datetime.date.today()
 
     # Get history within range
     history = (
         statsdb.query(ErrorHistory)
         .filter(ErrorHistory.facility == facility_code)
-        .filter(ErrorHistory.date >= rangeSince)
-        .filter(ErrorHistory.date <= rangeUntil)
+        .filter(ErrorHistory.date >= range_since)
+        .filter(ErrorHistory.date <= range_until)
     )
 
     # Create an initially empty full history dictionary
     full_history: dict[datetime.date, int] = {
-        date: 0 for date in daterange(rangeSince, rangeUntil)
+        date: 0 for date in daterange(range_since, range_until)
     }
 
     # For each non-zero history point, add it to the full history
     for history_point in history:
-        full_history[history_point.date] = history_point.count
+        full_history[history_point.date] = history_point.count or 0
 
     points = [
         HistoryPoint(time=date, count=count) for date, count in full_history.items()
