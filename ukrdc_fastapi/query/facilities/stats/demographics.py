@@ -37,7 +37,7 @@ def get_facility_stats_demographics(
     facility_code: str,
     user: UKRDCUser,
 ) -> FacilityDemographicStats:
-    """Extract demographic distributions for a given facility
+    """Extract demographic distributions for all UKRDC/RDA records in a given facility
 
     Args:
         ukrdc3 (Session): SQLAlchemy session
@@ -62,6 +62,7 @@ def get_facility_stats_demographics(
     q_ages = (
         ukrdc3.query(age_func, age_count_func)
         .join(PatientRecord)
+        .filter(PatientRecord.sendingextract == "UKRDC")
         .filter(PatientRecord.sendingfacility == facility_code)
         .group_by(age_func)
         .order_by(age_func)
@@ -75,6 +76,7 @@ def get_facility_stats_demographics(
     q_genders = (
         ukrdc3.query(Patient.gender, gender_count_func)
         .join(PatientRecord)
+        .filter(PatientRecord.sendingextract == "UKRDC")
         .filter(PatientRecord.sendingfacility == facility_code)
         .group_by(Patient.gender)
     )
@@ -94,6 +96,7 @@ def get_facility_stats_demographics(
             Patient.ethnic_group_code, Patient.ethnic_group_description, eth_count_func
         )
         .join(PatientRecord)
+        .filter(PatientRecord.sendingextract == "UKRDC")
         .filter(PatientRecord.sendingfacility == facility_code)
         .group_by(
             Patient.ethnic_group_code,
