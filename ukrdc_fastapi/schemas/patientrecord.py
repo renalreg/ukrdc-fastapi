@@ -1,5 +1,5 @@
 import datetime
-from typing import Optional
+from typing import Literal, Optional
 
 from sqlalchemy.orm.session import Session
 from ukrdc_sqla.empi import MasterRecord
@@ -11,6 +11,8 @@ from ukrdc_fastapi.schemas.patient import PatientSchema
 from ukrdc_fastapi.schemas.survey import SurveySchema
 
 from .base import OrmModel
+
+SendingExtract = Literal["PV", "UKRDC", "RADAR", "SURVEY", "PVMIG", "HSMIG"]
 
 
 class ProgramMembershipSchema(OrmModel):
@@ -134,7 +136,7 @@ class PatientRecordSummarySchema(OrmModel):
 
     pid: str
     sendingfacility: str
-    sendingextract: str
+    sendingextract: SendingExtract
     localpatientid: str
     ukrdcid: str
 

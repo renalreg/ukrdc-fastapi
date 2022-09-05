@@ -12,10 +12,13 @@ from ukrdc_fastapi.dependencies.audit import (
     get_auditer,
 )
 from ukrdc_fastapi.dependencies.auth import UKRDCUser, auth
+from ukrdc_fastapi.dependencies.cache import facility_cache_factory
 from ukrdc_fastapi.query.facilities import (
     FacilityDetailsSchema,
+    FacilityExtractsSchema,
     get_facilities,
     get_facility,
+    get_facility_extracts,
 )
 from ukrdc_fastapi.query.facilities.errors import (
     get_errors_history,
@@ -24,6 +27,7 @@ from ukrdc_fastapi.query.facilities.errors import (
 from ukrdc_fastapi.query.messages import ERROR_SORTER
 from ukrdc_fastapi.schemas.common import HistoryPoint
 from ukrdc_fastapi.schemas.message import MessageSchema
+from ukrdc_fastapi.utils.cache import ResponseCache
 from ukrdc_fastapi.utils.paginate import Page, paginate
 from ukrdc_fastapi.utils.sort import ObjectSorter, SQLASorter, make_object_sorter
 
@@ -71,9 +75,19 @@ def facility(
     ukrdc3: Session = Depends(get_ukrdc3),
     statsdb: Session = Depends(get_statsdb),
     user: UKRDCUser = Security(auth.get_user()),
+    cache: ResponseCache = Depends(facility_cache_factory("root")),
 ):
     """Retreive information and current status of a particular facility"""
-    return get_facility(ukrdc3, statsdb, code, user)
+    # If no cached value exists, or the cached value has expired
+    if not cache.exists:
+        # Cache a computed value, and expire after 1 hour
+        cache.set(get_facility(ukrdc3, statsdb, code, user), expire=3600)
+
+    # Add response cache headers to the response
+    cache.prepare_response()
+
+    # Fetch the cached value, coerse into the correct type, and return
+    return FacilityDetailsSchema(**cache.get())
 
 
 @router.get("/{code}/error_history", response_model=list[HistoryPoint])
@@ -110,3 +124,23 @@ def facility_patients_latest_errors(
     )
 
     return paginate(sorter.sort(query))
+
+
+@router.get("/{code}/extracts", response_model=FacilityExtractsSchema)
+def facility_extracts(
+    code: str,
+    ukrdc3: Session = Depends(get_ukrdc3),
+    user: UKRDCUser = Security(auth.get_user()),
+    cache: ResponseCache = Depends(facility_cache_factory("extracts")),
+):
+    """Retreive extract counts for a particular facility"""
+    # If no cached value exists, or the cached value has expired
+    if not cache.exists:
+        # Cache a computed value, and expire after 1 hour
+        cache.set(get_facility_extracts(ukrdc3, code, user), expire=3600)
+
+    # Add response cache headers to the response
+    cache.prepare_response()
+
+    # Fetch the cached value, coerse into the correct type, and return
+    return FacilityExtractsSchema(**cache.get())
