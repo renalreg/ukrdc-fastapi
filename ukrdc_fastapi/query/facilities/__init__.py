@@ -293,7 +293,7 @@ def get_facility_extracts(
         .group_by(PatientRecord.sendingextract)
     )
 
-    extracts = {extract: count for extract, count in query.all()}
+    extracts = dict(query.all())
 
     return FacilityExtractsSchema(
         ukrdc=extracts.get("UKRDC", 0),
