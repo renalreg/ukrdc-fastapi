@@ -37,7 +37,7 @@ def get_facility_stats_demographics(
     facility_code: str,
     user: UKRDCUser,
 ) -> FacilityDemographicStats:
-    """Extract demographic distributions for a given facility
+    """Extract demographic distributions for all UKRDC/RDA records in a given facility
 
     Args:
         ukrdc3 (Session): SQLAlchemy session
@@ -62,6 +62,7 @@ def get_facility_stats_demographics(
     q_ages = (
         ukrdc3.query(age_func, age_count_func)
         .join(PatientRecord)
+        .filter(PatientRecord.sendingextract == "UKRDC")
         .filter(PatientRecord.sendingfacility == facility_code)
         .group_by(age_func)
         .order_by(age_func)
@@ -75,6 +76,7 @@ def get_facility_stats_demographics(
     q_genders = (
         ukrdc3.query(Patient.gender, gender_count_func)
         .join(PatientRecord)
+        .filter(PatientRecord.sendingextract == "UKRDC")
         .filter(PatientRecord.sendingfacility == facility_code)
         .group_by(Patient.gender)
     )
@@ -88,21 +90,17 @@ def get_facility_stats_demographics(
     eth_count_func = func.count("*")
 
     # Count distinct combinations of ethnicity code and free-text ethnicity description
-    # Produces tuples of the form (ethnic_group_code, ethnic_group_description (free-text), count)
+    # Produces tuples of the form (ethnic_group_code,  count)
     q_eth_1 = (
-        ukrdc3.query(
-            Patient.ethnic_group_code, Patient.ethnic_group_description, eth_count_func
-        )
+        ukrdc3.query(Patient.ethnic_group_code, eth_count_func)
         .join(PatientRecord)
+        .filter(PatientRecord.sendingextract == "UKRDC")
         .filter(PatientRecord.sendingfacility == facility_code)
-        .group_by(
-            Patient.ethnic_group_code,
-            Patient.ethnic_group_description,
-        )
+        .group_by(Patient.ethnic_group_code)
     ).subquery()
 
     # Fetch code descriptions for ethnicity codes
-    # Produces tuples of the form (ethnic_group_code, ethnic_group_description (free-text), count, ethnic_group_code.description (NHS_DATA_DICTIONARY))
+    # Produces tuples of the form (ethnic_group_code, count, ethnic_group_code.description (NHS_DATA_DICTIONARY))
     q_eth_2 = ukrdc3.query(q_eth_1, Code.description).join(
         Code,
         and_(
@@ -112,22 +110,8 @@ def get_facility_stats_demographics(
         isouter=True,
     )
 
-    eth_counts_dict: dict[str, int] = {}
-
-    for row in q_eth_2:
-        # Preferably use Codes.code for the ethnicity label, otherwise use the free-text description,
-        # otherwise assume it's unknown
-        ethnicity: str = row[3] or row[1] or "Unknown"
-        # Catch the case where we've already seen this code. This could occur if the site sends an
-        # ethnicity code AND a free-text description
-        if ethnicity in eth_counts_dict:
-            eth_counts_dict[ethnicity] += row[2]
-        else:
-            eth_counts_dict[ethnicity] = row[2]
-
     eth_distribution = [
-        EthnicityPoint(ethnicity=key, count=count)
-        for key, count in eth_counts_dict.items()
+        EthnicityPoint(ethnicity=row[2], count=row[1]) for row in q_eth_2
     ]
     eth_distribution.sort(key=lambda x: x.count, reverse=True)
 
