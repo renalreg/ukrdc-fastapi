@@ -2,15 +2,27 @@ import datetime
 from typing import Optional, Tuple
 
 from fastapi.exceptions import HTTPException
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.query import Query
 from ukrdc_sqla.stats import FacilityLatestMessages, FacilityStats
-from ukrdc_sqla.ukrdc import Code, Facility
+from ukrdc_sqla.ukrdc import Code, Facility, PatientRecord
 
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
 from ukrdc_fastapi.query.common import PermissionsError
 from ukrdc_fastapi.schemas.base import OrmModel
 from ukrdc_fastapi.schemas.facility import FacilitySchema
+
+
+class FacilityExtractsSchema(OrmModel):
+    """Extract counts for a facility"""
+
+    ukrdc: int
+    pv: int
+    radar: int
+    survey: int
+    pvmig: int
+    hsmig: int
 
 
 class FacilityDataFlowSchema(OrmModel):
@@ -198,7 +210,7 @@ def get_facilities(
     return facility_list
 
 
-# Facility error statistics
+# Facility with error statistics
 
 
 def get_facility(
@@ -246,4 +258,48 @@ def get_facility(
             pkb_out=facility.pkb_out,
             pkb_message_exclusions=facility.pkb_msg_exclusions or [],
         ),
+    )
+
+
+# Facility extract statistics
+
+
+def get_facility_extracts(
+    ukrdc3: Session,
+    facility_code: str,
+    user: UKRDCUser,
+) -> FacilityExtractsSchema:
+    """Get extract counts for a particular facility/unit
+
+    Args:
+        ukrdc3 (Session): SQLAlchemy session
+        facility_code (str): Facility/unit code
+        user (UKRDCUser): Logged-in user
+
+    Returns:
+        FacilityExtractsSchema: Extract counts
+    """
+    facility = ukrdc3.query(Facility).filter(Facility.code == facility_code).first()
+
+    if not facility:
+        raise HTTPException(404, detail="Facility not found")
+
+    # Assert permissions
+    _assert_permission(facility, user)
+
+    query = (
+        ukrdc3.query(PatientRecord.sendingextract, func.count("*"))
+        .filter(PatientRecord.sendingfacility == facility_code)
+        .group_by(PatientRecord.sendingextract)
+    )
+
+    extracts = {extract: count for extract, count in query.all()}
+
+    return FacilityExtractsSchema(
+        ukrdc=extracts.get("UKRDC", 0),
+        pv=extracts.get("PV", 0),
+        radar=extracts.get("RADAR", 0),
+        survey=extracts.get("SURVEY", 0),
+        pvmig=extracts.get("PVMIG", 0),
+        hsmig=extracts.get("HSMIG", 0),
     )

@@ -2,7 +2,11 @@ import pytest
 from ukrdc_sqla.ukrdc import Code, Facility
 
 from ukrdc_fastapi.query.common import PermissionsError
-from ukrdc_fastapi.query.facilities import get_facilities, get_facility
+from ukrdc_fastapi.query.facilities import (
+    get_facilities,
+    get_facility,
+    get_facility_extracts,
+)
 from ukrdc_fastapi.query.facilities.errors import (
     get_errors_history,
     get_patients_latest_errors,
@@ -173,3 +177,12 @@ def test_get_facility_stats_demographics_denied(ukrdc3_session, test_user):
         get_facility_stats_demographics(
             ukrdc3_session, "TEST_SENDING_FACILITY_2", test_user
         )
+
+
+def test_get_facility_extracts(ukrdc3_session, superuser):
+    extracts = get_facility_extracts(
+        ukrdc3_session,
+        "TEST_SENDING_FACILITY_1",
+        superuser,
+    )
+    assert extracts.pv == 2
