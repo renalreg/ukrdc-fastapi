@@ -69,6 +69,8 @@ For development purposes, you can [manually trigger the Build Client Libraries w
 
 #### Local `typescript-axios-client` snapshot
 
+`poetry run python clients/generate_spec.py`
+
 `openapi-generator-cli generate -c ./clients/config.json -i ./clients/openapi.json -g typescript-axios -o ./clients/typescript-axios-client --additional-properties=snapshot=true`
 
 ### Pre-commit hooks
