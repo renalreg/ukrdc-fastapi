@@ -185,4 +185,4 @@ def test_get_facility_extracts(ukrdc3_session, superuser):
         "TEST_SENDING_FACILITY_1",
         superuser,
     )
-    assert extracts.pv == 2
+    assert extracts.ukrdc == 2
