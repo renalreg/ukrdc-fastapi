@@ -12,7 +12,7 @@ from ukrdc_fastapi.schemas.survey import SurveySchema
 
 from .base import OrmModel
 
-SendingExtract = Literal["PV", "UKRDC", "RADAR", "SURVEY", "PVMIG", "HSMIG"]
+SendingExtract = Literal["PV", "UKRDC", "UKRR", "RADAR", "SURVEY", "PVMIG", "HSMIG"]
 
 
 class ProgramMembershipSchema(OrmModel):
