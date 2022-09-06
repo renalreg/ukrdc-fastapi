@@ -23,6 +23,7 @@ class FacilityExtractsSchema(OrmModel):
     survey: int
     pvmig: int
     hsmig: int
+    ukrr: int
 
 
 class FacilityDataFlowSchema(OrmModel):
@@ -302,4 +303,5 @@ def get_facility_extracts(
         survey=extracts.get("SURVEY", 0),
         pvmig=extracts.get("PVMIG", 0),
         hsmig=extracts.get("HSMIG", 0),
+        ukrr=extracts.get("UKRR", 0),
     )
