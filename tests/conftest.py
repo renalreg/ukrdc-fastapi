@@ -143,19 +143,6 @@ def populate_facilities_and_messages(ukrdc3, statsdb, errorsdb):
         message_id=1,
         channel_id="00000000-0000-0000-0000-000000000000",
         received=days_ago(2),
-        msg_status="ERROR",
-        ni=UKRDCID_1,
-        filename="FILENAME_1.XML",
-        facility="TEST_SENDING_FACILITY_1",
-        error="ERROR MESSAGE 1",
-        status="STATUS1",
-    )
-
-    facility_1_message_2 = ErrorMessage(
-        id=3,
-        message_id=3,
-        channel_id="00000000-0000-0000-0000-000000000000",
-        received=days_ago(1),
         msg_status="RECEIVED",
         ni=UKRDCID_1,
         filename="FILENAME_3.XML",
@@ -164,13 +151,26 @@ def populate_facilities_and_messages(ukrdc3, statsdb, errorsdb):
         status="STATUS3",
     )
 
+    facility_1_message_2 = ErrorMessage(
+        id=2,
+        message_id=2,
+        channel_id="00000000-0000-0000-0000-000000000000",
+        received=days_ago(1),
+        msg_status="ERROR",
+        ni=UKRDCID_1,
+        filename="FILENAME_1.XML",
+        facility="TEST_SENDING_FACILITY_1",
+        error="ERROR MESSAGE 1",
+        status="STATUS1",
+    )
+
     facility_1_ni_1_latest = Latest(
-        facility="TEST_SENDING_FACILITY_1", ni=UKRDCID_1, message_id=3
+        facility="TEST_SENDING_FACILITY_1", ni=UKRDCID_1, message_id=2
     )
 
     facility_2_message_1 = ErrorMessage(
-        id=2,
-        message_id=2,
+        id=3,
+        message_id=3,
         channel_id="00000000-0000-0000-0000-000000000000",
         received=days_ago(730),
         msg_status="ERROR",
@@ -181,7 +181,7 @@ def populate_facilities_and_messages(ukrdc3, statsdb, errorsdb):
         status="STATUS2",
     )
     facility_2_ni_2_latest = Latest(
-        facility="TEST_SENDING_FACILITY_2", ni=UKRDCID_2, message_id=2
+        facility="TEST_SENDING_FACILITY_2", ni=UKRDCID_2, message_id=3
     )
 
     errorsdb.add(facility_1_message_1)

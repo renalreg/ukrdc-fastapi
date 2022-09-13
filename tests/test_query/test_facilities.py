@@ -139,18 +139,12 @@ def test_get_facility_history_denied(ukrdc3_session, stats_session, test_user):
         )
 
 
-def test_get_patients_latest_errors(
-    ukrdc3_session, stats_session, errorsdb_session, test_user
-):
+def test_get_patients_latest_errors(ukrdc3_session, errorsdb_session, test_user):
     messages = get_patients_latest_errors(
-        ukrdc3_session,
-        errorsdb_session,
-        stats_session,
-        "TEST_SENDING_FACILITY_1",
-        test_user,
+        ukrdc3_session, errorsdb_session, "TEST_SENDING_FACILITY_1", test_user
     ).all()
     assert len(messages) == 1
-    assert messages[0].id == 3
+    assert messages[0].id == 2
 
 
 def test_get_facility_stats_demographics(ukrdc3_session, superuser):

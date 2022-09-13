@@ -120,7 +120,7 @@ def test_get_workitem_collection(jtrace_session, superuser):
 
 def test_get_workitems_related_to_message(jtrace_session, errorsdb_session, superuser):
     related = workitems.get_workitems_related_to_message(
-        jtrace_session, errorsdb_session, 2, superuser
+        jtrace_session, errorsdb_session, 3, superuser
     )
     assert {item.id for item in related} == {3}
 

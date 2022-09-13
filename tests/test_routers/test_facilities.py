@@ -39,7 +39,7 @@ async def test_facility_patients_latest_errors(client):
     messages = json.get("items")
 
     assert len(messages) == 1
-    assert messages[0].get("id") == 3
+    assert messages[0].get("id") == 2
 
 
 async def test_facility_stats_demographics(client):
