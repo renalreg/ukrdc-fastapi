@@ -8,7 +8,7 @@ from ukrdc_sqla.ukrdc import Code, Facility, Patient, PatientRecord
 from ukrdc_fastapi.dependencies.auth import UKRDCUser
 from ukrdc_fastapi.schemas.base import OrmModel
 
-from .. import _assert_permission
+from . import _assert_permission
 
 
 class AgePoint(OrmModel):
@@ -32,7 +32,7 @@ class FacilityDemographicStats(OrmModel):
     ethnicity_dist: list[EthnicityPoint]
 
 
-def get_facility_stats_demographics(
+def get_facility_demographics(
     ukrdc3: Session,
     facility_code: str,
     user: UKRDCUser,

@@ -42,9 +42,9 @@ async def test_facility_patients_latest_errors(client):
     assert messages[0].get("id") == 2
 
 
-async def test_facility_stats_demographics(client):
+async def test_facility_demographics(client):
     response = await client.get(
-        f"{configuration.base_url}/facilities/TEST_SENDING_FACILITY_1/stats/demographics"
+        f"{configuration.base_url}/facilities/TEST_SENDING_FACILITY_1/demographics"
     )
     json = response.json()
 

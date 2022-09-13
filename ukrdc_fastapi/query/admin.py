@@ -12,7 +12,19 @@ class AdminCountsSchema(OrmModel):
     patients_receiving_errors: int
 
 
-def get_admin_counts(ukrdc3: Session, jtrace: Session, errorsdb: Session):
+def get_admin_counts(
+    ukrdc3: Session, jtrace: Session, errorsdb: Session
+) -> AdminCountsSchema:
+    """Retreive various counts across all facilities, available to admins
+
+    Args:
+        ukrdc3 (Session): UKRDC session
+        jtrace (Session): JTRACE session
+        errorsdb (Session): ErrorsDB session
+
+    Returns:
+        AdminCountsSchema: Counts of various items
+    """
     open_workitems_count = jtrace.query(WorkItem).filter(WorkItem.status == 1).count()
     distinct_patients_count = ukrdc3.query(PatientRecord.ukrdcid).distinct().count()
     patients_receiving_errors_count = (
