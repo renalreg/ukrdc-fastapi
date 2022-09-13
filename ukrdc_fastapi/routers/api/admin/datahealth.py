@@ -12,6 +12,11 @@ from ukrdc_fastapi.utils.paginate import Page, paginate_sequence
 
 router = APIRouter(tags=["Admin/Data Health"])
 
+DATA_HEALTH_PERMISSIONS = [
+    Permissions.READ_RECORDS,
+    Permissions.UNIT_ALL,
+]
+
 
 class LastRunTime(OrmModel):
     last_run_time: datetime.datetime
@@ -20,16 +25,7 @@ class LastRunTime(OrmModel):
 @router.get(
     "/multiple_ukrdcids",
     response_model=Page[MultipleUKRDCIDGroup],
-    dependencies=[
-        Security(
-            auth.permission(
-                [
-                    Permissions.READ_RECORDS,
-                    Permissions.UNIT_PREFIX + Permissions.UNIT_WILDCARD,
-                ]
-            )
-        )
-    ],
+    dependencies=[Security(auth.permission(DATA_HEALTH_PERMISSIONS))],
 )
 def datahealth_multiple_ukrdcids(
     jtrace: Session = Depends(get_jtrace),
@@ -39,7 +35,11 @@ def datahealth_multiple_ukrdcids(
     return paginate_sequence(get_multiple_ukrdcids(statsdb, jtrace))
 
 
-@router.get("/multiple_ukrdcids/last_run", response_model=LastRunTime)
+@router.get(
+    "/multiple_ukrdcids/last_run",
+    response_model=LastRunTime,
+    dependencies=[Security(auth.permission(DATA_HEALTH_PERMISSIONS))],
+)
 def datahealth_multiple_ukrdcids_last_run(
     statsdb: Session = Depends(get_statsdb),
 ):
