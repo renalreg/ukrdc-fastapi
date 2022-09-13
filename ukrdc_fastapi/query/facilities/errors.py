@@ -4,8 +4,8 @@ from typing import Optional
 from fastapi.exceptions import HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.query import Query
-from ukrdc_sqla.errorsdb import Message
-from ukrdc_sqla.stats import ErrorHistory, PatientsLatestErrors
+from ukrdc_sqla.errorsdb import Latest, Message
+from ukrdc_sqla.stats import ErrorHistory
 from ukrdc_sqla.ukrdc import Code, Facility
 
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
@@ -17,7 +17,6 @@ from ukrdc_fastapi.utils import daterange
 def get_patients_latest_errors(
     ukrdc3: Session,
     errorsdb: Session,
-    statsdb: Session,
     facility_code: str,
     user: UKRDCUser,
 ) -> Query:
@@ -26,7 +25,6 @@ def get_patients_latest_errors(
     Args:
         ukrdc3 (Session): SQLAlchemy session
         errorsdb (Session): SQLAlchemy session
-        statsdb (Session): SQLAlchemy session
         facility_code (str): Facility/unit code
         user (UKRDCUser): Logged-in user
 
@@ -43,17 +41,12 @@ def get_patients_latest_errors(
     if (Permissions.UNIT_WILDCARD not in units) and (facility.code not in units):
         raise PermissionsError()
 
-    # Get message IDs of patients latest errors
-    latest_error_ids = [
-        row.id
-        for row in (
-            statsdb.query(PatientsLatestErrors)
-            .filter(PatientsLatestErrors.facility == facility.code)
-            .all()
-        )
-    ]
-
-    return errorsdb.query(Message).filter(Message.id.in_(latest_error_ids))
+    return (
+        errorsdb.query(Message)
+        .join(Latest)
+        .filter(Latest.facility == facility.code)
+        .filter(Message.msg_status == "ERROR")
+    )
 
 
 def get_errors_history(

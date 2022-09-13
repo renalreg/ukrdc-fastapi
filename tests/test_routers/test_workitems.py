@@ -50,7 +50,7 @@ async def test_workitem_messages(client):
 
     errors = [MessageSchema(**item) for item in response.json()["items"]]
     message_ids = {error.id for error in errors}
-    assert message_ids == {1, 3}
+    assert message_ids == {1, 2}
 
 
 async def test_workitem_errors(client):
@@ -61,7 +61,7 @@ async def test_workitem_errors(client):
 
     errors = [MessageSchema(**item) for item in response.json()["items"]]
     message_ids = {error.id for error in errors}
-    assert message_ids == {1}
+    assert message_ids == {2}
 
 
 @pytest.mark.parametrize("workitem_id", [1, 2, 3])

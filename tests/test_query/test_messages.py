@@ -20,13 +20,13 @@ def test_get_errors_superuser(errorsdb_session, superuser):
         errorsdb_session, superuser, statuses=["ERROR"], since=days_ago(730)
     )
     # Superuser should see all error messages
-    assert {error.id for error in all_msgs} == {1, 2}
+    assert {error.id for error in all_msgs} == {2, 3}
 
 
 def test_get_messages_user(errorsdb_session, test_user):
     all_msgs = messages.get_messages(errorsdb_session, test_user, since=days_ago(730))
     # Test user should see error messages from TEST_SENDING_FACILITY_1
-    assert {error.id for error in all_msgs} == {1, 3}
+    assert {error.id for error in all_msgs} == {1, 2}
 
 
 def test_get_errors_user(errorsdb_session, test_user):
@@ -34,7 +34,7 @@ def test_get_errors_user(errorsdb_session, test_user):
         errorsdb_session, test_user, statuses=["ERROR"], since=days_ago(730)
     )
     # Test user should see error messages from TEST_SENDING_FACILITY_1
-    assert {error.id for error in all_errors} == {1}
+    assert {error.id for error in all_errors} == {2}
 
 
 def test_get_errors_until(errorsdb_session, superuser):
@@ -42,9 +42,9 @@ def test_get_errors_until(errorsdb_session, superuser):
         errorsdb_session,
         superuser,
         since=days_ago(730),
-        until=days_ago(2),
+        until=days_ago(3),
     )
-    assert {error.id for error in all_errors} == {2}
+    assert {error.id for error in all_errors} == {3}
 
 
 def test_get_errors_facility(errorsdb_session, superuser):
@@ -54,14 +54,14 @@ def test_get_errors_facility(errorsdb_session, superuser):
         since=days_ago(730),
         facility="TEST_SENDING_FACILITY_2",
     )
-    assert {error.id for error in all_errors} == {2}
+    assert {error.id for error in all_errors} == {3}
 
 
 def test_get_messages_nis(errorsdb_session, superuser):
     all_msgs = messages.get_messages(
         errorsdb_session, superuser, since=days_ago(730), nis=["999999999"]
     )
-    assert {error.id for error in all_msgs} == {1, 3}
+    assert {error.id for error in all_msgs} == {1, 2}
 
 
 def test_get_error_superuser(errorsdb_session, superuser):
@@ -78,28 +78,28 @@ def test_get_error_user(errorsdb_session, test_user):
 
 def test_get_error_user_denied(errorsdb_session, test_user):
     with pytest.raises(PermissionsError):
-        messages.get_message(errorsdb_session, 2, test_user)
+        messages.get_message(errorsdb_session, 3, test_user)
 
 
 def test_get_masterrecord_messages(errorsdb_session, jtrace_session, superuser):
     error_list = messages.get_messages_related_to_masterrecord(
         errorsdb_session, jtrace_session, 1, superuser
     ).all()
-    assert {error.id for error in error_list} == {1, 3}
+    assert {error.id for error in error_list} == {1, 2}
 
 
 def test_get_masterrecord_errors(errorsdb_session, jtrace_session, superuser):
     error_list = messages.get_messages_related_to_masterrecord(
         errorsdb_session, jtrace_session, 1, superuser, statuses=["ERROR"]
     ).all()
-    assert {error.id for error in error_list} == {1}
+    assert {error.id for error in error_list} == {2}
 
 
 def test_get_masterrecord_latest(errorsdb_session, jtrace_session, superuser):
     latest = messages.get_last_message_on_masterrecord(
         jtrace_session, errorsdb_session, 1, superuser
     )
-    assert latest.id == 1
+    assert latest.id == 2
 
     # Create a new master record
     master_record_999 = MasterRecord(

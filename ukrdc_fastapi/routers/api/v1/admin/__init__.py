@@ -1,13 +1,12 @@
 import datetime
-from sys import prefix
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Security
 from sqlalchemy.orm import Session
-from ukrdc_sqla.empi import MasterRecord
-from ukrdc_sqla.stats import PatientsLatestErrors
+from ukrdc_sqla.errorsdb import Latest, Message
+from ukrdc_sqla.ukrdc import PatientRecord
 
-from ukrdc_fastapi.dependencies import get_jtrace, get_statsdb
+from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_statsdb, get_ukrdc3
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.query.stats import get_full_errors_history
 from ukrdc_fastapi.query.workitems import get_full_workitem_history, get_workitems
@@ -83,19 +82,22 @@ def full_errors_history(
     ],
 )
 def admin_counts(
+    ukrdc3: Session = Depends(get_ukrdc3),
     jtrace: Session = Depends(get_jtrace),
-    statsdb: Session = Depends(get_statsdb),
+    errorsdb: Session = Depends(get_errorsdb),
     user: UKRDCUser = Security(auth.get_user()),
 ):
     """Retreive basic counts across the UKRDC"""
+    # TODO: Split query into separate function and add cache
     open_workitems_count = get_workitems(jtrace, user, [1]).count()
-    ukrdc_records_count = (
-        jtrace.query(MasterRecord)
-        .filter(MasterRecord.nationalid_type == "UKRDC")
-        .count()
-    )
+
+    ukrdc_records_count = ukrdc3.query(PatientRecord.ukrdcid).distinct().count()
+
     patients_receiving_errors_count = (
-        statsdb.query(PatientsLatestErrors.ni).distinct().count()
+        errorsdb.query(Latest)
+        .join(Message)
+        .filter(Message.msg_status == "ERROR")
+        .count()
     )
 
     return AdminCountsSchema(

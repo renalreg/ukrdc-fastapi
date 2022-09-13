@@ -36,7 +36,7 @@ async def test_message_detail(client, audit_session):
 
 
 async def test_message_workitems(client, audit_session):
-    response = await client.get(f"{configuration.base_url}/v1/messages/2/workitems")
+    response = await client.get(f"{configuration.base_url}/v1/messages/3/workitems")
     workitems = [WorkItemSchema(**item) for item in response.json()]
 
     events = audit_session.query(AuditEvent).all()
@@ -47,7 +47,7 @@ async def test_message_workitems(client, audit_session):
 
     assert event.resource == "MESSAGE"
     assert event.operation == "READ"
-    assert event.resource_id == "2"
+    assert event.resource_id == "3"
     assert event.parent_id == None
 
     for i, workitem_event in enumerate(event.children):

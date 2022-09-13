@@ -25,7 +25,7 @@ async def test_messages_list_errors(client):
     assert response.status_code == 200
     messages = [MessageSchema(**item) for item in response.json()["items"]]
     returned_ids = {item.id for item in messages}
-    assert returned_ids == {1, 2}
+    assert returned_ids == {2, 3}
 
 
 async def test_messages_list_facility(client):
@@ -37,7 +37,7 @@ async def test_messages_list_facility(client):
     assert response.status_code == 200
     messages = [MessageSchema(**item) for item in response.json()["items"]]
     returned_ids = {item.id for item in messages}
-    assert returned_ids == {2}
+    assert returned_ids == {3}
 
 
 async def test_message_detail(client):
@@ -49,12 +49,12 @@ async def test_message_detail(client):
 
 
 async def test_message_workitems(client):
-    response = await client.get(f"{configuration.base_url}/v1/messages/1/workitems")
+    response = await client.get(f"{configuration.base_url}/v1/messages/2/workitems")
     assert response.status_code == 200
     ids = {item.get("id") for item in response.json()}
     assert ids == set()
 
-    response = await client.get(f"{configuration.base_url}/v1/messages/2/workitems")
+    response = await client.get(f"{configuration.base_url}/v1/messages/3/workitems")
     assert response.status_code == 200
     ids = {item.get("id") for item in response.json()}
     assert ids == {3}

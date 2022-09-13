@@ -49,7 +49,7 @@ async def test_masterrecord_latest_message(client):
     assert response.status_code == 200
 
     message = MinimalMessageSchema(**response.json())
-    assert message.id == 1
+    assert message.id == 2
 
 
 async def test_masterrecord_statistics(client):
@@ -94,7 +94,7 @@ async def test_masterrecord_errors(client):
 
     errors = [MessageSchema(**item) for item in response.json()["items"]]
     returned_ids = {item.id for item in errors}
-    assert returned_ids == {1}
+    assert returned_ids == {2}
 
 
 async def test_masterrecord_messages(client):
@@ -103,7 +103,7 @@ async def test_masterrecord_messages(client):
 
     errors = [MessageSchema(**item) for item in response.json()["items"]]
     returned_ids = {item.id for item in errors}
-    assert returned_ids == {1, 3}
+    assert returned_ids == {1, 2}
 
 
 async def test_masterrecord_persons(client):
