@@ -54,17 +54,11 @@ def facility_list(
         )
     ),
     ukrdc3: Session = Depends(get_ukrdc3),
-    statsdb: Session = Depends(get_statsdb),
+    errorsdb: Session = Depends(get_errorsdb),
     user: UKRDCUser = Security(auth.get_user()),
 ):
     """Retreive a list of on-record facilities"""
-    facilities = get_facilities(
-        ukrdc3,
-        statsdb,
-        user,
-        include_inactive=include_inactive,
-        include_empty=include_empty,
-    )
+    facilities = get_facilities(ukrdc3, errorsdb, user)
 
     return sorter.sort(facilities)
 
@@ -73,7 +67,7 @@ def facility_list(
 def facility(
     code: str,
     ukrdc3: Session = Depends(get_ukrdc3),
-    statsdb: Session = Depends(get_statsdb),
+    errorsdb: Session = Depends(get_errorsdb),
     user: UKRDCUser = Security(auth.get_user()),
     cache: ResponseCache = Depends(facility_cache_factory("root")),
 ):
@@ -81,7 +75,7 @@ def facility(
     # If no cached value exists, or the cached value has expired
     if not cache.exists:
         # Cache a computed value, and expire after 1 hour
-        cache.set(get_facility(ukrdc3, statsdb, code, user), expire=3600)
+        cache.set(get_facility(ukrdc3, errorsdb, code, user), expire=3600)
 
     # Add response cache headers to the response
     cache.prepare_response()

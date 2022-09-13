@@ -1,11 +1,11 @@
 import datetime
-from typing import Optional, Tuple
+from typing import Optional
 
 from fastapi.exceptions import HTTPException
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.query import Query
-from ukrdc_sqla.stats import FacilityLatestMessages, FacilityStats
+from ukrdc_sqla.errorsdb import Latest, Message
 from ukrdc_sqla.ukrdc import Code, Facility, PatientRecord
 
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
@@ -33,8 +33,6 @@ class FacilityDataFlowSchema(OrmModel):
 
 
 class FacilityStatisticsSchema(OrmModel):
-    last_updated: Optional[datetime.datetime]
-
     # Total number of patients we've ever had on record
     total_patients: Optional[int]
 
@@ -51,15 +49,8 @@ class FacilityStatisticsSchema(OrmModel):
     patients_receiving_message_error: Optional[int]
 
 
-class FacilityLatestMessageSchema(OrmModel):
-    last_updated: Optional[datetime.datetime]
-
-    # Date of the most recent message received for the facility
-    last_message_received_at: Optional[datetime.datetime]
-
-
 class FacilityDetailsSchema(FacilitySchema):
-    latest_message: FacilityLatestMessageSchema
+    last_message_received_at: Optional[datetime.datetime]
     statistics: FacilityStatisticsSchema
     data_flow: FacilityDataFlowSchema
 
@@ -84,38 +75,13 @@ def _assert_permission(facility: Facility, user: UKRDCUser):
 # Convenience functions
 
 
-def _get_patients_receiving_message_success(stats: FacilityStats):
-    if (stats.patients_receiving_messages is None) or (
-        stats.patients_receiving_errors is None
-    ):
-        return None
-    return stats.patients_receiving_messages - stats.patients_receiving_errors
-
-
-def _expand_facility_statistics(
-    stats: Optional[FacilityStats],
-) -> FacilityStatisticsSchema:
-    return FacilityStatisticsSchema(
-        last_updated=(stats.last_updated if stats else None),
-        total_patients=(stats.total_patients if stats else None),
-        patients_receiving_messages=(
-            stats.patients_receiving_messages if stats else None
-        ),
-        patients_receiving_message_success=(
-            _get_patients_receiving_message_success(stats) if stats else None
-        ),
-        patients_receiving_message_error=(
-            stats.patients_receiving_errors if stats else None
-        ),
-    )
-
-
-def _expand_latest_messages(latest_messages: Optional[FacilityLatestMessages]):
-    return FacilityLatestMessageSchema(
-        last_updated=latest_messages.last_updated if latest_messages else None,
-        last_message_received_at=latest_messages.last_message_received_at
-        if latest_messages
-        else None,
+def _count_active_patients_in_facility(facility_code: str, ukrdc3: Session):
+    return (
+        ukrdc3.query(PatientRecord.sendingfacility, PatientRecord.ukrdcid)
+        .filter(PatientRecord.sendingfacility == facility_code)
+        .filter(PatientRecord.sendingextract.notin_(["PVMIG", "HSMIG"]))
+        .distinct()
+        .count()
     )
 
 
@@ -124,7 +90,7 @@ def _expand_latest_messages(latest_messages: Optional[FacilityLatestMessages]):
 
 def get_facilities(
     ukrdc3: Session,
-    statsdb: Session,
+    errorsdb: Session,
     user: UKRDCUser,
     include_inactive: bool = False,
     include_empty: bool = False,
@@ -139,7 +105,6 @@ def get_facilities(
     Returns:
         list[FacilityDetailsSchema]: List of units/facilities
     """
-    # TODO: This badly needs optimization and cleanup. Need a profiler to profile the final comprehension
 
     facilities = ukrdc3.query(Facility)
 
@@ -161,50 +126,91 @@ def get_facilities(
         .filter(Code.code.in_([facility.code for facility in available_facilities]))
     }
 
-    # Get all stats from all tables for all facilities available to the user
-    stats_query = (
-        statsdb.query(FacilityStats, FacilityLatestMessages)
+    # Build statistics
+    total_records_q = (
+        ukrdc3.query(PatientRecord.sendingfacility, func.count("*"))
+        .filter(PatientRecord.sendingextract.notin_(["PVMIG", "HSMIG"]))
         .filter(
-            FacilityStats.facility.in_(
+            PatientRecord.sendingfacility.in_(
                 [facility.code for facility in available_facilities]
             )
         )
-        .outerjoin(
-            FacilityLatestMessages,
-            FacilityLatestMessages.facility == FacilityStats.facility,
-        )
+        .group_by(PatientRecord.sendingfacility)
     )
+    total_records_dict = {row[0].upper(): row[1] for row in total_records_q}
 
-    # Execute the stats query and store in a facility-code-keyed dictionary
-    facility_stats_dict: dict[str, Tuple[FacilityStats, FacilityLatestMessages]] = {
-        row[0].facility: row for row in stats_query
-    }
+    # Get a count of each facility-status combination from latest messages
+    # We can use these counts to build up all "current status" statistics,
+    # e.g. number of patients most recently receiving error messages
+    status_counts_query = (
+        errorsdb.query(
+            Latest.facility, Message.msg_status, func.count(Message.msg_status)
+        )
+        .join(Message)
+        .filter(
+            Latest.facility.in_([facility.code for facility in available_facilities])
+        )
+        .group_by(Latest.facility, Message.msg_status)
+    )
+    # Create an empty dict to store facility status counts
+    status_counts_dict: dict[str, dict[str, int]] = {}
+    # Iterate over each row in the query result
+    for row in status_counts_query:
+        # Set dict[facility][status] = count
+        status_counts_dict.setdefault(row[0].upper(), {})[row[1]] = row[2]
 
+    # Get the most recent message received time for each facility
+    most_recent_q = (
+        errorsdb.query(Latest.facility, func.max(Message.received))
+        .join(Message)
+        .filter(
+            Latest.facility.in_([facility.code for facility in available_facilities])
+        )
+        .group_by(Latest.facility)
+    )
+    most_recent_dict = {row[0].upper(): row[1] for row in most_recent_q}
+
+    # Build list of facility details
     facility_list: list[FacilityDetailsSchema] = []
-
     for facility in available_facilities:
-        # Find pre-fetched stats for this facility
-        stats, latests = facility_stats_dict.get(facility.code, (None, None))
-        # Find pre-fetched description for this facility
-        description = descriptions.get(facility.code, None)
+        # Find pre-fetched total records count for this facility
+        total_patients = total_records_dict.get(facility.code.upper(), 0)
+        # Find pre-fetched most recent message received time for this facility
+        last_message_received_at = most_recent_dict.get(facility.code.upper(), None)
 
-        # Should this facility be included in the list?
-        include_this_facility = (
-            include_inactive or (latests and latests.last_message_received_at)
-        ) and (include_empty or (stats and (stats.total_patients or 0) > 0))
+        include_this_facility = (include_inactive or (last_message_received_at)) and (
+            include_empty or (total_patients > 0)
+        )
 
         if include_this_facility:
+            # Find pre-fetched description for this facility
+            description: Optional[str] = descriptions.get(facility.code.upper(), None)
+
+            # Find pre-fetched status counts for this facility
+            status_stats: dict[str, int] = status_counts_dict.get(
+                facility.code.upper(), {}
+            )
+            patients_receiving_errors = status_stats.get("ERROR", 0)
+            patients_receiving_messages = sum(status_stats.values())
+
             facility_list.append(
                 FacilityDetailsSchema(
                     id=facility.code,
                     description=description,
+                    last_message_received_at=last_message_received_at,
                     data_flow=FacilityDataFlowSchema(
                         pkb_in=facility.pkb_in,
                         pkb_out=facility.pkb_out,
                         pkb_message_exclusions=facility.pkb_msg_exclusions or [],
                     ),
-                    latest_message=_expand_latest_messages(latests),
-                    statistics=_expand_facility_statistics(stats),
+                    statistics=FacilityStatisticsSchema(
+                        total_patients=total_patients,
+                        patients_receiving_messages=patients_receiving_messages,
+                        patients_receiving_message_error=patients_receiving_errors,
+                        patients_receiving_message_success=(
+                            patients_receiving_messages - patients_receiving_errors
+                        ),
+                    ),
                 )
             )
 
@@ -216,7 +222,7 @@ def get_facilities(
 
 def get_facility(
     ukrdc3: Session,
-    statsdb: Session,
+    errorsdb: Session,
     facility_code: str,
     user: UKRDCUser,
 ) -> FacilityDetailsSchema:
@@ -238,22 +244,34 @@ def get_facility(
     # Assert permissions
     _assert_permission(facility, user)
 
-    # Get cached statistics
-    stats, latest_messages = (
-        statsdb.query(FacilityStats, FacilityLatestMessages)
-        .filter(FacilityStats.facility == facility_code)
-        .outerjoin(
-            FacilityLatestMessages,
-            FacilityLatestMessages.facility == FacilityStats.facility,
-        )
-        .first()
+    # Get facility messages
+    messages = (
+        errorsdb.query(Latest)
+        .join(Message)
+        .filter(Latest.facility == facility.code)
+        .order_by(Message.received.desc())
+    )
+
+    latest_message = messages.first()
+    patients_receiving_messages = messages.count()
+    patients_receiving_errors = messages.filter(Message.msg_status == "ERROR").count()
+
+    statistics = FacilityStatisticsSchema(
+        total_patients=_count_active_patients_in_facility(facility.code, ukrdc3),
+        patients_receiving_messages=patients_receiving_messages,
+        patients_receiving_message_error=patients_receiving_errors,
+        patients_receiving_message_success=(
+            patients_receiving_messages - patients_receiving_errors
+        ),
     )
 
     return FacilityDetailsSchema(
         id=facility.code,
         description=facility.description,
-        latest_message=_expand_latest_messages(latest_messages),
-        statistics=_expand_facility_statistics(stats),
+        last_message_received_at=latest_message.message.received
+        if latest_message
+        else None,
+        statistics=statistics,
         data_flow=FacilityDataFlowSchema(
             pkb_in=facility.pkb_in,
             pkb_out=facility.pkb_out,
