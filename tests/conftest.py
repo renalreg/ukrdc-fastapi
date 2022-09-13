@@ -21,13 +21,7 @@ from ukrdc_sqla.errorsdb import Channel, Latest
 from ukrdc_sqla.errorsdb import Message as ErrorMessage
 from ukrdc_sqla.pkb import PKBLink
 from ukrdc_sqla.stats import Base as StatsBase
-from ukrdc_sqla.stats import (
-    ErrorHistory,
-    FacilityLatestMessages,
-    FacilityStats,
-    MultipleUKRDCID,
-    PatientsLatestErrors,
-)
+from ukrdc_sqla.stats import ErrorHistory, MultipleUKRDCID
 from ukrdc_sqla.ukrdc import Base as UKRDC3Base
 from ukrdc_sqla.ukrdc import (
     Code,
@@ -193,42 +187,9 @@ def populate_facilities_and_messages(ukrdc3, statsdb, errorsdb):
 
     errorsdb.commit()
 
-    stats_1 = FacilityStats(
-        facility="TEST_SENDING_FACILITY_1",
-        total_patients=1,
-        patients_receiving_messages=1,
-        patients_receiving_errors=1,
-        last_updated=days_ago(0),
-    )
-    latests_1 = FacilityLatestMessages(
-        facility="TEST_SENDING_FACILITY_1",
-        last_updated=days_ago(0),
-        last_message_received_at=days_ago(1),
-        last_message_received_id=3,
-    )
-    stats_2 = FacilityStats(
-        facility="TEST_SENDING_FACILITY_2",
-        total_patients=1,
-        patients_receiving_messages=1,
-        patients_receiving_errors=0,
-        last_updated=days_ago(0),
-    )
-
-    patient_latest_1 = PatientsLatestErrors(
-        ni=UKRDCID_1,
-        facility="TEST_SENDING_FACILITY_1",
-        id=3,
-        last_updated=days_ago(0),
-    )
-
     history_1 = ErrorHistory(
         facility="TEST_SENDING_FACILITY_1", date=days_ago(1), count=1
     )
-
-    statsdb.add(stats_1)
-    statsdb.add(stats_2)
-    statsdb.add(latests_1)
-    statsdb.add(patient_latest_1)
     statsdb.add(history_1)
 
     statsdb.commit()
