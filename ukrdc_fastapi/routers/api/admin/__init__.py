@@ -10,13 +10,19 @@ from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_statsdb, ge
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.query.stats import get_full_errors_history
 from ukrdc_fastapi.query.workitems import get_full_workitem_history, get_workitems
-from ukrdc_fastapi.schemas.admin import AdminCountsSchema
+from ukrdc_fastapi.schemas.base import OrmModel
 from ukrdc_fastapi.schemas.common import HistoryPoint
 
 from . import datahealth
 
 router = APIRouter(tags=["Admin"])
 router.include_router(datahealth.router, prefix="/datahealth")
+
+
+class AdminCountsSchema(OrmModel):
+    open_workitems: int
+    UKRDC_records: int
+    patients_receiving_errors: int
 
 
 @router.get(

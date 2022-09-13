@@ -6,8 +6,19 @@ from ukrdc_sqla.empi import MasterRecord
 from ukrdc_sqla.stats import ErrorHistory, MultipleUKRDCID
 
 from ukrdc_fastapi.query.facilities.errors import HistoryPoint
-from ukrdc_fastapi.schemas.admin import MultipleUKRDCIDGroup, MultipleUKRDCIDGroupItem
+from ukrdc_fastapi.schemas.base import OrmModel
+from ukrdc_fastapi.schemas.empi import MasterRecordSchema
 from ukrdc_fastapi.utils import daterange
+
+
+class MultipleUKRDCIDGroupItem(OrmModel):
+    last_updated: datetime.datetime
+    master_record: MasterRecordSchema
+
+
+class MultipleUKRDCIDGroup(OrmModel):
+    group_id: int
+    records: list[MultipleUKRDCIDGroupItem]
 
 
 def get_full_errors_history(

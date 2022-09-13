@@ -1,14 +1,20 @@
+import datetime
+
 from fastapi import APIRouter, Depends, Security
 from sqlalchemy.orm import Session
 from ukrdc_sqla.stats import LastRunTimes
 
 from ukrdc_fastapi.dependencies import get_jtrace, get_statsdb
 from ukrdc_fastapi.dependencies.auth import Permissions, auth
-from ukrdc_fastapi.query.stats import get_multiple_ukrdcids
-from ukrdc_fastapi.schemas.admin import LastRunTime, MultipleUKRDCIDGroup
+from ukrdc_fastapi.query.stats import MultipleUKRDCIDGroup, get_multiple_ukrdcids
+from ukrdc_fastapi.schemas.base import OrmModel
 from ukrdc_fastapi.utils.paginate import Page, paginate_sequence
 
 router = APIRouter(tags=["Admin/Data Health"])
+
+
+class LastRunTime(OrmModel):
+    last_run_time: datetime.datetime
 
 
 @router.get(
