@@ -20,7 +20,6 @@ async def test_facility_detail(client):
     )
     json = response.json()
     assert json["id"] == "TEST_SENDING_FACILITY_1"
-    assert json["statistics"]["lastUpdated"]
 
 
 async def test_facility_error_history(client):

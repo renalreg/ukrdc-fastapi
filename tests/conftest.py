@@ -17,7 +17,7 @@ from sqlalchemy.pool import StaticPool
 from ukrdc_sqla.empi import Base as JtraceBase
 from ukrdc_sqla.empi import LinkRecord, WorkItem
 from ukrdc_sqla.errorsdb import Base as ErrorsBase
-from ukrdc_sqla.errorsdb import Channel
+from ukrdc_sqla.errorsdb import Channel, Latest
 from ukrdc_sqla.errorsdb import Message as ErrorMessage
 from ukrdc_sqla.pkb import PKBLink
 from ukrdc_sqla.stats import Base as StatsBase
@@ -114,7 +114,7 @@ def populate_basic_stats(statsdb):
     statsdb.commit()
 
 
-def populate_facilities(ukrdc3, statsdb, errorsdb):
+def populate_facilities_and_messages(ukrdc3, statsdb, errorsdb):
     create_basic_facility(
         "TEST_SENDING_FACILITY_1",
         "TEST_SENDING_FACILITY_1_DESCRIPTION",
@@ -138,12 +138,11 @@ def populate_facilities(ukrdc3, statsdb, errorsdb):
     )
     errorsdb.add(channel_1)
 
-    # Mock error relating to MR 1, WORKITEMS 1 and 2
-    error_1 = ErrorMessage(
+    facility_1_message_1 = ErrorMessage(
         id=1,
         message_id=1,
         channel_id="00000000-0000-0000-0000-000000000000",
-        received=days_ago(1),
+        received=days_ago(2),
         msg_status="ERROR",
         ni=UKRDCID_1,
         filename="FILENAME_1.XML",
@@ -152,21 +151,7 @@ def populate_facilities(ukrdc3, statsdb, errorsdb):
         status="STATUS1",
     )
 
-    # Mock error unrelated to workitems
-    error_2 = ErrorMessage(
-        id=2,
-        message_id=2,
-        channel_id="00000000-0000-0000-0000-000000000000",
-        received=days_ago(730),
-        msg_status="ERROR",
-        ni=UKRDCID_2,
-        filename="FILENAME_2.XML",
-        facility="TEST_SENDING_FACILITY_2",
-        error="ERROR MESSAGE 2",
-        status="STATUS2",
-    )
-
-    message_1 = ErrorMessage(
+    facility_1_message_2 = ErrorMessage(
         id=3,
         message_id=3,
         channel_id="00000000-0000-0000-0000-000000000000",
@@ -179,9 +164,32 @@ def populate_facilities(ukrdc3, statsdb, errorsdb):
         status="STATUS3",
     )
 
-    errorsdb.add(error_1)
-    errorsdb.add(error_2)
-    errorsdb.add(message_1)
+    facility_1_ni_1_latest = Latest(
+        facility="TEST_SENDING_FACILITY_1", ni=UKRDCID_1, message_id=3
+    )
+
+    facility_2_message_1 = ErrorMessage(
+        id=2,
+        message_id=2,
+        channel_id="00000000-0000-0000-0000-000000000000",
+        received=days_ago(730),
+        msg_status="ERROR",
+        ni=UKRDCID_2,
+        filename="FILENAME_2.XML",
+        facility="TEST_SENDING_FACILITY_2",
+        error="ERROR MESSAGE 2",
+        status="STATUS2",
+    )
+    facility_2_ni_2_latest = Latest(
+        facility="TEST_SENDING_FACILITY_2", ni=UKRDCID_2, message_id=2
+    )
+
+    errorsdb.add(facility_1_message_1)
+    errorsdb.add(facility_1_message_2)
+    errorsdb.add(facility_1_ni_1_latest)
+
+    errorsdb.add(facility_2_message_1)
+    errorsdb.add(facility_2_ni_2_latest)
 
     errorsdb.commit()
 
@@ -659,7 +667,7 @@ def populate_workitems(session: Session):
 
 
 def populate_all(ukrdc3: Session, jtrace: Session, errorsdb: Session, statsdb: Session):
-    populate_facilities(ukrdc3, statsdb, errorsdb)
+    populate_facilities_and_messages(ukrdc3, statsdb, errorsdb)
     populate_codes(ukrdc3)
 
     # Create patients

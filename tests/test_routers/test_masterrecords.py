@@ -49,7 +49,7 @@ async def test_masterrecord_latest_message(client):
     assert response.status_code == 200
 
     message = MinimalMessageSchema(**response.json())
-    assert message.id == 1
+    assert message.id == 3
 
 
 async def test_masterrecord_statistics(client):

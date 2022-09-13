@@ -50,7 +50,6 @@ def test_get_facility(facility_code, ukrdc3_session, stats_session, superuser):
 
     assert facility.id == facility_code
     assert facility.description == f"{facility_code}_DESCRIPTION"
-    assert facility.statistics.last_updated
 
 
 def test_get_facility_data_flow(ukrdc3_session, stats_session, superuser):

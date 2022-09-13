@@ -42,7 +42,7 @@ def test_get_errors_until(errorsdb_session, superuser):
         errorsdb_session,
         superuser,
         since=days_ago(730),
-        until=days_ago(2),
+        until=days_ago(3),
     )
     assert {error.id for error in all_errors} == {2}
 
@@ -99,7 +99,7 @@ def test_get_masterrecord_latest(errorsdb_session, jtrace_session, superuser):
     latest = messages.get_last_message_on_masterrecord(
         jtrace_session, errorsdb_session, 1, superuser
     )
-    assert latest.id == 1
+    assert latest.id == 3
 
     # Create a new master record
     master_record_999 = MasterRecord(

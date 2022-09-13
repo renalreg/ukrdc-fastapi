@@ -72,19 +72,6 @@ def _assert_permission(facility: Facility, user: UKRDCUser):
         raise PermissionsError()
 
 
-# Convenience functions
-
-
-def _count_active_patients_in_facility(facility_code: str, ukrdc3: Session):
-    return (
-        ukrdc3.query(PatientRecord.sendingfacility, PatientRecord.ukrdcid)
-        .filter(PatientRecord.sendingfacility == facility_code)
-        .filter(PatientRecord.sendingextract.notin_(["PVMIG", "HSMIG"]))
-        .distinct()
-        .count()
-    )
-
-
 # Facility list
 
 
@@ -174,12 +161,12 @@ def get_facilities(
     facility_list: list[FacilityDetailsSchema] = []
     for facility in available_facilities:
         # Find pre-fetched total records count for this facility
-        total_patients = total_records_dict.get(facility.code.upper(), 0)
+        total_records = total_records_dict.get(facility.code.upper(), 0)
         # Find pre-fetched most recent message received time for this facility
         last_message_received_at = most_recent_dict.get(facility.code.upper(), None)
 
         include_this_facility = (include_inactive or (last_message_received_at)) and (
-            include_empty or (total_patients > 0)
+            include_empty or (total_records > 0)
         )
 
         if include_this_facility:
@@ -204,7 +191,7 @@ def get_facilities(
                         pkb_message_exclusions=facility.pkb_msg_exclusions or [],
                     ),
                     statistics=FacilityStatisticsSchema(
-                        total_patients=total_patients,
+                        total_patients=total_records,
                         patients_receiving_messages=patients_receiving_messages,
                         patients_receiving_message_error=patients_receiving_errors,
                         patients_receiving_message_success=(
@@ -256,8 +243,15 @@ def get_facility(
     patients_receiving_messages = messages.count()
     patients_receiving_errors = messages.filter(Message.msg_status == "ERROR").count()
 
+    total_records = (
+        ukrdc3.query(PatientRecord)
+        .filter(PatientRecord.sendingfacility == facility_code)
+        .filter(PatientRecord.sendingextract.notin_(["PVMIG", "HSMIG"]))
+        .count()
+    )
+
     statistics = FacilityStatisticsSchema(
-        total_patients=_count_active_patients_in_facility(facility.code, ukrdc3),
+        total_patients=total_records,
         patients_receiving_messages=patients_receiving_messages,
         patients_receiving_message_error=patients_receiving_errors,
         patients_receiving_message_success=(

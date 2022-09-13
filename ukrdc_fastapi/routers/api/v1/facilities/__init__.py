@@ -58,7 +58,13 @@ def facility_list(
     user: UKRDCUser = Security(auth.get_user()),
 ):
     """Retreive a list of on-record facilities"""
-    facilities = get_facilities(ukrdc3, errorsdb, user)
+    facilities = get_facilities(
+        ukrdc3,
+        errorsdb,
+        user,
+        include_inactive=include_inactive,
+        include_empty=include_empty,
+    )
 
     return sorter.sort(facilities)
 
