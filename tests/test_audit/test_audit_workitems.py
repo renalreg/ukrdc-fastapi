@@ -55,7 +55,7 @@ def _verify_extended_workitem_audit(
 
 
 async def test_workitems_list(client, audit_session):
-    response = await client.get(f"{configuration.base_url}/v1/workitems")
+    response = await client.get(f"{configuration.base_url}/workitems")
     assert response.status_code == 200
     workitems = [WorkItemSchema(**wi) for wi in response.json().get("items")]
 
@@ -69,7 +69,7 @@ async def test_workitems_list(client, audit_session):
 
 
 async def test_workitem_detail(client, audit_session):
-    response = await client.get(f"{configuration.base_url}/v1/workitems/1")
+    response = await client.get(f"{configuration.base_url}/workitems/1")
     assert response.status_code == 200
     wi = WorkItemExtendedSchema(**response.json())
 
@@ -84,7 +84,7 @@ async def test_workitem_detail(client, audit_session):
 
 async def test_workitem_update(client, audit_session):
     response = await client.put(
-        f"{configuration.base_url}/v1/workitems/1",
+        f"{configuration.base_url}/workitems/1",
         json={"status": 3, "comment": "UPDATE COMMENT"},
     )
     assert response.status_code == 200
@@ -101,9 +101,7 @@ async def test_workitem_update(client, audit_session):
 
 
 async def test_workitem_close(client, audit_session):
-    response = await client.post(
-        f"{configuration.base_url}/v1/workitems/1/close", json={}
-    )
+    response = await client.post(f"{configuration.base_url}/workitems/1/close", json={})
     assert response.status_code == 200
 
     events = audit_session.query(AuditEvent).all()
@@ -117,7 +115,7 @@ async def test_workitem_close(client, audit_session):
 
 
 async def test_workitems_related(client, audit_session):
-    response = await client.get(f"{configuration.base_url}/v1/workitems/1/related")
+    response = await client.get(f"{configuration.base_url}/workitems/1/related")
     assert response.status_code == 200
     workitems = [WorkItemSchema(**wi) for wi in response.json()]
     returned_ids = {item.id for item in workitems}
@@ -133,7 +131,7 @@ async def test_workitems_related(client, audit_session):
 
 
 async def test_workitem_messages(client, audit_session):
-    response = await client.get(f"{configuration.base_url}/v1/workitems/1/messages")
+    response = await client.get(f"{configuration.base_url}/workitems/1/messages")
     assert response.status_code == 200
 
     events = audit_session.query(AuditEvent).all()

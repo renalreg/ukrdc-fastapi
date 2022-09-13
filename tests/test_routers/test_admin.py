@@ -5,7 +5,7 @@ async def test_datahealth_multiple_ukrdcids(client):
     # Check expected links
 
     response = await client.get(
-        f"{configuration.base_url}/v1/admin/datahealth/multiple_ukrdcids"
+        f"{configuration.base_url}/admin/datahealth/multiple_ukrdcids"
     )
     assert response.status_code == 200
 

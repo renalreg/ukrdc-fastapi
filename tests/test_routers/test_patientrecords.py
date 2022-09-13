@@ -4,7 +4,7 @@ from ukrdc_fastapi.schemas.patientrecord import PatientRecordSchema
 
 async def test_record(client):
     response = await client.get(
-        f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A"
+        f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A"
     )
     assert response.status_code == 200
     record = PatientRecordSchema(**response.json())
@@ -13,6 +13,6 @@ async def test_record(client):
 
 async def test_record_missing(client):
     response = await client.get(
-        f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:MISSING"
+        f"{configuration.base_url}/patientrecords/PYTEST01:PV:MISSING"
     )
     assert response.status_code == 404

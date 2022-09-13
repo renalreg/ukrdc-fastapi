@@ -4,7 +4,7 @@ from ukrdc_fastapi.schemas.empi import WorkItemSchema
 
 
 async def test_messages_list(client, audit_session):
-    response = await client.get(f"{configuration.base_url}/v1/messages")
+    response = await client.get(f"{configuration.base_url}/messages")
     assert response.status_code == 200
 
     events = audit_session.query(AuditEvent).all()
@@ -20,7 +20,7 @@ async def test_messages_list(client, audit_session):
 
 
 async def test_message_detail(client, audit_session):
-    response = await client.get(f"{configuration.base_url}/v1/messages/1")
+    response = await client.get(f"{configuration.base_url}/messages/1")
     assert response.status_code == 200
 
     events = audit_session.query(AuditEvent).all()
@@ -36,7 +36,7 @@ async def test_message_detail(client, audit_session):
 
 
 async def test_message_workitems(client, audit_session):
-    response = await client.get(f"{configuration.base_url}/v1/messages/3/workitems")
+    response = await client.get(f"{configuration.base_url}/messages/3/workitems")
     workitems = [WorkItemSchema(**item) for item in response.json()]
 
     events = audit_session.query(AuditEvent).all()
@@ -72,7 +72,7 @@ async def test_message_workitems(client, audit_session):
 
 
 async def test_message_masterrecords(client, audit_session):
-    response = await client.get(f"{configuration.base_url}/v1/messages/1/masterrecords")
+    response = await client.get(f"{configuration.base_url}/messages/1/masterrecords")
     assert response.status_code == 200
     returned_ids = {item.get("id") for item in response.json()}
     assert returned_ids == {1}

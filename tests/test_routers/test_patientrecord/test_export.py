@@ -21,7 +21,7 @@ def _last_sent_mirth_message(httpx_mock) -> str:
 @pytest.mark.asyncio
 async def test_record_export_data(client, httpx_mock):
     response = await client.post(
-        f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/export/pv",
+        f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/export/pv",
         json={},
     )
 
@@ -29,7 +29,7 @@ async def test_record_export_data(client, httpx_mock):
     task = TrackableTaskSchema(**response.json())
     assert task.status == "pending"
 
-    task_status = await client.get(f"{configuration.base_url}/v1/tasks/{task.id}")
+    task_status = await client.get(f"{configuration.base_url}/tasks/{task.id}")
     assert task_status.status_code == 200
     assert task_status.json().get("status") == "finished"
 
@@ -42,7 +42,7 @@ async def test_record_export_data(client, httpx_mock):
 @pytest.mark.asyncio
 async def test_record_export_tests(client, httpx_mock):
     response = await client.post(
-        f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/export/pv-tests",
+        f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/export/pv-tests",
         json={},
     )
 
@@ -50,7 +50,7 @@ async def test_record_export_tests(client, httpx_mock):
     task = TrackableTaskSchema(**response.json())
     assert task.status == "pending"
 
-    task_status = await client.get(f"{configuration.base_url}/v1/tasks/{task.id}")
+    task_status = await client.get(f"{configuration.base_url}/tasks/{task.id}")
     assert task_status.status_code == 200
     assert task_status.json().get("status") == "finished"
 
@@ -63,7 +63,7 @@ async def test_record_export_tests(client, httpx_mock):
 @pytest.mark.asyncio
 async def test_record_export_docs(client, httpx_mock):
     response = await client.post(
-        f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/export/pv-docs",
+        f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/export/pv-docs",
         json={},
     )
 
@@ -71,7 +71,7 @@ async def test_record_export_docs(client, httpx_mock):
     task = TrackableTaskSchema(**response.json())
     assert task.status == "pending"
 
-    task_status = await client.get(f"{configuration.base_url}/v1/tasks/{task.id}")
+    task_status = await client.get(f"{configuration.base_url}/tasks/{task.id}")
     assert task_status.status_code == 200
     assert task_status.json().get("status") == "finished"
 
@@ -84,7 +84,7 @@ async def test_record_export_docs(client, httpx_mock):
 @pytest.mark.asyncio
 async def test_record_export_radar(client, httpx_mock):
     response = await client.post(
-        f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/export/radar",
+        f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/export/radar",
         json={},
     )
 
@@ -92,7 +92,7 @@ async def test_record_export_radar(client, httpx_mock):
     task = TrackableTaskSchema(**response.json())
     assert task.status == "pending"
 
-    task_status = await client.get(f"{configuration.base_url}/v1/tasks/{task.id}")
+    task_status = await client.get(f"{configuration.base_url}/tasks/{task.id}")
     assert task_status.status_code == 200
     assert task_status.json().get("status") == "finished"
 
@@ -117,14 +117,14 @@ async def test_record_export_pkb(client, ukrdc3_session):
     ukrdc3_session.commit()
 
     response = await client.post(
-        f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/export/pkb",
+        f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/export/pkb",
         json={},
     )
     assert response.status_code == 202
     task = TrackableTaskSchema(**response.json())
     assert task.status == "pending"
 
-    task_status = await client.get(f"{configuration.base_url}/v1/tasks/{task.id}")
+    task_status = await client.get(f"{configuration.base_url}/tasks/{task.id}")
     assert task_status.status_code == 200
     assert task_status.json().get("status") == "finished"
 
@@ -132,14 +132,14 @@ async def test_record_export_pkb(client, ukrdc3_session):
 @pytest.mark.asyncio
 async def test_record_export_pkb_no_memberships(client):
     response = await client.post(
-        f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/export/pkb",
+        f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/export/pkb",
         json={},
     )
     assert response.status_code == 202
     task = TrackableTaskSchema(**response.json())
     assert task.status == "pending"
 
-    status_response = await client.get(f"{configuration.base_url}/v1/tasks/{task.id}")
+    status_response = await client.get(f"{configuration.base_url}/tasks/{task.id}")
     assert status_response.status_code == 200
     status_task = TrackableTaskSchema(**status_response.json())
 

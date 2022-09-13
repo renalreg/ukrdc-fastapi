@@ -8,7 +8,7 @@ async def test_messages_list(client):
     since = days_ago(730).isoformat()
     until = days_ago(0).isoformat()
     response = await client.get(
-        f"{configuration.base_url}/v1/messages?since={since}&until={until}"
+        f"{configuration.base_url}/messages?since={since}&until={until}"
     )
     assert response.status_code == 200
     messages = [MessageSchema(**item) for item in response.json()["items"]]
@@ -20,7 +20,7 @@ async def test_messages_list_errors(client):
     since = days_ago(730).isoformat()
     until = days_ago(0).isoformat()
     response = await client.get(
-        f"{configuration.base_url}/v1/messages?since={since}&until={until}&status=ERROR"
+        f"{configuration.base_url}/messages?since={since}&until={until}&status=ERROR"
     )
     assert response.status_code == 200
     messages = [MessageSchema(**item) for item in response.json()["items"]]
@@ -32,7 +32,7 @@ async def test_messages_list_facility(client):
     since = days_ago(730).isoformat()
     until = days_ago(0).isoformat()
     response = await client.get(
-        f"{configuration.base_url}/v1/messages?since={since}&until={until}&facility=TEST_SENDING_FACILITY_2"
+        f"{configuration.base_url}/messages?since={since}&until={until}&facility=TEST_SENDING_FACILITY_2"
     )
     assert response.status_code == 200
     messages = [MessageSchema(**item) for item in response.json()["items"]]
@@ -41,7 +41,7 @@ async def test_messages_list_facility(client):
 
 
 async def test_message_detail(client):
-    response = await client.get(f"{configuration.base_url}/v1/messages/1")
+    response = await client.get(f"{configuration.base_url}/messages/1")
     assert response.status_code == 200
     print(response.json())
     error = MessageSchema(**response.json())
@@ -49,19 +49,19 @@ async def test_message_detail(client):
 
 
 async def test_message_workitems(client):
-    response = await client.get(f"{configuration.base_url}/v1/messages/2/workitems")
+    response = await client.get(f"{configuration.base_url}/messages/2/workitems")
     assert response.status_code == 200
     ids = {item.get("id") for item in response.json()}
     assert ids == set()
 
-    response = await client.get(f"{configuration.base_url}/v1/messages/3/workitems")
+    response = await client.get(f"{configuration.base_url}/messages/3/workitems")
     assert response.status_code == 200
     ids = {item.get("id") for item in response.json()}
     assert ids == {3}
 
 
 async def test_message_masterrecords(client):
-    response = await client.get(f"{configuration.base_url}/v1/messages/1/masterrecords")
+    response = await client.get(f"{configuration.base_url}/messages/1/masterrecords")
     assert response.status_code == 200
     ids = {item.get("id") for item in response.json()}
     assert ids == {1}

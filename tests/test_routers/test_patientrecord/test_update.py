@@ -19,7 +19,7 @@ async def test_record_export_data(client):
         },
     }
     response = await client.post(
-        f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/update/demographics",
+        f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/update/demographics",
         json=demographics,
     )
 
