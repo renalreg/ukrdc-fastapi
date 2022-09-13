@@ -156,3 +156,7 @@ data/
 openapitools.json
 clients/openapi.json
 clients/typescript-axios-client
+
+node_modules/
+package.json
+package-lock.json
