@@ -108,13 +108,12 @@ def facility_patients_latest_errors(
     code: str,
     ukrdc3: Session = Depends(get_ukrdc3),
     errorsdb: Session = Depends(get_errorsdb),
-    statsdb: Session = Depends(get_statsdb),
     user: UKRDCUser = Security(auth.get_user()),
     sorter: SQLASorter = Depends(ERROR_SORTER),
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive time-series new error counts for the last year for a particular facility"""
-    query = get_patients_latest_errors(ukrdc3, errorsdb, statsdb, code, user)
+    query = get_patients_latest_errors(ukrdc3, errorsdb, code, user)
 
     audit.add_event(
         Resource.MESSAGES,
