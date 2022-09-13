@@ -272,7 +272,7 @@ lua = ["lupa (>=1.13,<2.0)"]
 
 [[package]]
 name = "fastapi"
-version = "0.81.0"
+version = "0.83.0"
 description = "FastAPI framework, high performance, easy to learn, fast to code, ready for production"
 category = "main"
 optional = false
@@ -1265,8 +1265,8 @@ multidict = ">=4.0"
 
 [metadata]
 lock-version = "1.1"
-python-versions = "^3.9" 
-content-hash = "21c4b62cd2e82867c6d930d44248cbd1e37905a8257d14000eecaafffc24b951"
+python-versions = "^3.9"
+content-hash = "37a4106ca753f21b7a2d8e762b4f1efc63d3d7de9ec42a65e2e81c4daac63b45"
 
 [metadata.files]
 acachecontrol = [
@@ -1493,8 +1493,8 @@ fakeredis = [
     {file = "fakeredis-1.9.1.tar.gz", hash = "sha256:e884776d7d0216e9c6c514527718259cfbd555777b36ba403ae680bd1489f7a1"},
 ]
 fastapi = [
-    {file = "fastapi-0.81.0-py3-none-any.whl", hash = "sha256:9ac5f5d252b4b394df29accb1ed4bedf30e0e87fc6eb7ec75e1449fa040bfc17"},
-    {file = "fastapi-0.81.0.tar.gz", hash = "sha256:9dafdc41feda85ee5acf0f7dd6bcb7fd946318a6664b41fd33e33b26f666a346"},
+    {file = "fastapi-0.83.0-py3-none-any.whl", hash = "sha256:694a2b6c2607a61029a4be1c6613f84d74019cb9f7a41c7a475dca8e715f9368"},
+    {file = "fastapi-0.83.0.tar.gz", hash = "sha256:96eb692350fe13d7a9843c3c87a874f0d45102975257dd224903efd6c0fde3bd"},
 ]
 fastapi-pagination = [
     {file = "fastapi-pagination-0.9.3.tar.gz", hash = "sha256:bf2bd538786b5804130b01b1a0b3bdab5917e3409ef729e86f9e8224055e9432"},
