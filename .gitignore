@@ -160,3 +160,6 @@ clients/typescript-axios-client
 node_modules/
 package.json
 package-lock.json
+
+# Local scripts
+makeclientsnapshot.sh
