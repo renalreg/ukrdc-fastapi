@@ -5,6 +5,7 @@ from typing import Any, Callable, Literal, Optional
 from uuid import UUID, uuid4
 
 from fastapi import HTTPException
+from pydantic import Field
 from redis import Redis
 
 from ukrdc_fastapi.config import settings
@@ -19,16 +20,25 @@ StatusType = Literal["pending", "running", "finished", "failed"]
 
 
 class TrackableTaskSchema(JSONModel):
-    id: UUID
-    name: str
-    visibility: VisibilityType
-    owner: str
-    status: StatusType
-    error: Optional[str] = None
+    """Base schema for a trackable background task"""
 
-    created: datetime.datetime
-    started: Optional[datetime.datetime] = None
-    finished: Optional[datetime.datetime] = None
+    id: UUID = Field(..., description="Task UUID")
+    name: str = Field(..., description="Task friendly-name")
+    visibility: VisibilityType = Field(
+        ...,
+        description="Task visibility. Private tasks are only visible to the user who created them",
+    )
+    owner: str = Field(..., description="Task owner username")
+    status: StatusType = Field(..., description="Task status")
+    error: Optional[str] = Field(None, description="Error message, if any")
+
+    created: datetime.datetime = Field(..., description="Task creation timestamp")
+    started: Optional[datetime.datetime] = Field(
+        None, description="Task start timestamp"
+    )
+    finished: Optional[datetime.datetime] = Field(
+        None, description="Task finish timestamp"
+    )
 
     @classmethod
     def from_redis(cls, redis_dict: dict):

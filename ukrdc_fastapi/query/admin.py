@@ -1,3 +1,4 @@
+from pydantic import Field
 from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import WorkItem
 from ukrdc_sqla.errorsdb import Latest, Message
@@ -7,9 +8,15 @@ from ukrdc_fastapi.schemas.base import OrmModel
 
 
 class AdminCountsSchema(OrmModel):
-    open_workitems: int
-    distinct_patients: int
-    patients_receiving_errors: int
+    open_workitems: int = Field(..., description="Number of open work items")
+    distinct_patients: int = Field(
+        ...,
+        description="Number of distinct patients, calculated from the number of distinct UKRDC IDs in the database",
+    )
+    patients_receiving_errors: int = Field(
+        ...,
+        description="Number of patients whos most recently received file failed to be processed",
+    )
 
 
 def get_admin_counts(

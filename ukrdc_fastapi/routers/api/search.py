@@ -26,14 +26,18 @@ router = APIRouter(tags=["Search"])
     dependencies=[Security(auth.permission([Permissions.READ_RECORDS]))],
 )
 def search_masterrecords(
-    pid: list[str] = QueryParam([]),
-    mrn_number: list[str] = QueryParam([]),
-    ukrdc_number: list[str] = QueryParam([]),
-    full_name: list[str] = QueryParam([]),
-    dob: list[str] = QueryParam([]),
-    facility: list[str] = QueryParam([]),
-    search: list[str] = QueryParam([]),
-    number_type: list[str] = QueryParam([]),
+    pid: list[str] = QueryParam([], description="Patient PID"),
+    mrn_number: list[str] = QueryParam(
+        [], description="Patient MRN number, e.g. NHS, CHI or HSC number"
+    ),
+    ukrdc_number: list[str] = QueryParam([], description="UKRDC record number"),
+    full_name: list[str] = QueryParam([], description="Patient full name"),
+    dob: list[str] = QueryParam([], description="Patient date of birth"),
+    facility: list[str] = QueryParam([], description="Facility code"),
+    search: list[str] = QueryParam([], description="Free-text search query"),
+    number_type: list[str] = QueryParam(
+        [], description="Number types to return, e.g. UKRDC, NHS, CHI, HSC"
+    ),
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
     ukrdc3: Session = Depends(get_ukrdc3),

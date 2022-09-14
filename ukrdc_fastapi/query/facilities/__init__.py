@@ -2,6 +2,7 @@ import datetime
 from typing import Optional
 
 from fastapi.exceptions import HTTPException
+from pydantic import Field
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.query import Query
@@ -27,32 +28,48 @@ class FacilityExtractsSchema(OrmModel):
 
 
 class FacilityDataFlowSchema(OrmModel):
-    pkb_in: bool
-    pkb_out: bool
-    pkb_message_exclusions: list[str]
+    pkb_in: bool = Field(..., description="PKB data is being received to the UKRDC")
+    pkb_out: bool = Field(..., description="UKRDC data is being sent to PKB")
+    pkb_message_exclusions: list[str] = Field(
+        ..., description="List of message types excluded from PKB sending"
+    )
 
 
 class FacilityStatisticsSchema(OrmModel):
     # Total number of patients we've ever had on record
-    total_patients: Optional[int]
+    total_patients: Optional[int] = Field(None, description="Total number of patients")
 
     # Total number of patients receiving messages,
     # whether erroring or not
-    patients_receiving_messages: Optional[int]
+    patients_receiving_messages: Optional[int] = Field(
+        None, description="Number of patients actively receiving messages"
+    )
 
     # Number of patients receiving messages that
     # are most recently succeeding
-    patients_receiving_message_success: Optional[int]
+    patients_receiving_message_success: Optional[int] = Field(
+        None,
+        description="Number of patients receiving messages that are most recently succeeding",
+    )
 
     # Number of patients receiving messages that
     # are most recently erroring
-    patients_receiving_message_error: Optional[int]
+    patients_receiving_message_error: Optional[int] = Field(
+        None,
+        description="Number of patients receiving messages that are most recently erroring",
+    )
 
 
 class FacilityDetailsSchema(FacilitySchema):
-    last_message_received_at: Optional[datetime.datetime]
-    statistics: FacilityStatisticsSchema
-    data_flow: FacilityDataFlowSchema
+    last_message_received_at: Optional[datetime.datetime] = Field(
+        None, description="Timestamp of the last message received"
+    )
+    statistics: FacilityStatisticsSchema = Field(
+        ..., description="Various statistics about the facility"
+    )
+    data_flow: FacilityDataFlowSchema = Field(
+        ..., description="Data flow information about the facility"
+    )
 
 
 # Security functions

@@ -12,30 +12,32 @@ from .base import OrmModel
 
 
 class AccessEventSchema(OrmModel):
-    id: int = Field(alias="event")
-    time: datetime.datetime
+    id: int = Field(alias="event", description="Access event ID")
+    time: datetime.datetime = Field(..., description="Access event timestamp")
 
-    uid: str = Field(alias="userId")
-    cid: str = Field(alias="clientId")
-    sub: str = Field(alias="userEmail")
+    uid: str = Field(alias="userId", description="User ID")
+    cid: str = Field(alias="clientId", description="Client ID")
+    sub: str = Field(alias="userEmail", description="User email address")
 
-    path: str
-    method: str
-    body: Optional[str]
+    path: str = Field(..., description="Access event path")
+    method: str = Field(..., description="Access event HTTP method")
+    body: Optional[str] = Field(None, description="Access event HTTP body")
 
 
 class AuditEventSchema(OrmModel):
-    id: int
-    access_event: AccessEventSchema
+    id: int = Field(..., description="Audit event ID")
+    access_event: AccessEventSchema = Field(..., description="Access event")
 
-    resource: Optional[str]
-    resource_id: Optional[str]
+    resource: Optional[str] = Field(None, description="Resource accessed")
+    resource_id: Optional[str] = Field(None, description="Resource ID")
 
-    operation: str
+    operation: str = Field(..., description="Audit event operation")
 
-    children: Optional[List["AuditEventSchema"]]
+    children: Optional[List["AuditEventSchema"]] = Field(
+        None, description="Child events"
+    )
 
-    identifiers: List[str] = []
+    identifiers: List[str] = Field([], description="Additional resource identifiers")
 
     def populate_identifiers(self, jtrace: Session, ukrdc3: Session):
         """

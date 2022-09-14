@@ -1,33 +1,40 @@
 import datetime
 from typing import Optional
 
+from pydantic import Field
+
 from .base import OrmModel
 
 
 class CodeSchema(OrmModel):
-    coding_standard: str
-    code: str
-    description: Optional[str]
-    object_type: Optional[str]
+    coding_standard: str = Field(..., description="Coding standard")
+    code: str = Field(..., description="Code")
+    description: Optional[str] = Field(None, description="Code description")
+    object_type: Optional[str] = Field(
+        None,
+        description="Object type, e.g. observation, result, dose_unit. Rarely used in practice.",
+    )
 
-    creation_date: datetime.datetime
-    update_date: Optional[datetime.datetime]
+    creation_date: datetime.datetime = Field(..., description="Creation date")
+    update_date: Optional[datetime.datetime] = Field(..., description="Update date")
 
-    units: Optional[str]
+    units: Optional[str] = Field(None, description="Units o fmeasurement")
 
 
 class CodeMapSchema(OrmModel):
-    source_coding_standard: str
-    source_code: str
+    source_coding_standard: str = Field(..., description="Source coding standard")
+    source_code: str = Field(..., description="Source code")
 
-    destination_coding_standard: str
-    destination_code: str
+    destination_coding_standard: str = Field(
+        ..., description="Destination coding standard"
+    )
+    destination_code: str = Field(..., description="Destination code")
 
-    creation_date: datetime.datetime
-    update_date: Optional[datetime.datetime]
+    creation_date: datetime.datetime = Field(..., description="Creation date")
+    update_date: Optional[datetime.datetime] = Field(..., description="Update date")
 
 
 class CodeExclusionSchema(OrmModel):
-    coding_standard: str
-    code: str
-    system: str
+    coding_standard: str = Field(..., description="Coding standard")
+    code: str = Field(..., description="Code")
+    system: str = Field(..., description="System to exclude the code from")

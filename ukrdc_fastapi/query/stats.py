@@ -1,6 +1,7 @@
 import datetime
 from typing import Optional
 
+from pydantic import Field
 from sqlalchemy.orm.session import Session
 from ukrdc_sqla.empi import MasterRecord
 from ukrdc_sqla.stats import ErrorHistory, MultipleUKRDCID
@@ -12,13 +13,17 @@ from ukrdc_fastapi.utils import daterange
 
 
 class MultipleUKRDCIDGroupItem(OrmModel):
-    last_updated: datetime.datetime
-    master_record: MasterRecordSchema
+    last_updated: datetime.datetime = Field(
+        ..., description="Timestamp of the last time this record was checked"
+    )
+    master_record: MasterRecordSchema = Field(..., description="Master record")
 
 
 class MultipleUKRDCIDGroup(OrmModel):
-    group_id: int
-    records: list[MultipleUKRDCIDGroupItem]
+    group_id: int = Field(..., description="Group ID")
+    records: list[MultipleUKRDCIDGroupItem] = Field(
+        ..., description="Records in this group"
+    )
 
 
 def get_full_errors_history(

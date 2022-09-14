@@ -1,14 +1,22 @@
 import datetime
 from typing import Optional
 
+from pydantic import Field
+
 from .base import OrmModel
 
 
 class ObservationSchema(OrmModel):
-    observation_time: datetime.datetime
-    observation_desc: Optional[str]
-    observation_value: str
-    observation_units: Optional[str]
-    pre_post: Optional[str]
-    entered_at: Optional[str]
-    entered_at_description: Optional[str]
+    observation_time: datetime.datetime = Field(
+        ..., description="Observation timestamp"
+    )
+    observation_desc: Optional[str] = Field(None, description="Observation description")
+    observation_value: str = Field(..., description="Observation value")
+    observation_units: Optional[str] = Field(
+        None, description="Observation units of measurement"
+    )
+    pre_post: Optional[str] = Field(None, description="Pre- or post- dialysis")
+    entered_at: Optional[str] = Field(None, description="Entered at facility code")
+    entered_at_description: Optional[str] = Field(
+        None, description="Entered at facility description"
+    )
