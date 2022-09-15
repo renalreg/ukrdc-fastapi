@@ -57,9 +57,9 @@ class SurveyLevelSchema(OrmModel):
 class SurveySchema(OrmModel):
     """Information about a single survey"""
 
-    questions: list[SurveyQuestionSchema] = Field([], description="Survey questions")
-    scores: list[SurveyScoreSchema] = Field([], description="Survey scores")
-    levels: list[SurveyLevelSchema] = Field([], description="Survey levels")
+    questions: list[SurveyQuestionSchema] = Field(..., description="Survey questions")
+    scores: list[SurveyScoreSchema] = Field(..., description="Survey scores")
+    levels: list[SurveyLevelSchema] = Field(..., description="Survey levels")
 
     id: str = Field(..., description="Survey ID")
     pid: str = Field(..., description="Patient ID")

@@ -48,7 +48,7 @@ class PersonSchema(OrmModel):
     date_of_death: Optional[datetime.date] = Field(None, description="Date of death")
     givenname: Optional[str] = Field(None, description="Given name")
     surname: Optional[str] = Field(None, description="Surname")
-    xref_entries: list[PidXRefSchema] = Field([], description="PID xrefs")
+    xref_entries: list[PidXRefSchema] = Field(..., description="PID xrefs")
 
 
 class LinkRecordSummarySchema(OrmModel):
@@ -168,13 +168,13 @@ class WorkItemIncomingSchema(OrmModel):
     """Incoming records for a work item in the EMPI"""
 
     person: Optional[PersonSchema] = Field(None, description="Person record")
-    master_records: list[MasterRecordSchema] = Field([], description="Master records")
+    master_records: list[MasterRecordSchema] = Field(..., description="Master records")
 
 
 class WorkItemDestinationSchema(OrmModel):
     """Destination records for a work item in the EMPI"""
 
-    persons: list[PersonSchema] = Field([], description="Person records")
+    persons: list[PersonSchema] = Field(..., description="Person records")
     master_record: Optional[MasterRecordSchema] = Field(
         None, description="Master record"
     )

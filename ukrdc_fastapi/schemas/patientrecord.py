@@ -259,23 +259,23 @@ class PatientRecordFullSchema(PatientRecordSummarySchema):
     family_histories: list[FamilyHistorySchema] = Field(
         [], description="Family histories"
     )
-    observations: list[ObservationSchema] = Field([], description="Observations")
-    allergies: list[AllergySchema] = Field([], description="Allergies")
-    diagnoses: list[DiagnosisSchema] = Field([], description="Diagnoses")
+    observations: list[ObservationSchema] = Field(..., description="Observations")
+    allergies: list[AllergySchema] = Field(..., description="Allergies")
+    diagnoses: list[DiagnosisSchema] = Field(..., description="Diagnoses")
     renaldiagnoses: list[RenalDiagnosisSchema] = Field(
-        [], description="Renal diagnoses"
+        ..., description="Renal diagnoses"
     )
-    medications: list[MedicationSchema] = Field([], description="Medications")
-    procedures: list[ProcedureSchema] = Field([], description="Procedures")
-    documents: list[DocumentSchema] = Field([], description="Documents")
-    encounters: list[EncounterSchema] = Field([], description="Encounters")
+    medications: list[MedicationSchema] = Field(..., description="Medications")
+    procedures: list[ProcedureSchema] = Field(..., description="Procedures")
+    documents: list[DocumentSchema] = Field(..., description="Documents")
+    encounters: list[EncounterSchema] = Field(..., description="Encounters")
     program_memberships: list[ProgramMembershipSchema] = Field(
-        [], description="Program memberships"
+        ..., description="Program memberships"
     )
     clinical_relationships: list[ClinicalRelationshipSchema] = Field(
-        [], description="Clinical relationships"
+        ..., description="Clinical relationships"
     )
-    surveys: list[SurveySchema] = Field([], description="Surveys")
-    pvdelete: list[PVDeleteSchema] = Field([], description="PV Deletes")
+    surveys: list[SurveySchema] = Field(..., description="Surveys")
+    pvdelete: list[PVDeleteSchema] = Field(..., description="PV Deletes")
 
     patient: Optional[PatientSchema] = Field(None, description="Patient")

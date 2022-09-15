@@ -36,10 +36,10 @@ class EthnicityPoint(OrmModel):
 class FacilityDemographicStats(OrmModel):
     """Basic demographic statistics for a facility"""
 
-    age_dist: list[AgePoint] = Field([], description="Age distribution")
-    gender_dist: list[GenderPoint] = Field([], description="Gender code distribution")
+    age_dist: list[AgePoint] = Field(..., description="Age distribution")
+    gender_dist: list[GenderPoint] = Field(..., description="Gender code distribution")
     ethnicity_dist: list[EthnicityPoint] = Field(
-        [], description="Ethnicity code distribution"
+        ..., description="Ethnicity code distribution"
     )
 
 
