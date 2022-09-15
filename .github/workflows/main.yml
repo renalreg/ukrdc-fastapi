@@ -9,6 +9,11 @@ on:
   release:
     types: [published]
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
   test:
     name: Run tests
