@@ -7,6 +7,8 @@ from .base import OrmModel
 
 
 class ObservationSchema(OrmModel):
+    """Information about a single observation"""
+
     observation_time: datetime.datetime = Field(
         ..., description="Observation timestamp"
     )

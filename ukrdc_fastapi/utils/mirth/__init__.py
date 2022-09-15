@@ -20,6 +20,8 @@ class MirthMessageResponseSchema(BaseModel):
 
 
 class ChannelFullModel(OrmModel):
+    """Full Mirth channel information, including statistics"""
+
     id: UUID = Field(..., description="Mirth channel ID")
     name: str = Field(..., description="Mirth channel name")
     description: Optional[str] = Field(None, description="Mirth channel description")
@@ -31,6 +33,8 @@ class ChannelFullModel(OrmModel):
 
 
 class ChannelGroupModel(OrmModel):
+    """Mirth channel group information"""
+
     id: UUID = Field(..., description="Mirth channel group ID")
     name: str = Field(..., description="Mirth channel group name")
     description: Optional[str] = Field(

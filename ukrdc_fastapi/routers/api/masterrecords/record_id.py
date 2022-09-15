@@ -59,6 +59,8 @@ from ukrdc_fastapi.utils.sort import SQLASorter, make_sqla_sorter
 
 
 class MasterRecordStatisticsSchema(OrmModel):
+    """Counts of various objects related to a master record"""
+
     workitems: int = Field(
         ..., description="Number of workitems related to this master record"
     )

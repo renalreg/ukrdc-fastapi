@@ -13,21 +13,29 @@ from . import _assert_permission
 
 
 class AgePoint(OrmModel):
+    """Histogram point for age distribution"""
+
     age: int = Field(..., description="Age in years (x-axis)")
     count: int = Field(..., description="Number of patients (y-axis)")
 
 
 class GenderPoint(OrmModel):
+    """Histogram point for gender distribution"""
+
     gender: int = Field(..., description="Gender code (x-axis)")
     count: int = Field(..., description="Number of patients (y-axis)")
 
 
 class EthnicityPoint(OrmModel):
+    """Histogram point for ethnicity distribution"""
+
     ethnicity: Optional[str] = Field(..., description="Ethnicity code (x-axis)")
     count: int = Field(..., description="Number of patients (y-axis)")
 
 
 class FacilityDemographicStats(OrmModel):
+    """Basic demographic statistics for a facility"""
+
     age_dist: list[AgePoint] = Field([], description="Age distribution")
     gender_dist: list[GenderPoint] = Field([], description="Gender code distribution")
     ethnicity_dist: list[EthnicityPoint] = Field(

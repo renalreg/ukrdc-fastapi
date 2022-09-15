@@ -28,6 +28,8 @@ class FacilityExtractsSchema(OrmModel):
 
 
 class FacilityDataFlowSchema(OrmModel):
+    """Data flow information for a facility"""
+
     pkb_in: bool = Field(..., description="PKB data is being received to the UKRDC")
     pkb_out: bool = Field(..., description="UKRDC data is being sent to PKB")
     pkb_message_exclusions: list[str] = Field(
@@ -36,6 +38,8 @@ class FacilityDataFlowSchema(OrmModel):
 
 
 class FacilityStatisticsSchema(OrmModel):
+    """Patient count and message status statistics for a facility"""
+
     # Total number of patients we've ever had on record
     total_patients: Optional[int] = Field(None, description="Total number of patients")
 
@@ -61,6 +65,8 @@ class FacilityStatisticsSchema(OrmModel):
 
 
 class FacilityDetailsSchema(FacilitySchema):
+    """Detailed information about a facility"""
+
     last_message_received_at: Optional[datetime.datetime] = Field(
         None, description="Timestamp of the last message received"
     )

@@ -7,6 +7,8 @@ from .base import OrmModel
 
 
 class TreatmentSchema(OrmModel):
+    """A treatment record"""
+
     id: str = Field(..., description="Treatment ID")
 
     from_time: Optional[datetime.date] = Field(None, description="Treatment start date")

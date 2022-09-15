@@ -8,6 +8,8 @@ from .base import OrmModel
 
 
 class MasterRecordSchema(OrmModel):
+    """A master record in the EMPI"""
+
     id: int = Field(..., description="Master record ID")
     nationalid: str = Field(..., description="National ID, e.g. NHS number")
     nationalid_type: str = Field(
@@ -25,6 +27,8 @@ class MasterRecordSchema(OrmModel):
 
 
 class PidXRefSchema(OrmModel):
+    """A PID cross-reference in the EMPI"""
+
     id: int = Field(..., description="PID xref ID")
     pid: str = Field(..., description="Patient record PID")
     sending_facility: str = Field(..., description="Sending facility code")
@@ -33,6 +37,8 @@ class PidXRefSchema(OrmModel):
 
 
 class PersonSchema(OrmModel):
+    """A person in the EMPI"""
+
     id: int = Field(..., description="Person ID")
     originator: str = Field(..., description="Person originator code")
     localid: str = Field(..., description="Person local ID")
@@ -46,12 +52,16 @@ class PersonSchema(OrmModel):
 
 
 class LinkRecordSummarySchema(OrmModel):
+    """Summary of a link record in the EMPI, linking a person to a master record"""
+
     id: int = Field(..., description="Link record ID")
     person_id: int = Field(..., description="Person ID")
     master_id: int = Field(..., description="Master record ID")
 
 
 class LinkRecordSchema(OrmModel):
+    """A link record in the EMPI, linking a person to a master record"""
+
     id: int = Field(..., description="Link record ID")
     person: PersonSchema = Field(..., description="Person record")
     master_record: MasterRecordSchema = Field(..., description="Master record")
@@ -70,6 +80,8 @@ WORKITEM_ATTRIBUTE_MAP: dict[str, str] = {
 
 
 class WorkItemSummarySchema(OrmModel):
+    """Summary of a work item in the EMPI"""
+
     id: int = Field(..., description="Work item ID")
     person_id: int = Field(..., description="Person ID")
     master_id: int = Field(..., description="Master record ID")
@@ -101,6 +113,8 @@ class WorkItemAttributes(OrmModel):
 
 
 class WorkItemSchema(OrmModel):
+    """A work item in the EMPI"""
+
     id: int = Field(..., description="Work item ID")
 
     type: int = Field(..., description="Work item type code")
@@ -151,11 +165,15 @@ class WorkItemSchema(OrmModel):
 
 
 class WorkItemIncomingSchema(OrmModel):
+    """Incoming records for a work item in the EMPI"""
+
     person: Optional[PersonSchema] = Field(None, description="Person record")
     master_records: list[MasterRecordSchema] = Field([], description="Master records")
 
 
 class WorkItemDestinationSchema(OrmModel):
+    """Destination records for a work item in the EMPI"""
+
     persons: list[PersonSchema] = Field([], description="Person records")
     master_record: Optional[MasterRecordSchema] = Field(
         None, description="Master record"
@@ -163,6 +181,8 @@ class WorkItemDestinationSchema(OrmModel):
 
 
 class WorkItemExtendedSchema(WorkItemSchema):
+    """A work item in the EMPI, with additional record information"""
+
     incoming: WorkItemIncomingSchema = Field(..., description="Incoming records")
     destination: WorkItemDestinationSchema = Field(
         ..., description="Destination records"

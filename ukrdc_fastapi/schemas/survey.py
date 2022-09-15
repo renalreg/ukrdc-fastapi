@@ -9,6 +9,8 @@ from .base import OrmModel
 
 
 class SurveyQuestionSchema(OrmModel):
+    """Information about a single survey question"""
+
     id: str = Field(..., description="Question ID")
     questiontypecode: str = Field(..., description="Question type code")
     response: str = Field(..., description="Question response")
@@ -37,18 +39,24 @@ class SurveyQuestionSchema(OrmModel):
 
 
 class SurveyScoreSchema(OrmModel):
+    """Information about a single survey score"""
+
     id: str = Field(..., description="Survey score ID")
     value: str = Field(..., description="Survey score value")
     scoretypecode: str = Field(..., description="Survey score type code")
 
 
 class SurveyLevelSchema(OrmModel):
+    """Information about a single survey level"""
+
     id: str = Field(..., description="Survey level ID")
     value: str = Field(..., description="Survey level value")
     leveltypecode: str = Field(..., description="Survey level type code")
 
 
 class SurveySchema(OrmModel):
+    """Information about a single survey"""
+
     questions: list[SurveyQuestionSchema] = Field([], description="Survey questions")
     scores: list[SurveyScoreSchema] = Field([], description="Survey scores")
     levels: list[SurveyLevelSchema] = Field([], description="Survey levels")

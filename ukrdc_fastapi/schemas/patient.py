@@ -9,18 +9,24 @@ GenderType = Literal["1", "2", "9"]
 
 
 class NameSchema(OrmModel):
+    """Patient name"""
+
     given: str = Field(..., description="Given name")
     family: str = Field(..., description="Family name")
     nameuse: Optional[str] = Field(None, description="Name use code")
 
 
 class NumberSchema(OrmModel):
+    """Patient identifier number, e.g. NHS number, or internal hospital number"""
+
     patientid: str = Field(..., description="Patient number")
     organization: str = Field(..., description="Patient number organization code")
     numbertype: str = Field(..., description="Patient number type code")
 
 
 class AddressSchema(OrmModel):
+    """Patient address"""
+
     from_time: Optional[datetime.date] = Field(None, description="Address start date")
     to_time: Optional[datetime.date] = Field(None, description="Address end date")
     street: Optional[str] = Field(None, description="Street address")
@@ -36,12 +42,16 @@ class AddressSchema(OrmModel):
 
 
 class ContactDetailSchema(OrmModel):
+    """Patient contact detail"""
+
     use: Optional[str] = Field(None, description="Contact detail use code")
     value: Optional[str] = Field(None, description="Contact detail value")
     commenttext: Optional[str] = Field(None, description="Contact detail comment")
 
 
 class GPInfo(OrmModel):
+    """Patient GP information"""
+
     code: str = Field(..., description="GP code")
     gpname: Optional[str] = Field(None, description="GP name")
     street: Optional[str] = Field(None, description="GP street address")
@@ -51,6 +61,8 @@ class GPInfo(OrmModel):
 
 
 class FamilyDoctorSchema(OrmModel):
+    """Patient family doctor information"""
+
     id: str = Field(..., description="Family doctor ID")
     gpname: Optional[str] = Field(None, description="GP name")
 
@@ -79,6 +91,8 @@ class FamilyDoctorSchema(OrmModel):
 
 
 class PatientSchema(OrmModel):
+    """Patient information"""
+
     names: list[NameSchema] = Field(..., description="Patient names")
     numbers: list[NumberSchema] = Field(..., description="Patient numbers")
     addresses: list[AddressSchema] = Field(..., description="Patient addresses")

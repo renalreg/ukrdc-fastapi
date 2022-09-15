@@ -13,6 +13,8 @@ from ukrdc_fastapi.utils import daterange
 
 
 class MultipleUKRDCIDGroupItem(OrmModel):
+    """A single record in a group of records with multiple UKRDC IDs."""
+
     last_updated: datetime.datetime = Field(
         ..., description="Timestamp of the last time this record was checked"
     )
@@ -20,6 +22,8 @@ class MultipleUKRDCIDGroupItem(OrmModel):
 
 
 class MultipleUKRDCIDGroup(OrmModel):
+    """A group of records with multiple UKRDC IDs."""
+
     group_id: int = Field(..., description="Group ID")
     records: list[MultipleUKRDCIDGroupItem] = Field(
         ..., description="Records in this group"

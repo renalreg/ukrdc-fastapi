@@ -20,7 +20,7 @@ router = APIRouter(tags=["Mirth"])
 
 
 class MirthPage(OrmModel):
-    """Like a pagination Page but without a total"""
+    """A pagination Page without a total"""
 
     page: int = Field(..., description="Page number")
     size: int = Field(..., description="Page size")

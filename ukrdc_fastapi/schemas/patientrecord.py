@@ -17,27 +17,37 @@ SendingExtract = Literal["PV", "UKRDC", "UKRR", "RADAR", "SURVEY", "PVMIG", "HSM
 
 
 class ProgramMembershipSchema(OrmModel):
+    """A program membership record."""
+
     program_name: str = Field(..., description="Program name")
     from_time: Optional[datetime.date] = Field(None, description="Program start date")
     to_time: Optional[datetime.date] = Field(None, description="Program end date")
 
 
 class SocialHistorySchema(OrmModel):
+    """A social history record."""
+
     id: str = Field(..., description="Social history ID")
     pid: str = Field(..., description="Patient ID")
 
 
 class FamilyHistorySchema(OrmModel):
+    """A family history record."""
+
     id: str = Field(..., description="Family history ID")
     pid: str = Field(..., description="Patient ID")
 
 
 class AllergySchema(OrmModel):
+    """An allergy record."""
+
     id: str = Field(..., description="Allergy ID")
     pid: str = Field(..., description="Patient ID")
 
 
 class DiagnosisSchema(OrmModel):
+    """A diagnosis record."""
+
     id: str = Field(..., description="Diagnosis ID")
     pid: str = Field(..., description="Patient ID")
 
@@ -58,6 +68,8 @@ class DiagnosisSchema(OrmModel):
 
 
 class RenalDiagnosisSchema(OrmModel):
+    """A renal diagnosis record."""
+
     pid: str = Field(..., description="Patient ID")
 
     diagnosis_code: Optional[str] = Field(None, description="Diagnosis code")
@@ -74,11 +86,15 @@ class RenalDiagnosisSchema(OrmModel):
 
 
 class ProcedureSchema(OrmModel):
+    """A procedure record."""
+
     id: str = Field(..., description="Procedure ID")
     pid: str = Field(..., description="Patient ID")
 
 
 class DocumentSummarySchema(OrmModel):
+    """Summary of a patient document."""
+
     id: str = Field(..., description="Document ID")
     pid: str = Field(..., description="Patient ID")
     documenttime: Optional[datetime.datetime] = Field(
@@ -96,6 +112,8 @@ class DocumentSummarySchema(OrmModel):
 
 
 class DocumentSchema(DocumentSummarySchema):
+    """A patient document."""
+
     idx: Optional[int] = Field(None, description="Document index")
 
     notetext: Optional[str] = Field(None, description="Document note text")
@@ -155,6 +173,8 @@ class DocumentSchema(DocumentSummarySchema):
 
 
 class EncounterSchema(OrmModel):
+    """An encounter event."""
+
     id: str = Field(..., description="Encounter ID")
     pid: str = Field(..., description="Patient ID")
     from_time: Optional[datetime.datetime] = Field(None, description="Encounter start")
@@ -162,11 +182,15 @@ class EncounterSchema(OrmModel):
 
 
 class ClinicalRelationshipSchema(OrmModel):
+    """A clinical relationship record."""
+
     id: str = Field(..., description="Clinical relationship ID")
     pid: str = Field(..., description="Patient ID")
 
 
 class PVDeleteSchema(OrmModel):
+    """A PV delete record. These are only used internally for passing deletions to PatientView."""
+
     did: int = Field(..., description="Delete ID")
     pid: str = Field(..., description="Patient ID")
     observation_time: Optional[datetime.datetime] = Field(
@@ -176,7 +200,7 @@ class PVDeleteSchema(OrmModel):
 
 
 class PatientRecordSummarySchema(OrmModel):
-    """Schema for lists of PatientRecords"""
+    """A patient record summary."""
 
     pid: str = Field(..., description="Patient ID")
     sendingfacility: str = Field(..., description="Sending facility")
@@ -198,7 +222,7 @@ class PatientRecordSummarySchema(OrmModel):
 
 
 class PatientRecordSchema(PatientRecordSummarySchema):
-    """Schema for PatientRecord resources"""
+    """A patient record."""
 
     master_id: Optional[int] = Field(None, description="Master record ID")
 
@@ -227,7 +251,7 @@ class PatientRecordSchema(PatientRecordSummarySchema):
 
 
 class PatientRecordFullSchema(PatientRecordSummarySchema):
-    """Schema for hashing all PatientRecord data"""
+    """A patient record with all related data."""
 
     social_histories: list[SocialHistorySchema] = Field(
         [], description="Social histories"

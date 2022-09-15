@@ -32,6 +32,8 @@ router = APIRouter(tags=["Messages"])
 
 
 class MessageSourceSchema(OrmModel):
+    """A message source file"""
+
     content: Optional[str] = Field(None, description="Message content")
     content_type: Optional[str] = Field(None, description="Message content type")
 

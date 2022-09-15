@@ -7,6 +7,8 @@ from .base import OrmModel
 
 
 class MedicationSchema(OrmModel):
+    """Information about a single medication"""
+
     from_time: Optional[datetime.datetime] = Field(
         None, description="Time the patient started taking the medication"
     )

@@ -12,6 +12,8 @@ from .base import OrmModel
 
 
 class AccessEventSchema(OrmModel):
+    """Event information for a single HTTP access event"""
+
     id: int = Field(alias="event", description="Access event ID")
     time: datetime.datetime = Field(..., description="Access event timestamp")
 
@@ -25,6 +27,8 @@ class AccessEventSchema(OrmModel):
 
 
 class AuditEventSchema(OrmModel):
+    """Event information for a single audit event"""
+
     id: int = Field(..., description="Audit event ID")
     access_event: AccessEventSchema = Field(..., description="Access event")
 

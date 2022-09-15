@@ -20,6 +20,8 @@ DATA_HEALTH_PERMISSIONS = [
 
 
 class LastRunTime(OrmModel):
+    """Information about the last time a data health check was run"""
+
     last_run_time: datetime.datetime = Field(
         ..., description="Timestamp of last time the results were recalculated"
     )

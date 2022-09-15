@@ -7,6 +7,8 @@ from .base import OrmModel
 
 
 class LabOrderShortSchema(OrmModel):
+    """A short summary of a lab order"""
+
     id: str = Field(..., description="Lab order ID")
     pid: str = Field(..., description="Patient ID")
 
@@ -20,6 +22,8 @@ class LabOrderShortSchema(OrmModel):
 
 
 class ResultItemSchema(OrmModel):
+    """A single result item"""
+
     id: str = Field(..., description="Result ID")
     pid: str = Field(..., description="Patient ID")
 
@@ -40,12 +44,16 @@ class ResultItemSchema(OrmModel):
 
 
 class ResultItemServiceSchema(OrmModel):
+    """Information about a single lab service"""
+
     id: str = Field(..., description="Lab service ID")
     description: Optional[str] = Field(None, description="Lab service description")
     standard: str = Field(..., description="Lab service coding standard")
 
 
 class LabOrderSchema(LabOrderShortSchema):
+    """A lab order"""
+
     result_items: list[ResultItemSchema] = Field(
         ..., description="Result items for this lab order"
     )

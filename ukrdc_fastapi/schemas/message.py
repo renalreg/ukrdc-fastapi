@@ -7,6 +7,8 @@ from .base import OrmModel
 
 
 class ChannelSchema(OrmModel):
+    """Internal configuration information about a single Mirth channel"""
+
     id: str = Field(..., description="Channel ID")
     name: Optional[str] = Field(None, description="Channel name")
     store_first_message: Optional[bool] = Field(
@@ -18,6 +20,8 @@ class ChannelSchema(OrmModel):
 
 
 class MinimalMessageSchema(OrmModel):
+    """A minimal representation of a single message"""
+
     id: int = Field(..., description="Message ID")
     received: Optional[datetime.datetime] = Field(
         None, description="Message received timestamp"
@@ -33,6 +37,8 @@ class MinimalMessageSchema(OrmModel):
 
 
 class MessageSchema(MinimalMessageSchema):
+    """A full representation of a single message"""
+
     error: Optional[str] = Field(None, description="Error message, if any")
     status: Optional[str] = Field(None, description="Message status code")
 

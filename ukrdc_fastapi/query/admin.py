@@ -8,6 +8,8 @@ from ukrdc_fastapi.schemas.base import OrmModel
 
 
 class AdminCountsSchema(OrmModel):
+    """Counts of various objects in the UKRDC"""
+
     open_workitems: int = Field(..., description="Number of open work items")
     distinct_patients: int = Field(
         ...,
