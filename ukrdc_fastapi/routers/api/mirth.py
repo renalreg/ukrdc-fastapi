@@ -3,6 +3,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Security
 from mirth_client import MirthAPI
 from mirth_client.models import ChannelMessageModel
+from pydantic import Field
 from redis import Redis
 
 from ukrdc_fastapi.dependencies import get_mirth, get_redis
@@ -21,8 +22,8 @@ router = APIRouter(tags=["Mirth"])
 class MirthPage(OrmModel):
     """Like a pagination Page but without a total"""
 
-    page: int
-    size: int
+    page: int = Field(..., description="Page number")
+    size: int = Field(..., description="Page size")
 
 
 class MessagePage(MirthPage):

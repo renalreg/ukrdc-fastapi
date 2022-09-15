@@ -1,6 +1,7 @@
 from typing import Optional
 
 from fastapi.exceptions import HTTPException
+from pydantic import Field
 from sqlalchemy import and_, extract, func
 from sqlalchemy.orm import Session
 from ukrdc_sqla.ukrdc import Code, Facility, Patient, PatientRecord
@@ -12,24 +13,26 @@ from . import _assert_permission
 
 
 class AgePoint(OrmModel):
-    age: int
-    count: int
+    age: int = Field(..., description="Age in years (x-axis)")
+    count: int = Field(..., description="Number of patients (y-axis)")
 
 
 class GenderPoint(OrmModel):
-    gender: int
-    count: int
+    gender: int = Field(..., description="Gender code (x-axis)")
+    count: int = Field(..., description="Number of patients (y-axis)")
 
 
 class EthnicityPoint(OrmModel):
-    ethnicity: Optional[str]
-    count: int
+    ethnicity: Optional[str] = Field(..., description="Ethnicity code (x-axis)")
+    count: int = Field(..., description="Number of patients (y-axis)")
 
 
 class FacilityDemographicStats(OrmModel):
-    age_dist: list[AgePoint]
-    gender_dist: list[GenderPoint]
-    ethnicity_dist: list[EthnicityPoint]
+    age_dist: list[AgePoint] = Field([], description="Age distribution")
+    gender_dist: list[GenderPoint] = Field([], description="Gender code distribution")
+    ethnicity_dist: list[EthnicityPoint] = Field(
+        [], description="Ethnicity code distribution"
+    )
 
 
 def get_facility_demographics(

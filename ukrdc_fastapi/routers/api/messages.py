@@ -7,6 +7,7 @@ from fastapi import Security
 from fastapi.exceptions import HTTPException
 from mirth_client.mirth import MirthAPI
 from mirth_client.models import ConnectorMessageData, ConnectorMessageModel
+from pydantic import Field
 from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import MasterRecord
 
@@ -31,8 +32,8 @@ router = APIRouter(tags=["Messages"])
 
 
 class MessageSourceSchema(OrmModel):
-    content: Optional[str]
-    content_type: Optional[str]
+    content: Optional[str] = Field(None, description="Message content")
+    content_type: Optional[str] = Field(None, description="Message content type")
 
 
 @router.get(

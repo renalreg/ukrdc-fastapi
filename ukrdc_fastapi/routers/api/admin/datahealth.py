@@ -1,6 +1,7 @@
 import datetime
 
 from fastapi import APIRouter, Depends, Security
+from pydantic import Field
 from sqlalchemy.orm import Session
 from ukrdc_sqla.stats import LastRunTimes
 
@@ -19,7 +20,9 @@ DATA_HEALTH_PERMISSIONS = [
 
 
 class LastRunTime(OrmModel):
-    last_run_time: datetime.datetime
+    last_run_time: datetime.datetime = Field(
+        ..., description="Timestamp of last time the results were recalculated"
+    )
 
 
 @router.get(

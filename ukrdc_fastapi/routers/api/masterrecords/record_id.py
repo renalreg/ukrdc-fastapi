@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi import Query as QueryParam
 from fastapi import Response, Security
 from mirth_client import MirthAPI
+from pydantic import Field
 from redis import Redis
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_204_NO_CONTENT
@@ -58,9 +59,15 @@ from ukrdc_fastapi.utils.sort import SQLASorter, make_sqla_sorter
 
 
 class MasterRecordStatisticsSchema(OrmModel):
-    workitems: int
-    errors: int
-    ukrdcids: int
+    workitems: int = Field(
+        ..., description="Number of workitems related to this master record"
+    )
+    errors: int = Field(
+        ..., description="Number of error messages related to this master record"
+    )
+    ukrdcids: int = Field(
+        ..., description="Number of UKRDC IDs related to this master record"
+    )
 
 
 router = APIRouter()

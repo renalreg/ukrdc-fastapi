@@ -18,13 +18,13 @@ from ukrdc_fastapi.schemas.facility import FacilitySchema
 class FacilityExtractsSchema(OrmModel):
     """Extract counts for a facility"""
 
-    ukrdc: int
-    pv: int
-    radar: int
-    survey: int
-    pvmig: int
-    hsmig: int
-    ukrr: int
+    ukrdc: int = Field(..., description="Number of UKRDC extract records")
+    pv: int = Field(..., description="Number of PatientView extract records")
+    radar: int = Field(..., description="Number of RADAR extract records")
+    survey: int = Field(..., description="Number of Survey records")
+    pvmig: int = Field(..., description="Number of PatientView migrated records")
+    hsmig: int = Field(..., description="Number of HealthShare migrated records")
+    ukrr: int = Field(..., description="Number of UKRR extract records")
 
 
 class FacilityDataFlowSchema(OrmModel):
