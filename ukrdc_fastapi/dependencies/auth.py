@@ -38,6 +38,8 @@ class Permissions:
     UNIT_PREFIX = "ukrdc:unit:"
     UNIT_WILDCARD = "*"
 
+    UNIT_ALL = UNIT_PREFIX + UNIT_WILDCARD
+
     @classmethod
     def all(cls):
         """Return all permissions for a superuser"""

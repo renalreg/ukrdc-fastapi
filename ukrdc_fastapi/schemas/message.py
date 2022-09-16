@@ -7,30 +7,48 @@ from .base import OrmModel
 
 
 class ChannelSchema(OrmModel):
-    id: str
-    name: Optional[str]
-    store_first_message: Optional[bool]
-    store_last_message: Optional[bool]
+    """Internal configuration information about a single Mirth channel"""
+
+    id: str = Field(..., description="Channel ID")
+    name: Optional[str] = Field(None, description="Channel name")
+    store_first_message: Optional[bool] = Field(
+        None, description="Is the first connector message of each message stored?"
+    )
+    store_last_message: Optional[bool] = Field(
+        None, description="Is the last connector message of each message stored?"
+    )
 
 
 class MinimalMessageSchema(OrmModel):
-    id: int
-    received: Optional[datetime.datetime]
-    msg_status: str
-    ni: Optional[str]
-    filename: Optional[str]
-    facility: Optional[str]
+    """A minimal representation of a single message"""
+
+    id: int = Field(..., description="Message ID")
+    received: Optional[datetime.datetime] = Field(
+        None, description="Message received timestamp"
+    )
+    msg_status: str = Field(..., description="Message status code")
+    ni: Optional[str] = Field(
+        None, description="National ID of the patient the message is about"
+    )
+    filename: Optional[str] = Field(None, description="Filename of the message")
+    facility: Optional[str] = Field(
+        None, description="Facility code of the message sender"
+    )
 
 
 class MessageSchema(MinimalMessageSchema):
-    error: Optional[str]
-    status: Optional[str]
+    """A full representation of a single message"""
+
+    error: Optional[str] = Field(None, description="Error message, if any")
+    status: Optional[str] = Field(None, description="Message status code")
 
     # Mirth message
     # Field names are determined by ORM, but we alias to something more useful for the API
-    message_id: str = Field(alias="mirthMessageId")
-    channel_id: str = Field(alias="mirthChannelId")
-    mirth_channel: Optional[str]
+    message_id: str = Field(alias="mirthMessageId", description="Mirth message ID")
+    channel_id: str = Field(alias="mirthChannelId", description="Mirth channel ID")
+    mirth_channel: Optional[str] = Field(
+        None, description="Mirth channel name, if known"
+    )
 
     _channel_id_name_map: dict[str, str]
 

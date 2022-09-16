@@ -5,7 +5,7 @@ from ..utils import days_ago
 
 async def test_facilities(client):
     response = await client.get(
-        f"{configuration.base_url}/v1/facilities?include_inactive=true"
+        f"{configuration.base_url}/facilities?include_inactive=true"
     )
     ids = {item.get("id") for item in response.json()}
     assert ids == {
@@ -16,7 +16,7 @@ async def test_facilities(client):
 
 async def test_facility_detail(client):
     response = await client.get(
-        f"{configuration.base_url}/v1/facilities/TEST_SENDING_FACILITY_1"
+        f"{configuration.base_url}/facilities/TEST_SENDING_FACILITY_1"
     )
     json = response.json()
     assert json["id"] == "TEST_SENDING_FACILITY_1"
@@ -24,7 +24,7 @@ async def test_facility_detail(client):
 
 async def test_facility_error_history(client):
     response = await client.get(
-        f"{configuration.base_url}/v1/facilities/TEST_SENDING_FACILITY_1/error_history"
+        f"{configuration.base_url}/facilities/TEST_SENDING_FACILITY_1/error_history"
     )
     json = response.json()
     assert len(json) == 365
@@ -33,7 +33,7 @@ async def test_facility_error_history(client):
 
 async def test_facility_patients_latest_errors(client):
     response = await client.get(
-        f"{configuration.base_url}/v1/facilities/TEST_SENDING_FACILITY_1/patients_latest_errors"
+        f"{configuration.base_url}/facilities/TEST_SENDING_FACILITY_1/patients_latest_errors"
     )
     json = response.json()
     messages = json.get("items")
@@ -42,9 +42,9 @@ async def test_facility_patients_latest_errors(client):
     assert messages[0].get("id") == 2
 
 
-async def test_facility_stats_demographics(client):
+async def test_facility_demographics(client):
     response = await client.get(
-        f"{configuration.base_url}/v1/facilities/TEST_SENDING_FACILITY_1/stats/demographics"
+        f"{configuration.base_url}/facilities/TEST_SENDING_FACILITY_1/demographics"
     )
     json = response.json()
 

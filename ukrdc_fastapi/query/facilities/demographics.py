@@ -1,6 +1,7 @@
 from typing import Optional
 
 from fastapi.exceptions import HTTPException
+from pydantic import Field
 from sqlalchemy import and_, extract, func
 from sqlalchemy.orm import Session
 from ukrdc_sqla.ukrdc import Code, Facility, Patient, PatientRecord
@@ -8,31 +9,41 @@ from ukrdc_sqla.ukrdc import Code, Facility, Patient, PatientRecord
 from ukrdc_fastapi.dependencies.auth import UKRDCUser
 from ukrdc_fastapi.schemas.base import OrmModel
 
-from .. import _assert_permission
+from . import _assert_permission
 
 
 class AgePoint(OrmModel):
-    age: int
-    count: int
+    """Histogram point for age distribution"""
+
+    age: int = Field(..., description="Age in years (x-axis)")
+    count: int = Field(..., description="Number of patients (y-axis)")
 
 
 class GenderPoint(OrmModel):
-    gender: int
-    count: int
+    """Histogram point for gender distribution"""
+
+    gender: int = Field(..., description="Gender code (x-axis)")
+    count: int = Field(..., description="Number of patients (y-axis)")
 
 
 class EthnicityPoint(OrmModel):
-    ethnicity: Optional[str]
-    count: int
+    """Histogram point for ethnicity distribution"""
+
+    ethnicity: Optional[str] = Field(..., description="Ethnicity code (x-axis)")
+    count: int = Field(..., description="Number of patients (y-axis)")
 
 
 class FacilityDemographicStats(OrmModel):
-    age_dist: list[AgePoint]
-    gender_dist: list[GenderPoint]
-    ethnicity_dist: list[EthnicityPoint]
+    """Basic demographic statistics for a facility"""
+
+    age_dist: list[AgePoint] = Field(..., description="Age distribution")
+    gender_dist: list[GenderPoint] = Field(..., description="Gender code distribution")
+    ethnicity_dist: list[EthnicityPoint] = Field(
+        ..., description="Ethnicity code distribution"
+    )
 
 
-def get_facility_stats_demographics(
+def get_facility_demographics(
     ukrdc3: Session,
     facility_code: str,
     user: UKRDCUser,

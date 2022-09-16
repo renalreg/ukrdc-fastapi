@@ -5,12 +5,12 @@ name = "ukrdc-fastapi"
 packages = [
   {include = "ukrdc_fastapi"},
 ]
-version = "1.1.0"
+version = "2.0.0"
 
 [tool.poetry.dependencies]
 SQLAlchemy = "^1.4.40" 
-fastapi = "^0.81.0" 
-fastapi-pagination = {extras = ["sqlalchemy"], version = "^0.9.3"} 
+fastapi = "^0.84.0" 
+fastapi-pagination = {extras = ["sqlalchemy"], version = "^0.10.0"} 
 fastapi-utils = "^0.2.1" 
 httpx = "^0.23.0" 
 mirth-client = "^3.0.0" 

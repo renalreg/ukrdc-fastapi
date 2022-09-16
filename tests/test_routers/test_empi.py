@@ -3,7 +3,7 @@ from ukrdc_fastapi.config import configuration
 
 async def test_merge(client):
     response = await client.post(
-        f"{configuration.base_url}/v1/empi/merge",
+        f"{configuration.base_url}/empi/merge",
         json={"superseding": 1, "superseded": 2},
     )
     assert response.json().get("status") == "success"
@@ -15,7 +15,7 @@ async def test_merge(client):
 
 async def test_unlink(client):
     response = await client.post(
-        f"{configuration.base_url}/v1/empi/unlink",
+        f"{configuration.base_url}/empi/unlink",
         json={"personId": 4, "comment": "comment", "masterId": 1},
     )
 

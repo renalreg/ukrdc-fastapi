@@ -1,37 +1,59 @@
 import datetime
 from typing import Optional
 
+from pydantic import Field
+
 from .base import OrmModel
 
 
 class LabOrderShortSchema(OrmModel):
-    id: str
-    pid: str
+    """A short summary of a lab order"""
 
-    entered_at_description: Optional[str]
-    entered_at: Optional[str]
-    specimen_collected_time: Optional[datetime.datetime]
+    id: str = Field(..., description="Lab order ID")
+    pid: str = Field(..., description="Patient ID")
+
+    entered_at_description: Optional[str] = Field(
+        None, description="Entered at facility description"
+    )
+    entered_at: Optional[str] = Field(None, description="Entered at facility code")
+    specimen_collected_time: Optional[datetime.datetime] = Field(
+        None, description="Specimen collected timestamp"
+    )
 
 
 class ResultItemSchema(OrmModel):
-    id: str
-    pid: str
+    """A single result item"""
 
-    order_id: str
-    service_id: str
-    service_id_description: Optional[str]
-    value: Optional[str]
-    value_units: Optional[str]
-    result_type: Optional[str]
-    pre_post: Optional[str]
-    observation_time: Optional[datetime.datetime]
+    id: str = Field(..., description="Result ID")
+    pid: str = Field(..., description="Patient ID")
+
+    order_id: str = Field(..., description="Lab order ID")
+    service_id: str = Field(..., description="Lab service ID")
+    service_id_description: Optional[str] = Field(
+        None, description="Lab service description"
+    )
+    value: Optional[str] = Field(None, description="Result value")
+    value_units: Optional[str] = Field(
+        None, description="Result value units of measurement"
+    )
+    result_type: Optional[str] = Field(None, description="Result type")
+    pre_post: Optional[str] = Field(None, description="Pre- or post- dialysis")
+    observation_time: Optional[datetime.datetime] = Field(
+        None, description="Observation timestamp"
+    )
 
 
 class ResultItemServiceSchema(OrmModel):
-    id: str
-    description: Optional[str]
-    standard: str
+    """Information about a single lab service"""
+
+    id: str = Field(..., description="Lab service ID")
+    description: Optional[str] = Field(None, description="Lab service description")
+    standard: str = Field(..., description="Lab service coding standard")
 
 
 class LabOrderSchema(LabOrderShortSchema):
-    result_items: list[ResultItemSchema]
+    """A lab order"""
+
+    result_items: list[ResultItemSchema] = Field(
+        ..., description="Result items for this lab order"
+    )

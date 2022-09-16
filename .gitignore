@@ -153,6 +153,9 @@ cython_debug/
 data/
 
 # Client files
-openapitools.json
-clients/openapi.json
-clients/typescript-axios-client
+/typescript-axios-client
+/openapitools.json
+/clients/openapi.json
+
+node_modules/
+docs/

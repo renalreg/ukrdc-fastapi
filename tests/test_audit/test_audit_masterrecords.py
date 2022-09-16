@@ -5,7 +5,7 @@ from ukrdc_fastapi.schemas.patientrecord import PatientRecordSummarySchema
 
 
 async def test_masterrecord_detail(client, audit_session):
-    response = await client.get(f"{configuration.base_url}/v1/masterrecords/1")
+    response = await client.get(f"{configuration.base_url}/masterrecords/1")
     assert response.status_code == 200
 
     events = audit_session.query(AuditEvent).all()
@@ -23,7 +23,7 @@ async def test_masterrecord_detail(client, audit_session):
 async def test_masterrecord_related(client, audit_session):
     # Check expected links
 
-    response = await client.get(f"{configuration.base_url}/v1/masterrecords/1/related")
+    response = await client.get(f"{configuration.base_url}/masterrecords/1/related")
     assert response.status_code == 200
     mrecs = [MasterRecordSchema(**item) for item in response.json()]
     returned_ids = {item.id for item in mrecs}
@@ -48,9 +48,7 @@ async def test_masterrecord_related(client, audit_session):
 
 
 async def test_masterrecord_statistics(client, audit_session):
-    response = await client.get(
-        f"{configuration.base_url}/v1/masterrecords/1/statistics"
-    )
+    response = await client.get(f"{configuration.base_url}/masterrecords/1/statistics")
     assert response.status_code == 200
 
     events = audit_session.query(AuditEvent).all()
@@ -72,9 +70,7 @@ async def test_masterrecord_statistics(client, audit_session):
 
 
 async def test_masterrecord_linkrecords(client, audit_session):
-    response = await client.get(
-        f"{configuration.base_url}/v1/masterrecords/1/linkrecords"
-    )
+    response = await client.get(f"{configuration.base_url}/masterrecords/1/linkrecords")
     assert response.status_code == 200
 
     events = audit_session.query(AuditEvent).all()
@@ -113,7 +109,7 @@ async def test_masterrecord_linkrecords(client, audit_session):
 
 
 async def test_masterrecord_messages(client, audit_session):
-    response = await client.get(f"{configuration.base_url}/v1/masterrecords/1/messages")
+    response = await client.get(f"{configuration.base_url}/masterrecords/1/messages")
     assert response.status_code == 200
 
     events = audit_session.query(AuditEvent).all()
@@ -134,9 +130,7 @@ async def test_masterrecord_messages(client, audit_session):
 
 
 async def test_masterrecord_workitems(client, audit_session):
-    response = await client.get(
-        f"{configuration.base_url}/v1/masterrecords/1/workitems"
-    )
+    response = await client.get(f"{configuration.base_url}/masterrecords/1/workitems")
     assert response.status_code == 200
     workitems = [WorkItemSchema(**item) for item in response.json()]
 
@@ -173,7 +167,7 @@ async def test_masterrecord_workitems(client, audit_session):
 
 
 async def test_masterrecord_persons(client, audit_session):
-    response = await client.get(f"{configuration.base_url}/v1/masterrecords/1/persons")
+    response = await client.get(f"{configuration.base_url}/masterrecords/1/persons")
     assert response.status_code == 200
     persons = [PersonSchema(**item) for item in response.json()]
     returned_ids = {item.id for item in persons}
@@ -199,7 +193,7 @@ async def test_masterrecord_persons(client, audit_session):
 
 async def test_masterrecord_patientrecords(client, audit_session):
     response = await client.get(
-        f"{configuration.base_url}/v1/masterrecords/1/patientrecords"
+        f"{configuration.base_url}/masterrecords/1/patientrecords"
     )
     assert response.status_code == 200
     records = [PatientRecordSummarySchema(**item) for item in response.json()]

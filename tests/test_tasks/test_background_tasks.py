@@ -93,7 +93,7 @@ async def test_get_task(client_with_tasks):
     task_id = response.json().get("id")
 
     task_status = await client_with_tasks.get(
-        f"{configuration.base_url}/v1/tasks/{task_id}"
+        f"{configuration.base_url}/tasks/{task_id}"
     )
     assert task_status.status_code == 200
     assert task_status.json().get("status") == "finished"
@@ -108,7 +108,7 @@ async def test_get_task_error(client_with_tasks):
     task_id = response.json().get("id")
 
     task_status = await client_with_tasks.get(
-        f"{configuration.base_url}/v1/tasks/{task_id}"
+        f"{configuration.base_url}/tasks/{task_id}"
     )
     assert task_status.status_code == 200
     assert task_status.json().get("status") == "failed"
@@ -118,7 +118,7 @@ async def test_get_task_error(client_with_tasks):
 @pytest.mark.asyncio
 async def test_get_task_missing(client_with_tasks):
     task_status = await client_with_tasks.get(
-        f"{configuration.base_url}/v1/tasks/00000000-0000-0000-0000-000000000000"
+        f"{configuration.base_url}/tasks/00000000-0000-0000-0000-000000000000"
     )
     assert task_status.status_code == 404
 
@@ -132,7 +132,7 @@ async def test_get_tasks_list(client_with_tasks):
         client_with_tasks.post("/start_task", json={"time_to_wait": 0.1, "bad": True}),
     )
 
-    tasks_list = await client_with_tasks.get(f"{configuration.base_url}/v1/tasks")
+    tasks_list = await client_with_tasks.get(f"{configuration.base_url}/tasks")
     assert tasks_list.status_code == 200
     assert len(tasks_list.json().get("items")) == 3
 
@@ -153,7 +153,7 @@ async def test_get_tasks_private(client_with_tasks):
         client_with_tasks.post("/start_task", json={"time_to_wait": 0.1, "bad": True}),
     )
 
-    tasks_list = await client_with_tasks.get(f"{configuration.base_url}/v1/tasks")
+    tasks_list = await client_with_tasks.get(f"{configuration.base_url}/tasks")
     assert tasks_list.status_code == 200
     # Assert the private task started by another user is excluded
     assert len(tasks_list.json().get("items")) == 2

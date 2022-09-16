@@ -1,7 +1,7 @@
 import datetime
 from typing import Optional
 
-from pydantic import root_validator
+from pydantic import Field, root_validator
 
 from ukrdc_fastapi.utils.codes import yhq
 
@@ -9,13 +9,15 @@ from .base import OrmModel
 
 
 class SurveyQuestionSchema(OrmModel):
-    id: str
-    questiontypecode: str
-    response: str
+    """Information about a single survey question"""
 
-    question_group: Optional[str]
-    question_type: Optional[str]
-    response_text: Optional[str]
+    id: str = Field(..., description="Question ID")
+    questiontypecode: str = Field(..., description="Question type code")
+    response: str = Field(..., description="Question response")
+
+    question_group: Optional[str] = Field(None, description="Question group")
+    question_type: Optional[str] = Field(None, description="Question type")
+    response_text: Optional[str] = Field(None, description="Question response text")
 
     @root_validator
     def convert_codes(cls, values):  # pylint: disable=no-self-argument
@@ -37,25 +39,31 @@ class SurveyQuestionSchema(OrmModel):
 
 
 class SurveyScoreSchema(OrmModel):
-    id: str
-    value: str
-    scoretypecode: str
+    """Information about a single survey score"""
+
+    id: str = Field(..., description="Survey score ID")
+    value: str = Field(..., description="Survey score value")
+    scoretypecode: str = Field(..., description="Survey score type code")
 
 
 class SurveyLevelSchema(OrmModel):
-    id: str
-    value: str
-    leveltypecode: str
+    """Information about a single survey level"""
+
+    id: str = Field(..., description="Survey level ID")
+    value: str = Field(..., description="Survey level value")
+    leveltypecode: str = Field(..., description="Survey level type code")
 
 
 class SurveySchema(OrmModel):
-    questions: list[SurveyQuestionSchema]
-    scores: list[SurveyScoreSchema]
-    levels: list[SurveyLevelSchema]
+    """Information about a single survey"""
 
-    id: str
-    pid: str
-    surveytime: datetime.datetime
-    surveytypecode: str
-    enteredbycode: Optional[str]
-    enteredatcode: Optional[str]
+    questions: list[SurveyQuestionSchema] = Field(..., description="Survey questions")
+    scores: list[SurveyScoreSchema] = Field(..., description="Survey scores")
+    levels: list[SurveyLevelSchema] = Field(..., description="Survey levels")
+
+    id: str = Field(..., description="Survey ID")
+    pid: str = Field(..., description="Patient ID")
+    surveytime: datetime.datetime = Field(..., description="Survey timestamp")
+    surveytypecode: str = Field(..., description="Survey type code")
+    enteredbycode: Optional[str] = Field(None, description="Survey author code")
+    enteredatcode: Optional[str] = Field(None, description="Survey organization code")

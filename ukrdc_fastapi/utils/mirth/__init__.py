@@ -4,7 +4,7 @@ from uuid import UUID
 
 from mirth_client import Channel, MirthAPI
 from mirth_client.models import ChannelGroup, ChannelModel, ChannelStatistics
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from redis import Redis
 
 from ukrdc_fastapi.config import settings
@@ -15,26 +15,36 @@ from ukrdc_fastapi.utils.cache import BasicCache
 class MirthMessageResponseSchema(BaseModel):
     """Response schema for Mirth message post views"""
 
-    status: str
-    message: str
+    status: str = Field(..., description="Response status of the message")
+    message: str = Field(..., description="Submitted message content")
 
 
 class ChannelFullModel(OrmModel):
-    id: UUID
-    name: str
-    description: Optional[str]
-    revision: str
+    """Full Mirth channel information, including statistics"""
 
-    statistics: Optional[ChannelStatistics]
+    id: UUID = Field(..., description="Mirth channel ID")
+    name: str = Field(..., description="Mirth channel name")
+    description: Optional[str] = Field(None, description="Mirth channel description")
+    revision: str = Field(..., description="Mirth channel revision")
+
+    statistics: Optional[ChannelStatistics] = Field(
+        None, description="Mirth channel statistics"
+    )
 
 
 class ChannelGroupModel(OrmModel):
-    id: UUID
-    name: str
-    description: Optional[str]
-    revision: str
+    """Mirth channel group information"""
 
-    channels: list[ChannelFullModel]
+    id: UUID = Field(..., description="Mirth channel group ID")
+    name: str = Field(..., description="Mirth channel group name")
+    description: Optional[str] = Field(
+        None, description="Mirth channel group description"
+    )
+    revision: str = Field(..., description="Mirth channel group revision")
+
+    channels: list[ChannelFullModel] = Field(
+        ..., description="Mirth channels in this group"
+    )
 
 
 async def get_channels(mirth: MirthAPI, redis: Redis) -> list[ChannelModel]:

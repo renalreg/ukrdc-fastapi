@@ -3,7 +3,7 @@ from ukrdc_fastapi.models.audit import AuditEvent
 
 
 async def test_access_event(client, audit_session):
-    path = f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A"
+    path = f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A"
     response = await client.get(path)
     assert response.status_code == 200
 

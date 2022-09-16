@@ -11,8 +11,8 @@ from ukrdc_fastapi.query.facilities.errors import (
     get_errors_history,
     get_patients_latest_errors,
 )
-from ukrdc_fastapi.query.facilities.stats.demographics import (
-    get_facility_stats_demographics,
+from ukrdc_fastapi.query.facilities.demographics import (
+    get_facility_demographics,
 )
 
 from ..utils import days_ago
@@ -148,7 +148,7 @@ def test_get_patients_latest_errors(ukrdc3_session, errorsdb_session, test_user)
 
 
 def test_get_facility_stats_demographics(ukrdc3_session, superuser):
-    stats = get_facility_stats_demographics(
+    stats = get_facility_demographics(
         ukrdc3_session, "TEST_SENDING_FACILITY_1", superuser
     )
     assert len(stats.age_dist) == 2
@@ -167,9 +167,7 @@ def test_get_facility_stats_demographics(ukrdc3_session, superuser):
 
 def test_get_facility_stats_demographics_denied(ukrdc3_session, test_user):
     with pytest.raises(PermissionsError):
-        get_facility_stats_demographics(
-            ukrdc3_session, "TEST_SENDING_FACILITY_2", test_user
-        )
+        get_facility_demographics(ukrdc3_session, "TEST_SENDING_FACILITY_2", test_user)
 
 
 def test_get_facility_extracts(ukrdc3_session, superuser):

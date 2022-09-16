@@ -4,7 +4,7 @@ from ukrdc_fastapi.config import configuration
 
 async def test_record_treatments(client):
     response = await client.get(
-        f"{configuration.base_url}/v1/patientrecords/PYTEST01:PV:00000000A/treatments"
+        f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/treatments"
     )
     assert response.status_code == 200
     assert {

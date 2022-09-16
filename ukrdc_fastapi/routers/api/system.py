@@ -1,6 +1,7 @@
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Security
+from pydantic import Field
 from sqlalchemy.orm import Session
 
 from ukrdc_fastapi.config import configuration
@@ -14,15 +15,31 @@ router = APIRouter(tags=["System Info"])
 
 
 class UserSchema(JSONModel):
-    permissions: Optional[list[str]]
-    email: Optional[str]
+    permissions: Optional[list[str]] = Field(
+        None, description="List of user permissions"
+    )
+    email: Optional[str] = Field(None, description="User email address")
 
 
 class SystemInfoSchema(JSONModel):
-    github_sha: Optional[str] = configuration.github_sha
-    github_ref: Optional[str] = configuration.github_ref
-    deployment_env: str = configuration.deployment_env
-    version: str = configuration.version
+    github_sha: Optional[str] = Field(
+        default=configuration.github_sha,
+        description="Git commit SHA of the running server version",
+    )
+    github_ref: Optional[str] = Field(
+        default=configuration.github_ref,
+        description="Git branch of the running server version",
+    )
+    deployment_env: str = Field(
+        default=configuration.deployment_env, description="Deployment environment"
+    )
+    version: str = Field(default=configuration.version, description="Server version")
+
+
+@router.get("/info", response_model=SystemInfoSchema)
+def system_info():
+    """Retreive basic system info"""
+    return SystemInfoSchema()
 
 
 @router.get("/user", response_model=UserSchema)
@@ -47,9 +64,3 @@ def update_system_user_preferences(
 ):
     """Update user preferences"""
     return update_user_preferences(usersdb, user, prefs)
-
-
-@router.get("/info", response_model=SystemInfoSchema)
-def system_info():
-    """Retreive basic system info"""
-    return SystemInfoSchema()
