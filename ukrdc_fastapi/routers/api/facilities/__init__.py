@@ -47,7 +47,7 @@ def facility_list(
     include_empty: bool = False,
     sorter: ObjectSorter = Depends(
         make_object_sorter(
-            "FacilityEnum",
+            "FacilitySorterEnum",
             [
                 "id",
                 "statistics.total_patients",
