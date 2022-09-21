@@ -47,13 +47,13 @@ def facility_list(
     include_empty: bool = False,
     sorter: ObjectSorter = Depends(
         make_object_sorter(
-            "FacilityEnum",
+            "FacilitySorterEnum",
             [
                 "id",
                 "statistics.total_patients",
                 "statistics.patients_receiving_message_error",
                 "data_flow.pkb_out",
-                "latest_message.last_message_received_at",
+                "last_message_received_at",
             ],
         )
     ),
