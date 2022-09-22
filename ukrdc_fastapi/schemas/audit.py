@@ -37,11 +37,9 @@ class AuditEventSchema(OrmModel):
 
     operation: str = Field(..., description="Audit event operation")
 
-    children: Optional[List["AuditEventSchema"]] = Field(
-        None, description="Child events"
-    )
+    children: List["AuditEventSchema"] = Field([], description="Child events")
 
-    identifiers: List[str] = Field(..., description="Additional resource identifiers")
+    identifiers: List[str] = Field([], description="Additional resource identifiers")
 
     def populate_identifiers(self, jtrace: Session, ukrdc3: Session):
         """

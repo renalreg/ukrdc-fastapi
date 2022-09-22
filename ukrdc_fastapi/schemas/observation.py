@@ -9,6 +9,11 @@ from .base import OrmModel
 class ObservationSchema(OrmModel):
     """Information about a single observation"""
 
+    observation_code: str = Field(..., description="The observation type code")
+    observation_code_std: str = Field(
+        ..., description="The observation type code standard"
+    )
+
     observation_time: datetime.datetime = Field(
         ..., description="Observation timestamp"
     )
