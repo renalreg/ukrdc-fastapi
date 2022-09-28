@@ -438,7 +438,7 @@ async def master_record_memberships_create_pkb(
                 500,
                 "Cannot create PKB membership for a patient with multiple UKRDC IDs",
             )
-        if len(records) == 0:
+        if not records:
             raise HTTPException(
                 500,
                 "Cannot create PKB membership for a patient with no UKRDC ID",

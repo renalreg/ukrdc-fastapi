@@ -1,4 +1,5 @@
 import datetime
+from contextlib import suppress
 from time import time
 from typing import Generator, Optional, Union
 
@@ -55,10 +56,8 @@ def parse_date(date_string: Optional[str]) -> Optional[datetime.datetime]:
     if not date_string:
         return None
     for fmt in ("%Y-%m-%d", "%d.%m.%Y", "%d/%m/%Y"):
-        try:
+        with suppress(ValueError):
             return datetime.datetime.strptime(date_string, fmt)
-        except ValueError:
-            pass
     return None
 
 

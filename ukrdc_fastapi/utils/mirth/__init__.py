@@ -276,7 +276,7 @@ async def get_channel_name(id_: str, mirth: MirthAPI, redis: Redis) -> Optional[
         Optional[str]: Channel name
     """
     id_map: dict[str, ChannelModel] = await get_channel_map(mirth, redis)
-    channel: Optional[ChannelModel] = id_map.get(id_, None)
+    channel: Optional[ChannelModel] = id_map.get(id_)
     if channel:
         return channel.name
     return None

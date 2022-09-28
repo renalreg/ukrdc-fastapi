@@ -175,7 +175,6 @@ def get_last_message_on_masterrecord(
             jtrace,
             record.id,
             user,
-            statuses=None,
             since=datetime.datetime.utcnow() - datetime.timedelta(days=365),
         )
         .filter(Message.facility != "TRACING")

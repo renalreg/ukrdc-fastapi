@@ -116,7 +116,7 @@ def get_patientrecords_related_to_masterrecord(
         Query: SQLAlchemy query
     """
     related_ukrdc_records = get_masterrecords_related_to_masterrecord(
-        jtrace, record_id, user, exclude_self=False
+        jtrace, record_id, user
     ).filter(MasterRecord.nationalid_type == "UKRDC")
 
     # Strip whitespace. Needed until we fix the issue with fixed-length nationalid column
