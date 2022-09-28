@@ -114,7 +114,7 @@ def _term_is_exact(item: str) -> bool:
     Returns:
         bool: Is the term an exact query
     """
-    return item[0] == '"' and item[-1] == '"'
+    return item[0] == item[-1] == '"'
 
 
 def _convert_query_to_pg_like(item: str) -> str:
@@ -178,10 +178,14 @@ def records_from_full_name(ukrdc3: Session, names: Iterable[str]):
     for name in names:
         query_term: str = _convert_query_to_pg_like(name).upper()
 
-        conditions.append(concat(Name.given, " ", Name.family).like(query_term))
-        conditions.append(concat(Name.family, " ", Name.given).like(query_term))
-        conditions.append(Name.given.like(query_term))
-        conditions.append(Name.family.like(query_term))
+        conditions.extend(
+            [
+                concat(Name.given, " ", Name.family).like(query_term),
+                concat(Name.family, " ", Name.given).like(query_term),
+                Name.given.like(query_term),
+                Name.family.like(query_term),
+            ]
+        )
 
     return ukrdc3.query(PatientRecord).join(Patient).join(Name).filter(or_(*conditions))
 

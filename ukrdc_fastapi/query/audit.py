@@ -43,9 +43,7 @@ def get_auditevents_related_to_masterrecord(
     record = get_masterrecord(jtrace, record_id, user)
 
     # Get all related master records
-    master_records = get_masterrecords_related_to_masterrecord(
-        jtrace, record.id, user, exclude_self=False
-    )
+    master_records = get_masterrecords_related_to_masterrecord(jtrace, record.id, user)
 
     # Get all related patient records
     patient_records = get_patientrecords_related_to_masterrecord(

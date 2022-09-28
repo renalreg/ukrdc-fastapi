@@ -186,7 +186,7 @@ def get_facilities(
         # Find pre-fetched total records count for this facility
         total_records = total_records_dict.get(facility.code.upper(), 0)
         # Find pre-fetched most recent message received time for this facility
-        last_message_received_at = most_recent_dict.get(facility.code.upper(), None)
+        last_message_received_at = most_recent_dict.get(facility.code.upper())
 
         include_this_facility = (include_inactive or (last_message_received_at)) and (
             include_empty or (total_records > 0)
@@ -194,7 +194,7 @@ def get_facilities(
 
         if include_this_facility:
             # Find pre-fetched description for this facility
-            description: Optional[str] = descriptions.get(facility.code.upper(), None)
+            description: Optional[str] = descriptions.get(facility.code.upper())
 
             # Find pre-fetched status counts for this facility
             status_stats: dict[str, int] = status_counts_dict.get(

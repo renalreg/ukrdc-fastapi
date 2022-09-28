@@ -56,7 +56,7 @@ def build_unlink_message(
     ud_element.text = str(description or "")
 
     ub_element = SubElement(root, "updatedBy")
-    ub_element.text = str(user)[:20]
+    ub_element.text = user[:20]
 
     return tostring(root, encoding="unicode")
 
@@ -87,7 +87,7 @@ def build_update_workitem_message(
     ud_element.text = str(description or "")[:100]
 
     ub_element = SubElement(root, "updatedBy")
-    ub_element.text = str(user)[:20]
+    ub_element.text = user[:20]
 
     return tostring(root, encoding="unicode")
 
@@ -118,7 +118,7 @@ def build_export_tests_message(pid: str) -> str:
     root = Element("result")
 
     pid_element = SubElement(root, "pid")
-    pid_element.text = str(pid)
+    pid_element.text = pid
 
     tst_element = SubElement(root, "tests")
     tst_element.text = "FULL"
@@ -138,7 +138,7 @@ def build_export_docs_message(pid: str) -> str:
     root = Element("result")
 
     pid_element = SubElement(root, "pid")
-    pid_element.text = str(pid)
+    pid_element.text = pid
 
     doc_element = SubElement(root, "documents")
     doc_element.text = "FULL"
@@ -158,7 +158,7 @@ def build_export_all_message(pid: str) -> str:
     root = Element("result")
 
     pid_element = SubElement(root, "pid")
-    pid_element.text = str(pid)
+    pid_element.text = pid
 
     tst_element = SubElement(root, "tests")
     tst_element.text = "FULL"
@@ -181,6 +181,6 @@ def build_export_radar_message(pid: str) -> str:
     root = Element("result")
 
     pid_element = SubElement(root, "pid")
-    pid_element.text = str(pid)
+    pid_element.text = pid
 
     return tostring(root, encoding="unicode")

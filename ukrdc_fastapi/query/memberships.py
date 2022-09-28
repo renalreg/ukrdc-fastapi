@@ -47,6 +47,6 @@ def record_has_active_membership(
         ProgramMembership.program_name.like(membership_type + "%")
     ).all()
 
-    if len(active_memberships_of_this_type) > 0:
+    if active_memberships_of_this_type:
         return True
     return False

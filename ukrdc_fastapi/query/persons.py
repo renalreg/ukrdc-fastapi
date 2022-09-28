@@ -78,7 +78,7 @@ def get_person_from_pid(jtrace: Session, pid: str, user: UKRDCUser) -> Person:
     )
     if len(persons) > 1:
         raise AmbigousQueryError(f"Multiple Person records found for PID {pid}")
-    if len(persons) == 0:
+    if not persons:
         raise EmptyQueryError(f"No Person records found for PID {pid}")
 
     person = persons[0]

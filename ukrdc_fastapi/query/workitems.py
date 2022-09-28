@@ -137,7 +137,7 @@ def get_extended_workitem(
     workitem = get_workitem(jtrace, workitem_id, user)
 
     incoming = {
-        "person": workitem.person if workitem.person else None,
+        "person": workitem.person or None,
         "master_records": get_masterrecords_related_to_person(
             jtrace, workitem.person_id, user, nationalid_type="UKRDC"
         )

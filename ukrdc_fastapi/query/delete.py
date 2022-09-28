@@ -79,7 +79,7 @@ def _find_empi_items_to_delete(jtrace: Session, pid: str) -> EMPIDeleteItems:
 
             # If the above query comes back empty, the Master Record is ONLY
             # linked to the Person being deleted, and so can itself be deleted
-            if len(link_records_related_to_other_persons) == 0:
+            if not link_records_related_to_other_persons:
                 master_record = jtrace.query(MasterRecord).get(master_id)
                 if master_record:
                     # Add the Master Record to be deleted
@@ -94,7 +94,7 @@ def _find_empi_items_to_delete(jtrace: Session, pid: str) -> EMPIDeleteItems:
     open_work_items: list[WorkItem] = [
         work_item for work_item in to_delete.work_items if work_item.status == 1
     ]
-    if len(open_work_items) > 0:
+    if open_work_items:
         raise OpenWorkItemError([str(work_item.id) for work_item in open_work_items])
 
     return to_delete
