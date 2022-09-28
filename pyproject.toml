@@ -22,7 +22,7 @@ python-stdnum = "^1.16"
 redis = "^4.3.3" 
 sentry-sdk = "^1.9.5" 
 single-source = "^0.3.0" 
-ukrdc-sqla = "^1.12.2" 
+ukrdc-sqla = "^1.13.0" 
 ukrdc-xsdata = "^3.3.0" 
 uvicorn = "^0.18.3" 
 
