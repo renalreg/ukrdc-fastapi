@@ -2,9 +2,10 @@ import datetime
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Security
+from redis import Redis
 from sqlalchemy.orm import Session
 
-from ukrdc_fastapi.dependencies import get_errorsdb, get_statsdb, get_ukrdc3
+from ukrdc_fastapi.dependencies import get_errorsdb, get_redis, get_statsdb, get_ukrdc3
 from ukrdc_fastapi.dependencies.audit import (
     Auditer,
     AuditOperation,
@@ -59,6 +60,7 @@ def facility_list(
     ),
     ukrdc3: Session = Depends(get_ukrdc3),
     errorsdb: Session = Depends(get_errorsdb),
+    redis: Redis = Depends(get_redis),
     user: UKRDCUser = Security(auth.get_user()),
 ):
     """Retreive a list of on-record facilities"""
@@ -66,6 +68,7 @@ def facility_list(
         ukrdc3,
         errorsdb,
         user,
+        redis,
         include_inactive=include_inactive,
         include_empty=include_empty,
     )
