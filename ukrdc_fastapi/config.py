@@ -42,6 +42,7 @@ class Settings(BaseSettings):
     cache_groups_seconds: int = 86400
     cache_statistics_seconds: int = 3600
     cache_dashboard_seconds: int = 900
+    cache_facilities_list_seconds: int = 3600
 
     swagger_client_id: str = ""
     app_client_id: str = ""
