@@ -272,8 +272,8 @@ def build_facilities_list(
 def get_facilities(
     ukrdc3: Session,
     errorsdb: Session,
-    user: UKRDCUser,
     redis: Redis,
+    user: UKRDCUser,
     include_inactive: bool = False,
     include_empty: bool = False,
 ) -> list[FacilityDetailsSchema]:

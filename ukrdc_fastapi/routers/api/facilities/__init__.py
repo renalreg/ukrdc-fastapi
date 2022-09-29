@@ -67,8 +67,8 @@ def facility_list(
     facilities = get_facilities(
         ukrdc3,
         errorsdb,
-        user,
         redis,
+        user,
         include_inactive=include_inactive,
         include_empty=include_empty,
     )
