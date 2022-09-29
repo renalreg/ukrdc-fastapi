@@ -6,10 +6,12 @@ from sqlalchemy.orm import Session
 
 from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_statsdb, get_ukrdc3
 from ukrdc_fastapi.dependencies.auth import Permissions, auth
+from ukrdc_fastapi.dependencies.cache import cache_factory
 from ukrdc_fastapi.query.admin import AdminCountsSchema, get_admin_counts
 from ukrdc_fastapi.query.stats import get_full_errors_history
 from ukrdc_fastapi.query.workitems import get_full_workitem_history
 from ukrdc_fastapi.schemas.common import HistoryPoint
+from ukrdc_fastapi.utils.cache import ResponseCache
 
 from . import datahealth
 
@@ -83,6 +85,16 @@ def admin_counts(
     ukrdc3: Session = Depends(get_ukrdc3),
     jtrace: Session = Depends(get_jtrace),
     errorsdb: Session = Depends(get_errorsdb),
+    cache: ResponseCache = Depends(cache_factory("admin:counts")),
 ):
     """Retreive basic counts across the UKRDC"""
-    return get_admin_counts(ukrdc3, jtrace, errorsdb)
+    # If no cached value exists, or the cached value has expired
+    if not cache.exists:
+        # Cache a computed value, and expire after 8 hours
+        cache.set(get_admin_counts(ukrdc3, jtrace, errorsdb), expire=28800)
+
+    # Add response cache headers to the response
+    cache.prepare_response()
+
+    # Fetch the cached value, coerse into the correct type, and return
+    return AdminCountsSchema(**cache.get())
