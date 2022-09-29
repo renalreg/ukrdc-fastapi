@@ -7,20 +7,20 @@ from ukrdc_fastapi.query.facilities import (
     get_facility,
     get_facility_extracts,
 )
+from ukrdc_fastapi.query.facilities.demographics import get_facility_demographics
 from ukrdc_fastapi.query.facilities.errors import (
     get_errors_history,
     get_patients_latest_errors,
-)
-from ukrdc_fastapi.query.facilities.demographics import (
-    get_facility_demographics,
 )
 
 from ..utils import days_ago
 
 
-def test_get_facilities_superuser(ukrdc3_session, stats_session, superuser):
+def test_get_facilities_superuser(
+    ukrdc3_session, stats_session, redis_session, superuser
+):
     all_facils = get_facilities(
-        ukrdc3_session, stats_session, superuser, include_inactive=True
+        ukrdc3_session, stats_session, redis_session, superuser, include_inactive=True
     )
     # Superuser should see all facilities
     assert {facil.id for facil in all_facils} == {
@@ -29,9 +29,9 @@ def test_get_facilities_superuser(ukrdc3_session, stats_session, superuser):
     }
 
 
-def test_get_facilities_user(ukrdc3_session, stats_session, test_user):
+def test_get_facilities_user(ukrdc3_session, stats_session, redis_session, test_user):
     all_facils = get_facilities(
-        ukrdc3_session, stats_session, test_user, include_inactive=True
+        ukrdc3_session, stats_session, redis_session, test_user, include_inactive=True
     )
     # Test user should see only TEST_SENDING_FACILITY_1
     assert {facil.id for facil in all_facils} == {"TEST_SENDING_FACILITY_1"}
