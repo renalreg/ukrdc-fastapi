@@ -1,5 +1,6 @@
 # UKRDC-FastAPI
 
+[![Test and Publish](https://github.com/renalreg/ukrdc-fastapi/actions/workflows/main.yml/badge.svg)](https://github.com/renalreg/ukrdc-fastapi/actions/workflows/main.yml)
 [![codecov](https://codecov.io/gh/renalreg/ukrdc-fastapi/branch/main/graph/badge.svg?token=5GYR8M6G1W)](https://codecov.io/gh/renalreg/ukrdc-fastapi)
 
 ## Documentation
