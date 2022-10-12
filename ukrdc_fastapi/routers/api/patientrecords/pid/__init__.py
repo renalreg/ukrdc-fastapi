@@ -332,8 +332,8 @@ def patient_laborder_delete(
     deletes = [
         PVDelete(
             pid=item.pid,
-            observation_time=item.observation_time,
-            service_id=item.service_id,
+            observationtime=item.observation_time,
+            serviceidcode=item.service_id,
         )
         for item in order.result_items
     ]
