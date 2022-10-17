@@ -1154,7 +1154,7 @@ python-versions = ">=3.7"
 
 [[package]]
 name = "ukrdc-sqla"
-version = "2.0.0b2"
+version = "2.0.0"
 description = "SQLAlchemy models for the UKRDC"
 category = "main"
 optional = false
@@ -1265,7 +1265,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "e5a8d8c82bcd6250bf4da9a96e888324807fd7865f7080f4026ed7ab232d72c5"
+content-hash = "cc4407e088e1f9a49c1393a9460f986ea8eee98704002b777e77a4aededba147"
 
 [metadata.files]
 acachecontrol = [
@@ -2214,8 +2214,8 @@ typing-extensions = [
     {file = "typing_extensions-4.4.0.tar.gz", hash = "sha256:1511434bb92bf8dd198c12b1cc812e800d4181cfcb867674e0f8279cc93087aa"},
 ]
 ukrdc-sqla = [
-    {file = "ukrdc_sqla-2.0.0b2-py3-none-any.whl", hash = "sha256:a6f720eaca6a7daa1d07997bf6db8b181a8fd3bb3f1538a3216d98347e813380"},
-    {file = "ukrdc_sqla-2.0.0b2.tar.gz", hash = "sha256:82e222036b9c841ea337eb7cb0e7b41313738b3f4ce0f1e5d122b5df0677e881"},
+    {file = "ukrdc_sqla-2.0.0-py3-none-any.whl", hash = "sha256:c89fd9f9f86e80019acd16f21abe7034900845719fa9cece089fb23785054245"},
+    {file = "ukrdc_sqla-2.0.0.tar.gz", hash = "sha256:02b2ecbb009fab1cc076ec57c094f4ee93b4a48a55027d3dea5a1137090709c2"},
 ]
 ukrdc-xsdata = [
     {file = "ukrdc-xsdata-3.3.0.post1.tar.gz", hash = "sha256:fc4ef1dfe94b00e0edeb97101dc4b02e3eb3a7ac4ff10e02a54528075e22261b"},
