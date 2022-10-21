@@ -30,7 +30,7 @@ def create_basic_patient(
     localpatientid: str,
     family_name: str,
     given_name: str,
-    birth_time: datetime,
+    birth_time: datetime.datetime,
     ukrdc3: Session,
     jtrace: Session,
 ):
@@ -42,35 +42,39 @@ def create_basic_patient(
         ukrdcid=ukrdcid,
         repository_update_date=datetime.datetime(2020, 3, 16),
         repository_creation_date=datetime.datetime(2020, 3, 16),
-    )
-
-    name = Name(id=id_, pid=pid, family=family_name, given=given_name, nameuse="L")
-    address = Address(
-        id=f"ADDRESS{id_}",
-        pid=pid,
-        street=f"12{id_} Conch Street",
-        town="Bikini Bottom",
-        county="Bikini County",
-        postcode="XX0 1AA",
-        country_description="Pacific Ocean",
-    )
-
-    patient = Patient(
-        pid=pid,
-        birth_time=birth_time,
-        gender=f"{id_%2 + 1}",
-        ethnic_group_code="G",
-        ethnic_group_description="ETHNICITY_GROUP",
-    )
-    patient_number = PatientNumber(
-        id=id_, pid=pid, patientid=nhs_number, organization="NHS", numbertype="NI"
+        patient=Patient(
+            pid=pid,
+            birth_time=birth_time,
+            gender=f"{id_%2 + 1}",
+            ethnic_group_code="G",
+            ethnic_group_description="ETHNICITY_GROUP",
+            names=[
+                Name(id=id_, pid=pid, family=family_name, given=given_name, nameuse="L")
+            ],
+            addresses=[
+                Address(
+                    id=f"ADDRESS{id_}",
+                    pid=pid,
+                    street=f"12{id_} Conch Street",
+                    town="Bikini Bottom",
+                    county="Bikini County",
+                    postcode="XX0 1AA",
+                    country_description="Pacific Ocean",
+                )
+            ],
+            numbers=[
+                PatientNumber(
+                    id=id_,
+                    pid=pid,
+                    patientid=nhs_number,
+                    organization="NHS",
+                    numbertype="NI",
+                )
+            ],
+        ),
     )
 
     ukrdc3.add(record)
-    ukrdc3.add(name)
-    ukrdc3.add(address)
-    ukrdc3.add(patient)
-    ukrdc3.add(patient_number)
 
     master_record_ukrdc = MasterRecord(
         id=id_,
