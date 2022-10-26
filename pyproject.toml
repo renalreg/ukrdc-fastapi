@@ -15,7 +15,7 @@ fastapi-utils = "^0.2.1"
 httpx = "^0.23.0" 
 mirth-client = "^3.0.0" 
 okta-jwt-verifier = "^0.2.3" 
-psycopg2-binary = "^2.9.3" # Needed for postgres
+psycopg2-binary = "^2.9.5" # Needed for postgres
 pydantic = {extras = ["dotenv"], version = "^1.10.1"} 
 python = "^3.9" 
 python-stdnum = "^1.16" 
