@@ -12,7 +12,7 @@ SQLAlchemy = "^1.4.42"
 fastapi = "^0.85.2" 
 fastapi-pagination = {extras = ["sqlalchemy"], version = "^0.10.0"} 
 fastapi-utils = "^0.2.1" 
-httpx = "^0.23.0" 
+httpx = "^0.23.1" 
 mirth-client = "^3.0.0" 
 okta-jwt-verifier = "^0.2.3" 
 psycopg2-binary = "^2.9.5" # Needed for postgres
