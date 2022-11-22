@@ -18,20 +18,6 @@ from ukrdc_fastapi.utils.mirth.messages.pkb import build_pkb_sync_messages
 from ukrdc_fastapi.utils.records import record_is_data
 
 
-def record_is_exportable(record: PatientRecord) -> bool:
-    """
-    Check a record is both a real data feed and NOT an NHSBT record.
-    Only data feed records other than NHSBT can be exported.
-
-    Args:
-        record (PatientRecord): Patient record to check
-
-    Returns:
-        bool: Is the record exportable?
-    """
-    return record_is_data(record) and record.sendingfacility != "NHSBT"
-
-
 async def export_all_to_pv(
     pid: str,
     user: UKRDCUser,
@@ -41,7 +27,7 @@ async def export_all_to_pv(
 ) -> MirthMessageResponseSchema:
     """Export a specific patient's data to PV"""
     record: PatientRecord = get_patientrecord(ukrdc3, pid, user)
-    if not record_is_exportable(record):
+    if not record_is_data(record):
         raise RecordTypeError(
             f"Cannot export a {record.sendingfacility}/{record.sendingextract} record to PatientView"
         )
@@ -60,7 +46,7 @@ async def export_tests_to_pv(
 ) -> MirthMessageResponseSchema:
     """Export a specific patient's test data to PV"""
     record: PatientRecord = get_patientrecord(ukrdc3, pid, user)
-    if not record_is_exportable(record):
+    if not record_is_data(record):
         raise RecordTypeError(
             f"Cannot export a {record.sendingfacility}/{record.sendingextract} record to PatientView"
         )
@@ -79,7 +65,7 @@ async def export_docs_to_pv(
 ) -> MirthMessageResponseSchema:
     """Export a specific patient's docs data to PV"""
     record: PatientRecord = get_patientrecord(ukrdc3, pid, user)
-    if not record_is_exportable(record):
+    if not record_is_data(record):
         raise RecordTypeError(
             f"Cannot export a {record.sendingfacility}/{record.sendingextract} record to PatientView"
         )
@@ -98,7 +84,7 @@ async def export_all_to_radar(
 ) -> MirthMessageResponseSchema:
     """Export a specific patient's data to RaDaR"""
     record: PatientRecord = get_patientrecord(ukrdc3, pid, user)
-    if not record_is_exportable(record):
+    if not record_is_data(record):
         raise RecordTypeError(
             f"Cannot export a {record.sendingfacility}/{record.sendingextract} record to RADAR"
         )
@@ -126,7 +112,7 @@ async def export_all_to_pkb(
     function in the background (thread or asyncio etc.)
     """
     record: PatientRecord = get_patientrecord(ukrdc3, pid, user)
-    if not record_is_exportable(record):
+    if not record_is_data(record):
         raise RecordTypeError(
             f"Cannot export a {record.sendingfacility}/{record.sendingextract} record to PKB"
         )
