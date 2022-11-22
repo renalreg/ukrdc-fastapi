@@ -2,6 +2,7 @@ from ukrdc_sqla.ukrdc import PatientRecord
 
 MIGRATED_EXTRACTS = ("PVMIG", "HSMIG")
 MEMBERSHIP_FACILITIES = ("UKRR", "PV", "PKB")
+INFORMATIONAL_FACILITIES = ("TRACING", "NHSBT")
 
 
 def record_is_survey(record: PatientRecord):
@@ -24,13 +25,14 @@ def record_is_migrated(record: PatientRecord):
 
 def record_is_informational(record: PatientRecord):
     """All TRACING facilities are tracing records"""
-    return record.sendingfacility == "TRACING" or record.sendingfacility == "NHSBT"
+    return record.sendingfacility in INFORMATIONAL_FACILITIES
 
 
 def record_is_membership(record: PatientRecord):
     """Check if a record is a membership record"""
 
     # All RADAR extracts are membership records
+    # RADAR membership records have real facility codes as their sendingfacility
     if record.sendingextract == "RADAR":
         return True
 

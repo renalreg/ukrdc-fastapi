@@ -76,32 +76,6 @@ def get_masterrecord(jtrace: Session, record_id: int, user: UKRDCUser) -> Master
     return record
 
 
-def get_masterrecord_from_ukrdcid(
-    jtrace: Session, ukrdcid: str, user: UKRDCUser
-) -> MasterRecord:
-    """Return a MasterRecord by UKRDCID if it exists and the user has permission
-
-    Args:
-        jtrace (Session): JTRACE SQLAlchemy session
-        ukrdcid (str): UKRDC ID
-        user (UKRDCUser): User object
-
-    Returns:
-        MasterRecord: MasterRecord
-    """
-    record: Optional[MasterRecord] = (
-        jtrace.query(MasterRecord)
-        .filter(
-            MasterRecord.nationalid_type == "UKRDC", MasterRecord.nationalid == ukrdcid
-        )
-        .first()
-    )
-    if not record:
-        raise HTTPException(404, detail="Master Record not found")
-    _assert_permission(record, user)
-    return record
-
-
 def get_masterrecords_related_to_masterrecord(
     jtrace: Session,
     record_id: int,
@@ -121,14 +95,16 @@ def get_masterrecords_related_to_masterrecord(
     Returns:
         Query: SQLAlchemy query
     """
+    record = get_masterrecord(jtrace, record_id, user)
+
     # Find all related master record IDs by recursing through link records
-    related_master_ids, _ = find_related_ids(jtrace, {record_id}, set())
+    related_master_ids, _ = find_related_ids(jtrace, {record.id}, set())
     # Return a jtrace query of the matched master records
     records = jtrace.query(MasterRecord).filter(MasterRecord.id.in_(related_master_ids))
 
     # Exclude self from related items
     if exclude_self:
-        records = records.filter(MasterRecord.id != record_id)
+        records = records.filter(MasterRecord.id != record.id)
 
     # Optionally filter by record type
     if nationalid_type:
@@ -171,4 +147,4 @@ def get_masterrecords_related_to_person(
             MasterRecord.nationalid_type == nationalid_type
         )
 
-    return master_with_ukrdc
+    return _apply_query_permissions(master_with_ukrdc, user)
