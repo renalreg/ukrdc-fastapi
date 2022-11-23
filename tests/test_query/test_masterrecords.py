@@ -20,14 +20,6 @@ def test_get_masterrecord_superuser(jtrace_session, superuser):
     assert record.id == 1
 
 
-def test_get_masterrecord_from_ukrdcid(jtrace_session, superuser):
-    record = masterrecords.get_masterrecord_from_ukrdcid(
-        jtrace_session, "999999999", superuser
-    )
-    assert record
-    assert record.id == 1
-
-
 def test_get_masterrecord_user(jtrace_session, test_user):
     record = masterrecords.get_masterrecord(jtrace_session, 1, test_user)
     assert record

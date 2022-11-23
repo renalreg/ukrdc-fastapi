@@ -128,13 +128,10 @@ def patient_related(
     pid: str,
     user: UKRDCUser = Security(auth.get_user()),
     ukrdc3: Session = Depends(get_ukrdc3),
-    jtrace: Session = Depends(get_jtrace),
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive patient records related to a specific patient record"""
-    related = get_patientrecords_related_to_patientrecord(
-        ukrdc3, jtrace, pid, user
-    ).all()
+    related = get_patientrecords_related_to_patientrecord(ukrdc3, pid, user).all()
 
     record_audit = audit.add_event(Resource.PATIENT_RECORD, pid, RecordOperation.READ)
     for record in related:

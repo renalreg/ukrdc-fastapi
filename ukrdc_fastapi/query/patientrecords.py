@@ -1,44 +1,85 @@
 from fastapi.exceptions import HTTPException
+from sqlalchemy import or_
 from sqlalchemy.orm.query import Query
 from sqlalchemy.orm.session import Session
-from ukrdc_sqla.empi import MasterRecord, Person
+from ukrdc_sqla.empi import MasterRecord
 from ukrdc_sqla.ukrdc import PatientRecord
-from ukrdc_sqla.utils.links import find_related_ids
 
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
 from ukrdc_fastapi.query.common import PermissionsError
 from ukrdc_fastapi.query.masterrecords import get_masterrecords_related_to_masterrecord
+from ukrdc_fastapi.utils import query_union
+from ukrdc_fastapi.utils.records import INFORMATIONAL_FACILITIES, MEMBERSHIP_FACILITIES
 
 
-def _apply_query_permissions(query: Query, user: UKRDCUser):
+def _assert_permission(ukrdc3: Session, patient_record: PatientRecord, user: UKRDCUser):
     units = Permissions.unit_codes(user.permissions)
-    if Permissions.UNIT_WILDCARD in units:
-        return query
 
-    return query.filter(PatientRecord.sendingfacility.in_(units))
-
-
-def _assert_permission(patient_record: PatientRecord, user: UKRDCUser):
-    units = Permissions.unit_codes(user.permissions)
+    # If the user has full admin permissions, return success
     if Permissions.UNIT_WILDCARD in units:
         return
 
-    if patient_record.sendingfacility not in units:
-        raise PermissionsError()
+    # Else, if the user has explicit facility-permission to access the record, return success
+    if patient_record.sendingfacility in units:
+        return
+
+    # Otherwise, we have a more complicated situation like a multi-facility record.
+    # We lean on our ability to determine permissions of groups of records
+    if patient_record.ukrdcid:
+        allowed_related_records = _get_patientrecords_from_ukrdcid(
+            ukrdc3, patient_record.ukrdcid, user
+        )
+
+        # If the user has explicit permission to access another record with the same UKRDCID
+        if patient_record.pid in (record.pid for record in allowed_related_records):
+            return
+
+    raise PermissionsError()
 
 
-def get_patientrecords(ukrdc3: Session, user: UKRDCUser) -> Query:
-    """Get a list of PatientRecords
+def _get_patientrecords_from_ukrdcid(
+    ukrdc3: Session, ukrdcid: str, user: UKRDCUser
+) -> Query:
+    """
+    Get a list of patient record the user has permission to acces, from a given UKRDCID.
+    Multi-facility records like membership and informational records are included only if
+    the user has facility-permissions to view at least one other record in the set.
 
     Args:
         ukrdc3 (Session): UKRDC SQLAlchemy session
+        ukrdcid (str): Patient UKRDC ID
         user (UKRDCUser): User object
 
     Returns:
-        Query: SQLAlchemy query
+        Query: Query producing a list of patient records
     """
-    records = ukrdc3.query(PatientRecord)
-    return _apply_query_permissions(records, user)
+    # Query all matching records, regardless of user permissions
+    all_related_records = ukrdc3.query(PatientRecord).filter(
+        PatientRecord.ukrdcid == ukrdcid
+    )
+
+    # If the user has full admin permissions, return all related records
+    units = Permissions.unit_codes(user.permissions)
+    if Permissions.UNIT_WILDCARD in units:
+        return all_related_records
+
+    # Find which records the user has explicit facility-permission to access
+    facility_allowed_records = all_related_records.filter(
+        PatientRecord.sendingfacility.in_(units)
+    )
+    # If the user doesn't have permission to see any, return the currently-empty query
+    if facility_allowed_records.count() < 1:
+        return facility_allowed_records
+
+    # Else, if the user has explicit facility-permission to see more than 1 matching record,
+    # include multi-facility records like membership and informational records
+    return all_related_records.filter(
+        or_(
+            PatientRecord.sendingfacility.in_(units),
+            PatientRecord.sendingfacility.in_(MEMBERSHIP_FACILITIES),
+            PatientRecord.sendingfacility.in_(INFORMATIONAL_FACILITIES),
+        )
+    )
 
 
 def get_patientrecord(ukrdc3: Session, pid: str, user: UKRDCUser) -> PatientRecord:
@@ -55,14 +96,14 @@ def get_patientrecord(ukrdc3: Session, pid: str, user: UKRDCUser) -> PatientReco
     record = ukrdc3.query(PatientRecord).get(pid)
     if not record:
         raise HTTPException(404, detail="Record not found")
-    _assert_permission(record, user)
+    _assert_permission(ukrdc3, record, user)
     return record
 
 
 def get_patientrecords_related_to_patientrecord(
-    ukrdc3: Session, jtrace: Session, pid: str, user: UKRDCUser
+    ukrdc3: Session, pid: str, user: UKRDCUser
 ) -> Query:
-    """Get a query of PatientRecords related via the LinkRecord network to a given PatientRecord
+    """Get a query of PatientRecords with the same UKRDCID as a given PatientRecord
 
     Args:
         ukrdc3 (Session): UKRDC SQLAlchemy session
@@ -73,27 +114,19 @@ def get_patientrecords_related_to_patientrecord(
     Returns:
         Query: SQLAlchemy query
     """
+    # TODO: Calling get_patientrecord is inefficient here as we're running
+    #   two lots of permission queries, one for the individual record, and
+    #   one during _get_patientrecords_from_ukrdcid.
+    #   Ensures permission-safety, but there might be a way optimise if needed.
     record = get_patientrecord(ukrdc3, pid, user)
 
-    # Get Person records directly related to the Patient Record
-    record_persons = jtrace.query(Person).filter(Person.localid == record.pid)
+    if not record.ukrdcid:
+        raise AttributeError(
+            f"UKRDC ID for record {record.pid} is missing or NULL. This should never happen."
+        )
 
-    # Find all Person IDs indirectly related to the Person record
-    _, related_person_ids = find_related_ids(
-        jtrace, set(), {related_person.id for related_person in record_persons}
-    )
-    # Find all Person records in the list of related Person IDs
-    related_persons = jtrace.query(Person).filter(Person.id.in_(related_person_ids))
-
-    # Find all Patient IDs from the related Person records
-    related_patient_ids = {person.localid for person in related_persons}
-
-    # Find all Patient records in the list of related Patient IDs
-    related_records = ukrdc3.query(PatientRecord).filter(
-        PatientRecord.pid.in_(related_patient_ids)
-    )
-
-    return _apply_query_permissions(related_records, user)
+    # Return all records with a matching UKRDC ID that the user has permission to access
+    return _get_patientrecords_from_ukrdcid(ukrdc3, record.ukrdcid, user)
 
 
 def get_patientrecords_related_to_masterrecord(
@@ -115,6 +148,8 @@ def get_patientrecords_related_to_masterrecord(
     Returns:
         Query: SQLAlchemy query
     """
+    # For the time being, it's possible for a patient to have multiple UKRDC IDs
+    # Here, we get a list of all related UKRDC IDs from JTRACE
     related_ukrdc_records = get_masterrecords_related_to_masterrecord(
         jtrace, record_id, user
     ).filter(MasterRecord.nationalid_type == "UKRDC")
@@ -122,8 +157,11 @@ def get_patientrecords_related_to_masterrecord(
     # Strip whitespace. Needed until we fix the issue with fixed-length nationalid column
     related_ukrdcids = [record.nationalid.strip() for record in related_ukrdc_records]
 
-    related_records = get_patientrecords(ukrdc3, user).filter(
-        PatientRecord.ukrdcid.in_(related_ukrdcids)
-    )
+    # Build queries for all records with matching UKRDC IDs that the user has permission to access
+    record_queries = [
+        _get_patientrecords_from_ukrdcid(ukrdc3, ukrdcid, user)
+        for ukrdcid in related_ukrdcids
+    ]
 
-    return _apply_query_permissions(related_records, user)
+    # Create a query union from queries for each UKRDC ID
+    return query_union(record_queries)
