@@ -6,8 +6,7 @@ hence the slightly odd inline structure.
 from typing import Any, Dict, Optional
 
 from fastapi import HTTPException
-from fastapi.openapi.models import OAuth2 as OAuth2Model
-from fastapi.openapi.models import OAuthFlows as OAuthFlowsModel
+from fastapi.openapi.models import OAuth2, OAuthFlowAuthorizationCode, OAuthFlows
 from fastapi.security.base import SecurityBase
 from fastapi.security.utils import get_authorization_scheme_param
 from okta_jwt_verifier import BaseJWTVerifier
@@ -38,21 +37,21 @@ class OktaJWTBearer(SecurityBase):
             scopes = {}
 
         # Currently we only allow authorizationCode flow. Others can be added later.
-        flows = OAuthFlowsModel(
-            authorizationCode={
-                "authorizationUrl": f"{self.issuer}/v1/authorize",
-                "tokenUrl": f"{self.issuer}/v1/token",
-                "refreshUrl": f"{self.issuer}/v1/token",
-                "scopes": scopes,
-            }
+        flows = OAuthFlows(
+            authorizationCode=OAuthFlowAuthorizationCode(
+                authorizationUrl=f"{self.issuer}/v1/authorize",
+                tokenUrl=f"{self.issuer}/v1/token",
+                refreshUrl=f"{self.issuer}/v1/token",
+                scopes=scopes,
+            )
         )
-        self.model = OAuth2Model(flows=flows, description=description)
+        self.model = OAuth2(flows=flows, description=description)
         self.scheme_name = scheme_name or self.__class__.__name__
         self.auto_error = auto_error
 
     async def __call__(self, request: Request) -> Optional[Dict[str, Any]]:
         # Fetch authorization header
-        authorization: str = request.headers.get("Authorization")
+        authorization: Optional[str] = request.headers.get("Authorization")
         scheme, credentials = get_authorization_scheme_param(authorization)
         # Verify authorization header
         if not (authorization and scheme and credentials):
