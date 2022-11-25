@@ -147,7 +147,7 @@ def test_get_patients_latest_errors(ukrdc3_session, errorsdb_session, test_user)
     assert messages[0].id == 2
 
 
-def test_get_facility_stats_demographics(ukrdc3_session, superuser):
+def test_get_facility_demographics(ukrdc3_session, superuser):
     stats = get_facility_demographics(
         ukrdc3_session, "TEST_SENDING_FACILITY_1", superuser
     )
@@ -165,7 +165,7 @@ def test_get_facility_stats_demographics(ukrdc3_session, superuser):
     assert stats.ethnicity_dist[0].count == 2
 
 
-def test_get_facility_stats_demographics_denied(ukrdc3_session, test_user):
+def test_get_facility_demographics_denied(ukrdc3_session, test_user):
     with pytest.raises(PermissionsError):
         get_facility_demographics(ukrdc3_session, "TEST_SENDING_FACILITY_2", test_user)
 
