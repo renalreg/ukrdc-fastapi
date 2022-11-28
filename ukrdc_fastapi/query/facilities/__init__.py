@@ -1,8 +1,6 @@
-import datetime
 from typing import Optional
 
 from fastapi.exceptions import HTTPException
-from pydantic import Field
 from redis import Redis
 from sqlalchemy import func
 from sqlalchemy.orm import Session

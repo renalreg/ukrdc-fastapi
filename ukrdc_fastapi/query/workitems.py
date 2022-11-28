@@ -42,7 +42,7 @@ def _assert_permission(workitem: WorkItem, user: UKRDCUser):
 def get_workitems(
     jtrace: Session,
     user: UKRDCUser,
-    statuses: list[int] = None,
+    statuses: Optional[list[int]] = None,
     master_id: Optional[list[int]] = None,
     person_id: Optional[list[int]] = None,
     facility: Optional[str] = None,
