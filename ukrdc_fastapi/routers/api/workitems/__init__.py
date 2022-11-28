@@ -40,7 +40,12 @@ def workitems(
     jtrace: Session = Depends(get_jtrace),
     sorter: SQLASorter = Depends(
         make_sqla_sorter(
-            [WorkItem.id, WorkItem.last_updated],
+            [
+                WorkItem.id,
+                WorkItem.last_updated,
+                WorkItem.master_id,
+                WorkItem.person_id,
+            ],
             default_sort_by=WorkItem.last_updated,
         )
     ),
