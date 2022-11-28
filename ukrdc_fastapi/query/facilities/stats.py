@@ -71,7 +71,7 @@ def get_facility_dialysis_stats(
 
     # Handle default arguments
     from_time: datetime.datetime = (
-        since or datetime.datetime.now() - datetime.timedelta(days=365)
+        since or datetime.datetime.now() - datetime.timedelta(days=90)
     )
     to_time: datetime.datetime = until or datetime.datetime.now()
 
