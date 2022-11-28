@@ -31,8 +31,8 @@ def test_get_facility_dialysis_stats(ukrdc3_session, superuser):
         ukrdc3_session, "TEST_SENDING_FACILITY_1", superuser
     )
     # Basic check that the cohort is valid
-    # TODO: Assert metadata cohort like demogs tests, once we have that metadata being returned
-    assert dias.dict()
+    # Only PID_1 has treatment records added for testing
+    assert dias.metadata.population == 1
 
 
 def test_get_facility_dialysis_stats_denied(ukrdc3_session, test_user):
