@@ -9,7 +9,7 @@ from sqlalchemy.orm.query import Query
 class Timer:
     def __init__(self, description):
         self.description = description
-        self.start = None
+        self.start = time()
         self.end = None
 
     def __enter__(self):
