@@ -2,21 +2,32 @@ import datetime
 
 from fastapi import APIRouter, Depends, Security
 from pydantic import Field
+from sqlalchemy import func
 from sqlalchemy.orm import Session
+from ukrdc_sqla.empi import MasterRecord
 from ukrdc_sqla.stats import LastRunTimes
 
 from ukrdc_fastapi.dependencies import get_jtrace, get_statsdb
-from ukrdc_fastapi.dependencies.auth import Permissions, auth
+from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.query.stats import MultipleUKRDCIDGroup, get_multiple_ukrdcids
+from ukrdc_fastapi.query.workitems import get_workitems
 from ukrdc_fastapi.schemas.base import OrmModel
+from ukrdc_fastapi.schemas.empi import MasterRecordSchema
 from ukrdc_fastapi.utils.paginate import Page, paginate_sequence
+from ukrdc_fastapi.utils.sort import ObjectSorter, OrderBy, make_object_sorter
 
 router = APIRouter(tags=["Admin/Data Health"])
 
 DATA_HEALTH_PERMISSIONS = [
     Permissions.READ_RECORDS,
+    Permissions.READ_WORKITEMS,
     Permissions.UNIT_ALL,
 ]
+
+
+class WorkItemGroup(OrmModel):
+    master_record: MasterRecordSchema
+    work_item_count: int
 
 
 class LastRunTime(OrmModel):
@@ -50,3 +61,44 @@ def datahealth_multiple_ukrdcids_last_run(
 ):
     """Retreive the datetime the multiple_ukrdcid table was fully refreshed"""
     return statsdb.query(LastRunTimes).get(("multiple_ukrdcid", ""))
+
+
+@router.get(
+    "/record_workitem_counts",
+    response_model=Page[WorkItemGroup],
+    dependencies=[Security(auth.permission(DATA_HEALTH_PERMISSIONS))],
+)
+def record_workitem_counts(
+    sorter: ObjectSorter = Depends(
+        make_object_sorter(
+            "WorkItemGroupSorterEnum",
+            ["work_item_count", "master_record.id", "master_record.last_updated"],
+            default_sort_by="work_item_count",
+            default_order_by=OrderBy.DESC,
+        )
+    ),
+    jtrace: Session = Depends(get_jtrace),
+    user: UKRDCUser = Security(auth.get_user()),
+):
+    """
+    Retreive a list of all master records with open work items, and the number of work items on each.
+    Most useful when sorted by descending work item count, to identify records most in need of work item resolution.
+    """
+    subq1 = get_workitems(jtrace, user, statuses=[1]).subquery()
+
+    subq2 = (
+        jtrace.query(subq1.c.masterid, func.count("*").label("workitem_count"))
+        .group_by(subq1.c.masterid)
+        .subquery()
+    )
+
+    count_query = jtrace.query(MasterRecord, subq2.c.workitem_count).join(
+        subq2, MasterRecord.id == subq2.c.masterid
+    )
+
+    items = [
+        WorkItemGroup(master_record=record, work_item_count=count)
+        for record, count in count_query
+    ]
+
+    return paginate_sequence(sorter.sort(items))

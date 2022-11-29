@@ -1,5 +1,6 @@
 from ukrdc_fastapi.config import configuration
 from ukrdc_fastapi.query.admin import AdminCountsSchema
+from ukrdc_fastapi.routers.api.admin.datahealth import WorkItemGroup
 from ukrdc_fastapi.schemas.common import HistoryPoint
 
 
@@ -31,8 +32,6 @@ async def test_admin_counts(client):
 
 
 async def test_datahealth_multiple_ukrdcids(client):
-    # Check expected links
-
     response = await client.get(
         f"{configuration.base_url}/admin/datahealth/multiple_ukrdcids"
     )
@@ -45,3 +44,16 @@ async def test_datahealth_multiple_ukrdcids(client):
         record.get("masterRecord").get("id")
         for record in multiple_id_groups[0].get("records")
     } == {1, 4}
+
+
+async def test_record_workitem_counts(client):
+    response = await client.get(
+        f"{configuration.base_url}/admin/datahealth/record_workitem_counts"
+    )
+    assert response.status_code == 200
+
+    items = [WorkItemGroup(**item) for item in response.json().get("items")]
+    assert len(items) == 2
+
+    assert items[0].master_record.id == 4
+    assert items[0].work_item_count == 2
