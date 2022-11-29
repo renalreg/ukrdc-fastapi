@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM python:3.11-slim-buster
 
 ARG GITHUB_SHA
 ARG GITHUB_REF
@@ -12,12 +12,17 @@ ENV PYTHONUNBUFFERED=1 \
     GITHUB_REF=$GITHUB_REF \
     SENTRY_DSN=$SENTRY_DSN
 
+# Required to build some wheels on newer Python versions
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends build-essential && \
+    rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 RUN python -m pip install -U pip wheel && pip install poetry
 
 COPY . ./
 
-RUN poetry install --no-dev --no-interaction
+RUN poetry install --only main --no-interaction
 
 CMD ["poetry", "run", "uvicorn", "ukrdc_fastapi.main:app", "--host", "0.0.0.0", "--port", "8000"]
