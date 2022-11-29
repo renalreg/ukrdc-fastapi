@@ -1238,7 +1238,7 @@ SQLAlchemy = ">=1.4.25,<2.0.0"
 
 [[package]]
 name = "ukrdc-stats"
-version = "0.3.0"
+version = "0.4.0"
 description = "A package to produce stats from the ukrdc database to be displayed on the dashboard"
 category = "main"
 optional = false
@@ -1354,7 +1354,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9" 
-content-hash = "75c529699835d25b4bf957159fb993b332409613ca04d5e97d328bfb8a7dceb6"
+content-hash = "52f4e9004b7f8cb260f48748f6dbc10cee02af4ff2aaf33ba09a614f0001b57a"
 
 [metadata.files]
 acachecontrol = [
@@ -2365,8 +2365,8 @@ ukrdc-sqla = [
     {file = "ukrdc_sqla-2.0.0.tar.gz", hash = "sha256:02b2ecbb009fab1cc076ec57c094f4ee93b4a48a55027d3dea5a1137090709c2"},
 ]
 ukrdc-stats = [
-    {file = "ukrdc_stats-0.3.0-py3-none-any.whl", hash = "sha256:e8430f7246eaa9538624a136520db0f78db9ab0c82e7661ecc22d3a739af1728"},
-    {file = "ukrdc_stats-0.3.0.tar.gz", hash = "sha256:b0971b5b1072b981d3c5fc0bd7190bfa6f8c46b3ea78d69d1fde82c9e64783a5"},
+    {file = "ukrdc_stats-0.4.0-py3-none-any.whl", hash = "sha256:fd3f6afd2e65b56a9f29c7e2df715d07ea1eb7b7cfd031ae28da57421e33c720"},
+    {file = "ukrdc_stats-0.4.0.tar.gz", hash = "sha256:058d343fc9325434e551198585b6215dd420dea150fd564a1582cc60ff27f612"},
 ]
 ukrdc-xsdata = [
     {file = "ukrdc-xsdata-3.3.0.post1.tar.gz", hash = "sha256:fc4ef1dfe94b00e0edeb97101dc4b02e3eb3a7ac4ff10e02a54528075e22261b"},
