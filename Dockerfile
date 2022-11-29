@@ -14,7 +14,7 @@ ENV PYTHONUNBUFFERED=1 \
 
 WORKDIR /app
 
-RUN python -m pip install -U pip==21.0.1 && pip install poetry
+RUN python -m pip install -U pip wheel && pip install poetry
 
 COPY . ./
 
