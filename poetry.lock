@@ -252,7 +252,7 @@ test = ["pytest (>=6)"]
 
 [[package]]
 name = "fakeredis"
-version = "2.0.0"
+version = "2.1.0"
 description = "Fake implementation of redis API for testing purposes."
 category = "dev"
 optional = false
@@ -263,8 +263,8 @@ redis = "<4.5"
 sortedcontainers = ">=2.4.0,<3.0.0"
 
 [package.extras]
-aioredis = ["aioredis (>=2.0.1,<3.0.0)"]
-lua = ["lupa (>=1.13,<2.0)"]
+json = ["jsonpath-ng (>=1.5,<2.0)"]
+lua = ["lupa (>=1.14,<2.0)"]
 
 [[package]]
 name = "fastapi"
@@ -1238,7 +1238,7 @@ SQLAlchemy = ">=1.4.25,<2.0.0"
 
 [[package]]
 name = "ukrdc-stats"
-version = "0.4.0"
+version = "0.4.2"
 description = "A package to produce stats from the ukrdc database to be displayed on the dashboard"
 category = "main"
 optional = false
@@ -1354,7 +1354,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9" 
-content-hash = "52f4e9004b7f8cb260f48748f6dbc10cee02af4ff2aaf33ba09a614f0001b57a"
+content-hash = "523e1e1151321afbe481f0d0df12acf21939dbab9b721ebe5ccfdcb294595558"
 
 [metadata.files]
 acachecontrol = [
@@ -1581,8 +1581,8 @@ exceptiongroup = [
     {file = "exceptiongroup-1.0.4.tar.gz", hash = "sha256:bd14967b79cd9bdb54d97323216f8fdf533e278df937aa2a90089e7d6e06e5ec"},
 ]
 fakeredis = [
-    {file = "fakeredis-2.0.0-py3-none-any.whl", hash = "sha256:fb3186cbbe4c549f922b0f08eb84b09c0e51ecf8efbed3572d20544254f93a97"},
-    {file = "fakeredis-2.0.0.tar.gz", hash = "sha256:6d1dc2417921b7ce56a80877afa390d6335a3154146f201a86e3a14417bdc79e"},
+    {file = "fakeredis-2.1.0-py3-none-any.whl", hash = "sha256:f85c535d38946d436f8fef14cb946ea2774c35437991ece72f2bc9cbfc9e7e65"},
+    {file = "fakeredis-2.1.0.tar.gz", hash = "sha256:1329b6150794d4f45d82cb643cc7e8192b33bdb3dc829fb9dcfdf2e82696b2dc"},
 ]
 fastapi = [
     {file = "fastapi-0.88.0-py3-none-any.whl", hash = "sha256:263b718bb384422fe3d042ffc9a0c8dece5e034ab6586ff034f6b4b1667c3eee"},
@@ -2365,8 +2365,8 @@ ukrdc-sqla = [
     {file = "ukrdc_sqla-2.0.0.tar.gz", hash = "sha256:02b2ecbb009fab1cc076ec57c094f4ee93b4a48a55027d3dea5a1137090709c2"},
 ]
 ukrdc-stats = [
-    {file = "ukrdc_stats-0.4.0-py3-none-any.whl", hash = "sha256:fd3f6afd2e65b56a9f29c7e2df715d07ea1eb7b7cfd031ae28da57421e33c720"},
-    {file = "ukrdc_stats-0.4.0.tar.gz", hash = "sha256:058d343fc9325434e551198585b6215dd420dea150fd564a1582cc60ff27f612"},
+    {file = "ukrdc_stats-0.4.2-py3-none-any.whl", hash = "sha256:b063c6d94e192bdb62478bafdae13b6c8cebc50afe5e6b18e0efd3a13da84f28"},
+    {file = "ukrdc_stats-0.4.2.tar.gz", hash = "sha256:902ef5d8d9872b9df1dd7d7fe7580827ec62b5910aae8957ec0e2b2bf23130e8"},
 ]
 ukrdc-xsdata = [
     {file = "ukrdc-xsdata-3.3.0.post1.tar.gz", hash = "sha256:fc4ef1dfe94b00e0edeb97101dc4b02e3eb3a7ac4ff10e02a54528075e22261b"},
