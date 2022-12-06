@@ -23,6 +23,9 @@ def add_sentry(app: FastAPI):
             traces_sample_rate=1.0,
             environment=configuration.deployment_env,
             release=configuration.github_sha,
+            _experiments={
+                "profiles_sample_rate": 1.0,
+            },
         )
         app.add_middleware(SentryAsgiMiddleware)
     else:
