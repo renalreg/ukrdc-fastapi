@@ -1215,7 +1215,7 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "tox"
-version = "4.0.9"
+version = "4.0.11"
 description = "tox is a generic virtualenv management and test command line tool"
 category = "dev"
 optional = false
@@ -1374,7 +1374,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "a0adf94ea45789d537410148077a00665c3f25d1cda00706ac6a8a1b0d014460"
+content-hash = "1a07b64dedd73c024efa350216fd8e2d4168fa51dbdc324a8c6cd3f72192400a"
 
 [metadata.files]
 acachecontrol = [
@@ -2395,8 +2395,8 @@ tomlkit = [
     {file = "tomlkit-0.11.6.tar.gz", hash = "sha256:71b952e5721688937fb02cf9d354dbcf0785066149d2855e44531ebdd2b65d73"},
 ]
 tox = [
-    {file = "tox-4.0.9-py3-none-any.whl", hash = "sha256:4011016470537a80642f2907f5aa08a4ae7e003f45ada1d9c1241cbffbba5d49"},
-    {file = "tox-4.0.9.tar.gz", hash = "sha256:847ee62db848ec12cd62ab0b491eec05da4d366d39ed278302fd516d04bc947d"},
+    {file = "tox-4.0.11-py3-none-any.whl", hash = "sha256:9521447370a375279139e9f80d7ba4ff88bd0407b744e63a33c3bf564cc0f19a"},
+    {file = "tox-4.0.11.tar.gz", hash = "sha256:695fc21a276e6a4f11bd6ab25345c1e617353b23195335369365eb0b72129b2a"},
 ]
 typing-extensions = [
     {file = "typing_extensions-4.4.0-py3-none-any.whl", hash = "sha256:16fa4864408f655d35ec496218b85f79b3437c829e93320c7c9215ccfd92489e"},
