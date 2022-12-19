@@ -32,7 +32,7 @@ bandit = "^1.7.4"
 black = {version = "^22.1", allow-prereleases = true}
 coverage = {extras = ["toml"], version = "^6.4"}
 fakeredis = "^2.0"
-isort = "^5.11.2"
+isort = "^5.11.3"
 mypy = "^0.991"
 pre-commit = "^2.20.0"
 pylint = "^2.15.5"
