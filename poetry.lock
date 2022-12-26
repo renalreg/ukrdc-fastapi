@@ -268,11 +268,11 @@ test = ["pytest (>=6)"]
 
 [[package]]
 name = "fakeredis"
-version = "2.2.0"
+version = "2.4.0"
 description = "Fake implementation of redis API for testing purposes."
 category = "dev"
 optional = false
-python-versions = ">=3.7,<4.0"
+python-versions = ">=3.8.1,<4.0"
 
 [package.dependencies]
 redis = "<4.5"
@@ -1378,7 +1378,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "fda70c3a8dfb807269c2dc469baa44c69f64e94101833e14caf0be90cecbb73e"
+content-hash = "334a5a27cee54d7733ca43e7e1500d9787c4cf610e64257e5ac12f21388d00eb"
 
 [metadata.files]
 acachecontrol = [
@@ -1613,8 +1613,8 @@ exceptiongroup = [
     {file = "exceptiongroup-1.0.4.tar.gz", hash = "sha256:bd14967b79cd9bdb54d97323216f8fdf533e278df937aa2a90089e7d6e06e5ec"},
 ]
 fakeredis = [
-    {file = "fakeredis-2.2.0-py3-none-any.whl", hash = "sha256:1ac7adf04dcbf8f9886add5972018e0e42781ee772fbaa0a573350cd4e4c66f7"},
-    {file = "fakeredis-2.2.0.tar.gz", hash = "sha256:dacdede58b0e682d5dc6176518858b6933c3d529ec18270f162ad5aaf97f5769"},
+    {file = "fakeredis-2.4.0-py3-none-any.whl", hash = "sha256:628d333a85fb184204ba234278970d8621fbd6bf90c81b2439a95b89e12f58d3"},
+    {file = "fakeredis-2.4.0.tar.gz", hash = "sha256:8fe73cde197c79591cf22dfefac74056fd1841934ad32cfdb98c7eb569c39da3"},
 ]
 fastapi = [
     {file = "fastapi-0.88.0-py3-none-any.whl", hash = "sha256:263b718bb384422fe3d042ffc9a0c8dece5e034ab6586ff034f6b4b1667c3eee"},
