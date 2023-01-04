@@ -40,15 +40,3 @@ async def test_facility_patients_latest_errors(client):
 
     assert len(messages) == 1
     assert messages[0].get("id") == 2
-
-
-async def test_facility_demographics(client):
-    response = await client.get(
-        f"{configuration.base_url}/facilities/TEST_SENDING_FACILITY_1/demographics"
-    )
-    json = response.json()
-
-    # Content tested in query submodule tests. Only care about the JSON response here
-    assert len(json["ageDist"]) == 2
-    assert len(json["genderDist"]) == 2
-    assert len(json["ethnicityDist"]) == 1
