@@ -4,16 +4,21 @@ from starlette.requests import Request
 from starlette.responses import Response
 
 from ukrdc_fastapi.dependencies import get_redis
-from ukrdc_fastapi.utils.cache import ResponseCache
+from ukrdc_fastapi.utils.cache import (
+    CacheKey,
+    DynamicCacheKey,
+    FacilityCachePrefix,
+    ResponseCache,
+)
 
 
-def cache_factory(cachekey: str):
+def cache_factory(cachekey: CacheKey):
     """
     Build a cache dependency function. The returned function
     can be used as a FastAPI dependency.
 
     Args:
-        key (str): Key describing the cached data, e.g. "admin:counts"
+        key (CacheKey): Key describing the cached data
     """
 
     def cache_factory_dependency(
@@ -38,14 +43,14 @@ def cache_factory(cachekey: str):
     return cache_factory_dependency
 
 
-def facility_cache_factory(prefix: str):
+def facility_cache_factory(prefix: FacilityCachePrefix):
     """
     Build a facility cache dependency function. The returned function
     can be used as a FastAPI dependency, and will generate a cache key
     based on the prefix and facility code in the URL path.
 
     Args:
-        prefix (str): Key prefix describing the cached data, e.g. "demographics" or "extracts"
+        prefix (FacilityCachePrefix): Key prefix enum attribute describing the cached data
     """
 
     def facility_cache_factory_dependency(
@@ -68,7 +73,7 @@ def facility_cache_factory(prefix: str):
         Returns:
             ResponseCache: ResponseCache instance with pre-populated key
         """
-        cachekey = f"facilities:{prefix}:{code}"
+        cachekey = DynamicCacheKey(prefix, code)
         return ResponseCache(redis, cachekey, request, response)
 
     return facility_cache_factory_dependency

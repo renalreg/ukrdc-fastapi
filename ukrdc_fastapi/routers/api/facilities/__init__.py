@@ -13,7 +13,7 @@ from ukrdc_fastapi.dependencies.audit import (
     get_auditer,
 )
 from ukrdc_fastapi.dependencies.auth import UKRDCUser, auth
-from ukrdc_fastapi.dependencies.cache import facility_cache_factory
+from ukrdc_fastapi.dependencies.cache import FacilityCachePrefix, facility_cache_factory
 from ukrdc_fastapi.query.facilities import (
     FacilityDetailsSchema,
     FacilityExtractsSchema,
@@ -78,7 +78,7 @@ def facility(
     ukrdc3: Session = Depends(get_ukrdc3),
     errorsdb: Session = Depends(get_errorsdb),
     user: UKRDCUser = Security(auth.get_user()),
-    cache: ResponseCache = Depends(facility_cache_factory("root")),
+    cache: ResponseCache = Depends(facility_cache_factory(FacilityCachePrefix.ROOT)),
 ):
     """Retreive information and current status of a particular facility"""
     # If no cached value exists, or the cached value has expired
@@ -133,7 +133,9 @@ def facility_extracts(
     code: str,
     ukrdc3: Session = Depends(get_ukrdc3),
     user: UKRDCUser = Security(auth.get_user()),
-    cache: ResponseCache = Depends(facility_cache_factory("extracts")),
+    cache: ResponseCache = Depends(
+        facility_cache_factory(FacilityCachePrefix.EXTRACTS)
+    ),
 ):
     """Retreive extract counts for a particular facility"""
     # If no cached value exists, or the cached value has expired

@@ -17,7 +17,7 @@ from ukrdc_fastapi.schemas.facility import (
     FacilityExtractsSchema,
     FacilityStatisticsSchema,
 )
-from ukrdc_fastapi.utils.cache import BasicCache
+from ukrdc_fastapi.utils.cache import BasicCache, CacheKey
 
 # Security functions
 
@@ -306,11 +306,9 @@ def get_facilities(
 
     # If the user has access to all units, then we can cache the facilities list
     if Permissions.UNIT_WILDCARD in units:
-        print("User has access to all units")
-        cache = BasicCache(redis, "facilities:list:all")
+        cache = BasicCache(redis, CacheKey.FACILITIES)
 
         if not cache.exists:
-            print("Facilities list not cached, generating...")
             facilities_list: list[FacilityDetailsSchema] = build_facilities_list(
                 facilities, ukrdc3, errorsdb
             )
@@ -320,7 +318,6 @@ def get_facilities(
 
     # If the user has access to a subset of units, then we can't cache the facilities list
     else:
-        print("User has access to a subset of units. Skipping cache, generating...")
         return_list = build_facilities_list(
             _apply_query_permissions(facilities, user), ukrdc3, errorsdb
         )

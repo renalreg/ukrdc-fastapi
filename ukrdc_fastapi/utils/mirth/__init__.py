@@ -9,7 +9,7 @@ from redis import Redis
 
 from ukrdc_fastapi.config import settings
 from ukrdc_fastapi.schemas.base import OrmModel
-from ukrdc_fastapi.utils.cache import BasicCache
+from ukrdc_fastapi.utils.cache import BasicCache, CacheKey
 
 
 class MirthMessageResponseSchema(BaseModel):
@@ -57,7 +57,7 @@ async def get_channels(mirth: MirthAPI, redis: Redis) -> list[ChannelModel]:
     Returns:
         list[ChannelModel]: List of channel infos
     """
-    cache = BasicCache(redis, "mirth:channel_info")
+    cache = BasicCache(redis, CacheKey.MIRTH_CHANNEL_INFO)
 
     if not cache.exists:
         channel_info: list[ChannelModel] = await mirth.channel_info()
@@ -76,7 +76,7 @@ async def get_groups(mirth: MirthAPI, redis: Redis) -> list[ChannelGroup]:
     Returns:
         list[ChannelGroup]: List of channel groups
     """
-    cache = BasicCache(redis, "mirth:groups")
+    cache = BasicCache(redis, CacheKey.MIRTH_GROUPS)
 
     if not cache.exists:
         groups: list[ChannelGroup] = await mirth.groups()
@@ -95,7 +95,7 @@ async def get_statistics(mirth: MirthAPI, redis: Redis) -> list[ChannelStatistic
     Returns:
         list[ChannelStatistics]: List of channel statistics
     """
-    cache = BasicCache(redis, "mirth:statistics")
+    cache = BasicCache(redis, CacheKey.MIRTH_STATISTICS)
 
     if not cache.exists:
         statistics: list[ChannelStatistics] = await mirth.statistics()
