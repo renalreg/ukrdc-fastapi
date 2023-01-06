@@ -7,11 +7,13 @@ from ukrdc_fastapi.schemas.message import MessageSchema
 from ukrdc_fastapi.utils.mirth import get_channel_map
 
 
-@repeat_every(seconds=settings.cache_channel_seconds)
+@repeat_every(seconds=settings.cache_mirth_channel_seconds)
 async def update_channel_id_name_map() -> None:
     """
     Update the in-memory Mirth Channel ID-Name map used by MessageSchema
     to populate the channel_name field from the channel_id field.
+
+    Repeats every `cache_mirth_channel_seconds` seconds, to match the cache expiry time.
 
     The function runs as a tracked background task.
     """
