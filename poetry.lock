@@ -2241,31 +2241,31 @@ files = [
 
 [[package]]
 name = "tox"
-version = "4.2.6"
+version = "4.3.1"
 description = "tox is a generic virtualenv management and test command line tool"
 category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "tox-4.2.6-py3-none-any.whl", hash = "sha256:fb79b3e4b788491949576a9c80c2d56419eac994567c3591e24bb2788b5901d0"},
-    {file = "tox-4.2.6.tar.gz", hash = "sha256:ecf224a4f3a318adcdd71aa8fe15ffd31f14afd6a9845a43ffd63950a7325538"},
+    {file = "tox-4.3.1-py3-none-any.whl", hash = "sha256:3b4c8bb7f281989b5ea2c39e862711ef2dbd15fedbf0c5f64e7c04c7d8cd8957"},
+    {file = "tox-4.3.1.tar.gz", hash = "sha256:df2bf3c8329d1bc23a618329480ddefc0400af42804f801599b2ec38914f6309"},
 ]
 
 [package.dependencies]
-cachetools = ">=5.2"
+cachetools = ">=5.2.1"
 chardet = ">=5.1"
 colorama = ">=0.4.6"
 filelock = ">=3.9"
-packaging = ">=22"
+packaging = ">=23"
 platformdirs = ">=2.6.2"
 pluggy = ">=1"
-pyproject-api = ">=1.2.1"
+pyproject-api = ">=1.4"
 tomli = {version = ">=2.0.1", markers = "python_version < \"3.11\""}
 virtualenv = ">=20.17.1"
 
 [package.extras]
-docs = ["furo (>=2022.12.7)", "sphinx (>=6)", "sphinx-argparse-cli (>=1.10)", "sphinx-autodoc-typehints (>=1.19.5)", "sphinx-copybutton (>=0.5.1)", "sphinx-inline-tabs (>=2022.1.2b11)", "sphinxcontrib-towncrier (>=0.2.1a0)", "towncrier (>=22.12)"]
-testing = ["build[virtualenv] (>=0.9)", "covdefaults (>=2.2.2)", "devpi-process (>=0.3)", "diff-cover (>=7.3)", "distlib (>=0.3.6)", "flaky (>=3.7)", "hatch-vcs (>=0.3)", "hatchling (>=1.12)", "psutil (>=5.9.4)", "pytest (>=7.2)", "pytest-cov (>=4)", "pytest-mock (>=3.10)", "pytest-xdist (>=3.1)", "re-assert (>=1.1)", "time-machine (>=2.8.2)"]
+docs = ["furo (>=2022.12.7)", "sphinx (>=6.1.3)", "sphinx-argparse-cli (>=1.11)", "sphinx-autodoc-typehints (>=1.20.1)", "sphinx-copybutton (>=0.5.1)", "sphinx-inline-tabs (>=2022.1.2b11)", "sphinxcontrib-towncrier (>=0.2.1a0)", "towncrier (>=22.12)"]
+testing = ["build[virtualenv] (>=0.9)", "covdefaults (>=2.2.2)", "devpi-process (>=0.3)", "diff-cover (>=7.3)", "distlib (>=0.3.6)", "flaky (>=3.7)", "hatch-vcs (>=0.3)", "hatchling (>=1.12.2)", "psutil (>=5.9.4)", "pytest (>=7.2)", "pytest-cov (>=4)", "pytest-mock (>=3.10)", "pytest-xdist (>=3.1)", "re-assert (>=1.1)", "time-machine (>=2.8.2)", "wheel (>=0.38.4)"]
 
 [[package]]
 name = "typing-extensions"
@@ -2582,4 +2582,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "d537670e0e5eab6f9e4199f85e8716ceb6f000492a1206f914516dc80be5c5c9"
+content-hash = "9fc21f6442cffb335369c40c9794974812b90b165523cef77105fba15f85e5b5"
