@@ -10,7 +10,8 @@ updates:
   ignore:
   # Ignore all patch updates, manage these manually.
   # Note: Security updates will still come through.
-  - update-types: ["version-update:semver-patch"]
+  - dependency-name: "*"
+    update-types: ["version-update:semver-patch"]
   
 - package-ecosystem: "docker"
   directory: "/"
