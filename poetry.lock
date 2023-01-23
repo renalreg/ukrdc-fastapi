@@ -503,14 +503,14 @@ test = ["pytest (>=6)"]
 
 [[package]]
 name = "fakeredis"
-version = "2.4.0"
+version = "2.5.0"
 description = "Fake implementation of redis API for testing purposes."
 category = "dev"
 optional = false
 python-versions = ">=3.8.1,<4.0"
 files = [
-    {file = "fakeredis-2.4.0-py3-none-any.whl", hash = "sha256:628d333a85fb184204ba234278970d8621fbd6bf90c81b2439a95b89e12f58d3"},
-    {file = "fakeredis-2.4.0.tar.gz", hash = "sha256:8fe73cde197c79591cf22dfefac74056fd1841934ad32cfdb98c7eb569c39da3"},
+    {file = "fakeredis-2.5.0-py3-none-any.whl", hash = "sha256:c718b2373123a849b17ebbc30a7256f691e41b178834cceb9d863d41207e54cf"},
+    {file = "fakeredis-2.5.0.tar.gz", hash = "sha256:b0bf820179f4adc76ec60cefefa13d5d9fe92266f67242bcb0c14bea25f9b635"},
 ]
 
 [package.dependencies]
@@ -2583,4 +2583,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "d537670e0e5eab6f9e4199f85e8716ceb6f000492a1206f914516dc80be5c5c9"
+content-hash = "1fb933d40f3f812bcf546cce07842592fce2022296d847e2825bf744f3128439"
