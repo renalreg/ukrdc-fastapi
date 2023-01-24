@@ -34,7 +34,7 @@ coverage = {extras = ["toml"], version = "^7.0"}
 fakeredis = "^2.0"
 isort = "^5.11.2"
 mypy = "^0.991"
-pre-commit = "^2.20.0"
+pre-commit = "^3.0.0"
 pylint = "^2.15.9"
 pytest = "^7.2"
 pytest-asyncio = "^0.20.1"
