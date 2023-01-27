@@ -75,6 +75,7 @@ add_pagination(app)
 # Async startup functions and event handlers
 app.router.add_event_handler("startup", repeated.update_channel_id_name_map)
 app.router.add_event_handler("startup", repeated.update_facilities_list)
+app.router.add_event_handler("startup", repeated.precalculate_facility_stats_dialysis)
 
 # Async shutdown functions and event handler
 app.router.add_event_handler("shutdown", shutdown.clear_task_tracker)

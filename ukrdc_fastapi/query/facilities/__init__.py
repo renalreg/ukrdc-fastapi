@@ -18,6 +18,7 @@ from ukrdc_fastapi.schemas.facility import (
     FacilityStatisticsSchema,
 )
 from ukrdc_fastapi.utils.cache import BasicCache, CacheKey
+from ukrdc_fastapi.utils.records import ABSTRACT_FACILITIES
 
 # Security functions
 
@@ -298,7 +299,12 @@ def get_facilities(
         list[FacilityDetailsSchema]: List of units/facilities
     """
 
-    facilities = ukrdc3.query(Facility)
+    # Get a list of all facilities, excluding abstract facilities
+    facilities = ukrdc3.query(Facility).filter(
+        Facility.code.notin_(ABSTRACT_FACILITIES)
+    )
+
+    # Get a list of all units/facilities the user has permission to access
     unit_permissions = Permissions.unit_codes(user.permissions)
 
     return_list: list[FacilityDetailsSchema]

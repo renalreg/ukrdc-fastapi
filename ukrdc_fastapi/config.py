@@ -47,6 +47,9 @@ class Settings(BaseSettings):
     cache_facilities_stats_demographics_seconds: int = 28800
     cache_facilities_stats_dialysis_seconds: int = 28800
 
+    # Minimum number of records required to pre-cache facility dialysis stats
+    cache_facilities_stats_dialysis_min: int = 1
+
     # Authentication settings
 
     swagger_client_id: str = ""

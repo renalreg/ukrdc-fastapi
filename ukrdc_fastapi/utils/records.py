@@ -4,6 +4,9 @@ MIGRATED_EXTRACTS = ("PVMIG", "HSMIG")
 MEMBERSHIP_FACILITIES = ("UKRR", "PV", "PKB")
 INFORMATIONAL_FACILITIES = ("TRACING", "NHSBT")
 
+# Facilities that do not correspond to real hospitals, i.e. membership or informational only
+ABSTRACT_FACILITIES = MEMBERSHIP_FACILITIES + INFORMATIONAL_FACILITIES
+
 
 def record_is_survey(record: PatientRecord):
     """All SURVEY extracts are survey records"""
