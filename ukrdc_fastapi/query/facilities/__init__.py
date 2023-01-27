@@ -299,24 +299,25 @@ def get_facilities(
     """
 
     facilities = ukrdc3.query(Facility)
-
-    units = Permissions.unit_codes(user.permissions)
+    unit_permissions = Permissions.unit_codes(user.permissions)
 
     return_list: list[FacilityDetailsSchema]
 
-    # If the user has access to all units, then we can cache the facilities list
-    if Permissions.UNIT_WILDCARD in units:
-        cache = BasicCache(redis, CacheKey.FACILITIES)
+    # Look for a pre-calculated cache of the facilities list (see `ukrdc_fastapi.tasks.repeated`)
+    cache = BasicCache(redis, CacheKey.FACILITIES_LIST)
+    if cache.exists:
+        all_facilities = [FacilityDetailsSchema(**facility) for facility in cache.get()]
 
-        if not cache.exists:
-            facilities_list: list[FacilityDetailsSchema] = build_facilities_list(
-                facilities, ukrdc3, errorsdb
-            )
-            cache.set(facilities_list, expire=settings.cache_facilities_list_seconds)
+        if Permissions.UNIT_WILDCARD in unit_permissions:
+            return_list = all_facilities
+        else:
+            return_list = [
+                facility
+                for facility in all_facilities
+                if facility.id in unit_permissions
+            ]
 
-        return_list = [FacilityDetailsSchema(**channel) for channel in cache.get()]
-
-    # If the user has access to a subset of units, then we can't cache the facilities list
+    # If no pre-calculated cache exists, then build the facilities list on the fly
     else:
         return_list = build_facilities_list(
             _apply_query_permissions(facilities, user), ukrdc3, errorsdb

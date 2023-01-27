@@ -22,7 +22,7 @@ class CacheKey(Enum):
     We use this to guarantee that all cache keys are unique.
     """
 
-    FACILITIES = "facilities:list:all"
+    FACILITIES_LIST = "facilities:list:all"
 
     ADMIN_COUNTS = "admin:counts"
 
