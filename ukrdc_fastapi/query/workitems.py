@@ -1,7 +1,6 @@
 import datetime
 from typing import Optional
 
-from fastapi.exceptions import HTTPException
 from sqlalchemy.orm.query import Query
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.expression import or_
@@ -10,6 +9,7 @@ from ukrdc_sqla.empi import MasterRecord, Person, PidXRef, WorkItem
 from ukrdc_sqla.utils.links import find_related_ids
 
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
+from ukrdc_fastapi.exceptions import ResourceNotFoundError
 from ukrdc_fastapi.query.common import PermissionsError, person_belongs_to_units
 from ukrdc_fastapi.query.masterrecords import get_masterrecords_related_to_person
 from ukrdc_fastapi.query.messages import get_message
@@ -115,7 +115,7 @@ def get_workitem(jtrace: Session, workitem_id: int, user: UKRDCUser) -> WorkItem
     """
     workitem = jtrace.query(WorkItem).get(workitem_id)
     if not workitem:
-        raise HTTPException(404, detail="Work item not found")
+        raise ResourceNotFoundError("Work item not found")
     _assert_permission(workitem, user)
 
     return workitem

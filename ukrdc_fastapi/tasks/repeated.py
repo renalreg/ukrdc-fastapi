@@ -79,7 +79,7 @@ async def precalculate_facility_stats_dialysis() -> None:
     async def innerfunc():
         with ukrdc3_session() as ukrdc3:
             # Get all non-abstract facilities with UKRDC/RDA feed records
-            q = (
+            query = (
                 ukrdc3.query(
                     PatientRecord.sendingfacility,
                     PatientRecord.sendingextract,
@@ -94,7 +94,7 @@ async def precalculate_facility_stats_dialysis() -> None:
             # Only cache facilities with more than `cache_facilities_stats_dialysis_min` records
             facilities_to_cache = (
                 row[0]
-                for row in q
+                for row in query
                 if row[2] > settings.cache_facilities_stats_dialysis_min
             )
 

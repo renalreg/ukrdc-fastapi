@@ -1,6 +1,5 @@
 from typing import Optional
 
-from fastapi.exceptions import HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.query import Query
 from ukrdc_sqla.empi import LinkRecord, MasterRecord, Person, PidXRef
@@ -11,6 +10,7 @@ from ukrdc_sqla.utils.links import (
 )
 
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
+from ukrdc_fastapi.exceptions import ResourceNotFoundError
 from ukrdc_fastapi.query.common import PermissionsError, person_belongs_to_units
 from ukrdc_fastapi.query.persons import get_person
 
@@ -71,7 +71,7 @@ def get_masterrecord(jtrace: Session, record_id: int, user: UKRDCUser) -> Master
     """
     record: Optional[MasterRecord] = jtrace.query(MasterRecord).get(record_id)
     if not record:
-        raise HTTPException(404, detail="Master Record not found")
+        raise ResourceNotFoundError("Master Record not found")
     _assert_permission(record, user)
     return record
 

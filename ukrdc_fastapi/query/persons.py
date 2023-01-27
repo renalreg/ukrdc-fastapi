@@ -1,11 +1,14 @@
-from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.query import Query
 from ukrdc_sqla.empi import Person, PidXRef
 from ukrdc_sqla.utils.links import find_related_ids
 
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
-from ukrdc_fastapi.exceptions import AmbigousQueryError, EmptyQueryError
+from ukrdc_fastapi.exceptions import (
+    AmbigousQueryError,
+    EmptyQueryError,
+    ResourceNotFoundError,
+)
 from ukrdc_fastapi.query.common import PermissionsError, person_belongs_to_units
 
 
@@ -55,7 +58,7 @@ def get_person(jtrace: Session, person_id: int, user: UKRDCUser) -> Person:
     """
     person = jtrace.query(Person).get(person_id)
     if not person:
-        raise HTTPException(404, detail="EMPI Person not found")
+        raise ResourceNotFoundError("EMPI Person not found")
     _assert_permission(person, user)
     return person
 

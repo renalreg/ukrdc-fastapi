@@ -1,8 +1,7 @@
-from fastapi.exceptions import HTTPException
 from mirth_client import Channel, MirthAPI
-from mirth_client.exceptions import MirthPostError
 from redis import Redis
 
+from ukrdc_fastapi.exceptions import ResourceNotFoundError
 from ukrdc_fastapi.utils.mirth import MirthMessageResponseSchema, get_channel_from_name
 
 
@@ -18,11 +17,7 @@ async def safe_send_mirth_message(
     Returns:
         MirthMessageResponseSchema: Mirth response status
     """
-    try:
-        await channel.post_message(message)
-    except MirthPostError as e:
-        raise HTTPException(500, str(e)) from e  # pragma: no cover
-
+    await channel.post_message(message)
     return MirthMessageResponseSchema(status="success", message=message)
 
 
@@ -42,8 +37,6 @@ async def safe_send_mirth_message_to_name(
     """
     channel = await get_channel_from_name(channel_name, mirth, redis)
     if not channel:
-        raise HTTPException(
-            500, detail=f"ID for {channel_name} channel not found"
-        )  # pragma: no cover
+        raise ResourceNotFoundError(f"ID for {channel_name} channel not found")
 
     return await safe_send_mirth_message(channel, message)

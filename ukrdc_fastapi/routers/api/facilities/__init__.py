@@ -1,7 +1,7 @@
 import datetime
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Security
+from fastapi import APIRouter, Depends, HTTPException, Security
 from redis import Redis
 from sqlalchemy.orm import Session
 
@@ -14,6 +14,7 @@ from ukrdc_fastapi.dependencies.audit import (
 )
 from ukrdc_fastapi.dependencies.auth import UKRDCUser, auth
 from ukrdc_fastapi.dependencies.cache import FacilityCachePrefix, facility_cache_factory
+from ukrdc_fastapi.exceptions import MissingFacilityError
 from ukrdc_fastapi.query.facilities import (
     FacilityDetailsSchema,
     FacilityExtractsSchema,

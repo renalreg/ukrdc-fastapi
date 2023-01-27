@@ -10,6 +10,7 @@ from ukrdc_sqla.ukrdc import Code, Facility, PatientRecord
 
 from ukrdc_fastapi.config import settings
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
+from ukrdc_fastapi.exceptions import MissingFacilityError
 from ukrdc_fastapi.query.common import PermissionsError
 from ukrdc_fastapi.schemas.facility import (
     FacilityDataFlowSchema,
@@ -59,7 +60,7 @@ def get_facility(
     facility = ukrdc3.query(Facility).filter(Facility.code == facility_code).first()
 
     if not facility:
-        raise HTTPException(404, detail="Facility not found")
+        raise MissingFacilityError(facility_code)
 
     # Assert permissions
     _assert_permission(facility, user)
@@ -128,7 +129,7 @@ def get_facility_extracts(
     facility = ukrdc3.query(Facility).filter(Facility.code == facility_code).first()
 
     if not facility:
-        raise HTTPException(404, detail="Facility not found")
+        raise MissingFacilityError(facility_code)
 
     # Assert permissions
     _assert_permission(facility, user)

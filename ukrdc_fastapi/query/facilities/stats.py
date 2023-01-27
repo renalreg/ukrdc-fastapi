@@ -1,7 +1,6 @@
 import datetime
 from typing import Optional
 
-from fastapi.exceptions import HTTPException
 from sqlalchemy.orm import Session
 from ukrdc_sqla.ukrdc import Facility
 from ukrdc_stats.calculators.demographics import (
@@ -11,6 +10,7 @@ from ukrdc_stats.calculators.demographics import (
 from ukrdc_stats.calculators.dialysis import DialysisStats, DialysisStatsCalculator
 
 from ukrdc_fastapi.dependencies.auth import UKRDCUser
+from ukrdc_fastapi.exceptions import MissingFacilityError
 
 from . import _assert_permission
 
@@ -34,7 +34,7 @@ def get_facility_demographic_stats(
     facility = ukrdc3.query(Facility).filter(Facility.code == facility_code).first()
 
     if not facility:
-        raise HTTPException(404, detail="Facility not found")
+        raise MissingFacilityError(facility_code)
 
     # Assert permissions
     _assert_permission(facility, user)
@@ -64,7 +64,7 @@ def get_facility_dialysis_stats(
     facility = ukrdc3.query(Facility).filter(Facility.code == facility_code).first()
 
     if not facility:
-        raise HTTPException(404, detail="Facility not found")
+        raise MissingFacilityError(facility_code)
 
     # Assert permissions
     _assert_permission(facility, user)

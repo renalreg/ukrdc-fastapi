@@ -1,4 +1,3 @@
-from fastapi.exceptions import HTTPException
 from sqlalchemy import or_
 from sqlalchemy.orm.query import Query
 from sqlalchemy.orm.session import Session
@@ -6,6 +5,7 @@ from ukrdc_sqla.empi import MasterRecord
 from ukrdc_sqla.ukrdc import PatientRecord
 
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
+from ukrdc_fastapi.exceptions import ResourceNotFoundError
 from ukrdc_fastapi.query.common import PermissionsError
 from ukrdc_fastapi.query.masterrecords import get_masterrecords_related_to_masterrecord
 from ukrdc_fastapi.utils import query_union
@@ -95,7 +95,7 @@ def get_patientrecord(ukrdc3: Session, pid: str, user: UKRDCUser) -> PatientReco
     """
     record = ukrdc3.query(PatientRecord).get(pid)
     if not record:
-        raise HTTPException(404, detail="Record not found")
+        raise ResourceNotFoundError("Record not found")
     _assert_permission(ukrdc3, record, user)
     return record
 

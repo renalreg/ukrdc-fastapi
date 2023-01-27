@@ -1,13 +1,13 @@
 import datetime
 from typing import Optional
 
-from fastapi.exceptions import HTTPException
 from sqlalchemy.orm.query import Query
 from sqlalchemy.orm.session import Session
 from ukrdc_sqla.empi import MasterRecord
 from ukrdc_sqla.errorsdb import Message
 
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
+from ukrdc_fastapi.exceptions import ResourceNotFoundError
 from ukrdc_fastapi.query.common import PermissionsError
 from ukrdc_fastapi.query.masterrecords import (
     get_masterrecord,
@@ -101,7 +101,7 @@ def get_message(errorsdb: Session, message_id: int, user: UKRDCUser) -> Message:
     """
     error = errorsdb.query(Message).get(message_id)
     if not error:
-        raise HTTPException(404, detail="Error record not found")
+        raise ResourceNotFoundError("Error record not found")
     _assert_permission(error, user)
 
     return error
