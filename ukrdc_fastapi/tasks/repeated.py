@@ -5,7 +5,7 @@ from sqlalchemy.sql.functions import func
 from ukrdc_sqla.ukrdc import PatientRecord
 
 from ukrdc_fastapi.config import settings
-from ukrdc_fastapi.dependencies import auth, get_redis, get_root_task_tracker
+from ukrdc_fastapi.dependencies import get_redis, get_root_task_tracker
 from ukrdc_fastapi.dependencies.database import errors_session, ukrdc3_session
 from ukrdc_fastapi.dependencies.mirth import mirth_session
 from ukrdc_fastapi.exceptions import MissingFacilityError
