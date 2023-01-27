@@ -97,15 +97,17 @@ async def precalculate_facility_stats_dialysis() -> None:
             # Cache the stats for each facility
             for facility_code in facilities_to_cache:
                 # TODO: Handle errors
-                BasicCache(
+                cache = BasicCache(
                     get_redis(),
                     DynamicCacheKey(FacilityCachePrefix.DIALYSIS, facility_code),
-                ).set(
-                    get_facility_dialysis_stats(
-                        ukrdc3, facility_code, auth.auth.superuser
-                    ),
-                    expire=settings.cache_facilities_stats_dialysis_seconds,
                 )
+                if not cache.exists:
+                    cache.set(
+                        get_facility_dialysis_stats(
+                            ukrdc3, facility_code, auth.auth.superuser
+                        ),
+                        expire=settings.cache_facilities_stats_dialysis_seconds,
+                    )
 
     task = get_root_task_tracker().create(
         innerfunc, name="Pre-calculate per-facility dialysis stats"
