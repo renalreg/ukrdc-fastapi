@@ -23,7 +23,7 @@ from ukrdc_fastapi.query.mirth.export import (
     export_docs_to_pv,
     export_tests_to_pv,
 )
-from ukrdc_fastapi.tasks.background import TaskTracker, TrackableTaskSchema
+from ukrdc_fastapi.utils.tasks import TaskTracker, TrackableTaskSchema
 
 router = APIRouter(tags=["Patient Records/Export"])
 

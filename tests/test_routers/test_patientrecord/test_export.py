@@ -5,7 +5,7 @@ from ukrdc_sqla.ukrdc import ProgramMembership
 
 from tests.utils import days_ago
 from ukrdc_fastapi.config import configuration
-from ukrdc_fastapi.tasks.background import TrackableTaskSchema
+from ukrdc_fastapi.utils.tasks import TrackableTaskSchema
 
 
 def _last_sent_mirth_message(httpx_mock) -> str:

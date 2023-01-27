@@ -9,7 +9,7 @@ from pydantic import BaseModel
 
 from ukrdc_fastapi.config import configuration
 from ukrdc_fastapi.dependencies import get_task_tracker
-from ukrdc_fastapi.tasks.background import TaskTracker, TrackableTaskSchema
+from ukrdc_fastapi.utils.tasks import TaskTracker, TrackableTaskSchema
 
 """
 NOTE: 

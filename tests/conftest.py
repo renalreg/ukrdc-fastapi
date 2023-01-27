@@ -58,7 +58,7 @@ from ukrdc_fastapi.dependencies import (
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
 from ukrdc_fastapi.models.audit import Base as AuditBase
 from ukrdc_fastapi.models.users import Base as UsersBase
-from ukrdc_fastapi.tasks.background import TaskTracker
+from ukrdc_fastapi.utils.tasks import TaskTracker
 
 from .utils import create_basic_facility, create_basic_patient, days_ago
 
