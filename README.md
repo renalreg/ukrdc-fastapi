@@ -82,16 +82,6 @@ For development purposes, you can [manually trigger the Build Client Libraries w
 
 `npx typedoc ./typescript-axios-client/index.ts --out ./docs/typescript-axios-client`
 
-### Pre-commit hooks
-
-Included in the repo is a pre-commit config to run Black and isort before committing.
-
-To install/enable the hooks, run
-
-```
-poetry run pre-commit install
-```
-
 ### Local CORS
 
 On some oeprating systems and environments, it may be difficult to properly set a CORS policy for local development. In these cases, add `allow_origins=["*"]` to your `.env` file.
