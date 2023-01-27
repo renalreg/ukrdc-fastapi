@@ -9,16 +9,12 @@ from ukrdc_stats.calculators.demographics import (
 )
 from ukrdc_stats.calculators.dialysis import DialysisStats, DialysisStatsCalculator
 
-from ukrdc_fastapi.dependencies.auth import UKRDCUser
 from ukrdc_fastapi.exceptions import MissingFacilityError
-
-from . import _assert_permission
 
 
 def get_facility_demographic_stats(
     ukrdc3: Session,
     facility_code: str,
-    user: UKRDCUser,
 ) -> DemographicsStats:
     """Extract demographic distributions for all UKRDC/RDA records in a given facility
 
@@ -36,9 +32,6 @@ def get_facility_demographic_stats(
     if not facility:
         raise MissingFacilityError(facility_code)
 
-    # Assert permissions
-    _assert_permission(facility, user)
-
     # Calculate all demographic stats
     return DemographicStatsCalculator(ukrdc3, facility.code).extract_stats()
 
@@ -46,7 +39,6 @@ def get_facility_demographic_stats(
 def get_facility_dialysis_stats(
     ukrdc3: Session,
     facility_code: str,
-    user: UKRDCUser,
     since: Optional[datetime.datetime] = None,
     until: Optional[datetime.datetime] = None,
 ) -> DialysisStats:
@@ -65,9 +57,6 @@ def get_facility_dialysis_stats(
 
     if not facility:
         raise MissingFacilityError(facility_code)
-
-    # Assert permissions
-    _assert_permission(facility, user)
 
     # Handle default arguments
     from_time: datetime.datetime = (

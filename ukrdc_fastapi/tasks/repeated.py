@@ -2,22 +2,17 @@ import logging
 
 from fastapi_utils.tasks import repeat_every
 from sqlalchemy.sql.functions import func
-from ukrdc_sqla.ukrdc import Facility, PatientRecord
+from ukrdc_sqla.ukrdc import PatientRecord
 
 from ukrdc_fastapi.config import settings
 from ukrdc_fastapi.dependencies import auth, get_redis, get_root_task_tracker
 from ukrdc_fastapi.dependencies.database import errors_session, ukrdc3_session
 from ukrdc_fastapi.dependencies.mirth import mirth_session
 from ukrdc_fastapi.exceptions import MissingFacilityError
-from ukrdc_fastapi.query.facilities import build_facilities_list
+from ukrdc_fastapi.query.facilities import get_facilities
 from ukrdc_fastapi.query.facilities.stats import get_facility_dialysis_stats
 from ukrdc_fastapi.schemas.message import MessageSchema
-from ukrdc_fastapi.utils.cache import (
-    BasicCache,
-    CacheKey,
-    DynamicCacheKey,
-    FacilityCachePrefix,
-)
+from ukrdc_fastapi.utils.cache import BasicCache, DynamicCacheKey, FacilityCachePrefix
 from ukrdc_fastapi.utils.mirth import get_channel_map
 from ukrdc_fastapi.utils.records import ABSTRACT_FACILITIES
 
@@ -58,9 +53,8 @@ async def update_facilities_list() -> None:
 
     async def innerfunc():
         with ukrdc3_session() as ukrdc3, errors_session() as errorsdb:
-            BasicCache(get_redis(), CacheKey.FACILITIES_LIST).set(
-                build_facilities_list(ukrdc3.query(Facility), ukrdc3, errorsdb),
-                expire=settings.cache_facilities_list_seconds,
+            get_facilities(
+                ukrdc3, errorsdb, get_redis(), include_inactive=True, include_empty=True
             )
 
     task = get_root_task_tracker().create(
@@ -107,9 +101,7 @@ async def precalculate_facility_stats_dialysis() -> None:
                 if not cache.exists:
                     try:
                         cache.set(
-                            get_facility_dialysis_stats(
-                                ukrdc3, facility_code, auth.auth.superuser
-                            ),
+                            get_facility_dialysis_stats(ukrdc3, facility_code),
                             expire=settings.cache_facilities_stats_dialysis_seconds,
                         )
                     except MissingFacilityError as e:

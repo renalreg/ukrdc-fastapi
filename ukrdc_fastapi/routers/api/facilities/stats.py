@@ -11,6 +11,7 @@ from ukrdc_fastapi.query.facilities.stats import (
     get_facility_demographic_stats,
     get_facility_dialysis_stats,
 )
+from ukrdc_fastapi.routers.api.facilities.permissions import assert_facility_permission
 from ukrdc_fastapi.utils.cache import FacilityCachePrefix, ResponseCache
 
 router = APIRouter(tags=["Facilities/Stats"], prefix="/{code}/stats")
@@ -26,11 +27,13 @@ def facility_stats_demographics(
     ),
 ):
     """Retreive demographic statistics for a given facility"""
+    assert_facility_permission(code, user)
+
     # If no cached value exists, or the cached value has expired
     if not cache.exists:
         # Cache a computed value, and expire after 8 hours
         cache.set(
-            get_facility_demographic_stats(ukrdc3, code, user),
+            get_facility_demographic_stats(ukrdc3, code),
             expire=settings.cache_facilities_stats_demographics_seconds,
         )
 
@@ -51,11 +54,13 @@ def facility_stats_dialysis(
     ),
 ):
     """Retreive demographic statistics for a given facility"""
+    assert_facility_permission(code, user)
+
     # If no cached value exists, or the cached value has expired
     if not cache.exists:
         # Cache a computed value, and expire after 8 hours
         cache.set(
-            get_facility_dialysis_stats(ukrdc3, code, user),
+            get_facility_dialysis_stats(ukrdc3, code),
             expire=settings.cache_facilities_stats_dialysis_seconds,
         )
 

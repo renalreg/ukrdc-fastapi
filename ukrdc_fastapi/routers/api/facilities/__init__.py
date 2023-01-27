@@ -27,6 +27,10 @@ from ukrdc_fastapi.query.facilities.errors import (
     get_patients_latest_errors,
 )
 from ukrdc_fastapi.query.messages import ERROR_SORTER
+from ukrdc_fastapi.routers.api.facilities.permissions import (
+    apply_facility_list_permissions,
+    assert_facility_permission,
+)
 from ukrdc_fastapi.schemas.common import HistoryPoint
 from ukrdc_fastapi.schemas.message import MessageSchema
 from ukrdc_fastapi.utils.cache import ResponseCache
@@ -65,12 +69,11 @@ def facility_list(
         ukrdc3,
         errorsdb,
         redis,
-        user,
         include_inactive=include_inactive,
         include_empty=include_empty,
     )
 
-    return sorter.sort(facilities)
+    return sorter.sort(apply_facility_list_permissions(facilities, user))
 
 
 @router.get("/{code}", response_model=FacilityDetailsSchema)
@@ -82,29 +85,18 @@ def facility(
     cache: ResponseCache = Depends(facility_cache_factory(FacilityCachePrefix.ROOT)),
 ):
     """Retreive information and current status of a particular facility"""
+    assert_facility_permission(code, user)
+
     # If no cached value exists, or the cached value has expired
     if not cache.exists:
         # Cache a computed value, and expire after 1 hour
-        cache.set(get_facility(ukrdc3, errorsdb, code, user), expire=3600)
+        cache.set(get_facility(ukrdc3, errorsdb, code), expire=3600)
 
     # Add response cache headers to the response
     cache.prepare_response()
 
     # Fetch the cached value, coerse into the correct type, and return
     return FacilityDetailsSchema(**cache.get())
-
-
-@router.get("/{code}/error_history", response_model=list[HistoryPoint])
-def facility_errrors_history(
-    code: str,
-    since: Optional[datetime.date] = None,
-    until: Optional[datetime.date] = None,
-    ukrdc3: Session = Depends(get_ukrdc3),
-    statsdb: Session = Depends(get_statsdb),
-    user: UKRDCUser = Security(auth.get_user()),
-):
-    """Retreive time-series new error counts for the last year for a particular facility"""
-    return get_errors_history(ukrdc3, statsdb, code, user, since=since, until=until)
 
 
 @router.get("/{code}/patients_latest_errors", response_model=Page[MessageSchema])
@@ -117,7 +109,9 @@ def facility_patients_latest_errors(
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive time-series new error counts for the last year for a particular facility"""
-    query = get_patients_latest_errors(ukrdc3, errorsdb, code, user)
+    assert_facility_permission(code, user)
+
+    query = get_patients_latest_errors(ukrdc3, errorsdb, code)
 
     audit.add_event(
         Resource.MESSAGES,
@@ -127,6 +121,21 @@ def facility_patients_latest_errors(
     )
 
     return paginate(sorter.sort(query))
+
+
+@router.get("/{code}/error_history", response_model=list[HistoryPoint])
+def facility_errrors_history(
+    code: str,
+    since: Optional[datetime.date] = None,
+    until: Optional[datetime.date] = None,
+    ukrdc3: Session = Depends(get_ukrdc3),
+    statsdb: Session = Depends(get_statsdb),
+    user: UKRDCUser = Security(auth.get_user()),
+):
+    """Retreive time-series new error counts for the last year for a particular facility"""
+    assert_facility_permission(code, user)
+
+    return get_errors_history(ukrdc3, statsdb, code, since=since, until=until)
 
 
 @router.get("/{code}/extracts", response_model=FacilityExtractsSchema)
@@ -139,10 +148,12 @@ def facility_extracts(
     ),
 ):
     """Retreive extract counts for a particular facility"""
+    assert_facility_permission(code, user)
+
     # If no cached value exists, or the cached value has expired
     if not cache.exists:
         # Cache a computed value, and expire after 1 hour
-        cache.set(get_facility_extracts(ukrdc3, code, user), expire=3600)
+        cache.set(get_facility_extracts(ukrdc3, code), expire=3600)
 
     # Add response cache headers to the response
     cache.prepare_response()

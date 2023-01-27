@@ -1,6 +1,5 @@
 from typing import Optional
 
-from fastapi.exceptions import HTTPException
 from redis import Redis
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -21,23 +20,6 @@ from ukrdc_fastapi.schemas.facility import (
 from ukrdc_fastapi.utils.cache import BasicCache, CacheKey
 from ukrdc_fastapi.utils.records import ABSTRACT_FACILITIES
 
-# Security functions
-
-
-def _apply_query_permissions(query: Query, user: UKRDCUser):
-    units = Permissions.unit_codes(user.permissions)
-    if Permissions.UNIT_WILDCARD in units:
-        return query
-
-    return query.filter(Facility.code.in_(units))
-
-
-def _assert_permission(facility: Facility, user: UKRDCUser):
-    units = Permissions.unit_codes(user.permissions)
-    if (Permissions.UNIT_WILDCARD not in units) and (facility.code not in units):
-        raise PermissionsError()
-
-
 # Facility with error statistics
 
 
@@ -45,7 +27,6 @@ def get_facility(
     ukrdc3: Session,
     errorsdb: Session,
     facility_code: str,
-    user: UKRDCUser,
 ) -> FacilityDetailsSchema:
     """Get a summary of a particular facility/unit
 
@@ -61,9 +42,6 @@ def get_facility(
 
     if not facility:
         raise MissingFacilityError(facility_code)
-
-    # Assert permissions
-    _assert_permission(facility, user)
 
     # Get facility messages
     messages = (
@@ -114,7 +92,6 @@ def get_facility(
 def get_facility_extracts(
     ukrdc3: Session,
     facility_code: str,
-    user: UKRDCUser,
 ) -> FacilityExtractsSchema:
     """Get extract counts for a particular facility/unit
 
@@ -130,9 +107,6 @@ def get_facility_extracts(
 
     if not facility:
         raise MissingFacilityError(facility_code)
-
-    # Assert permissions
-    _assert_permission(facility, user)
 
     query = (
         ukrdc3.query(PatientRecord.sendingextract, func.count("*"))
@@ -273,23 +247,10 @@ def get_facilities(
     ukrdc3: Session,
     errorsdb: Session,
     redis: Redis,
-    user: UKRDCUser,
     include_inactive: bool = False,
     include_empty: bool = False,
 ) -> list[FacilityDetailsSchema]:
     """Get a list of all unit/facility summaries available to the current user.
-
-    NOTE: Within the UKRDC, users will typically fall into two categories:
-    - UKRDC administrators, who will have access to all units/facilities
-    - UKRDC users, who will have access to a *small* subset of units/facilities
-
-    If a user only has access to a small number of units/facilities, then the
-    facilities list will be generated quickly, and there is no need for caching.
-    However, if a user has access to *all* units/facilities, then the facilities
-    list will be generated slowly, and caching is will kick in.
-
-    In fringe cases where a user has access to a large number of facilities, but
-    not all of them, then the facilities list will likely be slow (~ couple of seconds).
 
     Args:
         ukrdc3 (Session): SQLALchemy session
@@ -300,48 +261,34 @@ def get_facilities(
         list[FacilityDetailsSchema]: List of units/facilities
     """
 
-    # Get a list of all facilities, excluding abstract facilities
-    facilities = ukrdc3.query(Facility).filter(
-        Facility.code.notin_(ABSTRACT_FACILITIES)
-    )
-
-    # Get a list of all units/facilities the user has permission to access
-    unit_permissions = Permissions.unit_codes(user.permissions)
-
-    return_list: list[FacilityDetailsSchema]
-
     # Look for a pre-calculated cache of the facilities list (see `ukrdc_fastapi.tasks.repeated`)
     cache = BasicCache(redis, CacheKey.FACILITIES_LIST)
-    if cache.exists:
-        all_facilities = [FacilityDetailsSchema(**facility) for facility in cache.get()]
-
-        if Permissions.UNIT_WILDCARD in unit_permissions:
-            return_list = all_facilities
-        else:
-            return_list = [
-                facility
-                for facility in all_facilities
-                if facility.id in unit_permissions
-            ]
-
-    # If no pre-calculated cache exists, then build the facilities list on the fly
-    else:
-        return_list = build_facilities_list(
-            _apply_query_permissions(facilities, user), ukrdc3, errorsdb
+    if not cache.exists:
+        cache.set(
+            build_facilities_list(
+                ukrdc3.query(Facility).filter(
+                    Facility.code.notin_(ABSTRACT_FACILITIES)
+                ),
+                ukrdc3,
+                errorsdb,
+            ),
+            expire=settings.cache_facilities_list_seconds,
         )
+
+    facilities = [FacilityDetailsSchema(**facility) for facility in cache.get()]
 
     # Filter out inactive facilities by checking for last_message_received_at
     if not include_inactive:
-        return_list = [
-            facility for facility in return_list if facility.last_message_received_at
+        facilities = [
+            facility for facility in facilities if facility.last_message_received_at
         ]
 
     # Filter out empty facilities by checking for total_records existing and > 0
     if not include_empty:
-        return_list = [
+        facilities = [
             facility
-            for facility in return_list
+            for facility in facilities
             if (facility.statistics.total_patients or 0) > 0
         ]
 
-    return return_list
+    return facilities
