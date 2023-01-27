@@ -13,17 +13,19 @@ from ukrdc_fastapi.schemas.patientrecord import PatientRecordSummarySchema
 from ukrdc_fastapi.utils.mirth import MirthMessageResponseSchema
 
 
-async def test_masterrecord_detail(client):
-    response = await client.get(f"{configuration.base_url}/masterrecords/1")
+async def test_masterrecord_detail(client_superuser):
+    response = await client_superuser.get(f"{configuration.base_url}/masterrecords/1")
     assert response.status_code == 200
     mr = MasterRecordSchema(**response.json())
     assert mr.id == 1
 
 
-async def test_masterrecord_related(client):
+async def test_masterrecord_related(client_superuser):
     # Check expected links
 
-    response = await client.get(f"{configuration.base_url}/masterrecords/1/related")
+    response = await client_superuser.get(
+        f"{configuration.base_url}/masterrecords/1/related"
+    )
     assert response.status_code == 200
     mrecs = [MasterRecordSchema(**item) for item in response.json()]
     returned_ids = {item.id for item in mrecs}
@@ -31,7 +33,7 @@ async def test_masterrecord_related(client):
 
     # Test reciprocal link
 
-    response_reciprocal = await client.get(
+    response_reciprocal = await client_superuser.get(
         f"{configuration.base_url}/masterrecords/4/related"
     )
     assert response_reciprocal.status_code == 200
@@ -40,8 +42,8 @@ async def test_masterrecord_related(client):
     assert returned_ids == {1, 101, 104}
 
 
-async def test_masterrecord_latest_message(client):
-    response = await client.get(
+async def test_masterrecord_latest_message(client_superuser):
+    response = await client_superuser.get(
         f"{configuration.base_url}/masterrecords/1/latest_message"
     )
     assert response.status_code == 200
@@ -50,8 +52,10 @@ async def test_masterrecord_latest_message(client):
     assert message.id == 2
 
 
-async def test_masterrecord_statistics(client):
-    response = await client.get(f"{configuration.base_url}/masterrecords/1/statistics")
+async def test_masterrecord_statistics(client_superuser):
+    response = await client_superuser.get(
+        f"{configuration.base_url}/masterrecords/1/statistics"
+    )
     assert response.status_code == 200
 
     stats = MasterRecordStatisticsSchema(**response.json())
@@ -60,8 +64,10 @@ async def test_masterrecord_statistics(client):
     assert stats.ukrdcids == 2
 
 
-async def test_masterrecord_linkrecords(client):
-    response = await client.get(f"{configuration.base_url}/masterrecords/1/linkrecords")
+async def test_masterrecord_linkrecords(client_superuser):
+    response = await client_superuser.get(
+        f"{configuration.base_url}/masterrecords/1/linkrecords"
+    )
     assert response.status_code == 200
 
     records = [LinkRecordSchema(**item) for item in response.json()]
@@ -69,8 +75,10 @@ async def test_masterrecord_linkrecords(client):
     assert returned_ids == {1, 4, 101, 104, 401}
 
 
-async def test_masterrecord_workitems(client):
-    response = await client.get(f"{configuration.base_url}/masterrecords/1/workitems")
+async def test_masterrecord_workitems(client_superuser):
+    response = await client_superuser.get(
+        f"{configuration.base_url}/masterrecords/1/workitems"
+    )
     assert response.status_code == 200
 
     witems = [WorkItemSchema(**item) for item in response.json()]
@@ -78,8 +86,8 @@ async def test_masterrecord_workitems(client):
     assert returned_ids == {1, 2}
 
 
-async def test_masterrecord_errors(client):
-    response = await client.get(
+async def test_masterrecord_errors(client_superuser):
+    response = await client_superuser.get(
         f"{configuration.base_url}/masterrecords/1/messages?status=ERROR"
     )
     assert response.status_code == 200
@@ -89,8 +97,10 @@ async def test_masterrecord_errors(client):
     assert returned_ids == {2}
 
 
-async def test_masterrecord_messages(client):
-    response = await client.get(f"{configuration.base_url}/masterrecords/1/messages")
+async def test_masterrecord_messages(client_superuser):
+    response = await client_superuser.get(
+        f"{configuration.base_url}/masterrecords/1/messages"
+    )
     assert response.status_code == 200
 
     errors = [MessageSchema(**item) for item in response.json()["items"]]
@@ -98,8 +108,10 @@ async def test_masterrecord_messages(client):
     assert returned_ids == {1, 2}
 
 
-async def test_masterrecord_persons(client):
-    response = await client.get(f"{configuration.base_url}/masterrecords/1/persons")
+async def test_masterrecord_persons(client_superuser):
+    response = await client_superuser.get(
+        f"{configuration.base_url}/masterrecords/1/persons"
+    )
     assert response.status_code == 200
 
     persons = [PersonSchema(**item) for item in response.json()]
@@ -107,8 +119,8 @@ async def test_masterrecord_persons(client):
     assert returned_ids == {1, 4}
 
 
-async def test_masterrecord_patientrecords(client):
-    response = await client.get(
+async def test_masterrecord_patientrecords(client_superuser):
+    response = await client_superuser.get(
         f"{configuration.base_url}/masterrecords/1/patientrecords"
     )
     assert response.status_code == 200
@@ -118,8 +130,8 @@ async def test_masterrecord_patientrecords(client):
     assert pids == {"PYTEST01:PV:00000000A", "PYTEST04:PV:00000000A"}
 
 
-async def test_master_record_memberships_create_pkb(client):
-    response = await client.post(
+async def test_master_record_memberships_create_pkb(client_superuser):
+    response = await client_superuser.post(
         f"{configuration.base_url}/masterrecords/2/memberships/create/pkb"
     )
     assert response.status_code == 200
@@ -128,8 +140,8 @@ async def test_master_record_memberships_create_pkb(client):
     assert resp.message == "<result><ukrdcid>999999911</ukrdcid></result>"
 
 
-async def test_master_record_memberships_create_pkb_non_ukrdc(client):
-    response = await client.post(
+async def test_master_record_memberships_create_pkb_non_ukrdc(client_superuser):
+    response = await client_superuser.post(
         f"{configuration.base_url}/masterrecords/102/memberships/create/pkb"
     )
     assert response.status_code == 200

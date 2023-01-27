@@ -129,8 +129,10 @@ async def test_masterrecord_messages(client, audit_session):
     assert child_event.parent_id == event.id
 
 
-async def test_masterrecord_workitems(client, audit_session):
-    response = await client.get(f"{configuration.base_url}/masterrecords/1/workitems")
+async def test_masterrecord_workitems(client_superuser, audit_session):
+    response = await client_superuser.get(
+        f"{configuration.base_url}/masterrecords/1/workitems"
+    )
     assert response.status_code == 200
     workitems = [WorkItemSchema(**item) for item in response.json()]
 
@@ -166,8 +168,10 @@ async def test_masterrecord_workitems(client, audit_session):
         assert person_event.resource_id == str(workitems[i].person.id)
 
 
-async def test_masterrecord_persons(client, audit_session):
-    response = await client.get(f"{configuration.base_url}/masterrecords/1/persons")
+async def test_masterrecord_persons(client_superuser, audit_session):
+    response = await client_superuser.get(
+        f"{configuration.base_url}/masterrecords/1/persons"
+    )
     assert response.status_code == 200
     persons = [PersonSchema(**item) for item in response.json()]
     returned_ids = {item.id for item in persons}
@@ -191,8 +195,8 @@ async def test_masterrecord_persons(client, audit_session):
         assert child_event.parent_id == primary_event.id
 
 
-async def test_masterrecord_patientrecords(client, audit_session):
-    response = await client.get(
+async def test_masterrecord_patientrecords(client_superuser, audit_session):
+    response = await client_superuser.get(
         f"{configuration.base_url}/masterrecords/1/patientrecords"
     )
     assert response.status_code == 200

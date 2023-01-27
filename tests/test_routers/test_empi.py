@@ -1,8 +1,8 @@
 from ukrdc_fastapi.config import configuration
 
 
-async def test_merge(client):
-    response = await client.post(
+async def test_merge(client_superuser):
+    response = await client_superuser.post(
         f"{configuration.base_url}/empi/merge",
         json={"superseding": 1, "superseded": 2},
     )
@@ -13,8 +13,8 @@ async def test_merge(client):
     assert f"<superceeded>2</superceeded>" in message
 
 
-async def test_unlink(client):
-    response = await client.post(
+async def test_unlink(client_superuser):
+    response = await client_superuser.post(
         f"{configuration.base_url}/empi/unlink",
         json={"personId": 4, "comment": "comment", "masterId": 1},
     )

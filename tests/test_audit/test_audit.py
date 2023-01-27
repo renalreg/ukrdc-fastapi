@@ -2,9 +2,9 @@ from ukrdc_fastapi.config import configuration
 from ukrdc_fastapi.models.audit import AuditEvent
 
 
-async def test_access_event(client, audit_session):
+async def test_access_event(client_superuser, audit_session):
     path = f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A"
-    response = await client.get(path)
+    response = await client_superuser.get(path)
     assert response.status_code == 200
 
     events = audit_session.query(AuditEvent).all()

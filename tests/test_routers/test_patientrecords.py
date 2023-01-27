@@ -2,8 +2,8 @@ from ukrdc_fastapi.config import configuration
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordSchema
 
 
-async def test_record(client):
-    response = await client.get(
+async def test_record(client_superuser):
+    response = await client_superuser.get(
         f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A"
     )
     assert response.status_code == 200
@@ -11,8 +11,8 @@ async def test_record(client):
     assert record.pid == "PYTEST01:PV:00000000A"
 
 
-async def test_record_missing(client):
-    response = await client.get(
+async def test_record_missing(client_superuser):
+    response = await client_superuser.get(
         f"{configuration.base_url}/patientrecords/PYTEST01:PV:MISSING"
     )
     assert response.status_code == 404

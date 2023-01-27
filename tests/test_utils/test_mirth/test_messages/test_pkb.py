@@ -3,9 +3,9 @@ from ukrdc_sqla.ukrdc import Facility, PatientRecord, ProgramMembership
 
 from tests.utils import days_ago
 from ukrdc_fastapi.exceptions import (
-    MissingFacilityError,
     NoActiveMembershipError,
     PKBOutboundDisabledError,
+    ResourceNotFoundError,
 )
 from ukrdc_fastapi.utils.mirth.messages.pkb import (
     EXCLUDED_EXTRACTS,
@@ -68,7 +68,7 @@ def test_build_pkb_sync_message_missing_facility(ukrdc3_session):
     record.sendingfacility = "MISSING"
     ukrdc3_session.commit()
 
-    with pytest.raises(MissingFacilityError):
+    with pytest.raises(ResourceNotFoundError):
         build_pkb_sync_messages(record, ukrdc3_session)
 
 

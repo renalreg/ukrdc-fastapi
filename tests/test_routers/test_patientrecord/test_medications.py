@@ -2,8 +2,8 @@ from tests.utils import days_ago
 from ukrdc_fastapi.config import configuration
 
 
-async def test_record_medications(client):
-    response = await client.get(
+async def test_record_medications(client_superuser):
+    response = await client_superuser.get(
         f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/medications"
     )
     assert response.status_code == 200

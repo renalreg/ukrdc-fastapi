@@ -949,15 +949,6 @@ def app(
     def _get_root_task_tracker():
         return TaskTracker(*task_redis_sessions, auth.auth.superuser)
 
-    def _get_token():
-        return {
-            "uid": "TEST_ID",
-            "cid": "PYTEST",
-            "sub": "TEST@UKRDC_FASTAPI",
-            "scp": ["openid", "profile", "email", "offline_access"],
-            "org.ukrdc.permissions": auth.Permissions.all(),
-        }
-
     # Override FastAPI dependencies to point to function-scoped sessions
     app.dependency_overrides[get_mirth] = _get_mirth
     app.dependency_overrides[get_redis] = _get_redis
@@ -970,13 +961,42 @@ def app(
     app.dependency_overrides[get_task_tracker] = _get_task_tracker
     app.dependency_overrides[get_root_task_tracker] = _get_root_task_tracker
 
-    app.dependency_overrides[auth.auth.okta_jwt_scheme] = _get_token
-
     return app
 
 
 @pytest_asyncio.fixture(scope="function")
 async def client(app):
+    def _get_token():
+        return {
+            "uid": "TEST_ID",
+            "cid": "PYTEST",
+            "sub": "TEST@UKRDC_FASTAPI",
+            "scp": ["openid", "profile", "email", "offline_access"],
+            "org.ukrdc.permissions": [
+                *Permissions.all()[:-1],
+                "ukrdc:unit:TEST_SENDING_FACILITY_1",
+            ],
+        }
+
+    app.dependency_overrides[auth.auth.okta_jwt_scheme] = _get_token
+
+    async with AsyncClient(app=app, base_url="http://test") as ac:
+        yield ac
+
+
+@pytest_asyncio.fixture(scope="function")
+async def client_superuser(app):
+    def _get_token():
+        return {
+            "uid": "TEST_ID",
+            "cid": "PYTEST",
+            "sub": "TEST@UKRDC_FASTAPI",
+            "scp": ["openid", "profile", "email", "offline_access"],
+            "org.ukrdc.permissions": auth.Permissions.all(),
+        }
+
+    app.dependency_overrides[auth.auth.okta_jwt_scheme] = _get_token
+
     async with AsyncClient(app=app, base_url="http://test") as ac:
         yield ac
 

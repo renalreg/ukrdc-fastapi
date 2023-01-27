@@ -1,7 +1,7 @@
 from ukrdc_fastapi.config import configuration
 
 
-async def test_record_update_demographics(client):
+async def test_record_update_demographics(client_superuser):
     demographics = {
         "name": {
             "family": "NEWFAMILY",
@@ -18,7 +18,7 @@ async def test_record_update_demographics(client):
             "country_description": "United Kingdom",
         },
     }
-    response = await client.post(
+    response = await client_superuser.post(
         f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/update/demographics",
         json=demographics,
     )
@@ -33,7 +33,7 @@ async def test_record_update_demographics(client):
     )
 
 
-async def test_record_update_demographics_no_address(client):
+async def test_record_update_demographics_no_address(client_superuser):
     demographics = {
         "name": {
             "family": "NEWFAMILY",
@@ -42,7 +42,7 @@ async def test_record_update_demographics_no_address(client):
         "birth_time": "1985-01-01T00:00:00",
         "gender": "9",
     }
-    response = await client.post(
+    response = await client_superuser.post(
         f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/update/demographics",
         json=demographics,
     )

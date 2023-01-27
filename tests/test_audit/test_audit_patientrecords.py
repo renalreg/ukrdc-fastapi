@@ -6,9 +6,9 @@ from ukrdc_fastapi.models.audit import AuditEvent
 from ..utils import days_ago
 
 
-async def test_record_read_audit(client, audit_session):
+async def test_record_read_audit(client_superuser, audit_session):
     path = f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A"
-    response = await client.get(path)
+    response = await client_superuser.get(path)
     assert response.status_code == 200
 
     events = audit_session.query(AuditEvent).all()
@@ -23,8 +23,8 @@ async def test_record_read_audit(client, audit_session):
     assert event.parent_id == None
 
 
-async def test_record_delete_summary_audit(client, audit_session):
-    response = await client.post(
+async def test_record_delete_summary_audit(client_superuser, audit_session):
+    response = await client_superuser.post(
         f"{configuration.base_url}/patientrecords/PYTEST03:PV:00000000A/delete"
     )
     assert response.status_code == 200
@@ -49,13 +49,13 @@ async def test_record_delete_summary_audit(client, audit_session):
     assert ("MASTER_RECORD", "103") in child_event_summaries
 
 
-async def test_record_delete_audit(client, audit_session):
-    response = await client.post(
+async def test_record_delete_audit(client_superuser, audit_session):
+    response = await client_superuser.post(
         f"{configuration.base_url}/patientrecords/PYTEST03:PV:00000000A/delete"
     )
     assert response.status_code == 200
 
-    deleted_response = await client.post(
+    deleted_response = await client_superuser.post(
         f"{configuration.base_url}/patientrecords/PYTEST03:PV:00000000A/delete",
         json={"hash": response.json().get("hash")},
     )
@@ -84,8 +84,8 @@ async def test_record_delete_audit(client, audit_session):
     assert ("MASTER_RECORD", "103") in child_event_summaries
 
 
-async def test_record_read_medications(client, audit_session):
-    response = await client.get(
+async def test_record_read_medications(client_superuser, audit_session):
+    response = await client_superuser.get(
         f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/medications"
     )
     assert response.status_code == 200
@@ -108,8 +108,8 @@ async def test_record_read_medications(client, audit_session):
     assert child_event.parent_id == event.id
 
 
-async def test_record_read_treatments(client, audit_session):
-    response = await client.get(
+async def test_record_read_treatments(client_superuser, audit_session):
+    response = await client_superuser.get(
         f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/treatments"
     )
     assert response.status_code == 200
@@ -132,8 +132,8 @@ async def test_record_read_treatments(client, audit_session):
     assert child_event.parent_id == event.id
 
 
-async def test_record_read_surveys(client, audit_session):
-    response = await client.get(
+async def test_record_read_surveys(client_superuser, audit_session):
+    response = await client_superuser.get(
         f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/surveys"
     )
     assert response.status_code == 200
@@ -156,8 +156,8 @@ async def test_record_read_surveys(client, audit_session):
     assert child_event.parent_id == event.id
 
 
-async def test_record_read_observations(client, audit_session):
-    response = await client.get(
+async def test_record_read_observations(client_superuser, audit_session):
+    response = await client_superuser.get(
         f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/observations"
     )
     assert response.status_code == 200
@@ -180,8 +180,8 @@ async def test_record_read_observations(client, audit_session):
     assert child_event.parent_id == event.id
 
 
-async def test_record_read_laborders(client, audit_session):
-    response = await client.get(
+async def test_record_read_laborders(client_superuser, audit_session):
+    response = await client_superuser.get(
         f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/laborders"
     )
     assert response.status_code == 200
@@ -204,8 +204,8 @@ async def test_record_read_laborders(client, audit_session):
     assert child_event.parent_id == event.id
 
 
-async def test_record_read_laborder(client, audit_session):
-    response = await client.get(
+async def test_record_read_laborder(client_superuser, audit_session):
+    response = await client_superuser.get(
         f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/laborders/LABORDER1"
     )
     assert response.status_code == 200
@@ -228,7 +228,7 @@ async def test_record_read_laborder(client, audit_session):
     assert child_event.parent_id == event.id
 
 
-async def test_record_delete_laborder(client, ukrdc3_session, audit_session):
+async def test_record_delete_laborder(client_superuser, ukrdc3_session, audit_session):
     laborder = LabOrder(
         id="LABORDER_TEMP",
         pid="PYTEST01:PV:00000000A",
@@ -254,7 +254,7 @@ async def test_record_delete_laborder(client, ukrdc3_session, audit_session):
     assert ukrdc3_session.query(LabOrder).get("LABORDER_TEMP")
     assert ukrdc3_session.query(ResultItem).get("RESULTITEM_TEMP")
 
-    response = await client.delete(
+    response = await client_superuser.delete(
         f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/laborders/LABORDER_TEMP"
     )
     assert response.status_code == 204
@@ -287,8 +287,8 @@ async def test_record_delete_laborder(client, ukrdc3_session, audit_session):
     assert result_event.parent_id == order_event.id
 
 
-async def test_record_read_resultitems(client, audit_session):
-    response = await client.get(
+async def test_record_read_resultitems(client_superuser, audit_session):
+    response = await client_superuser.get(
         f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/results"
     )
     assert response.status_code == 200
@@ -311,8 +311,8 @@ async def test_record_read_resultitems(client, audit_session):
     assert child_event.parent_id == event.id
 
 
-async def test_record_read_resultitem(client, audit_session):
-    response = await client.get(
+async def test_record_read_resultitem(client_superuser, audit_session):
+    response = await client_superuser.get(
         f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/results/RESULTITEM1"
     )
     assert response.status_code == 200
@@ -335,8 +335,8 @@ async def test_record_read_resultitem(client, audit_session):
     assert child_event.parent_id == event.id
 
 
-async def test_record_delete_resultitem(client, audit_session):
-    response = await client.delete(
+async def test_record_delete_resultitem(client_superuser, audit_session):
+    response = await client_superuser.delete(
         f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/results/RESULTITEM1"
     )
     assert response.status_code == 204
@@ -359,8 +359,8 @@ async def test_record_delete_resultitem(client, audit_session):
     assert child_event.parent_id == event.id
 
 
-async def test_record_read_documents(client, audit_session):
-    response = await client.get(
+async def test_record_read_documents(client_superuser, audit_session):
+    response = await client_superuser.get(
         f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/documents"
     )
     assert response.status_code == 200
@@ -383,8 +383,8 @@ async def test_record_read_documents(client, audit_session):
     assert child_event.parent_id == event.id
 
 
-async def test_record_read_document(client, audit_session):
-    response = await client.get(
+async def test_record_read_document(client_superuser, audit_session):
+    response = await client_superuser.get(
         f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/documents/DOCUMENT_PDF"
     )
     assert response.status_code == 200
@@ -407,8 +407,8 @@ async def test_record_read_document(client, audit_session):
     assert child_event.parent_id == event.id
 
 
-async def test_record_download_document(client, audit_session):
-    response = await client.get(
+async def test_record_download_document(client_superuser, audit_session):
+    response = await client_superuser.get(
         f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/documents/DOCUMENT_PDF/download"
     )
     assert response.status_code == 200
@@ -431,8 +431,8 @@ async def test_record_download_document(client, audit_session):
     assert child_event.parent_id == event.id
 
 
-async def test_record_export_data(client, audit_session):
-    response = await client.post(
+async def test_record_export_data(client_superuser, audit_session):
+    response = await client_superuser.post(
         f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/export/pv",
         json={},
     )
@@ -450,8 +450,8 @@ async def test_record_export_data(client, audit_session):
     assert event.parent_id == None
 
 
-async def test_record_export_tests(client, audit_session):
-    response = await client.post(
+async def test_record_export_tests(client_superuser, audit_session):
+    response = await client_superuser.post(
         f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/export/pv-tests",
         json={},
     )
@@ -469,8 +469,8 @@ async def test_record_export_tests(client, audit_session):
     assert event.parent_id == None
 
 
-async def test_record_export_docs(client, audit_session):
-    response = await client.post(
+async def test_record_export_docs(client_superuser, audit_session):
+    response = await client_superuser.post(
         f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/export/pv-docs",
         json={},
     )
@@ -488,8 +488,8 @@ async def test_record_export_docs(client, audit_session):
     assert event.parent_id == None
 
 
-async def test_record_export_radar(client, audit_session):
-    response = await client.post(
+async def test_record_export_radar(client_superuser, audit_session):
+    response = await client_superuser.post(
         f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/export/radar",
         json={},
     )
