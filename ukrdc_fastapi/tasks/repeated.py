@@ -1,6 +1,7 @@
 import logging
 
 from fastapi_utils.tasks import repeat_every
+from sqlalchemy.sql.functions import func
 from ukrdc_sqla.ukrdc import Facility, PatientRecord
 
 from ukrdc_fastapi.config import settings
@@ -68,11 +69,13 @@ async def update_facilities_list() -> None:
     return await task.tracked()
 
 
-from sqlalchemy.sql.functions import func
-
-
 @repeat_every(seconds=settings.cache_facilities_stats_dialysis_seconds)
 async def precalculate_facility_stats_dialysis() -> None:
+    """
+    Pre-calculate the dialysis stats for all facilities with more than
+    `cache_facilities_stats_dialysis_min` records.
+    """
+
     async def innerfunc():
         with ukrdc3_session() as ukrdc3:
             # Get all non-abstract facilities with UKRDC/RDA feed records
@@ -111,7 +114,6 @@ async def precalculate_facility_stats_dialysis() -> None:
                         )
                     except MissingFacilityError as e:
                         logging.error(e)
-                        pass
 
     task = get_root_task_tracker().create(
         innerfunc, name="Pre-calculate per-facility dialysis stats"
