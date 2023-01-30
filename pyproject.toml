@@ -31,7 +31,7 @@ uvicorn = "^0.20.0"
 bandit = "^1.7.4"
 black = {version = "^22.1", allow-prereleases = true}
 coverage = {extras = ["toml"], version = "^7.0"}
-fakeredis = "^2.0"
+fakeredis = "^2.6"
 isort = "^5.11.2"
 mypy = "^0.991"
 pylint = "^2.15.9"
