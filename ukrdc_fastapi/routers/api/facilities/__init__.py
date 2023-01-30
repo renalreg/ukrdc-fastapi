@@ -14,7 +14,10 @@ from ukrdc_fastapi.dependencies.audit import (
 )
 from ukrdc_fastapi.dependencies.auth import UKRDCUser, auth
 from ukrdc_fastapi.dependencies.cache import FacilityCachePrefix, facility_cache_factory
-from ukrdc_fastapi.exceptions import MissingFacilityError
+from ukrdc_fastapi.permissions.facilities import (
+    apply_facility_list_permissions,
+    assert_facility_permission,
+)
 from ukrdc_fastapi.query.facilities import (
     FacilityDetailsSchema,
     FacilityExtractsSchema,
@@ -27,10 +30,6 @@ from ukrdc_fastapi.query.facilities.errors import (
     get_patients_latest_errors,
 )
 from ukrdc_fastapi.query.messages import ERROR_SORTER
-from ukrdc_fastapi.routers.api.facilities.permissions import (
-    apply_facility_list_permissions,
-    assert_facility_permission,
-)
 from ukrdc_fastapi.schemas.common import HistoryPoint
 from ukrdc_fastapi.schemas.message import MessageSchema
 from ukrdc_fastapi.utils.cache import ResponseCache
@@ -73,7 +72,10 @@ def facility_list(
         include_empty=include_empty,
     )
 
-    return sorter.sort(apply_facility_list_permissions(facilities, user))
+    # Apply permissions to the list of facilities
+    facilities = apply_facility_list_permissions(facilities, user)
+
+    return sorter.sort(facilities)
 
 
 @router.get("/{code}", response_model=FacilityDetailsSchema)

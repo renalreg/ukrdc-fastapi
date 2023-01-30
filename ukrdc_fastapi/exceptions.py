@@ -1,3 +1,17 @@
+from typing import Any, Optional
+
+from fastapi.exceptions import HTTPException
+
+
+class PermissionsError(HTTPException):
+    def __init__(self, headers: Optional[dict[str, Any]] = None) -> None:
+        super().__init__(
+            403,
+            detail="You do not have permission to access resources belonging to this facility.",
+            headers=headers,
+        )
+
+
 class AmbigousQueryError(RuntimeError):
     """
     Raised when a query should return a single value but

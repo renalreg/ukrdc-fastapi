@@ -6,42 +6,18 @@ from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.expression import or_
 from sqlalchemy.sql.functions import func
 from ukrdc_sqla.empi import MasterRecord, Person, PidXRef, WorkItem
+from ukrdc_sqla.errorsdb import Message
 from ukrdc_sqla.utils.links import find_related_ids
 
-from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
-from ukrdc_fastapi.exceptions import ResourceNotFoundError
-from ukrdc_fastapi.query.common import PermissionsError, person_belongs_to_units
 from ukrdc_fastapi.query.masterrecords import get_masterrecords_related_to_person
-from ukrdc_fastapi.query.messages import get_message
 from ukrdc_fastapi.query.persons import get_persons_related_to_masterrecord
 from ukrdc_fastapi.schemas.common import HistoryPoint
 from ukrdc_fastapi.schemas.empi import WorkItemExtendedSchema
 from ukrdc_fastapi.utils import daterange
 
 
-def _apply_query_permissions(query: Query, user: UKRDCUser):
-    units = Permissions.unit_codes(user.permissions)
-    if Permissions.UNIT_WILDCARD in units:
-        return query
-
-    return query.join(Person).join(PidXRef).filter(PidXRef.sending_facility.in_(units))
-
-
-def _assert_permission(workitem: WorkItem, user: UKRDCUser):
-    units = Permissions.unit_codes(user.permissions)
-    if Permissions.UNIT_WILDCARD in units:
-        return
-
-    person: Person = workitem.person
-    if person_belongs_to_units(person, units):
-        return
-
-    raise PermissionsError()
-
-
 def get_workitems(
     jtrace: Session,
-    user: UKRDCUser,
     statuses: Optional[list[int]] = None,
     master_id: Optional[list[int]] = None,
     person_id: Optional[list[int]] = None,
@@ -53,7 +29,6 @@ def get_workitems(
 
     Args:
         jtrace (Session): SQLAlchemy session
-        user (UKRDCUser): Logged-in user
         statuses (list[int], optional): WorkItem statuses to filter by. Defaults to None.
         master_id (Optional[int], optional): WorkItem MasterRecord ID to filter by. Defaults to None.
         facility (Optional[str], optional): Associated Person sending facility to filter by. Defaults to None.
@@ -97,49 +72,23 @@ def get_workitems(
         workitems = workitems.filter(or_(*filters))
 
     # Get a query of open workitems
-    workitems = workitems.filter(WorkItem.status.in_(status_list))
-
-    return _apply_query_permissions(workitems, user)
+    return workitems.filter(WorkItem.status.in_(status_list))
 
 
-def get_workitem(jtrace: Session, workitem_id: int, user: UKRDCUser) -> WorkItem:
+def extend_workitem(workitem: WorkItem, jtrace: Session) -> WorkItemExtendedSchema:
     """Return a WorkItem by ID if it exists and the user has permission
 
     Args:
         jtrace (Session): JTRACE SQLAlchemy session
         workitem_id (int): WorkItem ID
-        user (UKRDCUser): User object
 
     Returns:
-        WorkItem: WorkItem
+        WorkItemExtendedSchema: Extended WorkItem object
     """
-    workitem = jtrace.query(WorkItem).get(workitem_id)
-    if not workitem:
-        raise ResourceNotFoundError("Work item not found")
-    _assert_permission(workitem, user)
-
-    return workitem
-
-
-def get_extended_workitem(
-    jtrace: Session, workitem_id: int, user: UKRDCUser
-) -> WorkItemExtendedSchema:
-    """Return a WorkItem by ID if it exists and the user has permission
-
-    Args:
-        jtrace (Session): JTRACE SQLAlchemy session
-        workitem_id (int): WorkItem ID
-        user (UKRDCUser): User object
-
-    Returns:
-        WorkItem: WorkItem
-    """
-    workitem = get_workitem(jtrace, workitem_id, user)
-
     incoming = {
         "person": workitem.person or None,
         "master_records": get_masterrecords_related_to_person(
-            jtrace, workitem.person_id, user, nationalid_type="UKRDC"
+            workitem.person, jtrace, nationalid_type="UKRDC"
         )
         .filter(MasterRecord.id != workitem.master_id)
         .all()
@@ -149,7 +98,7 @@ def get_extended_workitem(
 
     destination = {
         "master_record": workitem.master_record,
-        "persons": get_persons_related_to_masterrecord(jtrace, workitem.master_id, user)
+        "persons": get_persons_related_to_masterrecord(workitem.master_record, jtrace)
         .filter(Person.id != workitem.person_id)
         .all(),
     }
@@ -171,41 +120,32 @@ def get_extended_workitem(
     )
 
 
-def get_workitem_collection(
-    jtrace: Session, workitem_id: int, user: UKRDCUser
-) -> Query:
+def get_workitem_collection(workitem: WorkItem, jtrace: Session) -> Query:
     """Get a list of WorkItems related via the LinkRecord network to a given WorkItem,
     raised by the same even as the given WorkItem.
 
     Args:
         jtrace (Session): JTRACE SQLAlchemy session
         workitem_id (int): WorkItem ID
-        user (UKRDCUser): Logged-in user
 
     Returns:
         Query: SQLAlchemy query
     """
-    workitem = get_workitem(jtrace, workitem_id, user)
-    related_workitems = get_workitems_related_to_workitem(jtrace, workitem.id, user)
+    related_workitems = get_workitems_related_to_workitem(workitem, jtrace)
 
     return related_workitems.filter(WorkItem.creation_date == workitem.creation_date)
 
 
-def get_workitems_related_to_workitem(
-    jtrace: Session, workitem_id: int, user: UKRDCUser
-) -> Query:
+def get_workitems_related_to_workitem(workitem: WorkItem, jtrace: Session) -> Query:
     """Get a list of WorkItems related via the LinkRecord network to a given WorkItem
 
     Args:
         jtrace (Session): JTRACE SQLAlchemy session
         workitem_id (int): WorkItem ID
-        user (UKRDCUser): Logged-in user
 
     Returns:
         Query: SQLAlchemy query
     """
-    workitem = get_workitem(jtrace, workitem_id, user)
-
     seen_master_ids: set[int] = set()
     seen_person_ids: set[int] = set()
 
@@ -224,30 +164,23 @@ def get_workitems_related_to_workitem(
             WorkItem.person_id.in_(related_person_ids),
         )
     )
-    other_workitems = other_workitems.filter(WorkItem.id != workitem.id)
-
-    return _apply_query_permissions(other_workitems, user)
+    return other_workitems.filter(WorkItem.id != workitem.id)
 
 
-def get_workitems_related_to_message(
-    jtrace: Session, errorsdb: Session, message_id: int, user: UKRDCUser
-) -> Query:
+def get_workitems_related_to_message(message: Message, jtrace: Session) -> Query:
     """Get a list of WorkItems related via the Patient Number to a given Message
 
     Args:
         jtrace (Session): JTRACE SQLAlchemy session
         errorsdb (Session): ERRORSDB SQLAlchemy session
         message_id (str): Message ID
-        user (UKRDCUser): Logged-in user
 
     Returns:
         Query: SQLAlchemy query
     """
-    error = get_message(errorsdb, message_id, user)
-
     # Get masterrecords directly referenced by the error
     direct_records: list[MasterRecord] = (
-        jtrace.query(MasterRecord).filter(MasterRecord.nationalid == error.ni).all()
+        jtrace.query(MasterRecord).filter(MasterRecord.nationalid == message.ni).all()
     )
 
     # Get workitems related to masterrecords directly referenced by the error

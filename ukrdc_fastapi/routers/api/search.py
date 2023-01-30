@@ -12,7 +12,7 @@ from ukrdc_fastapi.dependencies.audit import (
     get_auditer,
 )
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
-from ukrdc_fastapi.query.masterrecords import get_masterrecords
+from ukrdc_fastapi.permissions.masterrecords import apply_masterrecord_list_permissions
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
 from ukrdc_fastapi.utils.search.masterrecords import search_masterrecord_ids
@@ -63,9 +63,7 @@ def search_masterrecords(
         .filter(LinkRecord.person_id.in_(person_ids))
     )
 
-    matched_records = get_masterrecords(jtrace, user).filter(
-        MasterRecord.id.in_(master_ids)
-    )
+    matched_records = jtrace.query(MasterRecord).filter(MasterRecord.id.in_(master_ids))
 
     # If a number type filter is explicitly given
     if number_type:
@@ -73,6 +71,9 @@ def search_masterrecords(
         matched_records = matched_records.filter(
             MasterRecord.nationalid_type.in_(number_type)
         )
+
+    # Apply permissions
+    matched_records = apply_masterrecord_list_permissions(matched_records, user)
 
     # Paginate results
     page: Page = paginate(matched_records)  # type: ignore

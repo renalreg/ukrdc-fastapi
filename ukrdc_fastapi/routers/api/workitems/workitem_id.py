@@ -8,6 +8,7 @@ from mirth_client import MirthAPI
 from pydantic.fields import Field
 from redis import Redis
 from sqlalchemy.orm import Session
+from ukrdc_sqla.empi import WorkItem
 
 from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_mirth, get_redis
 from ukrdc_fastapi.dependencies.audit import (
@@ -17,11 +18,16 @@ from ukrdc_fastapi.dependencies.audit import (
     get_auditer,
 )
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
+from ukrdc_fastapi.exceptions import ResourceNotFoundError
+from ukrdc_fastapi.permissions.messages import apply_message_list_permissions
+from ukrdc_fastapi.permissions.workitems import (
+    apply_workitem_list_permission,
+    assert_workitem_permission,
+)
 from ukrdc_fastapi.query.messages import get_messages
 from ukrdc_fastapi.query.mirth.workitems import close_workitem, update_workitem
 from ukrdc_fastapi.query.workitems import (
-    get_extended_workitem,
-    get_workitem,
+    extend_workitem,
     get_workitem_collection,
     get_workitems_related_to_workitem,
 )
@@ -43,21 +49,39 @@ class UpdateWorkItemRequest(JSONModel):
     comment: Optional[str] = Field(None, max_length=100)
 
 
+def _get_workitem(
+    workitem_id: int,
+    user: UKRDCUser = Security(auth.get_user()),
+    jtrace: Session = Depends(get_jtrace),
+):
+    """Retreive a particular work item from the EMPI"""
+    workitem_obj = jtrace.query(WorkItem).get(workitem_id)
+    if not workitem_obj:
+        raise ResourceNotFoundError("Work item not found")
+
+    assert_workitem_permission(workitem_obj, user)
+
+    return workitem_obj
+
+
 @router.get(
     "/{workitem_id}",
     response_model=WorkItemExtendedSchema,
     dependencies=[Security(auth.permission(Permissions.READ_WORKITEMS))],
 )
 def workitem(
-    workitem_id: int,
-    user: UKRDCUser = Security(auth.get_user()),
+    workitem_obj: WorkItem = Depends(_get_workitem),
     jtrace: Session = Depends(get_jtrace),
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a particular work item from the EMPI"""
-    workitem_obj = get_extended_workitem(jtrace, workitem_id, user)
-    audit.add_workitem(workitem_obj)
-    return workitem_obj
+    # Extend the work item with additional information
+    extended_workitem = extend_workitem(workitem_obj, jtrace)
+
+    # Add audit event
+    audit.add_workitem(extended_workitem)
+
+    return extended_workitem
 
 
 @router.put(
@@ -76,112 +100,25 @@ def workitem(
     ],
 )
 async def workitem_update(
-    workitem_id: int,
     args: UpdateWorkItemRequest,
+    workitem_obj: WorkItem = Depends(_get_workitem),
     user: UKRDCUser = Security(auth.get_user()),
-    jtrace: Session = Depends(get_jtrace),
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
     audit: Auditer = Depends(get_auditer),
 ):
     """Update a particular work item in the EMPI"""
 
-    audit.add_event(Resource.WORKITEM, workitem_id, AuditOperation.UPDATE)
+    # Add audit event
+    audit.add_event(Resource.WORKITEM, workitem_obj.id, AuditOperation.UPDATE)
 
     return await update_workitem(
-        jtrace,
-        workitem_id,
-        user,
+        workitem_obj,
         mirth,
         redis,
+        user.email,
         status=args.status,
         comment=args.comment,
-    )
-
-
-@router.get(
-    "/{workitem_id}/colection",
-    response_model=list[WorkItemSchema],
-    dependencies=[Security(auth.permission(Permissions.READ_WORKITEMS))],
-)
-def workitem_collection(
-    workitem_id: int,
-    user: UKRDCUser = Security(auth.get_user()),
-    jtrace: Session = Depends(get_jtrace),
-    audit: Auditer = Depends(get_auditer),
-):
-    """Retreive a list of other work items related to a particular work item"""
-    collection = get_workitem_collection(jtrace, workitem_id, user).all()
-
-    for workitem_obj in collection:
-        audit.add_workitem(workitem_obj)
-
-    return collection
-
-
-@router.get(
-    "/{workitem_id}/related",
-    response_model=list[WorkItemSchema],
-    dependencies=[Security(auth.permission(Permissions.READ_WORKITEMS))],
-)
-def workitem_related(
-    workitem_id: int,
-    user: UKRDCUser = Security(auth.get_user()),
-    jtrace: Session = Depends(get_jtrace),
-    audit: Auditer = Depends(get_auditer),
-):
-    """Retreive a list of other work items related to a particular work item"""
-    related = get_workitems_related_to_workitem(jtrace, workitem_id, user).all()
-
-    for workitem_obj in related:
-        audit.add_workitem(workitem_obj)
-
-    return related
-
-
-@router.get(
-    "/{workitem_id}/messages",
-    response_model=Page[MessageSchema],
-    dependencies=[Security(auth.permission(Permissions.READ_WORKITEMS))],
-)
-def workitem_messages(
-    workitem_id: int,
-    facility: Optional[str] = None,
-    since: Optional[datetime.datetime] = None,
-    until: Optional[datetime.datetime] = None,
-    status: Optional[list[str]] = QueryParam(None),
-    user: UKRDCUser = Security(auth.get_user()),
-    jtrace: Session = Depends(get_jtrace),
-    errorsdb: Session = Depends(get_errorsdb),
-    audit: Auditer = Depends(get_auditer),
-):
-    """Retreive a list of other work items related to a particular work item"""
-    workitem_obj = get_extended_workitem(jtrace, workitem_id, user)
-
-    workitem_nis: list[str] = [
-        record.nationalid for record in workitem_obj.incoming.master_records
-    ]
-
-    if workitem_obj.master_record:
-        workitem_nis.append(workitem_obj.master_record.nationalid.strip())
-
-    audit.add_event(
-        Resource.MESSAGES,
-        None,
-        AuditOperation.READ,
-        parent=audit.add_event(Resource.WORKITEM, workitem_id, AuditOperation.READ),
-    )
-
-    return paginate(
-        get_messages(
-            errorsdb,
-            user,
-            statuses=status,
-            nis=workitem_nis,
-            facility=facility,
-            since=since,
-            until=until,
-        )
     )
 
 
@@ -195,24 +132,116 @@ def workitem_messages(
     ],
 )
 async def workitem_close(
-    workitem_id: int,
     args: Optional[CloseWorkItemRequest],
-    jtrace: Session = Depends(get_jtrace),
+    workitem_obj: WorkItem = Depends(_get_workitem),
     user: UKRDCUser = Security(auth.get_user()),
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
     audit: Auditer = Depends(get_auditer),
 ):
     """Update and close a particular work item"""
-    workitem_obj = get_workitem(jtrace, workitem_id, user)
 
+    # Add audit event
     audit.add_event(Resource.WORKITEM, workitem_obj.id, AuditOperation.UPDATE)
 
     return await close_workitem(
-        jtrace,
-        workitem_obj.id,
-        user,
+        workitem_obj,
         mirth,
         redis,
+        user.email,
         comment=(args.comment if args else None),
     )
+
+
+@router.get(
+    "/{workitem_id}/colection",
+    response_model=list[WorkItemSchema],
+    dependencies=[Security(auth.permission(Permissions.READ_WORKITEMS))],
+)
+def workitem_collection(
+    workitem_obj: WorkItem = Depends(_get_workitem),
+    jtrace: Session = Depends(get_jtrace),
+    audit: Auditer = Depends(get_auditer),
+):
+    """Retreive a list of other work items related to a particular work item"""
+    collection = get_workitem_collection(workitem_obj, jtrace).all()
+
+    # Add audit events
+    for item in collection:
+        audit.add_workitem(item)
+
+    return collection
+
+
+@router.get(
+    "/{workitem_id}/related",
+    response_model=list[WorkItemSchema],
+    dependencies=[Security(auth.permission(Permissions.READ_WORKITEMS))],
+)
+def workitem_related(
+    workitem_obj: WorkItem = Depends(_get_workitem),
+    user: UKRDCUser = Security(auth.get_user()),
+    jtrace: Session = Depends(get_jtrace),
+    audit: Auditer = Depends(get_auditer),
+):
+    """Retreive a list of other work items related to a particular work item"""
+    related = get_workitems_related_to_workitem(workitem_obj, jtrace)
+
+    # Add audit events
+    for item in related:
+        audit.add_workitem(item)
+
+    # Apply permissions
+    apply_workitem_list_permission(related, user)
+
+    return related
+
+
+@router.get(
+    "/{workitem_id}/messages",
+    response_model=Page[MessageSchema],
+    dependencies=[Security(auth.permission(Permissions.READ_WORKITEMS))],
+)
+def workitem_messages(
+    worktiem_obj: WorkItem = Depends(_get_workitem),
+    facility: Optional[str] = None,
+    since: Optional[datetime.datetime] = None,
+    until: Optional[datetime.datetime] = None,
+    status: Optional[list[str]] = QueryParam(None),
+    user: UKRDCUser = Security(auth.get_user()),
+    jtrace: Session = Depends(get_jtrace),
+    errorsdb: Session = Depends(get_errorsdb),
+    audit: Auditer = Depends(get_auditer),
+):
+    """Retreive a list of other work items related to a particular work item"""
+    # Extend the work item with additional information
+    extended_workitem = extend_workitem(worktiem_obj, jtrace)
+
+    workitem_nis: list[str] = [
+        record.nationalid for record in extended_workitem.incoming.master_records
+    ]
+
+    if extended_workitem.master_record:
+        workitem_nis.append(extended_workitem.master_record.nationalid.strip())
+
+    audit.add_event(
+        Resource.MESSAGES,
+        None,
+        AuditOperation.READ,
+        parent=audit.add_event(Resource.WORKITEM, worktiem_obj.id, AuditOperation.READ),
+    )
+
+    # Get messages for NIs related to the work item
+    messages = get_messages(
+        errorsdb,
+        statuses=status,
+        nis=workitem_nis,
+        facility=facility,
+        since=since,
+        until=until,
+    )
+
+    # Apply permissions
+    messages = apply_message_list_permissions(messages, user)
+
+    return paginate(messages)

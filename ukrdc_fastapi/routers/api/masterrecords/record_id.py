@@ -10,6 +10,7 @@ from redis import Redis
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_204_NO_CONTENT
 from ukrdc_sqla.empi import LinkRecord, MasterRecord
+from ukrdc_sqla.errorsdb import Message
 
 from ukrdc_fastapi.dependencies import (
     get_auditdb,
@@ -27,14 +28,18 @@ from ukrdc_fastapi.dependencies.audit import (
 )
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.models.audit import AccessEvent, AuditEvent
-from ukrdc_fastapi.query.audit import get_auditevents_related_to_masterrecord
-from ukrdc_fastapi.query.masterrecords import (
-    get_masterrecord,
-    get_masterrecords_related_to_masterrecord,
+from ukrdc_fastapi.permissions.masterrecords import apply_masterrecord_list_permissions
+from ukrdc_fastapi.permissions.messages import (
+    apply_message_list_permissions,
+    assert_message_permissions,
 )
+from ukrdc_fastapi.permissions.patientrecords import apply_patientrecord_list_permission
+from ukrdc_fastapi.permissions.persons import apply_persons_list_permission
+from ukrdc_fastapi.permissions.workitems import apply_workitem_list_permission
+from ukrdc_fastapi.query.audit import get_auditevents_related_to_masterrecord
+from ukrdc_fastapi.query.masterrecords import get_masterrecords_related_to_masterrecord
 from ukrdc_fastapi.query.messages import (
     ERROR_SORTER,
-    get_last_message_on_masterrecord,
     get_messages_related_to_masterrecord,
 )
 from ukrdc_fastapi.query.mirth.memberships import create_pkb_membership
@@ -56,6 +61,8 @@ from ukrdc_fastapi.schemas.patientrecord import PatientRecordSummarySchema
 from ukrdc_fastapi.utils.mirth import MirthMessageResponseSchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
 from ukrdc_fastapi.utils.sort import SQLASorter, make_sqla_sorter
+
+from .dependencies import _get_masterrecord
 
 
 class MasterRecordStatisticsSchema(OrmModel):
@@ -81,14 +88,12 @@ router = APIRouter()
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
 def master_record(
-    record_id: int,
-    user: UKRDCUser = Security(auth.get_user()),
-    jtrace: Session = Depends(get_jtrace),
+    record: MasterRecord = Depends(_get_masterrecord),
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a particular master record from the EMPI"""
-    record = get_masterrecord(jtrace, record_id, user)
 
+    # Add audit event
     audit.add_event(Resource.MASTER_RECORD, record.id, AuditOperation.READ)
 
     return record
@@ -100,7 +105,7 @@ def master_record(
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
 def master_record_related(
-    record_id: int,
+    record: MasterRecord = Depends(_get_masterrecord),
     exclude_self: bool = True,
     nationalid_type: Optional[str] = None,
     user: UKRDCUser = Security(auth.get_user()),
@@ -108,26 +113,32 @@ def master_record_related(
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a list of other master records related to a particular master record"""
-    records = get_masterrecords_related_to_masterrecord(
+
+    # Get related records
+    related_records = get_masterrecords_related_to_masterrecord(
+        record,
         jtrace,
-        record_id,
-        user,
         nationalid_type=nationalid_type,
         exclude_self=exclude_self,
-    ).all()
-
-    record_audit = audit.add_event(
-        Resource.MASTER_RECORD, record_id, AuditOperation.READ
     )
-    for record in records:
-        audit.add_event(
-            Resource.MASTER_RECORD,
-            record.id,
-            AuditOperation.READ,
-            parent=record_audit,
-        )
 
-    return records
+    # Apply permissions and store list of records
+    related_records = apply_masterrecord_list_permissions(related_records, user)
+
+    # Add audit events
+    record_audit = audit.add_event(
+        Resource.MASTER_RECORD, record.id, AuditOperation.READ
+    )
+    for related_record in related_records:
+        if related_record:
+            audit.add_event(
+                Resource.MASTER_RECORD,
+                related_record.id,
+                AuditOperation.READ,
+                parent=record_audit,
+            )
+
+    return related_records
 
 
 @router.get(
@@ -137,7 +148,7 @@ def master_record_related(
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
 def master_record_latest_message(
-    record_id: int,
+    record: MasterRecord = Depends(_get_masterrecord),
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
     errorsdb: Session = Depends(get_errorsdb),
@@ -145,9 +156,29 @@ def master_record_latest_message(
     """
     Retreive a minimal representation of the latest file received for the patient,
     if received within the last year."""
-    latest = get_last_message_on_masterrecord(jtrace, errorsdb, record_id, user)
+
+    # Get messages related to the master record
+    msgs = (
+        get_messages_related_to_masterrecord(
+            record,
+            errorsdb,
+            jtrace,
+            since=datetime.datetime.utcnow() - datetime.timedelta(days=365),
+        )
+        .filter(Message.facility != "TRACING")
+        .filter(Message.filename.isnot(None))
+    )
+
+    # Apply permissions
+    msgs = apply_message_list_permissions(msgs, user)
+
+    # Get latest message
+    latest = msgs.order_by(Message.received.desc()).first()
+
     if not latest:
         return Response(status_code=HTTP_204_NO_CONTENT)
+
+    assert_message_permissions(latest, user)
 
     return latest
 
@@ -158,27 +189,24 @@ def master_record_latest_message(
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
 def master_record_statistics(
-    record_id: int,
-    user: UKRDCUser = Security(auth.get_user()),
+    record: MasterRecord = Depends(_get_masterrecord),
     jtrace: Session = Depends(get_jtrace),
     errorsdb: Session = Depends(get_errorsdb),
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a particular master record from the EMPI"""
-    record: MasterRecord = get_masterrecord(jtrace, record_id, user)
-
     errors = get_messages_related_to_masterrecord(
-        errorsdb, jtrace, record.id, user, statuses=["ERROR"]
+        record, errorsdb, jtrace, statuses=["ERROR"]
     )
 
-    related_records = get_masterrecords_related_to_masterrecord(jtrace, record.id, user)
+    related_records = get_masterrecords_related_to_masterrecord(record, jtrace)
 
     related_ukrdc_records = related_records.filter(
         MasterRecord.nationalid_type == "UKRDC"
     )
 
     workitems = get_workitems(
-        jtrace, user, master_id=[record.id for record in related_records.all()]
+        jtrace, master_id=[record.id for record in related_records.all()]
     )
 
     audit.add_event(
@@ -209,21 +237,26 @@ def master_record_statistics(
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
 def master_record_linkrecords(
-    record_id: int,
+    record: MasterRecord = Depends(_get_masterrecord),
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a list of link records related to a particular master record"""
     # Find record and asserrt permissions
-    records = get_masterrecords_related_to_masterrecord(jtrace, record_id, user).all()
+    related_records = get_masterrecords_related_to_masterrecord(record, jtrace)
+
+    # Apply permissions to related records
+    related_records = apply_masterrecord_list_permissions(related_records, user)
+
+    # Get link records
     link_records: list[LinkRecord] = []
 
-    for record in records:
-        link_records.extend(record.link_records)
+    for related_record in related_records:
+        link_records.extend(related_record.link_records)
 
     record_audit = audit.add_event(
-        Resource.MASTER_RECORD, record_id, AuditOperation.READ
+        Resource.MASTER_RECORD, record.id, AuditOperation.READ
     )
     audited_master_ids = set()
     audited_person_ids = set()
@@ -254,7 +287,7 @@ def master_record_linkrecords(
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
 def master_record_messages(
-    record_id: int,
+    record: MasterRecord = Depends(_get_masterrecord),
     facility: Optional[str] = None,
     since: Optional[datetime.datetime] = None,
     until: Optional[datetime.datetime] = None,
@@ -269,19 +302,21 @@ def master_record_messages(
     Retreive a list of errors related to a particular master record.
     By default returns message created within the last 365 days.
     """
+    messages = get_messages_related_to_masterrecord(
+        record, errorsdb, jtrace, status, facility, since, until
+    )
+
+    # Apply permissions
+    messages = apply_message_list_permissions(messages, user)
+
+    # Add audit events
     audit.add_event(
         Resource.MESSAGES,
         None,
         AuditOperation.READ,
-        parent=audit.add_event(Resource.MASTER_RECORD, record_id, AuditOperation.READ),
+        parent=audit.add_event(Resource.MASTER_RECORD, record.id, AuditOperation.READ),
     )
-    return paginate(
-        sorter.sort(
-            get_messages_related_to_masterrecord(
-                errorsdb, jtrace, record_id, user, status, facility, since, until
-            )
-        )
-    )
+    return paginate(sorter.sort(messages))
 
 
 @router.get(
@@ -290,22 +325,25 @@ def master_record_messages(
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
 def master_record_workitems(
-    record_id: int,
+    record: MasterRecord = Depends(_get_masterrecord),
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a list of work items related to a particular master record."""
-    related: list[MasterRecord] = get_masterrecords_related_to_masterrecord(
-        jtrace, record_id, user
-    ).all()
 
+    # Find work items related to record
+    related_records = get_masterrecords_related_to_masterrecord(record, jtrace)
     workitems = get_workitems(
-        jtrace, user, master_id=[record.id for record in related]
-    ).all()
+        jtrace, master_id=[record.id for record in related_records]
+    )
 
+    # Apply permissions
+    workitems = apply_workitem_list_permission(workitems, user)
+
+    # Add audit events
     record_audit = audit.add_event(
-        Resource.MASTER_RECORD, record_id, AuditOperation.READ
+        Resource.MASTER_RECORD, record.id, AuditOperation.READ
     )
     for item in workitems:
         audit.add_workitem(item, parent=record_audit)
@@ -319,16 +357,20 @@ def master_record_workitems(
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
 def master_record_persons(
-    record_id: int,
+    record: MasterRecord = Depends(_get_masterrecord),
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a list of person records related to a particular master record."""
-    persons = get_persons_related_to_masterrecord(jtrace, record_id, user).all()
+    persons = get_persons_related_to_masterrecord(record, jtrace)
 
+    # Apply permissions
+    persons = apply_persons_list_permission(persons, user)
+
+    # Add audit events
     record_audit = audit.add_event(
-        Resource.MASTER_RECORD, record_id, AuditOperation.READ
+        Resource.MASTER_RECORD, record.id, AuditOperation.READ
     )
     for person in persons:
         audit.add_event(
@@ -344,29 +386,30 @@ def master_record_persons(
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
 def master_record_patientrecords(
-    record_id: int,
+    record: MasterRecord = Depends(_get_masterrecord),
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
     ukrdc3: Session = Depends(get_ukrdc3),
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a list of patient records related to a particular master record."""
-    records = get_patientrecords_related_to_masterrecord(
-        ukrdc3, jtrace, record_id, user
-    ).all()
+    related_records = get_patientrecords_related_to_masterrecord(record, ukrdc3, jtrace)
+
+    # Apply permissions
+    related_records = apply_patientrecord_list_permission(related_records, user)
 
     record_audit = audit.add_event(
-        Resource.MASTER_RECORD, record_id, AuditOperation.READ
+        Resource.MASTER_RECORD, record.id, AuditOperation.READ
     )
-    for record in records:
+    for related_record in related_records:
         audit.add_event(
             Resource.PATIENT_RECORD,
-            record.pid,
+            related_record.pid,
             AuditOperation.READ,
             parent=record_audit,
         )
 
-    return records
+    return related_records
 
 
 @router.get(
@@ -375,8 +418,7 @@ def master_record_patientrecords(
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS_AUDIT))],
 )
 def master_record_audit(
-    record_id: int,
-    user: UKRDCUser = Security(auth.get_user()),
+    record: MasterRecord = Depends(_get_masterrecord),
     jtrace: Session = Depends(get_jtrace),
     ukrdc3: Session = Depends(get_ukrdc3),
     auditdb: Session = Depends(get_auditdb),
@@ -395,7 +437,7 @@ def master_record_audit(
     page = paginate(
         sorter.sort(
             get_auditevents_related_to_masterrecord(
-                auditdb, ukrdc3, jtrace, record_id, user, since=since, until=until
+                record, auditdb, ukrdc3, jtrace, since=since, until=until
             )
         )
     )
@@ -412,8 +454,7 @@ def master_record_audit(
     dependencies=[Security(auth.permission(Permissions.CREATE_MEMBERSHIPS))],
 )
 async def master_record_memberships_create_pkb(
-    record_id: int,
-    user: UKRDCUser = Security(auth.get_user()),
+    record: MasterRecord = Depends(_get_masterrecord),
     jtrace: Session = Depends(get_jtrace),
     mirth: MirthAPI = Depends(get_mirth),
     audit: Auditer = Depends(get_auditer),
@@ -422,15 +463,13 @@ async def master_record_memberships_create_pkb(
     """
     Create a new PKB membership for a master record.
     """
-    record = get_masterrecord(jtrace, record_id, user)
 
     # If the request was not triggered from a UKRDC MasterRecord
     if record.nationalid_type != "UKRDC":
         # Find all linked UKRDC MasterRecords
         records = get_masterrecords_related_to_masterrecord(
+            record,
             jtrace,
-            record_id,
-            user,
             nationalid_type="UKRDC",
         ).all()
         if len(records) > 1:
@@ -450,7 +489,7 @@ async def master_record_memberships_create_pkb(
         Resource.MEMBERSHIP,
         "PKB",
         AuditOperation.CREATE,
-        parent=audit.add_event(Resource.MASTER_RECORD, record_id, AuditOperation.READ),
+        parent=audit.add_event(Resource.MASTER_RECORD, record.id, AuditOperation.READ),
     )
 
     return await create_pkb_membership(record, mirth, redis)

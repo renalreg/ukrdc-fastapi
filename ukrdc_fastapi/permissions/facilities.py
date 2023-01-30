@@ -1,5 +1,5 @@
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
-from ukrdc_fastapi.query.common import PermissionsError
+from ukrdc_fastapi.exceptions import PermissionsError
 from ukrdc_fastapi.schemas.facility import FacilityDetailsSchema
 
 

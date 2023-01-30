@@ -87,7 +87,7 @@ def test_get_patientrecords_from_ukrdcid_superuser(
 ):
     _create_related_records(ukrdc3_session, jtrace_session)
 
-    records = patientrecords._get_patientrecords_from_ukrdcid(
+    records = patientrecords.get_patientrecords_from_ukrdcid(
         ukrdc3_session, "999999511", superuser
     )
     assert {record.pid for record in records} == {
@@ -103,7 +103,7 @@ def test_get_patientrecords_from_ukrdcid_user(
 ):
     _create_related_records(ukrdc3_session, jtrace_session)
 
-    records = patientrecords._get_patientrecords_from_ukrdcid(
+    records = patientrecords.get_patientrecords_from_ukrdcid(
         ukrdc3_session, "999999511", test_user
     )
     assert {record.pid for record in records} == {

@@ -8,9 +8,7 @@ from ukrdc_sqla.errorsdb import Latest, Message
 from ukrdc_sqla.ukrdc import Code, Facility, PatientRecord
 
 from ukrdc_fastapi.config import settings
-from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
 from ukrdc_fastapi.exceptions import MissingFacilityError
-from ukrdc_fastapi.query.common import PermissionsError
 from ukrdc_fastapi.schemas.facility import (
     FacilityDataFlowSchema,
     FacilityDetailsSchema,
@@ -33,7 +31,6 @@ def get_facility(
     Args:
         ukrdc3 (Session): SQLAlchemy session
         facility_code (str): Facility/unit code
-        user (UKRDCUser): Logged-in user
 
     Returns:
         FacilityDetailsSchema: Matched facility
@@ -98,7 +95,6 @@ def get_facility_extracts(
     Args:
         ukrdc3 (Session): SQLAlchemy session
         facility_code (str): Facility/unit code
-        user (UKRDCUser): Logged-in user
 
     Returns:
         FacilityExtractsSchema: Extract counts
@@ -255,7 +251,6 @@ def get_facilities(
     Args:
         ukrdc3 (Session): SQLALchemy session
         statsdb (Session): SQLALchemy session
-        user (UKRDCUser): Logged-in user object
 
     Returns:
         list[FacilityDetailsSchema]: List of units/facilities

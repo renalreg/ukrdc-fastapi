@@ -21,7 +21,6 @@ def get_facility_demographic_stats(
     Args:
         ukrdc3 (Session): SQLAlchemy session
         facility_code (str): Facility/unit code
-        user (UKRDCUser): Logged-in user
 
     Returns:
         FacilityDemographicStats: Facility demographic distribution statistics
@@ -47,7 +46,6 @@ def get_facility_dialysis_stats(
     Args:
         ukrdc3 (Session): SQLAlchemy session
         facility_code (str): Facility/unit code
-        user (UKRDCUser): Logged-in user
 
     Returns:
         DialysisStats: Facility demographic distribution statistics

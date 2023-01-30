@@ -5,19 +5,19 @@ from ukrdc_sqla.ukrdc import PatientRecord
 from ukrdc_fastapi.query.common import PermissionsError
 from ukrdc_fastapi.query.delete import (
     ConfirmationError,
-    delete_pid,
-    summarise_delete_pid,
+    delete_patientrecord,
+    summarise_delete_patientrecord,
 )
 
 # We use "PYTEST03:PV:00000000A" as the pid to delete because it has no open workitems
 
 
 def test_summarise_delete_pid_superuser(ukrdc3_session, jtrace_session, superuser):
-    summary_1 = summarise_delete_pid(
+    summary_1 = summarise_delete_patientrecord(
         ukrdc3_session, jtrace_session, "PYTEST03:PV:00000000A", superuser
     )
 
-    summary_2 = summarise_delete_pid(
+    summary_2 = summarise_delete_patientrecord(
         ukrdc3_session, jtrace_session, "PYTEST03:PV:00000000A", superuser
     )
 
@@ -26,7 +26,7 @@ def test_summarise_delete_pid_superuser(ukrdc3_session, jtrace_session, superuse
 
 
 def test_delete_pid_superuser(ukrdc3_session, jtrace_session, superuser):
-    summary = summarise_delete_pid(
+    summary = summarise_delete_patientrecord(
         ukrdc3_session, jtrace_session, "PYTEST03:PV:00000000A", superuser
     )
 
@@ -43,7 +43,7 @@ def test_delete_pid_superuser(ukrdc3_session, jtrace_session, superuser):
     for link_record in summary.empi.link_records:
         assert jtrace_session.query(LinkRecord).get(link_record.id)
 
-    deleted = delete_pid(
+    deleted = delete_patientrecord(
         ukrdc3_session, jtrace_session, "PYTEST03:PV:00000000A", summary.hash, superuser
     )
 
@@ -65,7 +65,7 @@ def test_delete_pid_superuser(ukrdc3_session, jtrace_session, superuser):
 
 def test_delete_pid_badhash(ukrdc3_session, jtrace_session, superuser):
     with pytest.raises(ConfirmationError):
-        delete_pid(
+        delete_patientrecord(
             ukrdc3_session,
             jtrace_session,
             "PYTEST03:PV:00000000A",
@@ -76,7 +76,7 @@ def test_delete_pid_badhash(ukrdc3_session, jtrace_session, superuser):
 
 def test_summarise_delete_pid_denied(ukrdc3_session, jtrace_session, test_user):
     with pytest.raises(PermissionsError):
-        summarise_delete_pid(
+        summarise_delete_patientrecord(
             ukrdc3_session,
             jtrace_session,
             "PYTEST02:PV:00000000A",
@@ -86,7 +86,7 @@ def test_summarise_delete_pid_denied(ukrdc3_session, jtrace_session, test_user):
 
 def test_delete_pid_denied(ukrdc3_session, jtrace_session, test_user):
     with pytest.raises(PermissionsError):
-        delete_pid(
+        delete_patientrecord(
             ukrdc3_session,
             jtrace_session,
             "PYTEST02:PV:00000000A",

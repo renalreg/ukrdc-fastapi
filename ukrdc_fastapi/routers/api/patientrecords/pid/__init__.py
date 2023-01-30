@@ -24,7 +24,11 @@ from ukrdc_fastapi.dependencies.audit import (
     get_auditer,
 )
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
-from ukrdc_fastapi.query.delete import delete_pid, summarise_delete_pid
+from ukrdc_fastapi.permissions.patientrecords import apply_patientrecord_list_permission
+from ukrdc_fastapi.query.delete import (
+    delete_patientrecord,
+    summarise_delete_patientrecord,
+)
 from ukrdc_fastapi.query.patientrecords import (
     get_patientrecords_related_to_patientrecord,
 )
@@ -89,8 +93,7 @@ def patient(
     ],
 )
 def patient_delete(
-    pid: str,
-    user: UKRDCUser = Security(auth.get_user()),
+    patient_record: PatientRecord = Depends(_get_patientrecord),
     ukrdc3: Session = Depends(get_ukrdc3),
     jtrace: Session = Depends(get_jtrace),
     audit: Auditer = Depends(get_auditer),
@@ -101,13 +104,15 @@ def patient_delete(
     audit_op: AuditOperation
 
     if args and args.hash:
-        summary = delete_pid(ukrdc3, jtrace, pid, args.hash, user)
+        summary = delete_patientrecord(patient_record, ukrdc3, jtrace, args.hash)
         audit_op = AuditOperation.DELETE
     else:
-        summary = summarise_delete_pid(ukrdc3, jtrace, pid, user)
+        summary = summarise_delete_patientrecord(patient_record, jtrace)
         audit_op = AuditOperation.READ
 
-    record_audit = audit.add_event(Resource.PATIENT_RECORD, pid, audit_op)
+    record_audit = audit.add_event(
+        Resource.PATIENT_RECORD, patient_record.pid, audit_op
+    )
     if summary.empi:
         for person in summary.empi.persons:
             audit.add_event(Resource.PERSON, person.id, audit_op, parent=record_audit)
@@ -125,15 +130,20 @@ def patient_delete(
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
 def patient_related(
-    pid: str,
+    patient_record: PatientRecord = Depends(_get_patientrecord),
     user: UKRDCUser = Security(auth.get_user()),
     ukrdc3: Session = Depends(get_ukrdc3),
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive patient records related to a specific patient record"""
-    related = get_patientrecords_related_to_patientrecord(ukrdc3, pid, user).all()
+    related = get_patientrecords_related_to_patientrecord(patient_record, ukrdc3)
 
-    record_audit = audit.add_event(Resource.PATIENT_RECORD, pid, RecordOperation.READ)
+    # Apply permissions
+    related = apply_patientrecord_list_permission(related, user)
+
+    record_audit = audit.add_event(
+        Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.READ
+    )
     for record in related:
         audit.add_event(
             Resource.PATIENT_RECORD,

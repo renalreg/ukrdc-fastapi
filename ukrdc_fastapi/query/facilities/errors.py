@@ -23,7 +23,6 @@ def get_patients_latest_errors(
         ukrdc3 (Session): SQLAlchemy session
         errorsdb (Session): SQLAlchemy session
         facility_code (str): Facility/unit code
-        user (UKRDCUser): Logged-in user
 
     Returns:
         Query: SQLAlchemy query
@@ -55,7 +54,6 @@ def get_errors_history(
         statsdb (Session): SQLAlchemy session
         errorsdb (Session): SQLAlchemy session
         facility_code (str): Facility/unit code
-        user (UKRDCUser): Logged-in user
         since (Optional[datetime.date]): Filter start date. Defaults to None.
         until (Optional[datetime.date]): Filter end date. Defaults to None.
 

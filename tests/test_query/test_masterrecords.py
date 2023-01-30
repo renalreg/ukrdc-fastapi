@@ -4,16 +4,6 @@ from ukrdc_fastapi.query import masterrecords
 from ukrdc_fastapi.query.common import PermissionsError
 
 
-def test_get_masterrecords_superuser(jtrace_session, superuser):
-    all_records = masterrecords.get_masterrecords(jtrace_session, superuser)
-    assert {record.id for record in all_records} == {1, 2, 3, 4, 101, 102, 103, 104}
-
-
-def test_get_masterrecords_user(jtrace_session, test_user):
-    all_records = masterrecords.get_masterrecords(jtrace_session, test_user)
-    assert {record.id for record in all_records} == {1, 4, 101, 104}
-
-
 def test_get_masterrecord_superuser(jtrace_session, superuser):
     record = masterrecords.get_masterrecord(jtrace_session, 1, superuser)
     assert record
