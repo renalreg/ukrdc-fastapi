@@ -21,5 +21,4 @@ async def mirth_session() -> AsyncGenerator[MirthAPI, None]:
             await api.login(settings.mirth_user, settings.mirth_pass)
         except MirthLoginError as e:
             raise e
-        else:
-            yield api
+        yield api
