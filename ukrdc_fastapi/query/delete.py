@@ -105,7 +105,6 @@ def _create_delete_pid_summary(
     empi_to_delete: EMPIDeleteItems,
     committed: bool = False,
 ) -> DeletePIDResponseSchema:
-
     empi_to_delete_summary = DeletePidFromEmpiRequest.from_orm(empi_to_delete)
     record_to_delete_summary = PatientRecordFullSchema.from_orm(record_to_delete)
 
