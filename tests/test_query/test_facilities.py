@@ -16,7 +16,7 @@ from ukrdc_fastapi.utils.cache import BasicCache, CacheKey
 from ..utils import days_ago
 
 
-def test_get_facilities(ukrdc3_session, errorsdb_session, redis_session, superuser):
+def test_get_facilities(ukrdc3_session, errorsdb_session, redis_session):
     all_facils = get_facilities(
         ukrdc3_session,
         errorsdb_session,
@@ -30,9 +30,7 @@ def test_get_facilities(ukrdc3_session, errorsdb_session, redis_session, superus
     }
 
 
-def test_get_facilities_cached(
-    ukrdc3_session, errorsdb_session, redis_session, superuser
-):
+def test_get_facilities_cached(ukrdc3_session, errorsdb_session, redis_session):
     # Create the cache
     BasicCache(redis_session, CacheKey.FACILITIES_LIST).set(
         build_facilities_list(
@@ -56,7 +54,7 @@ def test_get_facilities_cached(
 @pytest.mark.parametrize(
     "facility_code", ["TEST_SENDING_FACILITY_1", "TEST_SENDING_FACILITY_2"]
 )
-def test_get_facility(facility_code, ukrdc3_session, errorsdb_session, superuser):
+def test_get_facility(facility_code, ukrdc3_session, errorsdb_session):
     facility = get_facility(
         ukrdc3_session,
         errorsdb_session,
@@ -67,7 +65,7 @@ def test_get_facility(facility_code, ukrdc3_session, errorsdb_session, superuser
     assert facility.description == f"{facility_code}_DESCRIPTION"
 
 
-def test_get_facility_data_flow(ukrdc3_session, errorsdb_session, superuser):
+def test_get_facility_data_flow(ukrdc3_session, errorsdb_session):
     facility_object = ukrdc3_session.query(Facility).get("TEST_SENDING_FACILITY_1")
     facility_object.pkb_msg_exclusions = ["MDM_T02_CP", "MDM_T02_DOC"]
     ukrdc3_session.commit()
@@ -83,7 +81,7 @@ def test_get_facility_data_flow(ukrdc3_session, errorsdb_session, superuser):
     assert facility.data_flow.pkb_message_exclusions == ["MDM_T02_CP", "MDM_T02_DOC"]
 
 
-def test_get_facility_history(ukrdc3_session, errorsdb_session, superuser):
+def test_get_facility_history(ukrdc3_session, errorsdb_session):
     test_code = Code(
         code="TEST_SENDING_FACILITY_1", description="Test sending facility 1"
     )
@@ -98,7 +96,7 @@ def test_get_facility_history(ukrdc3_session, errorsdb_session, superuser):
     assert history[-1].count == 1
 
 
-def test_get_facility_history_range(ukrdc3_session, errorsdb_session, superuser):
+def test_get_facility_history_range(ukrdc3_session, errorsdb_session):
     test_code = Code(
         code="TEST_SENDING_FACILITY_1", description="Test sending facility 1"
     )
@@ -129,7 +127,7 @@ def test_get_facility_history_range(ukrdc3_session, errorsdb_session, superuser)
     assert len(history) == 5
 
 
-def test_get_patients_latest_errors(ukrdc3_session, errorsdb_session, test_user):
+def test_get_patients_latest_errors(ukrdc3_session, errorsdb_session):
     messages = get_patients_latest_errors(
         ukrdc3_session, errorsdb_session, "TEST_SENDING_FACILITY_1"
     ).all()
@@ -137,7 +135,7 @@ def test_get_patients_latest_errors(ukrdc3_session, errorsdb_session, test_user)
     assert messages[0].id == 2
 
 
-def test_get_facility_extracts(ukrdc3_session, superuser):
+def test_get_facility_extracts(ukrdc3_session):
     extracts = get_facility_extracts(
         ukrdc3_session,
         "TEST_SENDING_FACILITY_1",

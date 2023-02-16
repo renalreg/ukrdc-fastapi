@@ -11,23 +11,20 @@ from ukrdc_fastapi.query.delete import (
 # We use "PYTEST03:PV:00000000A" as the pid to delete because it has no open workitems
 
 
-def test_summarise_delete_pid_superuser(ukrdc3_session, jtrace_session, superuser):
-    summary_1 = summarise_delete_patientrecord(
-        ukrdc3_session, jtrace_session, "PYTEST03:PV:00000000A", superuser
-    )
+def test_summarise_delete_pid_superuser(ukrdc3_session, jtrace_session):
+    record_to_delete = ukrdc3_session.query(PatientRecord).get("PYTEST03:PV:00000000A")
 
-    summary_2 = summarise_delete_patientrecord(
-        ukrdc3_session, jtrace_session, "PYTEST03:PV:00000000A", superuser
-    )
+    summary_1 = summarise_delete_patientrecord(record_to_delete, jtrace_session)
+    summary_2 = summarise_delete_patientrecord(record_to_delete, jtrace_session)
 
     # Should get identical hash each request for the same delete
     assert summary_1.hash == summary_2.hash
 
 
-def test_delete_pid_superuser(ukrdc3_session, jtrace_session, superuser):
-    summary = summarise_delete_patientrecord(
-        ukrdc3_session, jtrace_session, "PYTEST03:PV:00000000A", superuser
-    )
+def test_delete_pid_superuser(ukrdc3_session, jtrace_session):
+    record_to_delete = ukrdc3_session.query(PatientRecord).get("PYTEST03:PV:00000000A")
+
+    summary = summarise_delete_patientrecord(record_to_delete, jtrace_session)
 
     # Assert all expected records exist
     assert ukrdc3_session.query(PatientRecord).get("PYTEST03:PV:00000000A")
@@ -43,7 +40,7 @@ def test_delete_pid_superuser(ukrdc3_session, jtrace_session, superuser):
         assert jtrace_session.query(LinkRecord).get(link_record.id)
 
     deleted = delete_patientrecord(
-        ukrdc3_session, jtrace_session, "PYTEST03:PV:00000000A", summary.hash, superuser
+        record_to_delete, ukrdc3_session, jtrace_session, summary.hash
     )
 
     assert deleted.hash == summary.hash
@@ -62,12 +59,13 @@ def test_delete_pid_superuser(ukrdc3_session, jtrace_session, superuser):
         assert not jtrace_session.query(LinkRecord).get(link_record.id)
 
 
-def test_delete_pid_badhash(ukrdc3_session, jtrace_session, superuser):
+def test_delete_pid_badhash(ukrdc3_session, jtrace_session):
+    record_to_delete = ukrdc3_session.query(PatientRecord).get("PYTEST03:PV:00000000A")
+
     with pytest.raises(ConfirmationError):
         delete_patientrecord(
+            record_to_delete,
             ukrdc3_session,
             jtrace_session,
-            "PYTEST03:PV:00000000A",
             "BADHASH",
-            superuser,
         )
