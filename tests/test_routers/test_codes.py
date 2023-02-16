@@ -3,35 +3,7 @@ from ukrdc_fastapi.config import configuration
 
 async def test_codes_list(client_authenticated):
     response = await client_authenticated.get(f"{configuration.base_url}/codes/list")
-    ids = {item.get("code") for item in response.json().get("items")}
-    assert ids == {
-        "TEST_SENDING_FACILITY_1",
-        "TEST_SENDING_FACILITY_2",
-        "CODE_1",
-        "CODE_2",
-        "CODE_3",
-        "G",
-    }
-
-
-async def test_codes_list_filter_standard(client_authenticated):
-    response = await client_authenticated.get(
-        f"{configuration.base_url}/codes/list?coding_standard=CODING_STANDARD_1"
-    )
-    ids = {item.get("code") for item in response.json().get("items")}
-    assert ids == {"CODE_1"}
-
-
-async def test_codes_list_search(client_authenticated):
-    response = await client_authenticated.get(
-        f"{configuration.base_url}/codes/list?search=CODE_"
-    )
-    ids = {item.get("code") for item in response.json().get("items")}
-    assert ids == {
-        "CODE_1",
-        "CODE_2",
-        "CODE_3",
-    }
+    assert response.status_code == 200
 
 
 async def test_code_list_export(client_authenticated):

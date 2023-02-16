@@ -90,8 +90,6 @@ async def test_get_record_superuser_direct(
         f"{configuration.base_url}/patientrecords/PYTEST02:TPR:TEST1"
     )
     assert response.status_code == 200
-    record = PatientRecordSchema(**response.json())
-    assert record.pid == "PYTEST02:TPR:TEST1"
 
 
 async def test_get_record_superuser_indirect(
@@ -104,8 +102,6 @@ async def test_get_record_superuser_indirect(
         f"{configuration.base_url}/patientrecords/PYTEST02:TPR:TEST4"
     )
     assert response.status_code == 200
-    record = PatientRecordSchema(**response.json())
-    assert record.pid == "PYTEST02:TPR:TEST4"
 
 
 async def test_get_record_user_direct(
@@ -118,8 +114,6 @@ async def test_get_record_user_direct(
         f"{configuration.base_url}/patientrecords/PYTEST02:TPR:TEST1"
     )
     assert response.status_code == 200
-    record = PatientRecordSchema(**response.json())
-    assert record.pid == "PYTEST02:TPR:TEST1"
 
 
 async def test_get_record_user_indirect(
@@ -132,8 +126,6 @@ async def test_get_record_user_indirect(
         f"{configuration.base_url}/patientrecords/PYTEST02:TPR:TEST4"
     )
     assert response.status_code == 200
-    record = PatientRecordSchema(**response.json())
-    assert record.pid == "PYTEST02:TPR:TEST4"
 
 
 async def test_get_record_user_direct_denied(

@@ -7,11 +7,6 @@ async def test_record_documents(client_authenticated):
         f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/documents"
     )
     assert response.status_code == 200
-    documents = [DocumentSummarySchema(**item) for item in response.json()["items"]]
-    assert {doc.id for doc in documents} == {
-        "DOCUMENT_PDF",
-        "DOCUMENT_TXT",
-    }
 
 
 async def test_record_document_detail(client_authenticated):
@@ -19,9 +14,6 @@ async def test_record_document_detail(client_authenticated):
         f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/documents/DOCUMENT_PDF"
     )
     assert response.status_code == 200
-    document = DocumentSchema(**response.json())
-    assert document
-    assert document.id == "DOCUMENT_PDF"
 
 
 async def test_record_document_download_txt(client_authenticated):

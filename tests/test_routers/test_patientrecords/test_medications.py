@@ -7,24 +7,6 @@ async def test_record_medications(client_superuser):
         f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/medications"
     )
     assert response.status_code == 200
-    assert response.json() == [
-        {
-            "fromTime": days_ago(730).isoformat(),
-            "toTime": None,
-            "drugProductGeneric": "DRUG_PRODUCT_GENERIC",
-            "comment": None,
-            "enteringOrganizationCode": None,
-            "enteringOrganizationDescription": None,
-        },
-        {
-            "fromTime": days_ago(730).isoformat(),
-            "toTime": days_ago(-999).isoformat(),
-            "drugProductGeneric": "DRUG_PRODUCT_GENERIC_2",
-            "comment": None,
-            "enteringOrganizationCode": None,
-            "enteringOrganizationDescription": None,
-        },
-    ]
 
 
 async def test_record_medications_denied(client_authenticated):

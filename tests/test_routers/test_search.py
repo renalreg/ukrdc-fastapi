@@ -114,7 +114,9 @@ async def test_search_ukrdc_number(ukrdc3_session, jtrace_session, client_superu
         assert returned_ids == {index + BUMPER, index + BUMPER + 100}
 
 
-async def test_search_facility(ukrdc3_session, jtrace_session, client_superuser):
+async def test_search_facility_superuser(
+    ukrdc3_session, jtrace_session, client_superuser
+):
     # Add extra test items
     _commit_extra_patients(ukrdc3_session, jtrace_session)
 
@@ -211,3 +213,31 @@ async def test_search_implicit_facility(
 
         returned_ids = {item["id"] for item in response.json()["items"]}
         assert returned_ids == {index + BUMPER, index + BUMPER + 100}
+
+
+async def test_search_permissions(client_authenticated):
+    url = f"{configuration.base_url}/search?facility=TEST_SENDING_FACILITY_1"
+    response = await client_authenticated.get(url)
+    assert response.status_code == 200
+    returned_ids = {item["id"] for item in response.json()["items"]}
+    assert returned_ids == {1, 4, 101, 104}
+
+    url = f"{configuration.base_url}/search?facility=TEST_SENDING_FACILITY_2"
+    response = await client_authenticated.get(url)
+    assert response.status_code == 200
+    returned_ids = {item["id"] for item in response.json()["items"]}
+    assert returned_ids == set()
+
+
+async def test_search_permissions_superuser(client_superuser):
+    url = f"{configuration.base_url}/search?facility=TEST_SENDING_FACILITY_1"
+    response = await client_superuser.get(url)
+    assert response.status_code == 200
+    returned_ids = {item["id"] for item in response.json()["items"]}
+    assert returned_ids == {1, 4, 101, 104}
+
+    url = f"{configuration.base_url}/search?facility=TEST_SENDING_FACILITY_2"
+    response = await client_superuser.get(url)
+    assert response.status_code == 200
+    returned_ids = {item["id"] for item in response.json()["items"]}
+    assert returned_ids == {2, 102}
