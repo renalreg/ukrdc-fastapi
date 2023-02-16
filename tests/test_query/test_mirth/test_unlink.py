@@ -12,7 +12,7 @@ async def test_unlink_person_from_master_record(
         jtrace_session.query(Person).get(4),
         jtrace_session.query(MasterRecord).get(1),
         "comment",
-        "test_user",
+        "user",
         jtrace_session,
         mirth_session,
         redis_session,

@@ -196,7 +196,6 @@ def populate_facilities_and_messages(ukrdc3, statsdb, errorsdb):
 
 
 def populate_codes(ukrdc3):
-
     code3 = Code(
         coding_standard="CODING_STANDARD_1",
         code="CODE_1",
@@ -966,6 +965,12 @@ def app(
 
 @pytest_asyncio.fixture(scope="function")
 async def client(app):
+    async with AsyncClient(app=app, base_url="http://test") as ac:
+        yield ac
+
+
+@pytest_asyncio.fixture(scope="function")
+async def app_authenticated(app):
     def _get_token():
         return {
             "uid": "TEST_ID",
@@ -980,12 +985,17 @@ async def client(app):
 
     app.dependency_overrides[auth.auth.okta_jwt_scheme] = _get_token
 
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    return app
+
+
+@pytest_asyncio.fixture(scope="function")
+async def client_authenticated(app_authenticated):
+    async with AsyncClient(app=app_authenticated, base_url="http://test") as ac:
         yield ac
 
 
 @pytest_asyncio.fixture(scope="function")
-async def client_superuser(app):
+async def app_superuser(app):
     def _get_token():
         return {
             "uid": "TEST_ID",
@@ -997,7 +1007,12 @@ async def client_superuser(app):
 
     app.dependency_overrides[auth.auth.okta_jwt_scheme] = _get_token
 
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    return app
+
+
+@pytest_asyncio.fixture(scope="function")
+async def client_superuser(app_superuser):
+    async with AsyncClient(app=app_superuser, base_url="http://test") as ac:
         yield ac
 
 
@@ -1008,7 +1023,6 @@ def non_mocked_hosts() -> list:
 
 @pytest.fixture(scope="function")
 def httpx_session(httpx_mock: HTTPXMock):
-
     # Override reset since we don't care if not all mocked routes are called
     def reset_override(*args):
         pass
@@ -1067,7 +1081,7 @@ def superuser():
 
 
 @pytest.fixture(scope="function")
-def test_user():
+def user():
     return UKRDCUser(
         id="TEST_ID",
         cid="PYTEST",

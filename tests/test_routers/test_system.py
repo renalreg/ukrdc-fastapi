@@ -3,7 +3,7 @@ from ukrdc_fastapi.dependencies.auth import Permissions
 from ukrdc_fastapi.schemas.user import UserPreferences
 
 
-async def test_user(client_superuser):
+async def test_user_info(client_superuser):
     response = await client_superuser.get(f"{configuration.base_url}/system/user")
     assert response.json().get("email") == "TEST@UKRDC_FASTAPI"
     assert set(response.json().get("permissions")) == set(Permissions.all())

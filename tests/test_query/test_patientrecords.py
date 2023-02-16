@@ -108,34 +108,34 @@ def test_get_record_superuser_indirect(ukrdc3_session, jtrace_session, superuser
     assert record.pid == "PYTEST02:TPR:TEST4"
 
 
-def test_get_record_user_direct(ukrdc3_session, jtrace_session, test_user):
+def test_get_record_user_direct(ukrdc3_session, jtrace_session, user):
     # Direct permission to view record via sendingfacility
     _create_related_records(ukrdc3_session, jtrace_session)
 
     record = patientrecords.get_patientrecord(
-        ukrdc3_session, "PYTEST02:TPR:TEST1", test_user
+        ukrdc3_session, "PYTEST02:TPR:TEST1", user
     )
     assert record
     assert record.pid == "PYTEST02:TPR:TEST1"
 
 
-def test_get_record_user_direct_denied(ukrdc3_session, jtrace_session, test_user):
+def test_get_record_user_direct_denied(ukrdc3_session, jtrace_session, user):
     # Direct permission to view record via sendingfacility
     _create_related_records(ukrdc3_session, jtrace_session)
 
     with pytest.raises(PermissionsError):
         patientrecords.get_patientrecord(
-            ukrdc3_session, "PYTEST02:TPR:TEST3", test_user
+            ukrdc3_session, "PYTEST02:TPR:TEST3", user
         )
 
 
-def test_get_record_user_indirect(ukrdc3_session, jtrace_session, test_user):
+def test_get_record_user_indirect(ukrdc3_session, jtrace_session, user):
     # Indirect permissions, record sendingfacility is a multi-facility PKB membership
 
     _create_related_records(ukrdc3_session, jtrace_session)
 
     record = patientrecords.get_patientrecord(
-        ukrdc3_session, "PYTEST02:TPR:TEST4", test_user
+        ukrdc3_session, "PYTEST02:TPR:TEST4", user
     )
     assert record
     assert record.pid == "PYTEST02:TPR:TEST4"
