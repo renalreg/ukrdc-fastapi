@@ -164,13 +164,13 @@ def workitem_collection(
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a list of other work items related to a particular work item"""
-    collection = get_workitem_collection(workitem_obj, jtrace).all()
+    collection = get_workitem_collection(workitem_obj, jtrace)
 
     # Add audit events
     for item in collection:
         audit.add_workitem(item)
 
-    return collection
+    return collection.all()
 
 
 @router.get(
@@ -194,7 +194,7 @@ def workitem_related(
     # Apply permissions
     apply_workitem_list_permission(related, user)
 
-    return related
+    return related.all()
 
 
 @router.get(

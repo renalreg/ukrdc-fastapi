@@ -138,7 +138,7 @@ def master_record_related(
                 parent=record_audit,
             )
 
-    return related_records
+    return related_records.all()
 
 
 @router.get(
@@ -348,7 +348,7 @@ def master_record_workitems(
     for item in workitems:
         audit.add_workitem(item, parent=record_audit)
 
-    return workitems
+    return workitems.all()
 
 
 @router.get(
@@ -377,7 +377,7 @@ def master_record_persons(
             Resource.PERSON, person.id, AuditOperation.READ, parent=record_audit
         )
 
-    return persons
+    return persons.all()
 
 
 @router.get(
@@ -409,7 +409,7 @@ def master_record_patientrecords(
             parent=record_audit,
         )
 
-    return related_records
+    return related_records.all()
 
 
 @router.get(

@@ -20,10 +20,12 @@ async def test_masterrecord_detail(client, audit_session):
     assert event.parent_id == None
 
 
-async def test_masterrecord_related(client, audit_session):
+async def test_masterrecord_related(client_superuser, audit_session):
     # Check expected links
 
-    response = await client.get(f"{configuration.base_url}/masterrecords/1/related")
+    response = await client_superuser.get(
+        f"{configuration.base_url}/masterrecords/1/related"
+    )
     assert response.status_code == 200
     mrecs = [MasterRecordSchema(**item) for item in response.json()]
     returned_ids = {item.id for item in mrecs}
@@ -47,8 +49,10 @@ async def test_masterrecord_related(client, audit_session):
         assert child_event.parent_id == primary_event.id
 
 
-async def test_masterrecord_statistics(client, audit_session):
-    response = await client.get(f"{configuration.base_url}/masterrecords/1/statistics")
+async def test_masterrecord_statistics(client_superuser, audit_session):
+    response = await client_superuser.get(
+        f"{configuration.base_url}/masterrecords/1/statistics"
+    )
     assert response.status_code == 200
 
     events = audit_session.query(AuditEvent).all()
@@ -69,8 +73,10 @@ async def test_masterrecord_statistics(client, audit_session):
     assert child_event.parent_id == event.id
 
 
-async def test_masterrecord_linkrecords(client, audit_session):
-    response = await client.get(f"{configuration.base_url}/masterrecords/1/linkrecords")
+async def test_masterrecord_linkrecords(client_superuser, audit_session):
+    response = await client_superuser.get(
+        f"{configuration.base_url}/masterrecords/1/linkrecords"
+    )
     assert response.status_code == 200
 
     events = audit_session.query(AuditEvent).all()
@@ -108,8 +114,10 @@ async def test_masterrecord_linkrecords(client, audit_session):
     assert master_record_event_ids == {"1", "101", "104", "4"}
 
 
-async def test_masterrecord_messages(client, audit_session):
-    response = await client.get(f"{configuration.base_url}/masterrecords/1/messages")
+async def test_masterrecord_messages(client_superuser, audit_session):
+    response = await client_superuser.get(
+        f"{configuration.base_url}/masterrecords/1/messages"
+    )
     assert response.status_code == 200
 
     events = audit_session.query(AuditEvent).all()

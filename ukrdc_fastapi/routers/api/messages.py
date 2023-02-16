@@ -188,7 +188,7 @@ async def message_workitems(
     for item in workitems:
         audit.add_workitem(item, parent=message_audit)
 
-    return workitems
+    return workitems.all()
 
 
 @router.get(
@@ -225,4 +225,4 @@ async def message_masterrecords(
             parent=message_audit,
         )
 
-    return records
+    return records.all()
