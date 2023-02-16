@@ -58,7 +58,7 @@ def workitems(
     )
 
     # Apply permissions
-    apply_workitem_list_permission(query, user)
+    query = apply_workitem_list_permission(query, user)
 
     # Paginate and sort
     page = paginate(sorter.sort(query))

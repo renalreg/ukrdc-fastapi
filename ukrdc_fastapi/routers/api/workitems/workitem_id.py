@@ -160,11 +160,15 @@ async def workitem_close(
 )
 def workitem_collection(
     workitem_obj: WorkItem = Depends(_get_workitem),
+    user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a list of other work items related to a particular work item"""
     collection = get_workitem_collection(workitem_obj, jtrace)
+
+    # Apply permissions
+    collection = apply_workitem_list_permission(collection, user)
 
     # Add audit events
     for item in collection:
@@ -187,12 +191,12 @@ def workitem_related(
     """Retreive a list of other work items related to a particular work item"""
     related = get_workitems_related_to_workitem(workitem_obj, jtrace)
 
+    # Apply permissions
+    related = apply_workitem_list_permission(related, user)
+
     # Add audit events
     for item in related:
         audit.add_workitem(item)
-
-    # Apply permissions
-    apply_workitem_list_permission(related, user)
 
     return related.all()
 

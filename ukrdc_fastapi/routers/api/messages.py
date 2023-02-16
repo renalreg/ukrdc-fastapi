@@ -91,7 +91,7 @@ def messages(
     )
 
     # Apply permissions
-    apply_message_list_permissions(query, user)
+    query = apply_message_list_permissions(query, user)
 
     # Add audit events
     audit.add_event(Resource.MESSAGES, None, MessageOperation.READ)
