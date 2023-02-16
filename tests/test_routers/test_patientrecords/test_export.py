@@ -19,8 +19,8 @@ def _last_sent_mirth_message(httpx_mock) -> str:
 
 
 @pytest.mark.asyncio
-async def test_record_export_data(client_superuser, httpx_mock):
-    response = await client_superuser.post(
+async def test_record_export_data(client_authenticated, httpx_mock):
+    response = await client_authenticated.post(
         f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/export/pv",
         json={},
     )
@@ -29,7 +29,7 @@ async def test_record_export_data(client_superuser, httpx_mock):
     task = TrackableTaskSchema(**response.json())
     assert task.status == "pending"
 
-    task_status = await client_superuser.get(
+    task_status = await client_authenticated.get(
         f"{configuration.base_url}/tasks/{task.id}"
     )
     assert task_status.status_code == 200
@@ -42,8 +42,8 @@ async def test_record_export_data(client_superuser, httpx_mock):
 
 
 @pytest.mark.asyncio
-async def test_record_export_tests(client_superuser, httpx_mock):
-    response = await client_superuser.post(
+async def test_record_export_tests(client_authenticated, httpx_mock):
+    response = await client_authenticated.post(
         f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/export/pv-tests",
         json={},
     )
@@ -52,7 +52,7 @@ async def test_record_export_tests(client_superuser, httpx_mock):
     task = TrackableTaskSchema(**response.json())
     assert task.status == "pending"
 
-    task_status = await client_superuser.get(
+    task_status = await client_authenticated.get(
         f"{configuration.base_url}/tasks/{task.id}"
     )
     assert task_status.status_code == 200
@@ -65,8 +65,8 @@ async def test_record_export_tests(client_superuser, httpx_mock):
 
 
 @pytest.mark.asyncio
-async def test_record_export_docs(client_superuser, httpx_mock):
-    response = await client_superuser.post(
+async def test_record_export_docs(client_authenticated, httpx_mock):
+    response = await client_authenticated.post(
         f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/export/pv-docs",
         json={},
     )
@@ -75,7 +75,7 @@ async def test_record_export_docs(client_superuser, httpx_mock):
     task = TrackableTaskSchema(**response.json())
     assert task.status == "pending"
 
-    task_status = await client_superuser.get(
+    task_status = await client_authenticated.get(
         f"{configuration.base_url}/tasks/{task.id}"
     )
     assert task_status.status_code == 200
@@ -88,8 +88,8 @@ async def test_record_export_docs(client_superuser, httpx_mock):
 
 
 @pytest.mark.asyncio
-async def test_record_export_radar(client_superuser, httpx_mock):
-    response = await client_superuser.post(
+async def test_record_export_radar(client_authenticated, httpx_mock):
+    response = await client_authenticated.post(
         f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/export/radar",
         json={},
     )
@@ -98,7 +98,7 @@ async def test_record_export_radar(client_superuser, httpx_mock):
     task = TrackableTaskSchema(**response.json())
     assert task.status == "pending"
 
-    task_status = await client_superuser.get(
+    task_status = await client_authenticated.get(
         f"{configuration.base_url}/tasks/{task.id}"
     )
     assert task_status.status_code == 200
@@ -111,7 +111,7 @@ async def test_record_export_radar(client_superuser, httpx_mock):
 
 
 @pytest.mark.asyncio
-async def test_record_export_pkb(client_superuser, ukrdc3_session):
+async def test_record_export_pkb(client_authenticated, ukrdc3_session):
     # Ensure PKB membership
     PID_1 = "PYTEST01:PV:00000000A"
     membership = ProgramMembership(
@@ -124,7 +124,7 @@ async def test_record_export_pkb(client_superuser, ukrdc3_session):
     ukrdc3_session.add(membership)
     ukrdc3_session.commit()
 
-    response = await client_superuser.post(
+    response = await client_authenticated.post(
         f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/export/pkb",
         json={},
     )
@@ -132,7 +132,7 @@ async def test_record_export_pkb(client_superuser, ukrdc3_session):
     task = TrackableTaskSchema(**response.json())
     assert task.status == "pending"
 
-    task_status = await client_superuser.get(
+    task_status = await client_authenticated.get(
         f"{configuration.base_url}/tasks/{task.id}"
     )
     assert task_status.status_code == 200
@@ -140,8 +140,8 @@ async def test_record_export_pkb(client_superuser, ukrdc3_session):
 
 
 @pytest.mark.asyncio
-async def test_record_export_pkb_no_memberships(client_superuser):
-    response = await client_superuser.post(
+async def test_record_export_pkb_no_memberships(client_authenticated):
+    response = await client_authenticated.post(
         f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/export/pkb",
         json={},
     )
@@ -149,7 +149,7 @@ async def test_record_export_pkb_no_memberships(client_superuser):
     task = TrackableTaskSchema(**response.json())
     assert task.status == "pending"
 
-    status_response = await client_superuser.get(
+    status_response = await client_authenticated.get(
         f"{configuration.base_url}/tasks/{task.id}"
     )
     assert status_response.status_code == 200
@@ -160,3 +160,13 @@ async def test_record_export_pkb_no_memberships(client_superuser):
         status_task.error
         == "Patient PYTEST01:PV:00000000A has no active PKB membership"
     )
+
+
+@pytest.mark.parametrize("route", ["pv", "pv-tests", "pv-docs", "radar", "pkb"])
+async def test_record_export_denied(client_authenticated, route):
+    response = await client_authenticated.post(
+        f"{configuration.base_url}/patientrecords/PYTEST03:PV:00000000A/export/{route}",
+        json={},
+    )
+
+    assert response.status_code == 403

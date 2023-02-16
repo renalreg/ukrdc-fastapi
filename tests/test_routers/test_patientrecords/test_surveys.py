@@ -41,3 +41,10 @@ async def test_record_surveys(client_superuser):
             "enteredatcode": "ENTEREDATCODE",
         }
     ]
+
+
+async def test_record_surveys_denied(client_authenticated):
+    response = await client_authenticated.get(
+        f"{configuration.base_url}/patientrecords/PYTEST03:PV:00000000A/surveys"
+    )
+    assert response.status_code == 403

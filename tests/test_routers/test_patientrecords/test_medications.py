@@ -25,3 +25,10 @@ async def test_record_medications(client_superuser):
             "enteringOrganizationDescription": None,
         },
     ]
+
+
+async def test_record_medications_denied(client_authenticated):
+    response = await client_authenticated.get(
+        f"{configuration.base_url}/patientrecords/PYTEST03:PV:00000000A/medications"
+    )
+    assert response.status_code == 403

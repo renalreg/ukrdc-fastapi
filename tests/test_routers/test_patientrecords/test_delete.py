@@ -15,6 +15,7 @@ async def test_delete_summary(client_superuser, ukrdc3_session, jtrace_session):
 
     # Assert all expected records exist
     assert ukrdc3_session.query(PatientRecord).get("PYTEST03:PV:00000000A")
+
     for person in summary.empi.persons:
         assert jtrace_session.query(Person).get(person.id)
     for master_record in summary.empi.master_records:
@@ -37,6 +38,7 @@ async def test_delete(client_superuser, ukrdc3_session, jtrace_session):
 
     # Assert all expected records exist
     assert ukrdc3_session.query(PatientRecord).get("PYTEST03:PV:00000000A")
+
     for person in summary.empi.persons:
         assert jtrace_session.query(Person).get(person.id)
     for master_record in summary.empi.master_records:
@@ -82,3 +84,10 @@ async def test_delete_badhash(client_superuser, ukrdc3_session):
 
     # Assert expected record still exists
     assert ukrdc3_session.query(PatientRecord).get("PYTEST03:PV:00000000A")
+
+
+async def test_delete_denied(client_authenticated):
+    response = await client_authenticated.post(
+        f"{configuration.base_url}/patientrecords/PYTEST03:PV:00000000A/delete"
+    )
+    assert response.status_code == 403
