@@ -44,11 +44,11 @@ def apply_patientrecord_list_permission(query: Query, user: UKRDCUser):
         return query
 
     # Find which records the user has explicit facility-permission to access
-    query = query.filter(PatientRecord.sendingfacility.in_(units))
+    query_explicit_permissions = query.filter(PatientRecord.sendingfacility.in_(units))
 
     # If the user doesn't have permission to see any, return the currently-empty query
-    if query.count() < 1:
-        return query
+    if query_explicit_permissions.count() < 1:
+        return query_explicit_permissions
 
     # Else, if the user has explicit facility-permission to see more than 1 matching record,
     # include multi-facility records like membership and informational records
