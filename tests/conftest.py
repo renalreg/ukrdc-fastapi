@@ -62,6 +62,8 @@ from ukrdc_fastapi.utils.tasks import TaskTracker
 
 from .utils import create_basic_facility, create_basic_patient, days_ago
 
+# TODO: Move data creation into a submodule, and call data creation in each test rather than adding from conftest
+
 # Using the factory to create a postgresql instance
 socket_dir = tempfile.TemporaryDirectory()
 postgresql_my_proc = factories.postgresql_proc(port=None, unixsocketdir=socket_dir.name)
