@@ -37,6 +37,20 @@ async def test_message_detail_denied(client_authenticated):
     assert response.status_code == 403
 
 
+async def test_message_source(client_authenticated):
+    response = await client_authenticated.get(
+        f"{configuration.base_url}/messages/1/source"
+    )
+    assert response.status_code == 200
+
+
+async def test_message_source_denied(client_authenticated):
+    response = await client_authenticated.get(
+        f"{configuration.base_url}/messages/3/source"
+    )
+    assert response.status_code == 403
+
+
 async def test_message_workitems(client_authenticated, client_superuser):
     response = await client_authenticated.get(
         f"{configuration.base_url}/messages/1/workitems"

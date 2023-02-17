@@ -1,7 +1,6 @@
-from datetime import datetime
-
 import pytest
 from ukrdc_sqla.empi import MasterRecord
+from ukrdc_sqla.errorsdb import Message
 
 from ukrdc_fastapi.query import messages
 
@@ -64,3 +63,13 @@ def test_get_masterrecord_errors(errorsdb_session, jtrace_session):
         statuses=["ERROR"],
     ).all()
     assert {error.id for error in error_list} == {2}
+
+
+@pytest.mark.asyncio
+async def test_get_message_source(mirth_session, errorsdb_session, httpx_session):
+    message = errorsdb_session.query(Message).get(1)
+    source = await messages.get_message_source(message, mirth_session)
+    assert (
+        source.content
+        == '<?xml version="1.0" encoding="UTF-8"?>\n            <testelement>\n            </testelement>'
+    )

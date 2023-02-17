@@ -4,10 +4,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends
 from fastapi import Query as QueryParam
 from fastapi import Security
-from fastapi.exceptions import HTTPException
 from mirth_client.mirth import MirthAPI
-from mirth_client.models import ConnectorMessageData, ConnectorMessageModel
-from pydantic import Field
 from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import MasterRecord
 from ukrdc_sqla.errorsdb import Message
@@ -28,22 +25,19 @@ from ukrdc_fastapi.permissions.messages import (
     assert_message_permissions,
 )
 from ukrdc_fastapi.permissions.workitems import apply_workitem_list_permission
-from ukrdc_fastapi.query.messages import ERROR_SORTER, get_messages
+from ukrdc_fastapi.query.messages import (
+    MessageSourceSchema,
+    get_message_source,
+    get_messages,
+)
 from ukrdc_fastapi.query.workitems import get_workitems_related_to_message
-from ukrdc_fastapi.schemas.base import OrmModel
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema, WorkItemSchema
 from ukrdc_fastapi.schemas.message import MessageSchema
+from ukrdc_fastapi.sorters import ERROR_SORTER
 from ukrdc_fastapi.utils.paginate import Page, paginate
 from ukrdc_fastapi.utils.sort import SQLASorter
 
 router = APIRouter(tags=["Messages"])
-
-
-class MessageSourceSchema(OrmModel):
-    """A message source file"""
-
-    content: Optional[str] = Field(None, description="Message content")
-    content_type: Optional[str] = Field(None, description="Message content type")
 
 
 def _get_message(
@@ -128,36 +122,12 @@ async def message_source(
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive detailed information about a specific error message"""
-    if not message_obj.channel_id:
-        raise HTTPException(404, "Channel ID not found in Mirth")
+    message_source_obj = get_message_source(message_obj, mirth)
 
-    message_src = await mirth.channel(message_obj.channel_id).get_message(
-        str(message_obj.message_id), include_content=True
-    )
-    if not message_src:
-        raise HTTPException(404, "Message not found in Mirth")
-
-    first_connector_message: ConnectorMessageModel = list(
-        message_src.connector_messages.values()
-    )[0]
-
-    message_data: Optional[ConnectorMessageData] = None
-
-    # Prioritise encoded message over raw
-    if first_connector_message.encoded:
-        message_data = first_connector_message.encoded
-    elif first_connector_message.raw:
-        message_data = first_connector_message.raw
-
-    # If no data is available, return a valid but empty MessageSourceSchema
-    if not message_data:
-        return MessageSourceSchema(content=None, content_type=None)
-
+    # Add audit events
     audit.add_event(Resource.MESSAGE, message_obj.id, MessageOperation.READ_SOURCE)
 
-    return MessageSourceSchema(
-        content=message_data.content, content_type=message_data.data_type
-    )
+    return message_source_obj
 
 
 @router.get(

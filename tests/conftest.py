@@ -1043,15 +1043,9 @@ def httpx_session(httpx_mock: HTTPXMock):
         message_999_response: str = f.read()
 
     httpx_mock.add_response(
-        url=re.compile(r"mock:\/\/mirth.url\/channels"), content=channels_response
-    )
-    httpx_mock.add_response(
-        url=re.compile(r"mock:\/\/mirth.url\/channels\/statistics"),
-        content=channel_statistics_response,
-    )
-    httpx_mock.add_response(
-        url=re.compile(r"mock:\/\/mirth.url\/channelgroups"),
-        content=channel_groups_response,
+        method="GET",
+        content=message_999_response,
+        url=re.compile(r"mock:\/\/mirth.url\/channels\/.*\/messages\/.*"),
     )
 
     httpx_mock.add_response(
@@ -1061,9 +1055,17 @@ def httpx_session(httpx_mock: HTTPXMock):
     )
 
     httpx_mock.add_response(
-        method="GET",
-        content=message_999_response,
-        url=re.compile(r"mock:\/\/mirth.url\/channels\/.*\/messages\/999"),
+        url=re.compile(r"mock:\/\/mirth.url\/channels\/statistics"),
+        content=channel_statistics_response,
+    )
+
+    httpx_mock.add_response(
+        url=re.compile(r"mock:\/\/mirth.url\/channels"), content=channels_response
+    )
+
+    httpx_mock.add_response(
+        url=re.compile(r"mock:\/\/mirth.url\/channelgroups"),
+        content=channel_groups_response,
     )
 
     httpx_mock.add_response(

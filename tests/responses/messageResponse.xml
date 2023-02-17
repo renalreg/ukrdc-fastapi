@@ -4,5 +4,100 @@
     <serverId>00000000-0000-0000-0000-000000000000</serverId>
     <processed>true</processed>
     <receivedDate><time>1630061717352</time></receivedDate>
-    <connectorMessages></connectorMessages>
+    <connectorMessages>
+        <entry>
+            <int>0</int>
+            <connectorMessage>
+                <messageId>20685820</messageId>
+                <metaDataId>0</metaDataId>
+                <channelId>3cdefad2-bf10-49ee-81c9-8ac6fd2fed67</channelId>
+                <channelName>PV Feed Inbound</channelName>
+                <connectorName>Source</connectorName>
+                <serverId>6b1d7866-48ac-4499-8325-fa10b77fbe5e</serverId>
+                <receivedDate>
+                    <time>1676651715072</time>
+                    <timezone>Europe/London</timezone>
+                </receivedDate>
+                <status>TRANSFORMED</status>
+                <raw>
+                    <encrypted>false</encrypted>
+                    <channelId>3cdefad2-bf10-49ee-81c9-8ac6fd2fed67</channelId>
+                    <messageId>20685820</messageId>
+                    <metaDataId>0</metaDataId>
+                    <contentType>RAW</contentType>
+                    <content>
+            &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+            &lt;testelement&gt;
+            &lt;/testelement&gt;
+                    </content>
+                    <dataType>XML</dataType>
+                </raw>
+                <encoded>
+                    <encrypted>false</encrypted>
+                    <channelId>3cdefad2-bf10-49ee-81c9-8ac6fd2fed67</channelId>
+                    <messageId>20685820</messageId>
+                    <metaDataId>0</metaDataId>
+                    <contentType>ENCODED</contentType>
+                    <content>
+            &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+            &lt;testelement&gt;
+            &lt;/testelement&gt;
+                    </content>
+                    <dataType>XML</dataType>
+                </encoded>
+                <sourceMapContent>
+                    <encrypted>false</encrypted>
+                    <content class="java.util.Collections$UnmodifiableMap">
+                        <m>
+                            <entry>
+                                <string>testMapKey</string>
+                                <string>testMapValue</string>
+                            </entry>
+                        </m>
+                    </content>
+                </sourceMapContent>
+                <connectorMapContent>
+                    <encrypted>false</encrypted>
+                    <content class="map"/>
+                </connectorMapContent>
+                <channelMapContent>
+                    <encrypted>false</encrypted>
+                    <content class="map">
+                        <entry>
+                            <string>testChMapKey</string>
+                            <string>testChMapValue</string>
+                        </entry>
+                    </content>
+                </channelMapContent>
+                <responseMapContent>
+                    <encrypted>false</encrypted>
+                    <content class="map">
+                    </content>
+                </responseMapContent>
+                <metaDataMap>
+                    <entry>
+                        <string>testMetadataMapKey</string>
+                        <string>testMetadataMapValue</string>
+                    </entry>
+                    <entry>
+                        <string>testMetadataMapKeyNumber</string>
+                        <big-decimal>111111111</big-decimal>
+                    </entry>
+                </metaDataMap>
+                <processingErrorContent>
+                    <encrypted>false</encrypted>
+                </processingErrorContent>
+                <postProcessorErrorContent>
+                    <encrypted>false</encrypted>
+                </postProcessorErrorContent>
+                <responseErrorContent>
+                    <encrypted>false</encrypted>
+                </responseErrorContent>
+                <errorCode>0</errorCode>
+                <sendAttempts>0</sendAttempts>
+                <chainId>0</chainId>
+                <orderId>0</orderId>
+            </connectorMessage>
+        </entry>
+    </connectorMessages>
 </message>

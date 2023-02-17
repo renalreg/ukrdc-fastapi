@@ -38,10 +38,7 @@ from ukrdc_fastapi.permissions.persons import apply_persons_list_permission
 from ukrdc_fastapi.permissions.workitems import apply_workitem_list_permission
 from ukrdc_fastapi.query.audit import get_auditevents_related_to_masterrecord
 from ukrdc_fastapi.query.masterrecords import get_masterrecords_related_to_masterrecord
-from ukrdc_fastapi.query.messages import (
-    ERROR_SORTER,
-    get_messages_related_to_masterrecord,
-)
+from ukrdc_fastapi.query.messages import get_messages_related_to_masterrecord
 from ukrdc_fastapi.query.mirth.memberships import create_pkb_membership
 from ukrdc_fastapi.query.patientrecords import (
     get_patientrecords_related_to_masterrecord,
@@ -58,6 +55,7 @@ from ukrdc_fastapi.schemas.empi import (
 )
 from ukrdc_fastapi.schemas.message import MessageSchema, MinimalMessageSchema
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordSummarySchema
+from ukrdc_fastapi.sorters import ERROR_SORTER
 from ukrdc_fastapi.utils.mirth import MirthMessageResponseSchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
 from ukrdc_fastapi.utils.sort import SQLASorter, make_sqla_sorter

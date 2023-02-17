@@ -9,9 +9,7 @@ from ...utils import days_ago
 
 
 @pytest.mark.asyncio
-async def test_merge_master_records(
-    jtrace_session, redis_session, mirth_session, superuser
-):
+async def test_merge_master_records(jtrace_session, redis_session, mirth_session):
     # Create new master records
     master_record_30 = MasterRecord(
         id=30,

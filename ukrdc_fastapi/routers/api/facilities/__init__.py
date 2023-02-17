@@ -29,9 +29,9 @@ from ukrdc_fastapi.query.facilities.errors import (
     get_errors_history,
     get_patients_latest_errors,
 )
-from ukrdc_fastapi.query.messages import ERROR_SORTER
 from ukrdc_fastapi.schemas.common import HistoryPoint
 from ukrdc_fastapi.schemas.message import MessageSchema
+from ukrdc_fastapi.sorters import ERROR_SORTER
 from ukrdc_fastapi.utils.cache import ResponseCache
 from ukrdc_fastapi.utils.paginate import Page, paginate
 from ukrdc_fastapi.utils.sort import ObjectSorter, SQLASorter, make_object_sorter

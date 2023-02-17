@@ -1,17 +1,24 @@
 import datetime
 from typing import Optional
 
+from mirth_client import MirthAPI
+from mirth_client.models import ConnectorMessageData, ConnectorMessageModel
+from pydantic import Field
 from sqlalchemy.orm.query import Query
 from sqlalchemy.orm.session import Session
 from ukrdc_sqla.empi import MasterRecord
 from ukrdc_sqla.errorsdb import Message
 
+from ukrdc_fastapi.exceptions import ResourceNotFoundError
 from ukrdc_fastapi.query.masterrecords import get_masterrecords_related_to_masterrecord
-from ukrdc_fastapi.utils.sort import make_sqla_sorter
+from ukrdc_fastapi.schemas.base import OrmModel
 
-ERROR_SORTER = make_sqla_sorter(
-    [Message.id, Message.received, Message.ni], default_sort_by=Message.received
-)
+
+class MessageSourceSchema(OrmModel):
+    """A message source file"""
+
+    content: Optional[str] = Field(None, description="Message content")
+    content_type: Optional[str] = Field(None, description="Message content type")
 
 
 def get_messages(
@@ -59,6 +66,37 @@ def get_messages(
         query = query.filter(Message.ni.in_(nis))
 
     return query
+
+
+async def get_message_source(message: Message, mirth: MirthAPI) -> MessageSourceSchema:
+    message_src = await mirth.channel(message.channel_id).get_message(
+        str(message.message_id), include_content=True
+    )
+    if not message_src:
+        raise ResourceNotFoundError("Message not found in Mirth")
+
+    connector_messages: list[ConnectorMessageModel] = list(
+        message_src.connector_messages.values()
+    )
+
+    first_connector_message = connector_messages[0] if connector_messages else None
+
+    message_data: Optional[ConnectorMessageData] = None
+
+    if first_connector_message:
+        # Prioritise encoded message over raw
+        if first_connector_message.encoded:
+            message_data = first_connector_message.encoded
+        elif first_connector_message.raw:
+            message_data = first_connector_message.raw
+
+    # If no data is available, return a valid but empty MessageSourceSchema
+    if not message_data:
+        return MessageSourceSchema(content=None, content_type=None)
+
+    return MessageSourceSchema(
+        content=message_data.content, content_type=message_data.data_type
+    )
 
 
 def get_messages_related_to_masterrecord(
