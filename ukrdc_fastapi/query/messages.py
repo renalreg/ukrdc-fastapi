@@ -69,9 +69,26 @@ def get_messages(
 
 
 async def get_message_source(message: Message, mirth: MirthAPI) -> MessageSourceSchema:
-    message_src = await mirth.channel(message.channel_id).get_message(
-        str(message.message_id), include_content=True
+    """Retreive a messages source file via the Mirth API
+
+    Args:
+        message (Message): Message to retrieve source for
+        mirth (MirthAPI): Mirth API client
+
+    Raises:
+        ResourceNotFoundError: Message not found in Mirth
+
+    Returns:
+        MessageSourceSchema: Message source data
+    """
+    message_src = (
+        await mirth.channel(message.channel_id).get_message(
+            str(message.message_id), include_content=True
+        )
+        if message.channel_id and message.message_id
+        else None
     )
+
     if not message_src:
         raise ResourceNotFoundError("Message not found in Mirth")
 
