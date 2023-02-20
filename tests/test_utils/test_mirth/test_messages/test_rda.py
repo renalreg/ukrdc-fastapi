@@ -22,7 +22,7 @@ def test_build_demographic_update_message(ukrdc3_session):
         message
         == """
 <?xml version="1.0" encoding="UTF-8"?>
-<ns0:PatientRecord xmlns:ns0="http://www.rixg.org.uk/"><SendingFacility>TEST_SENDING_FACILITY_1</SendingFacility><SendingExtract>UKRDC</SendingExtract><Patient><PatientNumbers><PatientNumber><Number>888888888</Number><Organization>NHS</Organization><NumberType>NI</NumberType></PatientNumber></PatientNumbers><Names><Name use="L"><Family>NEWFAMILY</Family><Given>NEWGIVEN</Given></Name></Names><BirthTime>1985-01-01T00:00:00</BirthTime><Gender>9</Gender><Addresses><Address><Postcode>XX0 1TT</Postcode></Address></Addresses></Patient></ns0:PatientRecord>
+<ns0:PatientRecord xmlns:ns0="http://www.rixg.org.uk/"><SendingFacility>TSF01</SendingFacility><SendingExtract>UKRDC</SendingExtract><Patient><PatientNumbers><PatientNumber><Number>888888888</Number><Organization>NHS</Organization><NumberType>NI</NumberType></PatientNumber></PatientNumbers><Names><Name use="L"><Family>NEWFAMILY</Family><Given>NEWGIVEN</Given></Name></Names><BirthTime>1985-01-01T00:00:00</BirthTime><Gender>9</Gender><Addresses><Address><Postcode>XX0 1TT</Postcode></Address></Addresses></Patient></ns0:PatientRecord>
     """.strip()
     )
 
@@ -39,7 +39,7 @@ def test_build_demographic_update_message_no_changes(ukrdc3_session):
         message
         == """
 <?xml version="1.0" encoding="UTF-8"?>
-<ns0:PatientRecord xmlns:ns0="http://www.rixg.org.uk/"><SendingFacility>TEST_SENDING_FACILITY_1</SendingFacility><SendingExtract>UKRDC</SendingExtract><Patient><PatientNumbers><PatientNumber><Number>888888888</Number><Organization>NHS</Organization><NumberType>NI</NumberType></PatientNumber></PatientNumbers><Names><Name use="L"><Family>Star</Family><Given>Patrick</Given></Name></Names><BirthTime>1984-03-17T00:00:00</BirthTime><Gender>2</Gender></Patient></ns0:PatientRecord>
+<ns0:PatientRecord xmlns:ns0="http://www.rixg.org.uk/"><SendingFacility>TSF01</SendingFacility><SendingExtract>UKRDC</SendingExtract><Patient><PatientNumbers><PatientNumber><Number>888888888</Number><Organization>NHS</Organization><NumberType>NI</NumberType></PatientNumber></PatientNumbers><Names><Name use="L"><Family>Star</Family><Given>Patrick</Given></Name></Names><BirthTime>1984-03-17T00:00:00</BirthTime><Gender>2</Gender></Patient></ns0:PatientRecord>
     """.strip()
     )
 
@@ -67,6 +67,6 @@ def test_build_demographic_update_message_full_address(ukrdc3_session):
         message
         == """
 <?xml version="1.0" encoding="UTF-8"?>
-<ns0:PatientRecord xmlns:ns0="http://www.rixg.org.uk/"><SendingFacility>TEST_SENDING_FACILITY_1</SendingFacility><SendingExtract>UKRDC</SendingExtract><Patient><PatientNumbers><PatientNumber><Number>888888888</Number><Organization>NHS</Organization><NumberType>NI</NumberType></PatientNumber></PatientNumbers><Names><Name use="L"><Family>Star</Family><Given>Patrick</Given></Name></Names><BirthTime>1984-03-17T00:00:00</BirthTime><Gender>2</Gender><Addresses><Address><Street>1 TEST STREET</Street><Town>TEST TOWN</Town><County>TESTFORDSHIRE</County><Postcode>XX0 1TT</Postcode><Country><CodingStandard>ISO3166-1</CodingStandard><Code>GB</Code><Description>United Kingdom</Description></Country></Address></Addresses></Patient></ns0:PatientRecord>
+<ns0:PatientRecord xmlns:ns0="http://www.rixg.org.uk/"><SendingFacility>TSF01</SendingFacility><SendingExtract>UKRDC</SendingExtract><Patient><PatientNumbers><PatientNumber><Number>888888888</Number><Organization>NHS</Organization><NumberType>NI</NumberType></PatientNumber></PatientNumbers><Names><Name use="L"><Family>Star</Family><Given>Patrick</Given></Name></Names><BirthTime>1984-03-17T00:00:00</BirthTime><Gender>2</Gender><Addresses><Address><Street>1 TEST STREET</Street><Town>TEST TOWN</Town><County>TESTFORDSHIRE</County><Postcode>XX0 1TT</Postcode><Country><CodingStandard>ISO3166-1</CodingStandard><Code>GB</Code><Description>United Kingdom</Description></Country></Address></Addresses></Patient></ns0:PatientRecord>
     """.strip()
     )

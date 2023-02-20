@@ -5,12 +5,8 @@ from ukrdc_fastapi.query.stats import get_full_errors_history, get_multiple_ukrd
 
 
 def test_get_full_errors_history(stats_session):
-    history_test_1 = ErrorHistory(
-        facility="TEST_SENDING_FACILITY_99", date=days_ago(1).date(), count=1
-    )
-    history_test_2 = ErrorHistory(
-        facility="TEST_SENDING_FACILITY_98", date=days_ago(2).date(), count=1
-    )
+    history_test_1 = ErrorHistory(facility="TSF099", date=days_ago(1).date(), count=1)
+    history_test_2 = ErrorHistory(facility="TSF098", date=days_ago(2).date(), count=1)
 
     stats_session.add(history_test_1)
     stats_session.add(history_test_2)
