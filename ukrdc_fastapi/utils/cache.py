@@ -1,4 +1,5 @@
 import json
+from enum import Enum
 from typing import Any, Optional, Type
 
 from redis import Redis
@@ -12,6 +13,87 @@ class CacheNotSetException(Exception):
     pass
 
 
+# Fixed, immutable cache keys
+
+
+class CacheKey(Enum):
+    """
+    Enum of all available immutable cache keys.
+    We use this to guarantee that all cache keys are unique.
+    """
+
+    FACILITIES_LIST = "facilities:list:all"
+
+    ADMIN_COUNTS = "admin:counts"
+
+    MIRTH_CHANNEL_INFO = "mirth:channel_info"
+    MIRTH_GROUPS = "mirth:groups"
+    MIRTH_STATISTICS = "mirth:statistics"
+
+
+# Dynamic cache keys
+
+
+class CachePrefix(Enum):
+    """
+    Base class for prefixes used in dynamic cache keys.
+
+    Note: This serves only for a type-checking base class,
+    do not add any values to this class, or subclasses will
+    fail since Enums with values are final and cannot be subclassed.
+    """
+
+
+class FacilityCachePrefix(CachePrefix):
+    """Key prefixes for facility-specific cache keys"""
+
+    ROOT = "facilities:root"
+    EXTRACTS = "facilities:extracts"
+    DEMOGRAPHICS = "facilities:stats:demographics"
+    DIALYSIS = "facilities:stats:dialysis"
+
+
+class TestCachePrefix(CachePrefix):
+    """Key prefixes for internal test cache keys"""
+
+    # For internal testing only
+    PYTEST = "pytest:cachekey"
+
+
+class DynamicCacheKey:
+    """Dynamic cache key class
+
+    This class is used to generate dynamic cache keys, given a known immutable prefix,
+    and a list of arguments to append to the prefix.
+    """
+
+    def __init__(self, prefix: CachePrefix, *args: str):
+        """Create a dynamic cache key
+
+        Args:
+            prefix (str): Prefix cache key
+            *args (str): List of arguments to append to the prefix
+        """
+        self.prefix = prefix.value
+        self.args = args
+
+    @property
+    def value(self) -> str:
+        """Return the cache key as a string"""
+        return f"{self.prefix}:{':'.join(self.args)}"
+
+    def __str__(self) -> str:
+        """Return the cache key as a string"""
+        return self.value
+
+    def __repr__(self) -> str:
+        """Return the cache key as a string"""
+        return self.value
+
+
+# Cache logic
+
+
 class BasicCache:
     # Create a sentinel object so we can tell the difference between no cached value,
     # and a cached None value
@@ -20,7 +102,7 @@ class BasicCache:
     def __init__(
         self,
         redis: Redis,
-        key: str,
+        key: CacheKey | DynamicCacheKey,
         encoder: Type[json.JSONEncoder] = JsonEncoder,
         prefix: str = "response-cache:",
     ) -> None:
@@ -28,7 +110,7 @@ class BasicCache:
         self.encoder: Type[json.JSONEncoder] = encoder
         self.prefix = prefix
 
-        self.key: str = key
+        self.key: str = key.value
 
         # Enable pre-retreiving cached value on init
         self._cached_value_str: Optional[str] = None
@@ -97,7 +179,7 @@ class ResponseCache(BasicCache):
     def __init__(
         self,
         redis: Redis,
-        key: str,
+        key: CacheKey | DynamicCacheKey,
         request: Request,
         response: Response,
         encoder: Type[json.JSONEncoder] = JsonEncoder,

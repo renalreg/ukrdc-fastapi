@@ -1,7 +1,12 @@
 import pytest
 from pydantic import BaseModel
 
-from ukrdc_fastapi.utils.cache import BasicCache, CacheNotSetException
+from ukrdc_fastapi.utils.cache import (
+    BasicCache,
+    CacheNotSetException,
+    DynamicCacheKey,
+    TestCachePrefix,
+)
 
 
 class PydanticSubModel(BaseModel):
@@ -18,7 +23,7 @@ class PydanticModel(BaseModel):
 
 
 def test_basic_cache_empty(redis_session):
-    cache = BasicCache(redis_session, "pytest:cachekey:1")
+    cache = BasicCache(redis_session, DynamicCacheKey(TestCachePrefix.PYTEST, "1"))
     assert cache.exists is False
 
     with pytest.raises(CacheNotSetException):
@@ -26,7 +31,7 @@ def test_basic_cache_empty(redis_session):
 
 
 def test_basic_cache_set_primitive(redis_session):
-    cache = BasicCache(redis_session, "pytest:cachekey:1")
+    cache = BasicCache(redis_session, DynamicCacheKey(TestCachePrefix.PYTEST, "2"))
     assert cache.exists is False
 
     cache.set("foo")
@@ -37,7 +42,7 @@ def test_basic_cache_set_primitive(redis_session):
 
 
 def test_basic_cache_set_dict(redis_session):
-    cache = BasicCache(redis_session, "pytest:cachekey:1")
+    cache = BasicCache(redis_session, DynamicCacheKey(TestCachePrefix.PYTEST, "3"))
     assert cache.exists is False
 
     cache.set(
@@ -62,7 +67,7 @@ def test_basic_cache_set_dict(redis_session):
 
 
 def test_basic_cache_set_pydantic(redis_session):
-    cache = BasicCache(redis_session, "pytest:cachekey:1")
+    cache = BasicCache(redis_session, DynamicCacheKey(TestCachePrefix.PYTEST, "4"))
     assert cache.exists is False
 
     cache.set(
@@ -90,12 +95,14 @@ def test_basic_cache_set_pydantic(redis_session):
 
 
 def test_basic_cache_restore(redis_session):
-    cache_1 = BasicCache(redis_session, "pytest:cachekey:1")
+    cache_key = DynamicCacheKey(TestCachePrefix.PYTEST, "5")
+
+    cache_1 = BasicCache(redis_session, cache_key)
     assert cache_1.exists is False
     cache_1.set("foo")
 
     # Create a new cache object (no value stored in memory)
-    cache_2 = BasicCache(redis_session, "pytest:cachekey:1")
+    cache_2 = BasicCache(redis_session, cache_key)
 
     # Redis value should match in-memory value
     assert cache_1.get() == cache_2.get()

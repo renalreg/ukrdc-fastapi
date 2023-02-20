@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from ukrdc_fastapi.config import settings
 from ukrdc_fastapi.dependencies import auth
-from ukrdc_fastapi.tasks.background import TaskTracker
+from ukrdc_fastapi.utils.tasks import TaskTracker
 
 from .database import (
     audit_session,

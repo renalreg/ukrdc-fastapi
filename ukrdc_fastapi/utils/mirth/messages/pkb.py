@@ -7,9 +7,9 @@ from sqlalchemy.orm import Session
 from ukrdc_sqla.ukrdc import Facility, PatientRecord
 
 from ukrdc_fastapi.exceptions import (
-    MissingFacilityError,
     NoActiveMembershipError,
     PKBOutboundDisabledError,
+    ResourceNotFoundError,
 )
 from ukrdc_fastapi.query.memberships import record_has_active_membership
 
@@ -193,9 +193,7 @@ def build_pkb_sync_messages(record: PatientRecord, ukrdc3: Session) -> list[str]
     facility = ukrdc3.query(Facility).get(record.sendingfacility)
 
     if not facility:
-        raise MissingFacilityError(
-            f"No facility configuration found for {record.sendingfacility}"
-        )
+        raise ResourceNotFoundError(record.sendingfacility or "None")
 
     if not facility.pkb_out:
         raise PKBOutboundDisabledError(

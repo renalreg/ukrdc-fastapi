@@ -2,8 +2,8 @@ from ukrdc_fastapi.config import configuration
 from ukrdc_fastapi.models.audit import AuditEvent
 
 
-async def test_search_pid(client, audit_session):
-    response = await client.get(
+async def test_search_pid(client_superuser, audit_session):
+    response = await client_superuser.get(
         f"{configuration.base_url}/search?search=999999999&include_ukrdc=true"
     )
     assert response.status_code == 200

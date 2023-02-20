@@ -5,9 +5,13 @@ from mirth_client.mirth import MirthAPI
 from pydantic.fields import Field
 from redis import Redis
 from sqlalchemy.orm import Session
+from ukrdc_sqla.empi import MasterRecord, Person
 
 from ukrdc_fastapi.dependencies import get_jtrace, get_mirth, get_redis
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
+from ukrdc_fastapi.exceptions import ResourceNotFoundError
+from ukrdc_fastapi.permissions.masterrecords import assert_masterrecord_permission
+from ukrdc_fastapi.permissions.persons import assert_person_permission
 from ukrdc_fastapi.query.mirth.merge import merge_master_records
 from ukrdc_fastapi.query.mirth.unlink import unlink_person_from_master_record
 from ukrdc_fastapi.schemas.base import JSONModel
@@ -48,10 +52,20 @@ async def empi_merge(
     redis: Redis = Depends(get_redis),
 ):
     """Merge a pair of MasterRecords"""
-
-    return await merge_master_records(
-        args.superseding, args.superseded, user, jtrace, mirth, redis
+    # Get the records
+    superseding: Optional[MasterRecord] = jtrace.query(MasterRecord).get(
+        args.superseding
     )
+    superseded: Optional[MasterRecord] = jtrace.query(MasterRecord).get(args.superseded)
+
+    if not (superseding and superseded):
+        raise ResourceNotFoundError("Master Record not found")
+
+    # Assert permissions
+    assert_masterrecord_permission(superseding, user)
+    assert_masterrecord_permission(superseded, user)
+
+    return await merge_master_records(superseding, superseded, mirth, redis)
 
 
 @router.post(
@@ -69,11 +83,24 @@ async def empi_unlink(
     redis: Redis = Depends(get_redis),
 ):
     """Unlink a Person from a specified MasterRecord"""
+    # Get the records
+    person = jtrace.query(Person).get(args.person_id)
+    master = jtrace.query(MasterRecord).get(args.master_id)
+
+    if not person:
+        raise ResourceNotFoundError("Person not found")
+    if not master:
+        raise ResourceNotFoundError("Master Record not found")
+
+    # Assert permissions
+    assert_masterrecord_permission(master, user)
+    assert_person_permission(person, user)
+
     return await unlink_person_from_master_record(
-        args.person_id,
-        args.master_id,
+        person,
+        master,
         args.comment,
-        user,
+        user.email,
         jtrace,
         mirth,
         redis,

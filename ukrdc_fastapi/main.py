@@ -5,6 +5,7 @@ import redis
 import sqlalchemy
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import PlainTextResponse
 from fastapi.routing import APIRoute
 from fastapi_pagination import add_pagination
 from httpx import ConnectError
@@ -17,6 +18,7 @@ from ukrdc_fastapi.dependencies.auth import auth
 from ukrdc_fastapi.dependencies.database import ukrdc3_session
 from ukrdc_fastapi.dependencies.mirth import mirth_session
 from ukrdc_fastapi.dependencies.sentry import add_sentry
+from ukrdc_fastapi.exceptions import ResourceNotFoundError
 from ukrdc_fastapi.routers import api
 from ukrdc_fastapi.tasks import repeated, shutdown
 
@@ -70,10 +72,21 @@ app.add_middleware(
 add_sentry(app)
 add_pagination(app)
 
+# Add custom exception handlers
+
+
+@app.exception_handler(ResourceNotFoundError)
+async def http_exception_handler(_, exc):
+    """Handle missing resources with a 404 response"""
+    return PlainTextResponse(str(exc), status_code=404)
+
+
 # Attach event handlers
 
 # Async startup functions and event handlers
 app.router.add_event_handler("startup", repeated.update_channel_id_name_map)
+app.router.add_event_handler("startup", repeated.update_facilities_list)
+app.router.add_event_handler("startup", repeated.precalculate_facility_stats_dialysis)
 
 # Async shutdown functions and event handler
 app.router.add_event_handler("shutdown", shutdown.clear_task_tracker)

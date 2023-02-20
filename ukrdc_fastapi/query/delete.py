@@ -6,8 +6,6 @@ from sqlalchemy.orm.session import Session
 from ukrdc_sqla.empi import LinkRecord, MasterRecord, Person, PidXRef, WorkItem
 from ukrdc_sqla.ukrdc import PatientRecord
 
-from ukrdc_fastapi.dependencies.auth import UKRDCUser
-from ukrdc_fastapi.query.patientrecords import get_patientrecord
 from ukrdc_fastapi.schemas.delete import (
     DeletePidFromEmpiRequest,
     DeletePIDPreviewSchema,
@@ -100,7 +98,7 @@ def _find_empi_items_to_delete(jtrace: Session, pid: str) -> EMPIDeleteItems:
     return to_delete
 
 
-def _create_delete_pid_summary(
+def _create_delete_patientrecord_summary(
     record_to_delete: PatientRecord,
     empi_to_delete: EMPIDeleteItems,
     committed: bool = False,
@@ -124,8 +122,8 @@ def _create_delete_pid_summary(
     )
 
 
-def summarise_delete_pid(
-    ukrdc3: Session, jtrace: Session, pid: str, user: UKRDCUser
+def summarise_delete_patientrecord(
+    record_to_delete: PatientRecord, jtrace: Session
 ) -> DeletePIDResponseSchema:
     """Create a summary of the records to be deleted.
 
@@ -133,23 +131,20 @@ def summarise_delete_pid(
         ukrdc3 (Session): UKRDC SQLAlchemy session
         jtrace (Session): JTRACE SQLAlchemy session
         pid (str): PatientRecord PID
-        user (UKRDCUser): User object
 
     Returns:
         DeletePIDResponseSchema: Summary of database items to be deleted
     """
-    record_to_delete = get_patientrecord(ukrdc3, pid, user)
     empi_to_delete = _find_empi_items_to_delete(jtrace, record_to_delete.pid)
 
-    return _create_delete_pid_summary(record_to_delete, empi_to_delete)
+    return _create_delete_patientrecord_summary(record_to_delete, empi_to_delete)
 
 
-def delete_pid(
+def delete_patientrecord(
+    record_to_delete: PatientRecord,
     ukrdc3: Session,
     jtrace: Session,
-    pid: str,
     hash_: str,
-    user: UKRDCUser,
 ) -> DeletePIDResponseSchema:
     """Delete a patient record and related records from the database.
 
@@ -158,7 +153,6 @@ def delete_pid(
         jtrace (Session): JTRACE SQLAlchemy session
         pid (str): PatientRecord PID
         hash_ (str): MD5 hash of the JSON summary of the records to be deleted
-        user (UKRDCUser): User object
 
     Raises:
         ConfirmationError: Mismatched MD5 hash provided
@@ -166,10 +160,9 @@ def delete_pid(
     Returns:
         DeletePIDResponseSchema:  Summary of database items deleted
     """
-    record_to_delete = get_patientrecord(ukrdc3, pid, user)
     empi_to_delete = _find_empi_items_to_delete(jtrace, record_to_delete.pid)
 
-    summary = _create_delete_pid_summary(
+    summary = _create_delete_patientrecord_summary(
         record_to_delete, empi_to_delete, committed=True
     )
 

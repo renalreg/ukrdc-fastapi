@@ -1,6 +1,7 @@
 from datetime import datetime
 
 import pytest
+from ukrdc_sqla.ukrdc import PatientRecord
 
 from ukrdc_fastapi.exceptions import RecordTypeError
 from ukrdc_fastapi.query.mirth import export
@@ -8,6 +9,7 @@ from ukrdc_fastapi.query.mirth import export
 from ...utils import create_basic_facility, create_basic_patient
 
 TEST_ID = 100000000
+TEST_PID = str(TEST_ID)
 
 # SendingFacility/SendingExtract combinations that should cause any export to fail
 FAIL_SF_SE = [
@@ -34,8 +36,8 @@ def _commit_test_patient(ukrdc3, jtrace, sending_facility: str, sending_extract:
     )
     create_basic_patient(
         TEST_ID,  # ID
-        str(TEST_ID),  # PID
-        str(TEST_ID),  # UKRDC
+        TEST_PID,  # PID
+        TEST_PID,  # UKRDC
         "9434765870",  # NHS
         sending_facility,
         sending_extract,
@@ -54,7 +56,6 @@ async def test_export_all_to_pv_forbidden(
     jtrace_session,
     redis_session,
     mirth_session,
-    superuser,
     sending_facility,
     sending_extract,
 ):
@@ -64,7 +65,9 @@ async def test_export_all_to_pv_forbidden(
 
     with pytest.raises(RecordTypeError):
         await export.export_all_to_pv(
-            str(TEST_ID), superuser, ukrdc3_session, mirth_session, redis_session
+            ukrdc3_session.query(PatientRecord).get(TEST_PID),
+            mirth_session,
+            redis_session,
         )
 
 
@@ -74,7 +77,6 @@ async def test_record_export_tests_forbidden(
     jtrace_session,
     redis_session,
     mirth_session,
-    superuser,
     sending_facility,
     sending_extract,
 ):
@@ -84,7 +86,9 @@ async def test_record_export_tests_forbidden(
 
     with pytest.raises(RecordTypeError):
         await export.export_tests_to_pv(
-            str(TEST_ID), superuser, ukrdc3_session, mirth_session, redis_session
+            ukrdc3_session.query(PatientRecord).get(TEST_PID),
+            mirth_session,
+            redis_session,
         )
 
 
@@ -94,7 +98,6 @@ async def test_record_export_docs_forbidden(
     jtrace_session,
     redis_session,
     mirth_session,
-    superuser,
     sending_facility,
     sending_extract,
 ):
@@ -104,7 +107,9 @@ async def test_record_export_docs_forbidden(
 
     with pytest.raises(RecordTypeError):
         await export.export_docs_to_pv(
-            str(TEST_ID), superuser, ukrdc3_session, mirth_session, redis_session
+            ukrdc3_session.query(PatientRecord).get(TEST_PID),
+            mirth_session,
+            redis_session,
         )
 
 
@@ -114,7 +119,6 @@ async def test_record_export_radar_forbidden(
     jtrace_session,
     redis_session,
     mirth_session,
-    superuser,
     sending_facility,
     sending_extract,
 ):
@@ -124,7 +128,9 @@ async def test_record_export_radar_forbidden(
 
     with pytest.raises(RecordTypeError):
         await export.export_all_to_radar(
-            str(TEST_ID), superuser, ukrdc3_session, mirth_session, redis_session
+            ukrdc3_session.query(PatientRecord).get(TEST_PID),
+            mirth_session,
+            redis_session,
         )
 
 
@@ -134,7 +140,6 @@ async def test_record_export_pkb_forbidden(
     jtrace_session,
     redis_session,
     mirth_session,
-    superuser,
     sending_facility,
     sending_extract,
 ):
@@ -144,5 +149,8 @@ async def test_record_export_pkb_forbidden(
 
     with pytest.raises(RecordTypeError):
         await export.export_all_to_pkb(
-            str(TEST_ID), superuser, ukrdc3_session, mirth_session, redis_session
+            ukrdc3_session.query(PatientRecord).get(TEST_PID),
+            ukrdc3_session,
+            mirth_session,
+            redis_session,
         )

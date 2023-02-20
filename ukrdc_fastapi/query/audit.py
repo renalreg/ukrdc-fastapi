@@ -4,25 +4,21 @@ from typing import Optional
 from sqlalchemy import and_, or_
 from sqlalchemy.orm.query import Query
 from sqlalchemy.orm.session import Session
+from ukrdc_sqla.empi import MasterRecord
 
 from ukrdc_fastapi.dependencies.audit import Resource
-from ukrdc_fastapi.dependencies.auth import UKRDCUser
 from ukrdc_fastapi.models.audit import AccessEvent, AuditEvent
-from ukrdc_fastapi.query.masterrecords import (
-    get_masterrecord,
-    get_masterrecords_related_to_masterrecord,
-)
+from ukrdc_fastapi.query.masterrecords import get_masterrecords_related_to_masterrecord
 from ukrdc_fastapi.query.patientrecords import (
     get_patientrecords_related_to_masterrecord,
 )
 
 
 def get_auditevents_related_to_masterrecord(
+    record: MasterRecord,
     audit: Session,
     ukrdc3: Session,
     jtrace: Session,
-    record_id: int,
-    user: UKRDCUser,
     since: Optional[datetime.datetime] = None,
     until: Optional[datetime.datetime] = None,
 ) -> Query:
@@ -34,21 +30,15 @@ def get_auditevents_related_to_masterrecord(
         jtrace (Session): JTRACE SQLAlchemy session
         ukrdc3 (Session): UKRDC SQLAlchemy session
         record_id (str): MasterRecord ID
-        user (UKRDCUser): User object
 
     Returns:
         Query: SQLAlchemy query
     """
-    # Get the main record and check permissions
-    record = get_masterrecord(jtrace, record_id, user)
-
     # Get all related master records
-    master_records = get_masterrecords_related_to_masterrecord(jtrace, record.id, user)
+    master_records = get_masterrecords_related_to_masterrecord(record, jtrace)
 
     # Get all related patient records
-    patient_records = get_patientrecords_related_to_masterrecord(
-        ukrdc3, jtrace, record_id, user
-    )
+    patient_records = get_patientrecords_related_to_masterrecord(record, ukrdc3, jtrace)
 
     conditions = [
         and_(

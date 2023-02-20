@@ -58,9 +58,11 @@ from ukrdc_fastapi.dependencies import (
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
 from ukrdc_fastapi.models.audit import Base as AuditBase
 from ukrdc_fastapi.models.users import Base as UsersBase
-from ukrdc_fastapi.tasks.background import TaskTracker
+from ukrdc_fastapi.utils.tasks import TaskTracker
 
 from .utils import create_basic_facility, create_basic_patient, days_ago
+
+# TODO: Move data creation into a submodule, and call data creation in each test rather than adding from conftest
 
 # Using the factory to create a postgresql instance
 socket_dir = tempfile.TemporaryDirectory()
@@ -196,7 +198,6 @@ def populate_facilities_and_messages(ukrdc3, statsdb, errorsdb):
 
 
 def populate_codes(ukrdc3):
-
     code3 = Code(
         coding_standard="CODING_STANDARD_1",
         code="CODE_1",
@@ -949,15 +950,6 @@ def app(
     def _get_root_task_tracker():
         return TaskTracker(*task_redis_sessions, auth.auth.superuser)
 
-    def _get_token():
-        return {
-            "uid": "TEST_ID",
-            "cid": "PYTEST",
-            "sub": "TEST@UKRDC_FASTAPI",
-            "scp": ["openid", "profile", "email", "offline_access"],
-            "org.ukrdc.permissions": auth.Permissions.all(),
-        }
-
     # Override FastAPI dependencies to point to function-scoped sessions
     app.dependency_overrides[get_mirth] = _get_mirth
     app.dependency_overrides[get_redis] = _get_redis
@@ -970,14 +962,59 @@ def app(
     app.dependency_overrides[get_task_tracker] = _get_task_tracker
     app.dependency_overrides[get_root_task_tracker] = _get_root_task_tracker
 
-    app.dependency_overrides[auth.auth.okta_jwt_scheme] = _get_token
-
     return app
 
 
 @pytest_asyncio.fixture(scope="function")
 async def client(app):
     async with AsyncClient(app=app, base_url="http://test") as ac:
+        yield ac
+
+
+@pytest_asyncio.fixture(scope="function")
+async def app_authenticated(app):
+    def _get_token():
+        return {
+            "uid": "TEST_ID",
+            "cid": "PYTEST",
+            "sub": "TEST@UKRDC_FASTAPI",
+            "scp": ["openid", "profile", "email", "offline_access"],
+            "org.ukrdc.permissions": [
+                *Permissions.all()[:-1],
+                "ukrdc:unit:TEST_SENDING_FACILITY_1",
+            ],
+        }
+
+    app.dependency_overrides[auth.auth.okta_jwt_scheme] = _get_token
+
+    return app
+
+
+@pytest_asyncio.fixture(scope="function")
+async def client_authenticated(app_authenticated):
+    async with AsyncClient(app=app_authenticated, base_url="http://test") as ac:
+        yield ac
+
+
+@pytest_asyncio.fixture(scope="function")
+async def app_superuser(app):
+    def _get_token():
+        return {
+            "uid": "TEST_ID",
+            "cid": "PYTEST",
+            "sub": "TEST@UKRDC_FASTAPI",
+            "scp": ["openid", "profile", "email", "offline_access"],
+            "org.ukrdc.permissions": auth.Permissions.all(),
+        }
+
+    app.dependency_overrides[auth.auth.okta_jwt_scheme] = _get_token
+
+    return app
+
+
+@pytest_asyncio.fixture(scope="function")
+async def client_superuser(app_superuser):
+    async with AsyncClient(app=app_superuser, base_url="http://test") as ac:
         yield ac
 
 
@@ -988,7 +1025,6 @@ def non_mocked_hosts() -> list:
 
 @pytest.fixture(scope="function")
 def httpx_session(httpx_mock: HTTPXMock):
-
     # Override reset since we don't care if not all mocked routes are called
     def reset_override(*args):
         pass
@@ -1007,15 +1043,9 @@ def httpx_session(httpx_mock: HTTPXMock):
         message_999_response: str = f.read()
 
     httpx_mock.add_response(
-        url=re.compile(r"mock:\/\/mirth.url\/channels"), content=channels_response
-    )
-    httpx_mock.add_response(
-        url=re.compile(r"mock:\/\/mirth.url\/channels\/statistics"),
-        content=channel_statistics_response,
-    )
-    httpx_mock.add_response(
-        url=re.compile(r"mock:\/\/mirth.url\/channelgroups"),
-        content=channel_groups_response,
+        method="GET",
+        content=message_999_response,
+        url=re.compile(r"mock:\/\/mirth.url\/channels\/.*\/messages\/.*"),
     )
 
     httpx_mock.add_response(
@@ -1025,9 +1055,17 @@ def httpx_session(httpx_mock: HTTPXMock):
     )
 
     httpx_mock.add_response(
-        method="GET",
-        content=message_999_response,
-        url=re.compile(r"mock:\/\/mirth.url\/channels\/.*\/messages\/999"),
+        url=re.compile(r"mock:\/\/mirth.url\/channels\/statistics"),
+        content=channel_statistics_response,
+    )
+
+    httpx_mock.add_response(
+        url=re.compile(r"mock:\/\/mirth.url\/channels"), content=channels_response
+    )
+
+    httpx_mock.add_response(
+        url=re.compile(r"mock:\/\/mirth.url\/channelgroups"),
+        content=channel_groups_response,
     )
 
     httpx_mock.add_response(
@@ -1047,7 +1085,7 @@ def superuser():
 
 
 @pytest.fixture(scope="function")
-def test_user():
+def user():
     return UKRDCUser(
         id="TEST_ID",
         cid="PYTEST",

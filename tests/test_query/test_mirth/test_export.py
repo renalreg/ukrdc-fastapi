@@ -1,14 +1,14 @@
-from ukrdc_sqla.ukrdc import ProgramMembership
+from ukrdc_sqla.ukrdc import PatientRecord, ProgramMembership
 
 from tests.utils import days_ago
 from ukrdc_fastapi.query.mirth import export
 
 
-async def test_export_all_to_pv(
-    ukrdc3_session, redis_session, mirth_session, superuser
-):
+async def test_export_all_to_pv(ukrdc3_session, redis_session, mirth_session):
     response = await export.export_all_to_pv(
-        "PYTEST01:PV:00000000A", superuser, ukrdc3_session, mirth_session, redis_session
+        ukrdc3_session.query(PatientRecord).get("PYTEST01:PV:00000000A"),
+        mirth_session,
+        redis_session,
     )
     assert response.status == "success"
     assert (
@@ -17,11 +17,11 @@ async def test_export_all_to_pv(
     )
 
 
-async def test_record_export_tests(
-    ukrdc3_session, redis_session, mirth_session, superuser
-):
+async def test_record_export_tests(ukrdc3_session, redis_session, mirth_session):
     response = await export.export_tests_to_pv(
-        "PYTEST01:PV:00000000A", superuser, ukrdc3_session, mirth_session, redis_session
+        ukrdc3_session.query(PatientRecord).get("PYTEST01:PV:00000000A"),
+        mirth_session,
+        redis_session,
     )
     assert response.status == "success"
     assert (
@@ -30,11 +30,11 @@ async def test_record_export_tests(
     )
 
 
-async def test_record_export_docs(
-    ukrdc3_session, redis_session, mirth_session, superuser
-):
+async def test_record_export_docs(ukrdc3_session, redis_session, mirth_session):
     response = await export.export_docs_to_pv(
-        "PYTEST01:PV:00000000A", superuser, ukrdc3_session, mirth_session, redis_session
+        ukrdc3_session.query(PatientRecord).get("PYTEST01:PV:00000000A"),
+        mirth_session,
+        redis_session,
     )
     assert response.status == "success"
     assert (
@@ -43,19 +43,17 @@ async def test_record_export_docs(
     )
 
 
-async def test_record_export_radar(
-    ukrdc3_session, redis_session, mirth_session, superuser
-):
+async def test_record_export_radar(ukrdc3_session, redis_session, mirth_session):
     response = await export.export_all_to_radar(
-        "PYTEST01:PV:00000000A", superuser, ukrdc3_session, mirth_session, redis_session
+        ukrdc3_session.query(PatientRecord).get("PYTEST01:PV:00000000A"),
+        mirth_session,
+        redis_session,
     )
     assert response.status == "success"
     assert response.message == "<result><pid>PYTEST01:PV:00000000A</pid></result>"
 
 
-async def test_record_export_pkb(
-    ukrdc3_session, redis_session, mirth_session, superuser
-):
+async def test_record_export_pkb(ukrdc3_session, redis_session, mirth_session):
     # Ensure PKB membership
     PID_1 = "PYTEST01:PV:00000000A"
     membership = ProgramMembership(
@@ -73,7 +71,10 @@ async def test_record_export_pkb(
 
     # Iterate over each message response
     for response in await export.export_all_to_pkb(
-        PID_1, superuser, ukrdc3_session, mirth_session, redis_session
+        ukrdc3_session.query(PatientRecord).get(PID_1),
+        ukrdc3_session,
+        mirth_session,
+        redis_session,
     ):
         messages.append(response.message)
         assert response.status == "success"

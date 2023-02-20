@@ -1,15 +1,13 @@
 import datetime
 from typing import Optional
 
-from fastapi.exceptions import HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.query import Query
 from ukrdc_sqla.errorsdb import Latest, Message
 from ukrdc_sqla.stats import ErrorHistory
 from ukrdc_sqla.ukrdc import Code, Facility
 
-from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
-from ukrdc_fastapi.query.common import PermissionsError
+from ukrdc_fastapi.exceptions import MissingFacilityError
 from ukrdc_fastapi.schemas.common import HistoryPoint
 from ukrdc_fastapi.utils import daterange
 
@@ -18,7 +16,6 @@ def get_patients_latest_errors(
     ukrdc3: Session,
     errorsdb: Session,
     facility_code: str,
-    user: UKRDCUser,
 ) -> Query:
     """Retrieve the most recent error messages for each patient currently receiving errors.
 
@@ -26,7 +23,6 @@ def get_patients_latest_errors(
         ukrdc3 (Session): SQLAlchemy session
         errorsdb (Session): SQLAlchemy session
         facility_code (str): Facility/unit code
-        user (UKRDCUser): Logged-in user
 
     Returns:
         Query: SQLAlchemy query
@@ -34,12 +30,7 @@ def get_patients_latest_errors(
     facility = ukrdc3.query(Facility).filter(Facility.code == facility_code).first()
 
     if not facility:
-        raise HTTPException(404, detail="Facility not found")
-
-    # Assert permissions
-    units = Permissions.unit_codes(user.permissions)
-    if (Permissions.UNIT_WILDCARD not in units) and (facility.code not in units):
-        raise PermissionsError()
+        raise MissingFacilityError(facility_code)
 
     return (
         errorsdb.query(Message)
@@ -53,7 +44,6 @@ def get_errors_history(
     ukrdc3: Session,
     statsdb: Session,
     facility_code: str,
-    user: UKRDCUser,
     since: Optional[datetime.date] = None,
     until: Optional[datetime.date] = None,
 ) -> list[HistoryPoint]:
@@ -64,7 +54,6 @@ def get_errors_history(
         statsdb (Session): SQLAlchemy session
         errorsdb (Session): SQLAlchemy session
         facility_code (str): Facility/unit code
-        user (UKRDCUser): Logged-in user
         since (Optional[datetime.date]): Filter start date. Defaults to None.
         until (Optional[datetime.date]): Filter end date. Defaults to None.
 
@@ -78,12 +67,7 @@ def get_errors_history(
     )
 
     if not code:
-        raise HTTPException(404, detail="Facility not found")
-
-    # Assert permissions
-    units = Permissions.unit_codes(user.permissions)
-    if (Permissions.UNIT_WILDCARD not in units) and (code.code not in units):
-        raise PermissionsError()
+        raise MissingFacilityError(facility_code)
 
     # Get range
     range_since: datetime.date = since or datetime.date.today() - datetime.timedelta(

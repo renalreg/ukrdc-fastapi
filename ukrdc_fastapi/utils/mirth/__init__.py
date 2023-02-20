@@ -9,7 +9,7 @@ from redis import Redis
 
 from ukrdc_fastapi.config import settings
 from ukrdc_fastapi.schemas.base import OrmModel
-from ukrdc_fastapi.utils.cache import BasicCache
+from ukrdc_fastapi.utils.cache import BasicCache, CacheKey
 
 
 class MirthMessageResponseSchema(BaseModel):
@@ -57,11 +57,11 @@ async def get_channels(mirth: MirthAPI, redis: Redis) -> list[ChannelModel]:
     Returns:
         list[ChannelModel]: List of channel infos
     """
-    cache = BasicCache(redis, "mirth:channel_info")
+    cache = BasicCache(redis, CacheKey.MIRTH_CHANNEL_INFO)
 
     if not cache.exists:
         channel_info: list[ChannelModel] = await mirth.channel_info()
-        cache.set(channel_info, expire=settings.cache_channel_seconds)
+        cache.set(channel_info, expire=settings.cache_mirth_channel_seconds)
 
     return [ChannelModel(**channel) for channel in cache.get()]
 
@@ -76,11 +76,11 @@ async def get_groups(mirth: MirthAPI, redis: Redis) -> list[ChannelGroup]:
     Returns:
         list[ChannelGroup]: List of channel groups
     """
-    cache = BasicCache(redis, "mirth:groups")
+    cache = BasicCache(redis, CacheKey.MIRTH_GROUPS)
 
     if not cache.exists:
         groups: list[ChannelGroup] = await mirth.groups()
-        cache.set(groups, expire=settings.cache_groups_seconds)
+        cache.set(groups, expire=settings.cache_mirth_groups_seconds)
 
     return [ChannelGroup(**group) for group in cache.get()]
 
@@ -95,11 +95,11 @@ async def get_statistics(mirth: MirthAPI, redis: Redis) -> list[ChannelStatistic
     Returns:
         list[ChannelStatistics]: List of channel statistics
     """
-    cache = BasicCache(redis, "mirth:statistics")
+    cache = BasicCache(redis, CacheKey.MIRTH_STATISTICS)
 
     if not cache.exists:
         statistics: list[ChannelStatistics] = await mirth.statistics()
-        cache.set(statistics, expire=settings.cache_statistics_seconds)
+        cache.set(statistics, expire=settings.cache_mirth_statistics_seconds)
 
     return [ChannelStatistics(**stat) for stat in cache.get()]
 

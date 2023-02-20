@@ -37,22 +37,34 @@ class Settings(BaseSettings):
     # Warnings to display on user dashboards
     wotd: list[str] = []
 
-    # Redis cache expiry
-    cache_channel_seconds: int = 86400
-    cache_groups_seconds: int = 86400
-    cache_statistics_seconds: int = 3600
-    cache_dashboard_seconds: int = 900
+    # Redis cache expiries
+
+    cache_mirth_channel_seconds: int = 86400
+    cache_mirth_groups_seconds: int = 86400
+    cache_mirth_statistics_seconds: int = 3600
+
     cache_facilities_list_seconds: int = 3600
+    cache_facilities_stats_demographics_seconds: int = 28800
+    cache_facilities_stats_dialysis_seconds: int = 28800
+
+    # Minimum number of records required to pre-cache facility dialysis stats
+    cache_facilities_stats_dialysis_min: int = 1
+
+    # Authentication settings
 
     swagger_client_id: str = ""
     app_client_id: str = ""
     oauth_issuer: str = "https://renalregistry.okta.com/oauth2/ausn7fa9zfh1DC2La5d6"
     oauth_audience: str = "api://ukrdc"
 
+    # Mirth settings
+
     mirth_url: str = "http://localhost:9004"
     mirth_user: str = "webapi"
     mirth_pass: str = "****"
     mirth_verify_ssl: bool = True
+
+    # Redis settings
 
     redis_host: str = "localhost"
     redis_port: int = 6379
@@ -108,6 +120,8 @@ class Settings(BaseSettings):
     audit_pass: str = "****"
     audit_name: str = "auditdb"
     audit_driver: str = "postgresql+psycopg2"
+
+    # CORS settings
 
     allow_origins: list[str] = []
 

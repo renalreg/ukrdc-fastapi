@@ -1,10 +1,10 @@
 from typing import Optional
 
-from fastapi.exceptions import HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.query import Query
 from ukrdc_sqla.ukrdc import Code, CodeExclusion, CodeMap
 
+from ukrdc_fastapi.exceptions import MissingCodeError
 from ukrdc_fastapi.schemas.code import CodeMapSchema, CodeSchema
 
 
@@ -50,8 +50,10 @@ def get_code(ukrdc3: Session, coding_standard: str, code: str) -> ExtendedCodeSc
         ExtendedCodeSchema: Extended code details
     """
     code_obj: Optional[Code] = ukrdc3.query(Code).get((coding_standard, code))
+
     if not code_obj:
-        raise HTTPException(404, detail="Facility not found")
+        raise MissingCodeError(coding_standard, code)
+
     maps_to = get_code_maps(
         ukrdc3,
         source_coding_standard=[code_obj.coding_standard],

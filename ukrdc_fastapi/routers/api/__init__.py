@@ -11,7 +11,6 @@ from . import (
     messages,
     mirth,
     patientrecords,
-    persons,
     search,
     system,
     tasks,
@@ -44,7 +43,6 @@ router.include_router(codes.router, prefix="/codes")
 
 # EMPI Records
 router.include_router(workitems.router, prefix="/workitems")
-router.include_router(persons.router, prefix="/persons")
 router.include_router(masterrecords.router, prefix="/masterrecords")
 
 # ErrorsDB/Message Records

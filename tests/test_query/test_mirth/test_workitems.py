@@ -1,16 +1,16 @@
 import pytest
+from ukrdc_sqla.empi import WorkItem
 
 from ukrdc_fastapi.query.mirth import workitems
 
 
 @pytest.mark.asyncio
-async def test_update_workitem(jtrace_session, redis_session, mirth_session, superuser):
+async def test_update_workitem(jtrace_session, redis_session, mirth_session):
     response = await workitems.update_workitem(
-        jtrace_session,
-        1,
-        superuser,
+        jtrace_session.query(WorkItem).get(1),
         mirth_session,
         redis_session,
+        "TEST@UKRDC_FASTAPI",
         status=3,
         comment="UPDATE COMMENT",
     )

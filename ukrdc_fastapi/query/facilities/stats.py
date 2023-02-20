@@ -1,7 +1,6 @@
 import datetime
 from typing import Optional
 
-from fastapi.exceptions import HTTPException
 from sqlalchemy.orm import Session
 from ukrdc_sqla.ukrdc import Facility
 from ukrdc_stats.calculators.demographics import (
@@ -10,22 +9,18 @@ from ukrdc_stats.calculators.demographics import (
 )
 from ukrdc_stats.calculators.dialysis import DialysisStats, DialysisStatsCalculator
 
-from ukrdc_fastapi.dependencies.auth import UKRDCUser
-
-from . import _assert_permission
+from ukrdc_fastapi.exceptions import MissingFacilityError
 
 
 def get_facility_demographic_stats(
     ukrdc3: Session,
     facility_code: str,
-    user: UKRDCUser,
 ) -> DemographicsStats:
     """Extract demographic distributions for all UKRDC/RDA records in a given facility
 
     Args:
         ukrdc3 (Session): SQLAlchemy session
         facility_code (str): Facility/unit code
-        user (UKRDCUser): Logged-in user
 
     Returns:
         FacilityDemographicStats: Facility demographic distribution statistics
@@ -34,10 +29,7 @@ def get_facility_demographic_stats(
     facility = ukrdc3.query(Facility).filter(Facility.code == facility_code).first()
 
     if not facility:
-        raise HTTPException(404, detail="Facility not found")
-
-    # Assert permissions
-    _assert_permission(facility, user)
+        raise MissingFacilityError(facility_code)
 
     # Calculate all demographic stats
     return DemographicStatsCalculator(ukrdc3, facility.code).extract_stats()
@@ -46,7 +38,6 @@ def get_facility_demographic_stats(
 def get_facility_dialysis_stats(
     ukrdc3: Session,
     facility_code: str,
-    user: UKRDCUser,
     since: Optional[datetime.datetime] = None,
     until: Optional[datetime.datetime] = None,
 ) -> DialysisStats:
@@ -55,7 +46,6 @@ def get_facility_dialysis_stats(
     Args:
         ukrdc3 (Session): SQLAlchemy session
         facility_code (str): Facility/unit code
-        user (UKRDCUser): Logged-in user
 
     Returns:
         DialysisStats: Facility demographic distribution statistics
@@ -64,10 +54,7 @@ def get_facility_dialysis_stats(
     facility = ukrdc3.query(Facility).filter(Facility.code == facility_code).first()
 
     if not facility:
-        raise HTTPException(404, detail="Facility not found")
-
-    # Assert permissions
-    _assert_permission(facility, user)
+        raise MissingFacilityError(facility_code)
 
     # Handle default arguments
     from_time: datetime.datetime = (

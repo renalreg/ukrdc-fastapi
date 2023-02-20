@@ -1,74 +1,55 @@
 from datetime import date, datetime
 
-import pytest
-from ukrdc_sqla.empi import LinkRecord, MasterRecord
+from ukrdc_sqla.empi import LinkRecord, MasterRecord, WorkItem
+from ukrdc_sqla.errorsdb import Message
 
 from tests.utils import days_ago
 from ukrdc_fastapi.query import workitems
-from ukrdc_fastapi.query.common import PermissionsError
 
 
-def test_get_workitems_superuser(jtrace_session, superuser):
-    all_items = workitems.get_workitems(jtrace_session, superuser)
+def test_get_workitems_superuser(jtrace_session):
+    all_items = workitems.get_workitems(jtrace_session)
     assert {item.id for item in all_items} == {1, 2, 3}
 
 
-def test_get_workitems_user(jtrace_session, test_user):
-    all_items = workitems.get_workitems(jtrace_session, test_user)
-    assert {item.id for item in all_items} == {1, 3}
-
-
 def test_get_workitems_facility(jtrace_session, superuser):
-    all_items = workitems.get_workitems(jtrace_session, superuser, statuses=[3])
+    all_items = workitems.get_workitems(jtrace_session, statuses=[3])
     assert {item.id for item in all_items} == {4}
 
 
-def test_get_workitems_statuses(jtrace_session, superuser):
-    all_items = workitems.get_workitems(jtrace_session, superuser, statuses=[1, 3])
+def test_get_workitems_statuses(jtrace_session):
+    all_items = workitems.get_workitems(jtrace_session, statuses=[1, 3])
     assert {item.id for item in all_items} == {1, 2, 3, 4}
 
 
-def test_get_workitems_since(jtrace_session, superuser):
-    all_items = workitems.get_workitems(jtrace_session, superuser, since=days_ago(1))
+def test_get_workitems_since(jtrace_session):
+    all_items = workitems.get_workitems(jtrace_session, since=days_ago(1))
     assert {item.id for item in all_items} == {2, 3}
 
 
-def test_get_workitems_until(jtrace_session, superuser):
-    all_items = workitems.get_workitems(jtrace_session, superuser, until=days_ago(2))
+def test_get_workitems_until(jtrace_session):
+    all_items = workitems.get_workitems(jtrace_session, until=days_ago(2))
     assert {item.id for item in all_items} == {1}
 
 
-def test_get_workitems_masterid(jtrace_session, superuser):
-    all_items = workitems.get_workitems(jtrace_session, superuser, master_id=[4])
+def test_get_workitems_masterid(jtrace_session):
+    all_items = workitems.get_workitems(jtrace_session, master_id=[4])
     assert {item.id for item in all_items} == {1, 2}
 
 
-def test_get_workitem_superuser(jtrace_session, superuser):
-    record = workitems.get_workitem(jtrace_session, 1, superuser)
-    assert record
-    assert record.id == 1
-
-
-def test_get_workitem_user(jtrace_session, test_user):
-    record = workitems.get_workitem(jtrace_session, 1, test_user)
-    assert record
-    assert record.id == 1
-
-
-def test_get_workitem_denied(jtrace_session, test_user):
-    with pytest.raises(PermissionsError):
-        workitems.get_workitem(jtrace_session, 2, test_user)
-
-
-def test_get_workitem_related(jtrace_session, superuser):
-    related = workitems.get_workitems_related_to_workitem(jtrace_session, 1, superuser)
+def test_get_workitem_related(jtrace_session):
+    related = workitems.get_workitems_related_to_workitem(
+        jtrace_session.query(WorkItem).get(1), jtrace_session
+    )
     assert {item.id for item in related} == {2, 3, 4}
 
-    related = workitems.get_workitems_related_to_workitem(jtrace_session, 2, superuser)
+    related = workitems.get_workitems_related_to_workitem(
+        jtrace_session.query(WorkItem).get(2), jtrace_session
+    )
     assert {item.id for item in related} == {1, 3, 4}
 
 
-def test_get_extended_workitem_superuser(jtrace_session, superuser):
+def test_get_extended_workitem_superuser(jtrace_session):
     # Create a new master record
     master_record_999 = MasterRecord(
         id=999,
@@ -95,7 +76,9 @@ def test_get_extended_workitem_superuser(jtrace_session, superuser):
     jtrace_session.add(link_record_999)
     jtrace_session.commit()
 
-    record = workitems.get_extended_workitem(jtrace_session, 1, superuser)
+    record = workitems.extend_workitem(
+        jtrace_session.query(WorkItem).get(1), jtrace_session
+    )
     assert record
     assert record.id == 1
 
@@ -110,17 +93,21 @@ def test_get_extended_workitem_superuser(jtrace_session, superuser):
     assert dest_persons == [4]
 
 
-def test_get_workitem_collection(jtrace_session, superuser):
-    collection = workitems.get_workitem_collection(jtrace_session, 1, superuser)
+def test_get_workitem_collection(jtrace_session):
+    collection = workitems.get_workitem_collection(
+        jtrace_session.query(WorkItem).get(1), jtrace_session
+    )
     assert {item.id for item in collection} == set()
 
-    collection = workitems.get_workitem_collection(jtrace_session, 2, superuser)
+    collection = workitems.get_workitem_collection(
+        jtrace_session.query(WorkItem).get(2), jtrace_session
+    )
     assert {item.id for item in collection} == {3, 4}
 
 
-def test_get_workitems_related_to_message(jtrace_session, errorsdb_session, superuser):
+def test_get_workitems_related_to_message(jtrace_session, errorsdb_session):
     related = workitems.get_workitems_related_to_message(
-        jtrace_session, errorsdb_session, 3, superuser
+        errorsdb_session.query(Message).get(3), jtrace_session
     )
     assert {item.id for item in related} == {3}
 

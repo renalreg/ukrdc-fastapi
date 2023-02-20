@@ -4,8 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from ukrdc_fastapi.dependencies import get_task_tracker
 from ukrdc_fastapi.exceptions import TaskNotFoundError
-from ukrdc_fastapi.tasks.background import TaskTracker, TrackableTaskSchema
 from ukrdc_fastapi.utils.paginate import Page, paginate_sequence
+from ukrdc_fastapi.utils.tasks import TaskTracker, TrackableTaskSchema
 
 router = APIRouter(tags=["Background Tasks"])
 

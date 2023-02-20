@@ -2,6 +2,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, Security
 from mirth_client.mirth import MirthAPI
 from redis import Redis
 from sqlalchemy.orm import Session
+from ukrdc_sqla.ukrdc import PatientRecord
 
 from ukrdc_fastapi.dependencies import (
     get_mirth,
@@ -15,7 +16,7 @@ from ukrdc_fastapi.dependencies.audit import (
     Resource,
     get_auditer,
 )
-from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
+from ukrdc_fastapi.dependencies.auth import Permissions, auth
 from ukrdc_fastapi.query.mirth.export import (
     export_all_to_pkb,
     export_all_to_pv,
@@ -23,7 +24,9 @@ from ukrdc_fastapi.query.mirth.export import (
     export_docs_to_pv,
     export_tests_to_pv,
 )
-from ukrdc_fastapi.tasks.background import TaskTracker, TrackableTaskSchema
+from ukrdc_fastapi.utils.tasks import TaskTracker, TrackableTaskSchema
+
+from .dependencies import _get_patientrecord
 
 router = APIRouter(tags=["Patient Records/Export"])
 
@@ -35,10 +38,8 @@ router = APIRouter(tags=["Patient Records/Export"])
     dependencies=[Security(auth.permission(Permissions.EXPORT_RECORDS))],
 )
 async def patient_export_pv(
-    pid: str,
     background_tasks: BackgroundTasks,
-    user: UKRDCUser = Security(auth.get_user()),
-    ukrdc3: Session = Depends(get_ukrdc3),
+    patient_record: PatientRecord = Depends(_get_patientrecord),
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
     audit: Auditer = Depends(get_auditer),
@@ -47,13 +48,15 @@ async def patient_export_pv(
     """Export a specific patient's data to PV"""
     task = tracker.http_create(
         export_all_to_pv,
-        lock=f"task-export-pv-{pid}",
+        lock=f"task-export-pv-{patient_record.pid}",
         visibility="private",
-        name=f"Export {pid} to PV",
+        name=f"Export {patient_record.pid} to PV",
     )
 
-    background_tasks.add_task(task.tracked, pid, user, ukrdc3, mirth, redis)
-    audit.add_event(Resource.PATIENT_RECORD, pid, RecordOperation.EXPORT_PV)
+    background_tasks.add_task(task.tracked, patient_record, mirth, redis)
+    audit.add_event(
+        Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.EXPORT_PV
+    )
 
     return task.response()
 
@@ -65,10 +68,8 @@ async def patient_export_pv(
     dependencies=[Security(auth.permission(Permissions.EXPORT_RECORDS))],
 )
 async def patient_export_pv_tests(
-    pid: str,
     background_tasks: BackgroundTasks,
-    user: UKRDCUser = Security(auth.get_user()),
-    ukrdc3: Session = Depends(get_ukrdc3),
+    patient_record: PatientRecord = Depends(_get_patientrecord),
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
     audit: Auditer = Depends(get_auditer),
@@ -77,13 +78,15 @@ async def patient_export_pv_tests(
     """Export a specific patient's test data to PV"""
     task = tracker.http_create(
         export_tests_to_pv,
-        lock=f"task-export-pv-tests-{pid}",
+        lock=f"task-export-pv-tests-{patient_record.pid}",
         visibility="private",
-        name=f"Export {pid} tests to PV",
+        name=f"Export {patient_record.pid} tests to PV",
     )
 
-    background_tasks.add_task(task.tracked, pid, user, ukrdc3, mirth, redis)
-    audit.add_event(Resource.PATIENT_RECORD, pid, RecordOperation.EXPORT_PV_TESTS)
+    background_tasks.add_task(task.tracked, patient_record, mirth, redis)
+    audit.add_event(
+        Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.EXPORT_PV_TESTS
+    )
 
     return task.response()
 
@@ -95,10 +98,8 @@ async def patient_export_pv_tests(
     dependencies=[Security(auth.permission(Permissions.EXPORT_RECORDS))],
 )
 async def patient_export_pv_docs(
-    pid: str,
     background_tasks: BackgroundTasks,
-    user: UKRDCUser = Security(auth.get_user()),
-    ukrdc3: Session = Depends(get_ukrdc3),
+    patient_record: PatientRecord = Depends(_get_patientrecord),
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
     audit: Auditer = Depends(get_auditer),
@@ -107,13 +108,15 @@ async def patient_export_pv_docs(
     """Export a specific patient's documents data to PV"""
     task = tracker.http_create(
         export_docs_to_pv,
-        lock=f"task-export-pv-docs-{pid}",
+        lock=f"task-export-pv-docs-{patient_record.pid}",
         visibility="private",
-        name=f"Export {pid} documents to PV",
+        name=f"Export {patient_record.pid} documents to PV",
     )
 
-    background_tasks.add_task(task.tracked, pid, user, ukrdc3, mirth, redis)
-    audit.add_event(Resource.PATIENT_RECORD, pid, RecordOperation.EXPORT_PV_DOCS)
+    background_tasks.add_task(task.tracked, patient_record, mirth, redis)
+    audit.add_event(
+        Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.EXPORT_PV_DOCS
+    )
 
     return task.response()
 
@@ -125,10 +128,8 @@ async def patient_export_pv_docs(
     dependencies=[Security(auth.permission(Permissions.EXPORT_RECORDS))],
 )
 async def patient_export_radar(
-    pid: str,
     background_tasks: BackgroundTasks,
-    user: UKRDCUser = Security(auth.get_user()),
-    ukrdc3: Session = Depends(get_ukrdc3),
+    patient_record: PatientRecord = Depends(_get_patientrecord),
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
     audit: Auditer = Depends(get_auditer),
@@ -137,13 +138,15 @@ async def patient_export_radar(
     """Export a specific patient's data to RaDaR"""
     task = tracker.http_create(
         export_all_to_radar,
-        lock=f"task-export-radar-{pid}",
+        lock=f"task-export-radar-{patient_record.pid}",
         visibility="private",
-        name=f"Export {pid} to RaDaR",
+        name=f"Export {patient_record.pid} to RaDaR",
     )
 
-    background_tasks.add_task(task.tracked, pid, user, ukrdc3, mirth, redis)
-    audit.add_event(Resource.PATIENT_RECORD, pid, RecordOperation.EXPORT_RADAR)
+    background_tasks.add_task(task.tracked, patient_record, mirth, redis)
+    audit.add_event(
+        Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.EXPORT_RADAR
+    )
 
     return task.response()
 
@@ -155,9 +158,8 @@ async def patient_export_radar(
     dependencies=[Security(auth.permission(Permissions.EXPORT_RECORDS))],
 )
 async def patient_export_pkb(
-    pid: str,
     background_tasks: BackgroundTasks,
-    user: UKRDCUser = Security(auth.get_user()),
+    patient_record: PatientRecord = Depends(_get_patientrecord),
     ukrdc3: Session = Depends(get_ukrdc3),
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
@@ -170,12 +172,14 @@ async def patient_export_pkb(
     """
     task = tracker.http_create(
         export_all_to_pkb,
-        lock=f"task-export-pkb-{pid}",
+        lock=f"task-export-pkb-{patient_record.pid}",
         visibility="private",
-        name=f"Export {pid} to PKB",
+        name=f"Export {patient_record.pid} to PKB",
     )
 
-    background_tasks.add_task(task.tracked, pid, user, ukrdc3, mirth, redis)
-    audit.add_event(Resource.PATIENT_RECORD, pid, RecordOperation.EXPORT_PKB)
+    background_tasks.add_task(task.tracked, patient_record, ukrdc3, mirth, redis)
+    audit.add_event(
+        Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.EXPORT_PKB
+    )
 
     return task.response()

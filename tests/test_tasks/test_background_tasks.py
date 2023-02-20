@@ -9,7 +9,7 @@ from pydantic import BaseModel
 
 from ukrdc_fastapi.config import configuration
 from ukrdc_fastapi.dependencies import get_task_tracker
-from ukrdc_fastapi.tasks.background import TaskTracker, TrackableTaskSchema
+from ukrdc_fastapi.utils.tasks import TaskTracker, TrackableTaskSchema
 
 """
 NOTE: 
@@ -42,8 +42,10 @@ async def task_bad(time_to_wait: int):
 
 
 @pytest.fixture(scope="function")
-def app_with_tasks(app):
-    @app.post("/start_task", status_code=202, response_model=TrackableTaskSchema)
+def app_with_tasks(app_authenticated):
+    @app_authenticated.post(
+        "/start_task", status_code=202, response_model=TrackableTaskSchema
+    )
     async def send_task(
         params: TaskSubmitModel,
         background_tasks: BackgroundTasks,
@@ -68,7 +70,7 @@ def app_with_tasks(app):
 
         return task.response()
 
-    return app
+    return app_authenticated
 
 
 @pytest_asyncio.fixture(scope="function")
