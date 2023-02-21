@@ -112,8 +112,8 @@ def populate_basic_stats(statsdb):
 
 def populate_facilities_and_messages(ukrdc3, statsdb, errorsdb):
     create_basic_facility(
-        "TEST_SENDING_FACILITY_1",
-        "TEST_SENDING_FACILITY_1_DESCRIPTION",
+        "TSF01",
+        "TSF01_DESCRIPTION",
         ukrdc3,
         pkb_in=False,
         pkb_out=True,
@@ -121,8 +121,8 @@ def populate_facilities_and_messages(ukrdc3, statsdb, errorsdb):
     )
 
     create_basic_facility(
-        "TEST_SENDING_FACILITY_2",
-        "TEST_SENDING_FACILITY_2_DESCRIPTION",
+        "TSF02",
+        "TSF02_DESCRIPTION",
         ukrdc3,
         pkb_in=False,
         pkb_out=False,
@@ -142,7 +142,7 @@ def populate_facilities_and_messages(ukrdc3, statsdb, errorsdb):
         msg_status="RECEIVED",
         ni=UKRDCID_1,
         filename="FILENAME_3.XML",
-        facility="TEST_SENDING_FACILITY_1",
+        facility="TSF01",
         error=None,
         status="STATUS3",
     )
@@ -155,14 +155,12 @@ def populate_facilities_and_messages(ukrdc3, statsdb, errorsdb):
         msg_status="ERROR",
         ni=UKRDCID_1,
         filename="FILENAME_1.XML",
-        facility="TEST_SENDING_FACILITY_1",
+        facility="TSF01",
         error="ERROR MESSAGE 1",
         status="STATUS1",
     )
 
-    facility_1_ni_1_latest = Latest(
-        facility="TEST_SENDING_FACILITY_1", ni=UKRDCID_1, message_id=2
-    )
+    facility_1_ni_1_latest = Latest(facility="TSF01", ni=UKRDCID_1, message_id=2)
 
     facility_2_message_1 = ErrorMessage(
         id=3,
@@ -172,13 +170,11 @@ def populate_facilities_and_messages(ukrdc3, statsdb, errorsdb):
         msg_status="ERROR",
         ni=UKRDCID_2,
         filename="FILENAME_2.XML",
-        facility="TEST_SENDING_FACILITY_2",
+        facility="TSF02",
         error="ERROR MESSAGE 2",
         status="STATUS2",
     )
-    facility_2_ni_2_latest = Latest(
-        facility="TEST_SENDING_FACILITY_2", ni=UKRDCID_2, message_id=3
-    )
+    facility_2_ni_2_latest = Latest(facility="TSF02", ni=UKRDCID_2, message_id=3)
 
     errorsdb.add(facility_1_message_1)
     errorsdb.add(facility_1_message_2)
@@ -189,9 +185,7 @@ def populate_facilities_and_messages(ukrdc3, statsdb, errorsdb):
 
     errorsdb.commit()
 
-    history_1 = ErrorHistory(
-        facility="TEST_SENDING_FACILITY_1", date=days_ago(1), count=1
-    )
+    history_1 = ErrorHistory(facility="TSF01", date=days_ago(1), count=1)
     statsdb.add(history_1)
 
     statsdb.commit()
@@ -339,10 +333,11 @@ def populate_patient_1_extra(session):
         from_time=days_ago(730),
         to_time=None,
         drug_product_generic="DRUG_PRODUCT_GENERIC",
-        dose_quantity="DOSE_QUANTITY",
+        dose_quantity=1,
         dose_uom_code="DOSE_UOM_CODE",
         dose_uom_description="DOSE_UOM_DESCRIPTION",
         dose_uom_code_std="DOSE_UOM_CODE_STD",
+        repository_update_date=datetime(2020, 3, 16),
     )
     medication_2 = Medication(
         id="MEDICATION2",
@@ -351,10 +346,11 @@ def populate_patient_1_extra(session):
         from_time=days_ago(730),
         to_time=days_ago(-999),
         drug_product_generic="DRUG_PRODUCT_GENERIC_2",
-        dose_quantity="DOSE_QUANTITY_2",
+        dose_quantity=2,
         dose_uom_code="DOSE_UOM_CODE_2",
         dose_uom_description="DOSE_UOM_DESCRIPTION_2",
         dose_uom_code_std="DOSE_UOM_CODE_STD_2",
+        repository_update_date=datetime(2020, 3, 16),
     )
 
     session.add(medication_1)
@@ -367,7 +363,7 @@ def populate_patient_1_extra(session):
         to_time=None,
         admit_reason_code=1,
         admission_source_code_std="CF_RR7_TREATMENT",
-        health_care_facility_code="TEST_SENDING_FACILITY_1",
+        health_care_facility_code="TSF01",
         health_care_facility_code_std="ODS",
     )
     treatment_2 = Treatment(
@@ -377,7 +373,7 @@ def populate_patient_1_extra(session):
         to_time=days_ago(-999),
         admit_reason_code=1,
         admission_source_code_std="CF_RR7_TREATMENT",
-        health_care_facility_code="TEST_SENDING_FACILITY_1",
+        health_care_facility_code="TSF01",
         health_care_facility_code_std="ODS",
     )
 
@@ -386,7 +382,7 @@ def populate_patient_1_extra(session):
 
     laborder_1 = LabOrder(
         id="LABORDER1",
-        entered_at="TEST_SENDING_FACILITY_1",
+        entered_at="TSF01",
         pid=PID_1,
         external_id="EXTERNAL_ID_1",
         order_category="ORDER_CATEGORY",
@@ -401,11 +397,11 @@ def populate_patient_1_extra(session):
         value="VALUE",
         value_units="VALUE_UNITS",
         observation_time=days_ago(365),
-        pre_post="PRE_POST",
+        pre_post="PRE",
     )
     laborder_2 = LabOrder(
         id="LABORDER2",
-        entered_at="TEST_SENDING_FACILITY_2",
+        entered_at="TSF02",
         pid=PID_1,
         external_id="EXTERNAL_ID_2",
         order_category="ORDER_CATEGORY",
@@ -435,7 +431,7 @@ def populate_patient_1_extra(session):
         observation_value="OBSERVATION_VALUE",
         observation_units="OBSERVATION_UNITS",
         observation_time=days_ago(365),
-        pre_post="PRE_POST",
+        pre_post="PRE",
     )
 
     session.add(observation_1)
@@ -503,6 +499,7 @@ def populate_patient_1_extra(session):
         filename="DOCUMENT_PDF_FILENAME.pdf",
         pid=PID_1,
         documenttime=days_ago(365),
+        repository_update_date=datetime(2020, 3, 16),
     )
     document_pdf.stream = MINIMAL_PDF_BYTES
     document_pdf.filetype = "application/pdf"
@@ -511,6 +508,7 @@ def populate_patient_1_extra(session):
         documentname="DOCUMENT_TXT_NAME",
         pid=PID_1,
         documenttime=days_ago(365),
+        repository_update_date=datetime(2020, 3, 16),
         notetext="DOCUMENT_TXT_NOTETEXT",
     )
     session.add(document_pdf)
@@ -527,10 +525,11 @@ def populate_patient_2_extra(session):
         from_time=days_ago(730),
         to_time=days_ago(-999),
         drug_product_generic="DRUG_PRODUCT_GENERIC_3",
-        dose_quantity="DOSE_QUANTITY_3",
+        dose_quantity=3,
         dose_uom_code="DOSE_UOM_CODE_3",
         dose_uom_description="DOSE_UOM_DESCRIPTION_3",
         dose_uom_code_std="DOSE_UOM_CODE_STD_3",
+        repository_update_date=datetime(2020, 3, 16),
     )
 
     session.add(medication_3)
@@ -542,7 +541,7 @@ def populate_patient_2_extra(session):
         to_time=days_ago(-999),
         admit_reason_code=1,
         admission_source_code_std="CF_RR7_TREATMENT",
-        health_care_facility_code="TEST_SENDING_FACILITY_2",
+        health_care_facility_code="TSF02",
         health_care_facility_code_std="ODS",
     )
 
@@ -638,7 +637,7 @@ def populate_all(ukrdc3: Session, jtrace: Session, errorsdb: Session, statsdb: S
         PID_1,
         UKRDCID_1,
         "888888888",
-        "TEST_SENDING_FACILITY_1",
+        "TSF01",
         "UKRDC",
         "00000000A",
         "Star",
@@ -652,7 +651,7 @@ def populate_all(ukrdc3: Session, jtrace: Session, errorsdb: Session, statsdb: S
         PID_2,
         UKRDCID_2,
         "888888887",
-        "TEST_SENDING_FACILITY_2",
+        "TSF02",
         "UKRDC",
         "00000000B",
         "Tentacles",
@@ -666,7 +665,7 @@ def populate_all(ukrdc3: Session, jtrace: Session, errorsdb: Session, statsdb: S
         PID_3,
         UKRDCID_3,
         "888888886",
-        "TEST_SENDING_FACILITY_3",
+        "TSF03",
         "UKRDC",
         "00000000A",
         "FAMILYNAME3",
@@ -680,7 +679,7 @@ def populate_all(ukrdc3: Session, jtrace: Session, errorsdb: Session, statsdb: S
         PID_4,
         UKRDCID_4,
         "888888885",
-        "TEST_SENDING_FACILITY_1",
+        "TSF01",
         "UKRDC",
         "00000000B",
         "FAMILYNAME4",
@@ -981,7 +980,7 @@ async def app_authenticated(app):
             "scp": ["openid", "profile", "email", "offline_access"],
             "org.ukrdc.permissions": [
                 *Permissions.all()[:-1],
-                "ukrdc:unit:TEST_SENDING_FACILITY_1",
+                "ukrdc:unit:TSF01",
             ],
         }
 
@@ -1090,7 +1089,7 @@ def user():
         id="TEST_ID",
         cid="PYTEST",
         email="TEST@UKRDC_FASTAPI",
-        permissions=[*Permissions.all()[:-1], "ukrdc:unit:TEST_SENDING_FACILITY_1"],
+        permissions=[*Permissions.all()[:-1], "ukrdc:unit:TSF01"],
         scopes=["openid", "profile", "email", "offline_access"],
     )
 

@@ -13,15 +13,15 @@ TEST_PID = str(TEST_ID)
 
 # SendingFacility/SendingExtract combinations that should cause any export to fail
 FAIL_SF_SE = [
-    ("NHSBT", "SENDING_EXTRACT"),
+    ("NHSBT", "SE"),
     ("PV", "UKRDC"),
     ("PKB", "UKRDC"),
-    ("UKRR", "SENDING_EXTRACT"),
-    ("SENDING_FACILITY", "RADAR"),
+    ("UKRR", "SE"),
+    ("SF", "RADAR"),
     ("TRACING", "UKRDC"),
-    ("SENDING_FACILITY", "PVMIG"),
-    ("SENDING_FACILITY", "HSMIG"),
-    ("SENDING_FACILITY", "SURVEY"),
+    ("SF", "PVMIG"),
+    ("SF", "HSMIG"),
+    ("SF", "SURVEY"),
 ]
 
 
@@ -41,7 +41,7 @@ def _commit_test_patient(ukrdc3, jtrace, sending_facility: str, sending_extract:
         "9434765870",  # NHS
         sending_facility,
         sending_extract,
-        f"PYTEST:EXPORT:{TEST_ID}",
+        str(TEST_ID),
         "SURNAME_EXPORT",
         "NAME_EXPORT",
         datetime(1950, 1, 1),

@@ -9,8 +9,8 @@ from ukrdc_fastapi.query import patientrecords
 
 def _create_related_records(ukrdc3_session, jtrace_session):
     ukrdcid = "999999511"
-    f1 = "TEST_SENDING_FACILITY_1"
-    f2 = "TEST_SENDING_FACILITY_2"
+    f1 = "TSF01"
+    f2 = "TSF02"
     dob = datetime(1975, 10, 9)
     nhs = "888888885"
     localno = "00000000B"

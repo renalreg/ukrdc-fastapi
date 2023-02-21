@@ -4,7 +4,7 @@ from ukrdc_fastapi.models.audit import AuditEvent
 
 async def test_facility_messages(client_superuser, audit_session):
     response = await client_superuser.get(
-        f"{configuration.base_url}/facilities/TEST_SENDING_FACILITY_1/patients_latest_errors"
+        f"{configuration.base_url}/facilities/TSF01/patients_latest_errors"
     )
     assert response.status_code == 200
 
@@ -16,7 +16,7 @@ async def test_facility_messages(client_superuser, audit_session):
 
     assert event.resource == "FACILITY"
     assert event.operation == "READ"
-    assert event.resource_id == "TEST_SENDING_FACILITY_1"
+    assert event.resource_id == "TSF01"
     assert event.parent_id == None
 
     child_event = event.children[0]

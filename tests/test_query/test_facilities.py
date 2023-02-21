@@ -25,8 +25,8 @@ def test_get_facilities(ukrdc3_session, errorsdb_session, redis_session):
     )
     # Superuser should see all facilities
     assert {facil.id for facil in all_facils} == {
-        "TEST_SENDING_FACILITY_1",
-        "TEST_SENDING_FACILITY_2",
+        "TSF01",
+        "TSF02",
     }
 
 
@@ -46,14 +46,12 @@ def test_get_facilities_cached(ukrdc3_session, errorsdb_session, redis_session):
     )
     # Superuser should see all facilities
     assert {facil.id for facil in all_facils} == {
-        "TEST_SENDING_FACILITY_1",
-        "TEST_SENDING_FACILITY_2",
+        "TSF01",
+        "TSF02",
     }
 
 
-@pytest.mark.parametrize(
-    "facility_code", ["TEST_SENDING_FACILITY_1", "TEST_SENDING_FACILITY_2"]
-)
+@pytest.mark.parametrize("facility_code", ["TSF01", "TSF02"])
 def test_get_facility(facility_code, ukrdc3_session, errorsdb_session):
     facility = get_facility(
         ukrdc3_session,
@@ -66,14 +64,14 @@ def test_get_facility(facility_code, ukrdc3_session, errorsdb_session):
 
 
 def test_get_facility_data_flow(ukrdc3_session, errorsdb_session):
-    facility_object = ukrdc3_session.query(Facility).get("TEST_SENDING_FACILITY_1")
+    facility_object = ukrdc3_session.query(Facility).get("TSF01")
     facility_object.pkb_msg_exclusions = ["MDM_T02_CP", "MDM_T02_DOC"]
     ukrdc3_session.commit()
 
     facility = get_facility(
         ukrdc3_session,
         errorsdb_session,
-        "TEST_SENDING_FACILITY_1",
+        "TSF01",
     )
 
     assert not facility.data_flow.pkb_in
@@ -82,9 +80,7 @@ def test_get_facility_data_flow(ukrdc3_session, errorsdb_session):
 
 
 def test_get_facility_history(ukrdc3_session, errorsdb_session):
-    test_code = Code(
-        code="TEST_SENDING_FACILITY_1", description="Test sending facility 1"
-    )
+    test_code = Code(code="TSF01", description="Test sending facility 1")
 
     history = get_errors_history(
         ukrdc3_session,
@@ -97,9 +93,7 @@ def test_get_facility_history(ukrdc3_session, errorsdb_session):
 
 
 def test_get_facility_history_range(ukrdc3_session, errorsdb_session):
-    test_code = Code(
-        code="TEST_SENDING_FACILITY_1", description="Test sending facility 1"
-    )
+    test_code = Code(code="TSF01", description="Test sending facility 1")
 
     history = get_errors_history(
         ukrdc3_session,
@@ -129,7 +123,7 @@ def test_get_facility_history_range(ukrdc3_session, errorsdb_session):
 
 def test_get_patients_latest_errors(ukrdc3_session, errorsdb_session):
     messages = get_patients_latest_errors(
-        ukrdc3_session, errorsdb_session, "TEST_SENDING_FACILITY_1"
+        ukrdc3_session, errorsdb_session, "TSF01"
     ).all()
     assert len(messages) == 1
     assert messages[0].id == 2
@@ -138,6 +132,6 @@ def test_get_patients_latest_errors(ukrdc3_session, errorsdb_session):
 def test_get_facility_extracts(ukrdc3_session):
     extracts = get_facility_extracts(
         ukrdc3_session,
-        "TEST_SENDING_FACILITY_1",
+        "TSF01",
     )
     assert extracts.ukrdc == 2

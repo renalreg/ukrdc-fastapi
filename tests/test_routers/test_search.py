@@ -26,11 +26,11 @@ def _commit_extra_patients(ukrdc3, jtrace):
         ukrdcid = 100000000 + index
 
         dob = datetime(1950, 1, (index + 11) % 28)
-        localid = f"PYTEST:SEARCH:{number}"
+        localid = str(number)
 
-        sending_facility = f"TEST_SENDING_FACILITY_{index + BUMPER}"
-        sending_facility_desc = f"TEST_SENDING_FACILITY_{index + BUMPER}_DESCRIPTION"
-        sending_extract = f"TEST_SENDING_EXTRACT_{index + BUMPER}"
+        sending_facility = f"TSF{index + BUMPER}"
+        sending_facility_desc = f"TSF{index + BUMPER}_DESCRIPTION"
+        sending_extract = f"TSE{index + BUMPER}"
 
         create_basic_facility(
             sending_facility,
@@ -122,7 +122,7 @@ async def test_search_facility_superuser(
 
     # Search for each item individually
     for index, _ in enumerate(TEST_NUMBERS):
-        url = f"{configuration.base_url}/search?facility=TEST_SENDING_FACILITY_{index + BUMPER}"
+        url = f"{configuration.base_url}/search?facility=TSF{index + BUMPER}"
 
         response = await client_superuser.get(url)
         assert response.status_code == 200
@@ -206,7 +206,7 @@ async def test_search_implicit_facility(
 
     # Search for each item individually
     for index, _ in enumerate(TEST_NUMBERS):
-        url = f"{configuration.base_url}/search?search=TEST_SENDING_FACILITY_{index + BUMPER}"
+        url = f"{configuration.base_url}/search?search=TSF{index + BUMPER}"
 
         response = await client_superuser.get(url)
         assert response.status_code == 200
@@ -216,13 +216,14 @@ async def test_search_implicit_facility(
 
 
 async def test_search_permissions(client_authenticated):
-    url = f"{configuration.base_url}/search?facility=TEST_SENDING_FACILITY_1"
+    # Test permissions using the conftest test data
+    url = f"{configuration.base_url}/search?facility=TSF01"
     response = await client_authenticated.get(url)
     assert response.status_code == 200
     returned_ids = {item["id"] for item in response.json()["items"]}
     assert returned_ids == {1, 4, 101, 104}
 
-    url = f"{configuration.base_url}/search?facility=TEST_SENDING_FACILITY_2"
+    url = f"{configuration.base_url}/search?facility=TSF02"
     response = await client_authenticated.get(url)
     assert response.status_code == 200
     returned_ids = {item["id"] for item in response.json()["items"]}
@@ -230,13 +231,14 @@ async def test_search_permissions(client_authenticated):
 
 
 async def test_search_permissions_superuser(client_superuser):
-    url = f"{configuration.base_url}/search?facility=TEST_SENDING_FACILITY_1"
+    # Test permissions using the conftest test data
+    url = f"{configuration.base_url}/search?facility=TSF01"
     response = await client_superuser.get(url)
     assert response.status_code == 200
     returned_ids = {item["id"] for item in response.json()["items"]}
     assert returned_ids == {1, 4, 101, 104}
 
-    url = f"{configuration.base_url}/search?facility=TEST_SENDING_FACILITY_2"
+    url = f"{configuration.base_url}/search?facility=TSF02"
     response = await client_superuser.get(url)
     assert response.status_code == 200
     returned_ids = {item["id"] for item in response.json()["items"]}
