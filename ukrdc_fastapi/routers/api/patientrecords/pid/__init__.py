@@ -152,7 +152,7 @@ def patient_related(
             parent=record_audit,
         )
 
-    return related
+    return related.all()
 
 
 # Internal resources
