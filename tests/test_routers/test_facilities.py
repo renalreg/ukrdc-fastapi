@@ -9,7 +9,7 @@ async def test_facilities(client_authenticated):
     )
     ids = {item.get("id") for item in response.json()}
     assert ids == {
-        "TEST_SENDING_FACILITY_1",
+        "TSF01",
     }
 
 
@@ -19,29 +19,29 @@ async def test_facilities_superuser(client_superuser):
     )
     ids = {item.get("id") for item in response.json()}
     assert ids == {
-        "TEST_SENDING_FACILITY_1",
-        "TEST_SENDING_FACILITY_2",
+        "TSF01",
+        "TSF02",
     }
 
 
 async def test_facility_detail(client_authenticated):
     response = await client_authenticated.get(
-        f"{configuration.base_url}/facilities/TEST_SENDING_FACILITY_1"
+        f"{configuration.base_url}/facilities/TSF01"
     )
     json = response.json()
-    assert json["id"] == "TEST_SENDING_FACILITY_1"
+    assert json["id"] == "TSF01"
 
 
 async def test_facility_detail_denied(client_authenticated):
     response = await client_authenticated.get(
-        f"{configuration.base_url}/facilities/TEST_SENDING_FACILITY_2"
+        f"{configuration.base_url}/facilities/TSF02"
     )
     assert response.status_code == 403
 
 
 async def test_facility_error_history(client_authenticated):
     response = await client_authenticated.get(
-        f"{configuration.base_url}/facilities/TEST_SENDING_FACILITY_1/error_history"
+        f"{configuration.base_url}/facilities/TSF01/error_history"
     )
     json = response.json()
     assert len(json) == 365
@@ -50,14 +50,14 @@ async def test_facility_error_history(client_authenticated):
 
 async def test_facility_error_history_denied(client_authenticated):
     response = await client_authenticated.get(
-        f"{configuration.base_url}/facilities/TEST_SENDING_FACILITY_2/error_history"
+        f"{configuration.base_url}/facilities/TSF02/error_history"
     )
     assert response.status_code == 403
 
 
 async def test_facility_patients_latest_errors(client_authenticated):
     response = await client_authenticated.get(
-        f"{configuration.base_url}/facilities/TEST_SENDING_FACILITY_1/patients_latest_errors"
+        f"{configuration.base_url}/facilities/TSF01/patients_latest_errors"
     )
     json = response.json()
     messages = json.get("items")
@@ -68,7 +68,7 @@ async def test_facility_patients_latest_errors(client_authenticated):
 
 async def test_facility_patients_latest_errors_denied(client_authenticated):
     response = await client_authenticated.get(
-        f"{configuration.base_url}/facilities/TEST_SENDING_FACILITY_2/patients_latest_errors"
+        f"{configuration.base_url}/facilities/TSF02/patients_latest_errors"
     )
     assert response.status_code == 403
 
@@ -78,7 +78,7 @@ async def test_facility_stats_demographics(client_superuser):
     responses = set()
     for _ in range(2):
         response = await client_superuser.get(
-            f"{configuration.base_url}/facilities/TEST_SENDING_FACILITY_1/stats/demographics"
+            f"{configuration.base_url}/facilities/TSF01/stats/demographics"
         )
         assert response.status_code == 200
         responses.add(response.text)
@@ -88,7 +88,7 @@ async def test_facility_stats_demographics(client_superuser):
 
 async def test_facility_stats_demographics_denied(client_authenticated):
     response = await client_authenticated.get(
-        f"{configuration.base_url}/facilities/TEST_SENDING_FACILITY_2/stats/demographics"
+        f"{configuration.base_url}/facilities/TSF02/stats/demographics"
     )
     assert response.status_code == 403
 
@@ -98,7 +98,7 @@ async def test_facility_stats_dialysis(client_superuser):
     responses = set()
     for _ in range(2):
         response = await client_superuser.get(
-            f"{configuration.base_url}/facilities/TEST_SENDING_FACILITY_1/stats/dialysis"
+            f"{configuration.base_url}/facilities/TSF01/stats/dialysis"
         )
         assert response.status_code == 200
         responses.add(response.text)
@@ -108,6 +108,6 @@ async def test_facility_stats_dialysis(client_superuser):
 
 async def test_facility_stats_dialysis_denied(client_authenticated):
     response = await client_authenticated.get(
-        f"{configuration.base_url}/facilities/TEST_SENDING_FACILITY_2/stats/dialysis"
+        f"{configuration.base_url}/facilities/TSF02/stats/dialysis"
     )
     assert response.status_code == 403

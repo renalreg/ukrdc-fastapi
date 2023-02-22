@@ -36,7 +36,7 @@ def test_get_errors_facility(errorsdb_session):
     all_errors = messages.get_messages(
         errorsdb_session,
         since=days_ago(730),
-        facility="TEST_SENDING_FACILITY_2",
+        facility="TSF02",
     )
     assert {error.id for error in all_errors} == {3}
 

@@ -7,8 +7,8 @@ from ..utils import days_ago
 def test_get_codes(ukrdc3_session):
     code_list = codes.get_codes(ukrdc3_session).all()
     assert {code.code for code in code_list} == {
-        "TEST_SENDING_FACILITY_1",
-        "TEST_SENDING_FACILITY_2",
+        "TSF01",
+        "TSF02",
         "CODE_1",
         "CODE_2",
         "CODE_3",
@@ -19,8 +19,8 @@ def test_get_codes(ukrdc3_session):
 def test_get_codes_filter_standard(ukrdc3_session):
     code_list = codes.get_codes(ukrdc3_session, coding_standard=["RR1+"]).all()
     assert {code.code for code in code_list} == {
-        "TEST_SENDING_FACILITY_1",
-        "TEST_SENDING_FACILITY_2",
+        "TSF01",
+        "TSF02",
     }
 
     code_list = codes.get_codes(
@@ -47,7 +47,7 @@ def test_get_codes_filter_standard_and_search(ukrdc3_session):
         ukrdc3_session, coding_standard=["RR1+"], search="1"
     ).all()
     assert {code.code for code in code_list} == {
-        "TEST_SENDING_FACILITY_1",
+        "TSF01",
     }
 
 
