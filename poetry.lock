@@ -588,14 +588,14 @@ test = ["pytest (>=6)"]
 
 [[package]]
 name = "fakeredis"
-version = "2.9.0"
+version = "2.9.2"
 description = "Fake implementation of redis API for testing purposes."
 category = "dev"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "fakeredis-2.9.0-py3-none-any.whl", hash = "sha256:fc0c48216bb40a01e51b002c70966cd17242cf7406e7ced4ff85235f4971d096"},
-    {file = "fakeredis-2.9.0.tar.gz", hash = "sha256:ea29b10277efce23ade22ef33ccd273e365db658313ceace299e4027b066bbd6"},
+    {file = "fakeredis-2.9.2-py3-none-any.whl", hash = "sha256:35962e0ded572302c4461ad1a40308259cc10b7c546b13228e6d7880bf7b74bb"},
+    {file = "fakeredis-2.9.2.tar.gz", hash = "sha256:3bcc2b5c10d5e03cc5b46697d77c651f48391b506ff931576d2869c7549e2e25"},
 ]
 
 [package.dependencies]
@@ -2030,14 +2030,14 @@ tornado = ["tornado (>=5)"]
 
 [[package]]
 name = "setuptools"
-version = "67.3.2"
+version = "67.4.0"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "setuptools-67.3.2-py3-none-any.whl", hash = "sha256:bb6d8e508de562768f2027902929f8523932fcd1fb784e6d573d2cafac995a48"},
-    {file = "setuptools-67.3.2.tar.gz", hash = "sha256:95f00380ef2ffa41d9bba85d95b27689d923c93dfbafed4aecd7cf988a25e012"},
+    {file = "setuptools-67.4.0-py3-none-any.whl", hash = "sha256:f106dee1b506dee5102cc3f3e9e68137bbad6d47b616be7991714b0c62204251"},
+    {file = "setuptools-67.4.0.tar.gz", hash = "sha256:e5fd0a713141a4a105412233c63dc4e17ba0090c8e8334594ac790ec97792330"},
 ]
 
 [package.extras]
@@ -2273,14 +2273,14 @@ files = [
 
 [[package]]
 name = "tox"
-version = "4.4.5"
+version = "4.4.6"
 description = "tox is a generic virtualenv management and test command line tool"
 category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "tox-4.4.5-py3-none-any.whl", hash = "sha256:1081864f1a1393ffa11ebe9beaa280349020579310d217a594a4e7b6124c5425"},
-    {file = "tox-4.4.5.tar.gz", hash = "sha256:f9bc83c5da8666baa2a4d4e884bbbda124fe646e4b1c0e412949cecc2b6e8f90"},
+    {file = "tox-4.4.6-py3-none-any.whl", hash = "sha256:e3d4a65852f029e5ba441a01824d2d839d30bb8fb071635ef9cb53952698e6bf"},
+    {file = "tox-4.4.6.tar.gz", hash = "sha256:9786671d23b673ace7499c602c5746e2a225d1ecd9d9f624d0461303f40bd93b"},
 ]
 
 [package.dependencies]
@@ -2614,4 +2614,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9" 
-content-hash = "4cf86537a332dfbc22f0bd0065e44cf3b1e726bbed9b4a71f5bcd70f2504dc20"
+content-hash = "da131ff5d2936c04d0033d7757ed185d3688218b609d5c91c57b258614409340"
