@@ -12,7 +12,7 @@ from ukrdc_fastapi.dependencies.audit import (
     Resource,
     get_auditer,
 )
-from ukrdc_fastapi.dependencies.auth import UKRDCUser, auth
+from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.dependencies.cache import FacilityCachePrefix, facility_cache_factory
 from ukrdc_fastapi.permissions.facilities import (
     apply_facility_list_permissions,
@@ -101,7 +101,11 @@ def facility(
     return FacilityDetailsSchema(**cache.get())
 
 
-@router.get("/{code}/patients_latest_errors", response_model=Page[MessageSchema])
+@router.get(
+    "/{code}/patients_latest_errors",
+    response_model=Page[MessageSchema],
+    dependencies=[Security(auth.permission(Permissions.READ_MESSAGES))],
+)
 def facility_patients_latest_errors(
     code: str,
     ukrdc3: Session = Depends(get_ukrdc3),
