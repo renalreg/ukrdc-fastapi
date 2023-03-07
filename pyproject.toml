@@ -33,7 +33,7 @@ black = {version = "^23.1", allow-prereleases = true}
 coverage = {extras = ["toml"], version = "^7.0"}
 fakeredis = "^2.9"
 isort = "^5.11.2"
-mypy = "^1.0"
+mypy = "^1.1"
 pylint = "^2.15.9"
 pytest = "^7.2"
 pytest-asyncio = "^0.20.1"
