@@ -669,19 +669,19 @@ sqlalchemy = ">=1.3.12,<2.0.0"
 
 [[package]]
 name = "filelock"
-version = "3.9.0"
+version = "3.9.1"
 description = "A platform independent file lock."
 category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "filelock-3.9.0-py3-none-any.whl", hash = "sha256:f58d535af89bb9ad5cd4df046f741f8553a418c01a7856bf0d173bbc9f6bd16d"},
-    {file = "filelock-3.9.0.tar.gz", hash = "sha256:7b319f24340b51f55a2bf7a12ac0755a9b03e718311dac567a0f4f7fabd2f5de"},
+    {file = "filelock-3.9.1-py3-none-any.whl", hash = "sha256:4427cdda14a1c68e264845142842d6de2d0fa2c15ba31571a3d9c9a1ec9d191c"},
+    {file = "filelock-3.9.1.tar.gz", hash = "sha256:e393782f76abea324dee598d2ea145b857a20df0e0ee4f80fcf35e72a341d2c7"},
 ]
 
 [package.extras]
-docs = ["furo (>=2022.12.7)", "sphinx (>=5.3)", "sphinx-autodoc-typehints (>=1.19.5)"]
-testing = ["covdefaults (>=2.2.2)", "coverage (>=7.0.1)", "pytest (>=7.2)", "pytest-cov (>=4)", "pytest-timeout (>=2.1)"]
+docs = ["furo (>=2022.12.7)", "sphinx (>=6.1.3)", "sphinx-autodoc-typehints (>=1.22,!=1.23.4)"]
+testing = ["covdefaults (>=2.3)", "coverage (>=7.2.1)", "pytest (>=7.2.2)", "pytest-cov (>=4)", "pytest-timeout (>=2.1)"]
 
 [[package]]
 name = "freezegun"
@@ -2388,14 +2388,14 @@ SQLAlchemy = ">=1.4.25,<2.0.0"
 
 [[package]]
 name = "ukrdc-stats"
-version = "0.4.2"
+version = "1.1.0"
 description = "A package to produce stats from the ukrdc database to be displayed on the dashboard"
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "ukrdc_stats-0.4.2-py3-none-any.whl", hash = "sha256:b063c6d94e192bdb62478bafdae13b6c8cebc50afe5e6b18e0efd3a13da84f28"},
-    {file = "ukrdc_stats-0.4.2.tar.gz", hash = "sha256:902ef5d8d9872b9df1dd7d7fe7580827ec62b5910aae8957ec0e2b2bf23130e8"},
+    {file = "ukrdc_stats-1.1.0-py3-none-any.whl", hash = "sha256:4346121f83c33e7d38cefd7f7536116b54912187f91a8265066cd929ebbec58b"},
+    {file = "ukrdc_stats-1.1.0.tar.gz", hash = "sha256:69980de9282fae18382695590e8067af00c8104e58d813dd1bf10e73b2c787bd"},
 ]
 
 [package.dependencies]
@@ -2685,4 +2685,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9" 
-content-hash = "b3a62821bba1b59f3d5564901c1c520b673320a1ad6c5a221bfcd97f9f9c0836"
+content-hash = "07bf5d5cfe31b1fc498e79c57a943856f6262053d4b04a3d4579c7c4104d2b94"
