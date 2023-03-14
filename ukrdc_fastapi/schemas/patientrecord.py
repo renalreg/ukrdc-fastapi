@@ -235,7 +235,7 @@ class PatientRecordSchema(PatientRecordSummarySchema):
         and inject it's ID into the masterId field before returning
         a validated PatientRecordSchema object.
         """
-        record_dict = cls.from_orm(patient_record).dict()
+        record_dict = cls.from_orm(patient_record).dict()  # type: ignore  # mypy bug, see https://github.com/pydantic/pydantic/issues/5187
         if not record_dict.get("masterId"):
             master_record = (
                 jtrace.query(MasterRecord)
