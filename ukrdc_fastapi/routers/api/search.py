@@ -76,9 +76,9 @@ def search_masterrecords(
     matched_records = apply_masterrecord_list_permissions(matched_records, user)
 
     # Paginate results
-    page: Page = paginate(matched_records)  # type: ignore
+    page: Page[MasterRecord] = paginate(matched_records)  # type: ignore
 
     for record in page.items:
-        audit.add_event(Resource.MASTER_RECORD, record.id, AuditOperation.READ)
+        audit.add_event(Resource.MASTER_RECORD, record.id, AuditOperation.READ)  # type: ignore  # MyPy doesn't like the generic page.item type T being used here
 
     return page
