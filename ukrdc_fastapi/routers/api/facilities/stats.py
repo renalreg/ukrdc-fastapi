@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Security
 from sqlalchemy.orm import Session
 from ukrdc_stats.calculators.demographics import DemographicsStats
-from ukrdc_stats.calculators.dialysis import DialysisStats
+from ukrdc_stats.calculators.dialysis import UnitLevelDialysisStats
 
 from ukrdc_fastapi.config import settings
 from ukrdc_fastapi.dependencies import get_ukrdc3
@@ -44,7 +44,7 @@ def facility_stats_demographics(
     return DemographicsStats(**cache.get())
 
 
-@router.get("/dialysis", response_model=DialysisStats)
+@router.get("/dialysis", response_model=UnitLevelDialysisStats)
 def facility_stats_dialysis(
     code: str,
     ukrdc3: Session = Depends(get_ukrdc3),
@@ -68,4 +68,4 @@ def facility_stats_dialysis(
     cache.prepare_response()
 
     # Fetch the cached value, coerse into the correct type, and return
-    return DialysisStats(**cache.get())
+    return UnitLevelDialysisStats(**cache.get())

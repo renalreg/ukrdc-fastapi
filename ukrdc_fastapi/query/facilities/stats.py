@@ -7,7 +7,10 @@ from ukrdc_stats.calculators.demographics import (
     DemographicsStats,
     DemographicStatsCalculator,
 )
-from ukrdc_stats.calculators.dialysis import DialysisStats, DialysisStatsCalculator
+from ukrdc_stats.calculators.dialysis import (
+    DialysisStatsCalculator,
+    UnitLevelDialysisStats,
+)
 
 from ukrdc_fastapi.exceptions import MissingFacilityError
 
@@ -40,7 +43,7 @@ def get_facility_dialysis_stats(
     facility_code: str,
     since: Optional[datetime.datetime] = None,
     until: Optional[datetime.datetime] = None,
-) -> DialysisStats:
+) -> UnitLevelDialysisStats:
     """Extract dialysis statistics for all UKRDC/RDA records in a given facility
 
     Args:
