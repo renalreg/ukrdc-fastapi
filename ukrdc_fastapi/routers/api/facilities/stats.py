@@ -53,7 +53,7 @@ def facility_stats_dialysis(
         facility_cache_factory(FacilityCachePrefix.DIALYSIS)
     ),
 ):
-    """Retreive demographic statistics for a given facility"""
+    """Retreive KRT statistics for a given facility"""
     assert_facility_permission(code, user)
 
     # If no cached value exists, or the cached value has expired
