@@ -93,12 +93,12 @@ async def test_facility_stats_demographics_denied(client_authenticated):
     assert response.status_code == 403
 
 
-async def test_facility_stats_dialysis(client_superuser):
+async def test_facility_stats_krt(client_superuser):
     # Repeat to ensure cached response matches
     responses = set()
     for _ in range(2):
         response = await client_superuser.get(
-            f"{configuration.base_url}/facilities/TSF01/stats/dialysis"
+            f"{configuration.base_url}/facilities/TSF01/stats/krt"
         )
         assert response.status_code == 200
         responses.add(response.text)
@@ -106,8 +106,8 @@ async def test_facility_stats_dialysis(client_superuser):
     assert len(responses) == 1
 
 
-async def test_facility_stats_dialysis_denied(client_authenticated):
+async def test_facility_stats_krt_denied(client_authenticated):
     response = await client_authenticated.get(
-        f"{configuration.base_url}/facilities/TSF02/stats/dialysis"
+        f"{configuration.base_url}/facilities/TSF02/stats/krt"
     )
     assert response.status_code == 403

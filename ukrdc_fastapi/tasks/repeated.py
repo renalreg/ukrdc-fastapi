@@ -96,7 +96,7 @@ async def precalculate_facility_stats_dialysis() -> None:
             for facility_code in facilities_to_cache:
                 cache = BasicCache(
                     get_redis(),
-                    DynamicCacheKey(FacilityCachePrefix.DIALYSIS, facility_code),
+                    DynamicCacheKey(FacilityCachePrefix.KRT, facility_code),
                 )
                 if not cache.exists:
                     try:

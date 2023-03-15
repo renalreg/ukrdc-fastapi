@@ -5,7 +5,7 @@ name = "ukrdc-fastapi"
 packages = [
   {include = "ukrdc_fastapi"},
 ]
-version = "2.3.1"
+version = "3.0.0"
 
 [tool.poetry.dependencies]
 SQLAlchemy = "^1.4.42" 
@@ -23,7 +23,7 @@ redis = "^4.3.3"
 sentry-sdk = "^1.16" 
 single-source = "^0.3.0" 
 ukrdc-sqla = "2.1.0" 
-ukrdc-stats = "^0.4.2" 
+ukrdc-stats = "^1.1.0" 
 ukrdc-xsdata = "^3.3.0" 
 uvicorn = "^0.21.0" 
 

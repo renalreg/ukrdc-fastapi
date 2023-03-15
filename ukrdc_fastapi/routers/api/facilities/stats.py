@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Security
 from sqlalchemy.orm import Session
 from ukrdc_stats.calculators.demographics import DemographicsStats
-from ukrdc_stats.calculators.dialysis import DialysisStats
+from ukrdc_stats.calculators.dialysis import UnitLevelDialysisStats
 
 from ukrdc_fastapi.config import settings
 from ukrdc_fastapi.dependencies import get_ukrdc3
@@ -44,16 +44,14 @@ def facility_stats_demographics(
     return DemographicsStats(**cache.get())
 
 
-@router.get("/dialysis", response_model=DialysisStats)
-def facility_stats_dialysis(
+@router.get("/krt", response_model=UnitLevelDialysisStats)
+def facility_stats_krt(
     code: str,
     ukrdc3: Session = Depends(get_ukrdc3),
     user: UKRDCUser = Security(auth.get_user()),
-    cache: ResponseCache = Depends(
-        facility_cache_factory(FacilityCachePrefix.DIALYSIS)
-    ),
+    cache: ResponseCache = Depends(facility_cache_factory(FacilityCachePrefix.KRT)),
 ):
-    """Retreive demographic statistics for a given facility"""
+    """Retreive KRT statistics for a given facility"""
     assert_facility_permission(code, user)
 
     # If no cached value exists, or the cached value has expired
@@ -68,4 +66,4 @@ def facility_stats_dialysis(
     cache.prepare_response()
 
     # Fetch the cached value, coerse into the correct type, and return
-    return DialysisStats(**cache.get())
+    return UnitLevelDialysisStats(**cache.get())

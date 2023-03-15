@@ -50,7 +50,7 @@ class FacilityCachePrefix(CachePrefix):
     ROOT = "facilities:root"
     EXTRACTS = "facilities:extracts"
     DEMOGRAPHICS = "facilities:stats:demographics"
-    DIALYSIS = "facilities:stats:dialysis"
+    KRT = "facilities:stats:krt"
 
 
 class TestCachePrefix(CachePrefix):
