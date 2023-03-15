@@ -44,14 +44,12 @@ def facility_stats_demographics(
     return DemographicsStats(**cache.get())
 
 
-@router.get("/dialysis", response_model=UnitLevelDialysisStats)
-def facility_stats_dialysis(
+@router.get("/krt", response_model=UnitLevelDialysisStats)
+def facility_stats_krt(
     code: str,
     ukrdc3: Session = Depends(get_ukrdc3),
     user: UKRDCUser = Security(auth.get_user()),
-    cache: ResponseCache = Depends(
-        facility_cache_factory(FacilityCachePrefix.DIALYSIS)
-    ),
+    cache: ResponseCache = Depends(facility_cache_factory(FacilityCachePrefix.KRT)),
 ):
     """Retreive KRT statistics for a given facility"""
     assert_facility_permission(code, user)
