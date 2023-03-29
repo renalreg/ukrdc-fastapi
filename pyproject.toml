@@ -29,7 +29,7 @@ uvicorn = "^0.21.0"
 
 [tool.poetry.dev-dependencies]
 bandit = "^1.7.4"
-black = {version = "^23.1", allow-prereleases = true}
+black = {version = "^23.3", allow-prereleases = true}
 coverage = {extras = ["toml"], version = "^7.2"}
 fakeredis = "^2.10"
 isort = "^5.11.2"
