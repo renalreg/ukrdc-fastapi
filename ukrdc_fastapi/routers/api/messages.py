@@ -122,7 +122,7 @@ async def message_source(
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive detailed information about a specific error message"""
-    message_source_obj = get_message_source(message_obj, mirth)
+    message_source_obj = await get_message_source(message_obj, mirth)
 
     # Add audit events
     audit.add_event(Resource.MESSAGE, message_obj.id, MessageOperation.READ_SOURCE)
