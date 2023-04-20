@@ -9,7 +9,7 @@ def get_facility_report_cc001(
     facility_code: str,
 ) -> Query:
     """
-    Data Manager Report 001:
+    Custom Cohort Report 001:
         No treatment or programme membership to explain presence in UKRDC
 
     Args:
