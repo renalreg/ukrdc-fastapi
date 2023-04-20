@@ -52,8 +52,6 @@ class FacilityCachePrefix(CachePrefix):
     DEMOGRAPHICS = "facilities:stats:demographics"
     KRT = "facilities:stats:krt"
 
-    REPORT_DM001 = "facilities:reports:dm001"
-
 
 class TestCachePrefix(CachePrefix):
     """Key prefixes for internal test cache keys"""
