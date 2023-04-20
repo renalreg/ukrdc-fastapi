@@ -1,7 +1,7 @@
 import datetime
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Security
+from fastapi import APIRouter, Depends, Security
 from redis import Redis
 from sqlalchemy.orm import Session
 

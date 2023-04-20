@@ -98,9 +98,7 @@ def get_multiple_ukrdcids(
     record_groups = {
         item.master_id: item
         for item in statsdb.query(MultipleUKRDCID).filter(
-            # pylint: disable=singleton-comparison
-            MultipleUKRDCID.resolved
-            == False
+            MultipleUKRDCID.resolved == False  # noqa: E712
         )
     }
 
