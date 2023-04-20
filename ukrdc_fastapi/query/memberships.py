@@ -20,9 +20,7 @@ def get_active_memberships_for_patientrecord(
         ukrdc3.query(ProgramMembership)
         .join(PatientRecord)
         .filter(PatientRecord.ukrdcid == record.ukrdcid)
-        .filter(
-            ProgramMembership.to_time == None  # pylint: disable=singleton-comparison
-        )
+        .filter(ProgramMembership.to_time == None)  # noqa: E711
     )
 
 

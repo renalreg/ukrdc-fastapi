@@ -3,7 +3,6 @@ from ukrdc_sqla.errorsdb import Message
 
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
 from ukrdc_fastapi.exceptions import PermissionsError
-from ukrdc_fastapi.utils.sort import make_sqla_sorter
 
 
 def apply_message_list_permissions(query: Query, user: UKRDCUser):

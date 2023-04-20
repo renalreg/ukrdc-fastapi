@@ -27,26 +27,30 @@ ukrdc-stats = "^1.1.0"
 ukrdc-xsdata = "^3.3.0" 
 uvicorn = "^0.21.0" 
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 bandit = "^1.7.4"
 black = {version = "^23.1", allow-prereleases = true}
 coverage = {extras = ["toml"], version = "^7.2"}
 fakeredis = "^2.10"
-isort = "^5.11.2"
 mypy = "^1.2.0"
-pylint = "^2.17.0"
 pytest = "^7.3"
 pytest-asyncio = "^0.21.0"
 pytest-cov = "^4.0.0"
 pytest-httpx = "^0.21"
 pytest-mock = "^3.8.2"
 pytest-postgresql = "^3.1.1"
+ruff = "^0.0.262"
 sqlalchemy-stubs = "*"
 tox = "^4.4.2"
 
 [build-system]
 build-backend = "poetry.core.masonry.api"
 requires = ["poetry-core>=1.0.0"]
+
+[tool.ruff]
+ignore = [
+  "E501", # Line too long (let Black handle this)
+]
 
 [tool.mypy]
 plugins = [
@@ -74,23 +78,6 @@ include_trailing_comma = true
 line_length = 88
 multi_line_output = 3
 use_parentheses = true
-
-[tool.pylint.'MESSAGES CONTROL']
-# unsubscriptable-object is disabled until proper Python 3.9 support is fixed in PyLint
-disable = "duplicate-code, pointless-string-statement, unsubscriptable-object, fixme, missing-module-docstring, missing-class-docstring, too-few-public-methods, too-many-arguments, line-too-long, too-many-locals, too-many-ancestors, too-many-instance-attributes"
-max-line-length = 88
-
-[tool.pylint.'TYPECHECK']
-ignored-classes = "Session" # PyLint struggles with dynamic SQLAlchemy sessions
-
-[tool.pylint.'MASTER']
-extension-pkg-whitelist = "pydantic" # PyLint struggles with Pydantic in GH Actions
-
-[tool.pylint.'BASIC']
-good-names = "id,ni,i,e,logger"
-
-[tool.pylint.'SIMILARITIES']
-ignore-imports = "yes"
 
 [tool.coverage.run]
 # Both dependencies and main contain a lot of production-specific code, such as
