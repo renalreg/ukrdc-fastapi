@@ -11,6 +11,7 @@ from ukrdc_fastapi.query.facilities.errors import (
     get_errors_history,
     get_patients_latest_errors,
 )
+from ukrdc_fastapi.query.facilities.reports import get_facility_report_cc001
 from ukrdc_fastapi.utils.cache import BasicCache, CacheKey
 
 from ..utils import days_ago
@@ -135,3 +136,22 @@ def test_get_facility_extracts(ukrdc3_session):
         "TSF01",
     )
     assert extracts.ukrdc == 2
+
+
+def test_get_facility_report_cc001(ukrdc3_session):
+    report1 = get_facility_report_cc001(
+        ukrdc3_session,
+        "TSF01",
+    ).all()
+
+    # Only 1 default test record has no treatments or memberships
+    assert len(report1) == 1
+    assert report1[0].pid == "PYTEST04:PV:00000000A"
+
+    report2 = get_facility_report_cc001(
+        ukrdc3_session,
+        "TSF02",
+    ).all()
+
+    # TSF02 has no default test records with no treatments or memberships
+    assert len(report2) == 0
