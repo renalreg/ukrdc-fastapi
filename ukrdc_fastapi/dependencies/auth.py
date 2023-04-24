@@ -51,6 +51,7 @@ class Permissions:
             cls.READ_MIRTH,
             cls.READ_WORKITEMS,
             cls.READ_CODES,
+            cls.READ_REPORTS,
             cls.READ_RECORDS_AUDIT,
             cls.WRITE_RECORDS,
             cls.WRITE_MESSAGES,
