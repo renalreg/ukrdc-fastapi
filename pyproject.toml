@@ -31,7 +31,7 @@ uvicorn = "^0.21.0"
 bandit = "^1.7.4"
 black = {version = "^23.1", allow-prereleases = true}
 coverage = {extras = ["toml"], version = "^7.2"}
-fakeredis = "^2.10"
+fakeredis = "^2.11"
 mypy = "^1.2.0"
 pytest = "^7.3"
 pytest-asyncio = "^0.21.0"
