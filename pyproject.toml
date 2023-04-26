@@ -5,7 +5,7 @@ name = "ukrdc-fastapi"
 packages = [
   {include = "ukrdc_fastapi"},
 ]
-version = "3.1.0-beta.1"
+version = "3.1.0-beta.2"
 
 [tool.poetry.dependencies]
 SQLAlchemy = "^1.4.42" 
@@ -31,6 +31,7 @@ uvicorn = "^0.21.0"
 bandit = "^1.7.4"
 black = {version = "^23.1", allow-prereleases = true}
 coverage = {extras = ["toml"], version = "^7.2"}
+fakeredis = "2.10.3"
 mypy = "^1.2.0"
 pytest = "^7.3"
 pytest-asyncio = "^0.21.0"
@@ -41,7 +42,6 @@ pytest-postgresql = "^3.1.1"
 ruff = "^0.0.262"
 sqlalchemy-stubs = "*"
 tox = "^4.5.0"
-fakeredis = "2.10.3"
 
 [build-system]
 build-backend = "poetry.core.masonry.api"
