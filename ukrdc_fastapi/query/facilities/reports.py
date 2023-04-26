@@ -38,3 +38,42 @@ def get_facility_report_cc001(
     )
 
     return q
+
+
+def get_facility_report_pm001(
+    ukrdc3: Session,
+    facility_code: str,
+) -> Query:
+    """
+    Program Membership Report 001:
+        Patients with no *active* PKB membership record
+
+    Args:
+        ukrdc3 (Session): SQLAlchemy session
+        facility_code (str): Facility/unit code
+
+    Returns:
+        Query: Query of patients mathching the report conditions
+    """
+    # Assert the facility exists
+    facility = ukrdc3.query(Facility).filter(Facility.code == facility_code).first()
+
+    if not facility:
+        raise MissingFacilityError(facility_code)
+
+    # All UKRDC IDs with active PKB program memberships
+    q2 = (
+        ukrdc3.query(PatientRecord.ukrdcid)
+        .join(ProgramMembership, ProgramMembership.pid == PatientRecord.pid)
+        .filter(ProgramMembership.program_name == "PKB")
+        .filter(ProgramMembership.totime == None)  # noqa: E711 # No end time
+    )
+
+    q = (
+        ukrdc3.query(PatientRecord)
+        .filter(PatientRecord.sendingfacility == facility.code)
+        .filter(PatientRecord.sendingextract == "UKRDC")
+        .filter(PatientRecord.ukrdcid.notin_(q2))  # No related program memberships
+    )
+
+    return q
