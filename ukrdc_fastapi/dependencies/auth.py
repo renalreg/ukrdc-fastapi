@@ -33,6 +33,8 @@ class Permissions:
     READ_CODES = "ukrdc:codes:read"
     WRITE_CODES = "ukrdc:codes:write"
 
+    READ_REPORTS = "ukrdc:reports:read"
+
     READ_RECORDS_AUDIT = "ukrdc:audit:records:read"
 
     UNIT_PREFIX = "ukrdc:unit:"
@@ -49,6 +51,7 @@ class Permissions:
             cls.READ_MIRTH,
             cls.READ_WORKITEMS,
             cls.READ_CODES,
+            cls.READ_REPORTS,
             cls.READ_RECORDS_AUDIT,
             cls.WRITE_RECORDS,
             cls.WRITE_MESSAGES,

@@ -36,10 +36,11 @@ from ukrdc_fastapi.utils.cache import ResponseCache
 from ukrdc_fastapi.utils.paginate import Page, paginate
 from ukrdc_fastapi.utils.sort import ObjectSorter, SQLASorter, make_object_sorter
 
-from . import stats
+from . import reports, stats
 
 router = APIRouter(tags=["Facilities"])
 router.include_router(stats.router)
+router.include_router(reports.router)
 
 
 @router.get("", response_model=list[FacilityDetailsSchema])

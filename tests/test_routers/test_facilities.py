@@ -111,3 +111,31 @@ async def test_facility_stats_krt_denied(client_authenticated):
         f"{configuration.base_url}/facilities/TSF02/stats/krt"
     )
     assert response.status_code == 403
+
+
+async def test_facility_reports_cc001(client_superuser):
+    response = await client_superuser.get(
+        f"{configuration.base_url}/facilities/TSF01/reports/cc001"
+    )
+    assert response.status_code == 200
+
+
+async def test_facility_reports_cc001_denied(client_authenticated):
+    response = await client_authenticated.get(
+        f"{configuration.base_url}/facilities/TSF02/reports/pm001"
+    )
+    assert response.status_code == 403
+
+
+async def test_facility_reports_pm001(client_superuser):
+    response = await client_superuser.get(
+        f"{configuration.base_url}/facilities/TSF01/reports/cc001"
+    )
+    assert response.status_code == 200
+
+
+async def test_facility_reports_pm001_denied(client_authenticated):
+    response = await client_authenticated.get(
+        f"{configuration.base_url}/facilities/TSF02/reports/pm001"
+    )
+    assert response.status_code == 403
