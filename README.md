@@ -51,7 +51,7 @@ CREATE TABLE user_preference (uid VARCHAR NOT NULL, "key" VARCHAR NOT NULL, val 
 
 ## Developer notes
 
-## Autofix issues before commit
+### Autofix issues before commit
 
 - `poetry run black ./ukrdc_fastapi`
 - `poetry run ruff --fix ./ukrdc_fastapi`
