@@ -1,14 +1,5 @@
 from ukrdc_fastapi.config import configuration
-from ukrdc_fastapi.routers.api.masterrecords.record_id import (
-    MasterRecordStatisticsSchema,
-)
-from ukrdc_fastapi.schemas.empi import (
-    LinkRecordSchema,
-    MasterRecordSchema,
-    PersonSchema,
-    WorkItemSchema,
-)
-from ukrdc_fastapi.schemas.message import MessageSchema, MinimalMessageSchema
+from ukrdc_fastapi.schemas.empi import WorkItemSchema
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordSummarySchema
 from ukrdc_fastapi.utils.mirth import MirthMessageResponseSchema
 
