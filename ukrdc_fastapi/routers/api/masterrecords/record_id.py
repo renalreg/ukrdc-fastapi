@@ -290,6 +290,7 @@ def master_record_messages(
     since: Optional[datetime.datetime] = None,
     until: Optional[datetime.datetime] = None,
     status: Optional[list[str]] = QueryParam(None),
+    channel: Optional[list[str]] = QueryParam(None),
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
     errorsdb: Session = Depends(get_errorsdb),
@@ -301,7 +302,14 @@ def master_record_messages(
     By default returns message created within the last 365 days.
     """
     messages = get_messages_related_to_masterrecord(
-        record, errorsdb, jtrace, status, facility, since, until
+        record,
+        errorsdb,
+        jtrace,
+        statuses=status,
+        channels=channel,
+        facility=facility,
+        since=since,
+        until=until,
     )
 
     # Apply permissions

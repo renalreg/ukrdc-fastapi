@@ -24,6 +24,7 @@ class MessageSourceSchema(OrmModel):
 def get_messages(
     errorsdb: Session,
     statuses: Optional[list[str]] = None,
+    channels: Optional[list[str]] = None,
     nis: Optional[list[str]] = None,
     facility: Optional[str] = None,
     since: Optional[datetime.datetime] = None,
@@ -33,7 +34,8 @@ def get_messages(
 
     Args:
         errorsdb (Session): SQLAlchemy session
-        status (Optional[list[str]], optional: Status code to filter by. Defaults to "ERROR".
+        statuses (Optional[list[str]], optional: Status code to filter by. Defaults to "ERROR".
+        channels (Optional[list[str]], optional: Channel ID to filter by. Defaults to all channels.
         nis (Optional[list[str]], optional): List of pateint NIs to filer by. Defaults to None.
         facility (Optional[str], optional): Unit/facility code to filter by. Defaults to None.
         since (Optional[datetime.datetime], optional): Show records since datetime. Defaults to 365 days ago.
@@ -61,6 +63,10 @@ def get_messages(
     # Optionally filter by message status
     if statuses is not None:
         query = query.filter(Message.msg_status.in_(statuses))
+
+    # Optionally filter by channels
+    if channels is not None:
+        query = query.filter(Message.channel_id.in_(channels))
 
     if nis:
         query = query.filter(Message.ni.in_(nis))
@@ -121,6 +127,7 @@ def get_messages_related_to_masterrecord(
     errorsdb: Session,
     jtrace: Session,
     statuses: Optional[list[str]] = None,
+    channels: Optional[list[str]] = None,
     facility: Optional[str] = None,
     since: Optional[datetime.datetime] = None,
     until: Optional[datetime.datetime] = None,
@@ -131,7 +138,8 @@ def get_messages_related_to_masterrecord(
         errorsdb (Session): SQLAlchemy session
         jtrace (Session): JTRACE SQLAlchemy session
         record_id (int): MasterRecord ID
-        status (str, optional): Status code to filter by. Defaults to all.
+        statuses (str, optional): Status codes to filter by. Defaults to all.
+        channels (Optional[list[str]], optional: Channel ID to filter by. Defaults to all channels.
         facility (Optional[str], optional): Unit/facility code to filter by. Defaults to None.
         since (Optional[datetime.datetime], optional): Show records since datetime. Defaults to 365 days ago.
         until (Optional[datetime.datetime], optional): Show records until datetime. Defaults to None.
@@ -148,6 +156,7 @@ def get_messages_related_to_masterrecord(
     return get_messages(
         errorsdb,
         statuses=statuses,
+        channels=channels,
         nis=related_national_ids,
         facility=facility,
         since=since,
