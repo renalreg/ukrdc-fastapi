@@ -19,13 +19,17 @@ class MirthMessageResponseSchema(BaseModel):
     message: str = Field(..., description="Submitted message content")
 
 
-class ChannelFullModel(OrmModel):
+class ChannelMapModel(OrmModel):
     """Full Mirth channel information, including statistics"""
 
     id: UUID = Field(..., description="Mirth channel ID")
     name: str = Field(..., description="Mirth channel name")
     description: Optional[str] = Field(None, description="Mirth channel description")
     revision: str = Field(..., description="Mirth channel revision")
+
+
+class ChannelFullModel(ChannelMapModel):
+    """Full Mirth channel information, including statistics"""
 
     statistics: Optional[ChannelStatistics] = Field(
         None, description="Mirth channel statistics"
