@@ -130,9 +130,13 @@ def populate_facilities_and_messages(ukrdc3, statsdb, errorsdb):
     )
 
     channel_1 = Channel(
-        id="00000000-0000-0000-0000-000000000000", name="MIRTH-CHANNEL-NAME"
+        id="00000000-0000-0000-0000-000000000000", name="MIRTH-CHANNEL-NAME-1"
+    )
+    channel_2 = Channel(
+        id="00000000-0000-0000-0000-111111111111", name="MIRTH-CHANNEL-NAME-2"
     )
     errorsdb.add(channel_1)
+    errorsdb.add(channel_2)
 
     facility_1_message_1 = ErrorMessage(
         id=1,
@@ -150,7 +154,7 @@ def populate_facilities_and_messages(ukrdc3, statsdb, errorsdb):
     facility_1_message_2 = ErrorMessage(
         id=2,
         message_id=2,
-        channel_id="00000000-0000-0000-0000-000000000000",
+        channel_id="00000000-0000-0000-0000-111111111111",
         received=days_ago(1),
         msg_status="ERROR",
         ni=UKRDCID_1,
