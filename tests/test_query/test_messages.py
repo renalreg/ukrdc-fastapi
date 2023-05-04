@@ -41,6 +41,27 @@ def test_get_errors_facility(errorsdb_session):
     assert {error.id for error in all_errors} == {3}
 
 
+def test_get_errors_channel(errorsdb_session):
+    all_errors = messages.get_messages(
+        errorsdb_session,
+        since=days_ago(730),
+        channels=["00000000-0000-0000-0000-111111111111"],
+    )
+    assert {error.id for error in all_errors} == {2}
+
+
+def test_get_errors_multiple_channels(errorsdb_session):
+    all_errors = messages.get_messages(
+        errorsdb_session,
+        since=days_ago(730),
+        channels=[
+            "00000000-0000-0000-0000-000000000000",
+            "00000000-0000-0000-0000-111111111111",
+        ],
+    )
+    assert {error.id for error in all_errors} == {1, 2, 3}
+
+
 def test_get_messages_nis(errorsdb_session):
     all_msgs = messages.get_messages(
         errorsdb_session, since=days_ago(730), nis=["999999999"]

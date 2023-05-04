@@ -16,6 +16,7 @@ def get_patients_latest_errors(
     ukrdc3: Session,
     errorsdb: Session,
     facility_code: str,
+    channels: Optional[list[str]] = None,
 ) -> Query:
     """Retrieve the most recent error messages for each patient currently receiving errors.
 
@@ -32,12 +33,18 @@ def get_patients_latest_errors(
     if not facility:
         raise MissingFacilityError(facility_code)
 
-    return (
+    query = (
         errorsdb.query(Message)
         .join(Latest)
         .filter(Latest.facility == facility.code)
         .filter(Message.msg_status == "ERROR")
     )
+
+    # Optionally filter by channels
+    if channels is not None:
+        query = query.filter(Message.channel_id.in_(channels))
+
+    return query
 
 
 def get_errors_history(

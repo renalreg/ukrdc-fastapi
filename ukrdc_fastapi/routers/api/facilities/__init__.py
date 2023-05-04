@@ -1,7 +1,9 @@
 import datetime
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Security
+from fastapi import APIRouter, Depends
+from fastapi import Query as QueryParam
+from fastapi import Security
 from redis import Redis
 from sqlalchemy.orm import Session
 
@@ -109,6 +111,7 @@ def facility(
 )
 def facility_patients_latest_errors(
     code: str,
+    channel: Optional[list[str]] = QueryParam(None),
     ukrdc3: Session = Depends(get_ukrdc3),
     errorsdb: Session = Depends(get_errorsdb),
     user: UKRDCUser = Security(auth.get_user()),
@@ -118,7 +121,7 @@ def facility_patients_latest_errors(
     """Retreive time-series new error counts for the last year for a particular facility"""
     assert_facility_permission(code, user)
 
-    query = get_patients_latest_errors(ukrdc3, errorsdb, code)
+    query = get_patients_latest_errors(ukrdc3, errorsdb, code, channels=channel)
 
     audit.add_event(
         Resource.MESSAGES,

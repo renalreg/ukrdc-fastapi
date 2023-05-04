@@ -12,6 +12,8 @@ from ukrdc_fastapi.schemas.base import OrmModel
 from ukrdc_fastapi.utils.mirth import (
     ChannelFullModel,
     ChannelGroupModel,
+    ChannelMapModel,
+    get_channels,
     get_channels_with_statistics,
     get_mirth_all,
 )
@@ -28,6 +30,20 @@ class MirthPage(OrmModel):
 
 class MessagePage(MirthPage):
     items: list[ChannelMessageModel]
+
+
+@router.get(
+    "/channel_map",
+    response_model=list[ChannelMapModel],
+)
+async def mirth_channel_map(
+    mirth: MirthAPI = Depends(get_mirth), redis: Redis = Depends(get_redis)
+):
+    """
+    Retrieve a basic channel ID-name map, available to all user permission levels.
+    Used for things like message filtering.
+    """
+    return await get_channels(mirth, redis)
 
 
 @router.get(
