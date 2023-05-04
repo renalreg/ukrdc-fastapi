@@ -136,6 +136,40 @@ def test_get_patients_latest_errors(ukrdc3_session, errorsdb_session):
     assert messages[0].id == 2
 
 
+def test_get_patients_latest_errors_channel(ukrdc3_session, errorsdb_session):
+    messages_1_1 = get_patients_latest_errors(
+        ukrdc3_session,
+        errorsdb_session,
+        "TSF01",
+        channels=["00000000-0000-0000-0000-111111111111"],
+    ).all()
+    assert len(messages_1_1) == 1
+
+    messages_1_0 = get_patients_latest_errors(
+        ukrdc3_session,
+        errorsdb_session,
+        "TSF01",
+        channels=["00000000-0000-0000-0000-000000000000"],
+    ).all()
+    assert len(messages_1_0) == 0
+
+    messages_2_1 = get_patients_latest_errors(
+        ukrdc3_session,
+        errorsdb_session,
+        "TSF02",
+        channels=["00000000-0000-0000-0000-111111111111"],
+    ).all()
+    assert len(messages_2_1) == 0
+
+    messages_2_0 = get_patients_latest_errors(
+        ukrdc3_session,
+        errorsdb_session,
+        "TSF02",
+        channels=["00000000-0000-0000-0000-000000000000"],
+    ).all()
+    assert len(messages_2_0) == 1
+
+
 def test_get_facility_extracts(ukrdc3_session):
     extracts = get_facility_extracts(
         ukrdc3_session,
