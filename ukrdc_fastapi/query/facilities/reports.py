@@ -25,19 +25,32 @@ def get_facility_report_cc001(
     if not facility:
         raise MissingFacilityError(facility_code)
 
-    q2 = ukrdc3.query(PatientRecord.ukrdcid).join(
-        ProgramMembership, ProgramMembership.pid == PatientRecord.pid
-    )  # All UKRDC IDs with program memberships
-
-    q = (
+    # Find all records in the facility with no treatment
+    q_no_treatment = (
         ukrdc3.query(PatientRecord)
         .filter(PatientRecord.sendingfacility == facility.code)
         .filter(PatientRecord.sendingextract == "UKRDC")
         .filter(PatientRecord.treatments == None)  # noqa: E711 # No treatments
-        .filter(PatientRecord.ukrdcid.notin_(q2))  # No related program memberships
     )
 
-    return q
+    # Create a subquery for all records in the facility with no treatment
+    q_ukrdcids_to_check = q_no_treatment.subquery()
+
+    # Find all the rows in q_no_treatment with a UKRDCID that has memberships attached to it
+    q_no_treatment_but_has_memberships = (
+        ukrdc3.query(PatientRecord.ukrdcid)
+        .join(
+            q_ukrdcids_to_check, PatientRecord.ukrdcid == q_ukrdcids_to_check.c.ukrdcid
+        )
+        .join(ProgramMembership, ProgramMembership.pid == PatientRecord.pid)
+    )
+
+    # Return all the rows in q_no_treatment that do NOT appear in q_has_memberships
+    q_no_treatment_and_no_memberships = q_no_treatment.filter(
+        PatientRecord.ukrdcid.notin_(q_no_treatment_but_has_memberships)
+    )
+
+    return q_no_treatment_and_no_memberships
 
 
 def get_facility_report_pm001(
