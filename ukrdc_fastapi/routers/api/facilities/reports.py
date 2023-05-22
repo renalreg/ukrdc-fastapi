@@ -31,7 +31,8 @@ def facility_reports_cc001(
 ):
     """
     Custom Cohort Report 001:
-        No treatment or programme membership to explain presence of record in the UKRDC
+        No treatment or programme membership to explain presence of record in the UKRDC.
+        Excludes patients with a known date of death prior to 5 years ago from the time of query.
     """
     assert_facility_permission(code, user)
 

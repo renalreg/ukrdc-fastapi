@@ -26,6 +26,7 @@ ukrdc-sqla = "2.1.0"
 ukrdc-stats = "^1.1.0" 
 ukrdc-xsdata = "^3.3.0" 
 uvicorn = "^0.22.0" 
+python-dateutil = "^2.8.2"
 
 [tool.poetry.group.dev.dependencies]
 bandit = "^1.7.4"
