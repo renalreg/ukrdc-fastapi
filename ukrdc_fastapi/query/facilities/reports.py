@@ -1,5 +1,9 @@
+import datetime
+
+from dateutil.relativedelta import relativedelta
+from sqlalchemy import or_
 from sqlalchemy.orm import Query, Session
-from ukrdc_sqla.ukrdc import Facility, PatientRecord, ProgramMembership
+from ukrdc_sqla.ukrdc import Facility, Patient, PatientRecord, ProgramMembership
 
 from ukrdc_fastapi.exceptions import MissingFacilityError
 
@@ -10,7 +14,8 @@ def get_facility_report_cc001(
 ) -> Query:
     """
     Custom Cohort Report 001:
-        No treatment or programme membership to explain presence in UKRDC
+        No treatment or programme membership to explain presence in UKRDC.
+        Excludes patients with a known date of death prior to 5 years ago from the time of query.
 
     Args:
         ukrdc3 (Session): SQLAlchemy session
@@ -25,12 +30,22 @@ def get_facility_report_cc001(
     if not facility:
         raise MissingFacilityError(facility_code)
 
-    # Find all records in the facility with no treatment
+    # Calculate the DoD cutoff date
+    dod_cutoff = datetime.datetime.utcnow() - relativedelta(years=5)
+
+    # Find all records in the facility with no treatment, matching the DoD condition
     q_no_treatment = (
         ukrdc3.query(PatientRecord)
+        .join(Patient)
         .filter(PatientRecord.sendingfacility == facility.code)
         .filter(PatientRecord.sendingextract == "UKRDC")
         .filter(PatientRecord.treatments == None)  # noqa: E711 # No treatments
+        .filter(
+            or_(
+                Patient.deathtime == None,  # noqa: E711
+                Patient.deathtime >= dod_cutoff,
+            )
+        )
     )
 
     # Create a subquery for all records in the facility with no treatment
@@ -89,4 +104,5 @@ def get_facility_report_pm001(
         .filter(PatientRecord.ukrdcid.notin_(q2))  # No related program memberships
     )
 
+    return q
     return q

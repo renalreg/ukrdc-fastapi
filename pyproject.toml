@@ -26,6 +26,7 @@ ukrdc-sqla = "2.1.0"
 ukrdc-stats = "^1.1.0" 
 ukrdc-xsdata = "^3.3.0" 
 uvicorn = "^0.22.0" 
+python-dateutil = "^2.8.2"
 
 [tool.poetry.group.dev.dependencies]
 bandit = "^1.7.4"
@@ -42,6 +43,7 @@ pytest-postgresql = "^3.1.1"
 ruff = "^0.0.262"
 sqlalchemy-stubs = "*"
 tox = "^4.5.0"
+types-python-dateutil = "^2.8.19.13"
 
 [build-system]
 build-backend = "poetry.core.masonry.api"
