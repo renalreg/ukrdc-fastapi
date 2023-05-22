@@ -188,6 +188,23 @@ class ClinicalRelationshipSchema(OrmModel):
     pid: str = Field(..., description="Patient ID")
 
 
+class PVDataSchema(OrmModel):
+    """
+    PV Data, including RRT status and blood group
+    """
+
+    creation_date: datetime.datetime = Field(..., description="Creation date")
+    update_date: Optional[datetime.datetime] = Field(None, description="Update date")
+
+    rrtstatus: Optional[str] = Field(None, description="RRT status code")
+    tptstatus: Optional[str] = Field(None, description="Transplant status")
+    bloodgroup: Optional[str] = Field(None, description="Blood group")
+
+    diagnosisdate: Optional[datetime.datetime] = Field(
+        None, description="Diagnosis date"
+    )
+
+
 class PVDeleteSchema(OrmModel):
     """A PV delete record. These are only used internally for passing deletions to PatientView."""
 
@@ -207,6 +224,8 @@ class PatientRecordSummarySchema(OrmModel):
     sendingextract: SendingExtract = Field(..., description="Sending extract")
     localpatientid: str = Field(..., description="Local patient ID")
     ukrdcid: str = Field(..., description="UKRDC ID")
+
+    pvdata: Optional[PVDataSchema] = Field(None, description="PV Data")
 
     program_memberships: list[ProgramMembershipSchema] = Field(
         [], description="Program memberships"
