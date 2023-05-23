@@ -8,6 +8,7 @@ from sqlalchemy.orm.query import Query
 from sqlalchemy.orm.session import Session
 from ukrdc_sqla.empi import MasterRecord
 from ukrdc_sqla.errorsdb import Message
+from ukrdc_sqla.ukrdc import PatientRecord
 
 from ukrdc_fastapi.exceptions import ResourceNotFoundError
 from ukrdc_fastapi.query.masterrecords import get_masterrecords_related_to_masterrecord
@@ -159,6 +160,31 @@ def get_messages_related_to_masterrecord(
         channels=channels,
         nis=related_national_ids,
         facility=facility,
+        since=since,
+        until=until,
+    )
+
+
+def get_messages_related_to_patientrecord(
+    record: PatientRecord,
+    errorsdb: Session,
+    statuses: Optional[list[str]] = None,
+    channels: Optional[list[str]] = None,
+    since: Optional[datetime.datetime] = None,
+    until: Optional[datetime.datetime] = None,
+) -> Query:
+    national_ids: list[str] = [
+        number.patientid
+        for number in record.patient.numbers
+        if number.numbertype == "NI"
+    ]
+
+    return get_messages(
+        errorsdb,
+        statuses=statuses,
+        channels=channels,
+        nis=national_ids,
+        facility=record.sendingfacility,
         since=since,
         until=until,
     )

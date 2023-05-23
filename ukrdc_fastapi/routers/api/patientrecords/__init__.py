@@ -5,6 +5,8 @@ from fastapi import APIRouter, Depends, HTTPException, Security
 from fastapi import Query as QueryParam
 from fastapi.responses import Response
 from sqlalchemy.orm import Session, defer
+from starlette.status import HTTP_204_NO_CONTENT
+from ukrdc_sqla.errorsdb import Message
 from ukrdc_sqla.ukrdc import (
     Document,
     LabOrder,
@@ -14,7 +16,7 @@ from ukrdc_sqla.ukrdc import (
     ResultItem,
 )
 
-from ukrdc_fastapi.dependencies import get_auditdb, get_jtrace, get_ukrdc3
+from ukrdc_fastapi.dependencies import get_auditdb, get_errorsdb, get_jtrace, get_ukrdc3
 from ukrdc_fastapi.dependencies.audit import (
     Auditer,
     AuditOperation,
@@ -24,12 +26,17 @@ from ukrdc_fastapi.dependencies.audit import (
 )
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.models.audit import AccessEvent, AuditEvent
+from ukrdc_fastapi.permissions.messages import (
+    apply_message_list_permissions,
+    assert_message_permissions,
+)
 from ukrdc_fastapi.permissions.patientrecords import apply_patientrecord_list_permission
 from ukrdc_fastapi.query.audit import get_auditevents_related_to_patientrecord
 from ukrdc_fastapi.query.delete import (
     delete_patientrecord,
     summarise_delete_patientrecord,
 )
+from ukrdc_fastapi.query.messages import get_messages_related_to_patientrecord
 from ukrdc_fastapi.query.patientrecords import (
     get_patientrecords_related_to_patientrecord,
 )
@@ -42,6 +49,7 @@ from ukrdc_fastapi.schemas.laborder import (
     ResultItemServiceSchema,
 )
 from ukrdc_fastapi.schemas.medication import MedicationSchema
+from ukrdc_fastapi.schemas.message import MessageSchema, MinimalMessageSchema
 from ukrdc_fastapi.schemas.observation import ObservationSchema
 from ukrdc_fastapi.schemas.patientrecord import (
     DocumentSchema,
@@ -51,6 +59,7 @@ from ukrdc_fastapi.schemas.patientrecord import (
 )
 from ukrdc_fastapi.schemas.survey import SurveySchema
 from ukrdc_fastapi.schemas.treatment import TreatmentSchema
+from ukrdc_fastapi.sorters import ERROR_SORTER
 from ukrdc_fastapi.utils.paginate import Page, paginate
 from ukrdc_fastapi.utils.sort import SQLASorter, make_sqla_sorter
 
@@ -119,6 +128,90 @@ def patient_audit(
         item.populate_identifiers(None, ukrdc3)
 
     return page
+
+
+@router.get(
+    "/{pid}/messages",
+    response_model=Page[MessageSchema],
+    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
+)
+def patient_messages(
+    patient_record: PatientRecord = Depends(_get_patientrecord),
+    since: Optional[datetime.datetime] = None,
+    until: Optional[datetime.datetime] = None,
+    status: Optional[list[str]] = QueryParam(None),
+    channel: Optional[list[str]] = QueryParam(None),
+    user: UKRDCUser = Security(auth.get_user()),
+    errorsdb: Session = Depends(get_errorsdb),
+    sorter: SQLASorter = Depends(ERROR_SORTER),
+    audit: Auditer = Depends(get_auditer),
+):
+    """
+    Retreive a list of messages related to a particular patient record.
+    By default returns message created within the last 365 days.
+    """
+    messages = get_messages_related_to_patientrecord(
+        patient_record,
+        errorsdb,
+        statuses=status,
+        channels=channel,
+        since=since,
+        until=until,
+    )
+
+    # Apply permissions
+    messages = apply_message_list_permissions(messages, user)
+
+    # Add audit events
+    audit.add_event(
+        Resource.MESSAGES,
+        None,
+        AuditOperation.READ,
+        parent=audit.add_event(
+            Resource.PATIENT_RECORD, patient_record.pid, AuditOperation.READ
+        ),
+    )
+    return paginate(sorter.sort(messages))
+
+
+@router.get(
+    "/{pid}/latest_message",
+    response_model=MinimalMessageSchema,
+    responses={204: {"model": None}},
+    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
+)
+def master_record_latest_message(
+    patient_record: PatientRecord = Depends(_get_patientrecord),
+    user: UKRDCUser = Security(auth.get_user()),
+    errorsdb: Session = Depends(get_errorsdb),
+):
+    """
+    Retreive a minimal representation of the latest file received for the patient,
+    if received within the last year."""
+
+    # Get messages related to the master record
+    msgs = (
+        get_messages_related_to_patientrecord(
+            patient_record,
+            errorsdb,
+            since=datetime.datetime.utcnow() - datetime.timedelta(days=365),
+        )
+        .filter(Message.facility != "TRACING")
+        .filter(Message.filename.isnot(None))
+    )
+
+    # Apply permissions
+    msgs = apply_message_list_permissions(msgs, user)
+
+    # Get latest message
+    latest = msgs.order_by(Message.received.desc()).first()
+
+    if not latest:
+        return Response(status_code=HTTP_204_NO_CONTENT)
+
+    assert_message_permissions(latest, user)
+
+    return latest
 
 
 @router.post(
@@ -626,6 +719,10 @@ def patient_document_download(
         media_type = document_obj.filetype
         stream = document_obj.stream or b""
         filename = document_obj.filename or document_obj.documentname or "NoFileName"
+
+    response = Response(content=stream, media_type=media_type)
+    response.headers["Content-Disposition"] = f"attachment; filename={filename}"
+    return response
 
     response = Response(content=stream, media_type=media_type)
     response.headers["Content-Disposition"] = f"attachment; filename={filename}"
