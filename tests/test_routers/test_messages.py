@@ -80,7 +80,7 @@ async def test_message_masterrecords(client_authenticated):
     )
     assert response.status_code == 200
     ids = {item.get("id") for item in response.json()}
-    assert ids == {1}
+    assert ids == {101}
 
 
 async def test_message_masterrecords_denied(client_authenticated):

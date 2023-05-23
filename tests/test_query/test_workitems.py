@@ -33,7 +33,7 @@ def test_get_workitems_until(jtrace_session):
 
 
 def test_get_workitems_masterid(jtrace_session):
-    all_items = workitems.get_workitems(jtrace_session, master_id=[4])
+    all_items = workitems.get_workitems(jtrace_session, master_id=[104])
     assert {item.id for item in all_items} == {1, 2}
 
 
@@ -88,8 +88,8 @@ def test_get_extended_workitem_superuser(jtrace_session):
     dest_persons = [person.id for person in record.destination.persons]
 
     assert in_person == 1
-    assert in_masters == [1, 999]
-    assert dest_master == 4
+    assert in_masters == [1, 4, 999]
+    assert dest_master == 104
     assert dest_persons == [4]
 
 

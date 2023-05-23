@@ -1,5 +1,7 @@
 import pytest
+from ukrdc_sqla.errorsdb import Message
 
+from tests.conftest import NI_4
 from tests.utils import days_ago
 from ukrdc_fastapi.config import configuration
 from ukrdc_fastapi.schemas.empi import WorkItemSchema
@@ -52,7 +54,22 @@ async def test_workitem_related_superuser(client_superuser):
     assert returned_ids == {2, 3, 4}
 
 
-async def test_workitem_messages(client_authenticated):
+async def test_workitem_messages(client_authenticated, errorsdb_session):
+    test_msg = Message(
+        id=901,
+        message_id=901,
+        channel_id="00000000-0000-0000-0000-000000000000",
+        received=days_ago(2),
+        msg_status="RECEIVED",
+        ni=NI_4,
+        filename="FILENAME_901.XML",
+        facility="TSF01",
+        error=None,
+        status="STATUS3",
+    )
+    errorsdb_session.add(test_msg)
+    errorsdb_session.commit()
+
     response = await client_authenticated.get(
         f"{configuration.base_url}/workitems/1/messages"
     )
@@ -60,7 +77,7 @@ async def test_workitem_messages(client_authenticated):
 
     errors = [MessageSchema(**item) for item in response.json()["items"]]
     message_ids = {error.id for error in errors}
-    assert message_ids == {1, 2}
+    assert message_ids == {901}
 
 
 @pytest.mark.parametrize("workitem_id", [1, 2, 3])

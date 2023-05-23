@@ -79,7 +79,7 @@ async def test_message_masterrecords(client_superuser, audit_session):
     )
     assert response.status_code == 200
     returned_ids = {item.get("id") for item in response.json()}
-    assert returned_ids == {1}
+    assert returned_ids == {101}
 
     events = audit_session.query(AuditEvent).all()
     assert len(events) == 2

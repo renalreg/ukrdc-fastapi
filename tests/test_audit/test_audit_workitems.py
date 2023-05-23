@@ -74,10 +74,10 @@ async def test_workitem_detail(client_superuser, audit_session):
     wi = WorkItemExtendedSchema(**response.json())
 
     events = audit_session.query(AuditEvent).all()
-    assert len(events) == 5
+    assert len(events) == 6
 
     primary_event = events[0]
-    assert len(primary_event.children) == 4
+    assert len(primary_event.children) == 5
 
     _verify_extended_workitem_audit(wi, primary_event)
 
