@@ -17,7 +17,6 @@ from ukrdc_fastapi.dependencies.audit import (
     get_auditer,
 )
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
-from ukrdc_fastapi.models.audit import AccessEvent, AuditEvent
 from ukrdc_fastapi.permissions.masterrecords import apply_masterrecord_list_permissions
 from ukrdc_fastapi.permissions.messages import (
     apply_message_list_permissions,
@@ -46,7 +45,7 @@ from ukrdc_fastapi.schemas.message import MessageSchema, MinimalMessageSchema
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordSummarySchema
 from ukrdc_fastapi.sorters import AUDIT_SORTER, ERROR_SORTER
 from ukrdc_fastapi.utils.paginate import Page, paginate
-from ukrdc_fastapi.utils.sort import SQLASorter, make_sqla_sorter
+from ukrdc_fastapi.utils.sort import SQLASorter
 
 from .dependencies import _get_masterrecord
 

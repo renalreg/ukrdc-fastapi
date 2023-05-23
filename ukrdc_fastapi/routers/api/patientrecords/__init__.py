@@ -1,8 +1,9 @@
 import datetime
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Security
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi import Query as QueryParam
+from fastapi import Security
 from fastapi.responses import Response
 from sqlalchemy.orm import Session, defer
 from starlette.status import HTTP_204_NO_CONTENT
@@ -25,7 +26,6 @@ from ukrdc_fastapi.dependencies.audit import (
     get_auditer,
 )
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
-from ukrdc_fastapi.models.audit import AccessEvent, AuditEvent
 from ukrdc_fastapi.permissions.messages import (
     apply_message_list_permissions,
     assert_message_permissions,
