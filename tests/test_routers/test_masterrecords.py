@@ -147,30 +147,3 @@ async def test_masterrecord_patientrecords_denied(client_authenticated):
         f"{configuration.base_url}/masterrecords/2/patientrecords"
     )
     assert response.status_code == 403
-
-
-async def test_master_record_memberships_create_pkb(client_authenticated):
-    response = await client_authenticated.post(
-        f"{configuration.base_url}/masterrecords/1/memberships/create/pkb"
-    )
-    assert response.status_code == 200
-    resp = MirthMessageResponseSchema(**response.json())
-    assert resp.status == "success"
-    assert resp.message == "<result><ukrdcid>999999999</ukrdcid></result>"
-
-
-async def test_master_record_memberships_create_pkb_denied(client_authenticated):
-    response = await client_authenticated.post(
-        f"{configuration.base_url}/masterrecords/2/memberships/create/pkb"
-    )
-    assert response.status_code == 403
-
-
-async def test_master_record_memberships_create_pkb_non_ukrdc(client_superuser):
-    response = await client_superuser.post(
-        f"{configuration.base_url}/masterrecords/102/memberships/create/pkb"
-    )
-    assert response.status_code == 200
-    resp = MirthMessageResponseSchema(**response.json())
-    assert resp.status == "success"
-    assert resp.message == "<result><ukrdcid>999999911</ukrdcid></result>"

@@ -30,16 +30,12 @@ from ukrdc_fastapi.permissions.messages import (
     apply_message_list_permissions,
     assert_message_permissions,
 )
-from ukrdc_fastapi.permissions.patientrecords import apply_patientrecord_list_permission
 from ukrdc_fastapi.query.audit import get_auditevents_related_to_patientrecord
 from ukrdc_fastapi.query.delete import (
     delete_patientrecord,
     summarise_delete_patientrecord,
 )
 from ukrdc_fastapi.query.messages import get_messages_related_to_patientrecord
-from ukrdc_fastapi.query.patientrecords import (
-    get_patientrecords_related_to_patientrecord,
-)
 from ukrdc_fastapi.schemas.audit import AuditEventSchema
 from ukrdc_fastapi.schemas.delete import DeletePidRequest, DeletePIDResponseSchema
 from ukrdc_fastapi.schemas.laborder import (
@@ -55,7 +51,6 @@ from ukrdc_fastapi.schemas.patientrecord import (
     DocumentSchema,
     DocumentSummarySchema,
     PatientRecordSchema,
-    PatientRecordSummarySchema,
 )
 from ukrdc_fastapi.schemas.survey import SurveySchema
 from ukrdc_fastapi.schemas.treatment import TreatmentSchema
@@ -252,38 +247,6 @@ def patient_delete(
             )
 
     return summary
-
-
-@router.get(
-    "/{pid}/related",
-    response_model=list[PatientRecordSummarySchema],
-    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
-    deprecated=True,
-)
-def patient_related(
-    patient_record: PatientRecord = Depends(_get_patientrecord),
-    user: UKRDCUser = Security(auth.get_user()),
-    ukrdc3: Session = Depends(get_ukrdc3),
-    audit: Auditer = Depends(get_auditer),
-):
-    """Retreive patient records related to a specific patient record"""
-    related = get_patientrecords_related_to_patientrecord(patient_record, ukrdc3)
-
-    # Apply permissions
-    related = apply_patientrecord_list_permission(related, user)
-
-    record_audit = audit.add_event(
-        Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.READ
-    )
-    for record in related:
-        audit.add_event(
-            Resource.PATIENT_RECORD,
-            record.pid,
-            RecordOperation.READ,
-            parent=record_audit,
-        )
-
-    return related.all()
 
 
 # Internal resources

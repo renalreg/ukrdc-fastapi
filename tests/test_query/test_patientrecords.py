@@ -82,20 +82,6 @@ def _create_related_records(ukrdc3_session, jtrace_session):
     )
 
 
-def test_get_patientrecords_related_to_patientrecord(ukrdc3_session, jtrace_session):
-    _create_related_records(ukrdc3_session, jtrace_session)
-
-    records = patientrecords.get_patientrecords_related_to_patientrecord(
-        ukrdc3_session.query(PatientRecord).get("PYTEST02:TPR:TEST1"), ukrdc3_session
-    )
-    assert {record.pid for record in records} == {
-        "PYTEST02:TPR:TEST1",
-        "PYTEST02:TPR:TEST2",
-        "PYTEST02:TPR:TEST3",
-        "PYTEST02:TPR:TEST4",
-    }
-
-
 def test_get_patientrecords_related_to_masterrecord(ukrdc3_session, jtrace_session):
     _create_related_records(ukrdc3_session, jtrace_session)
 

@@ -20,27 +20,6 @@ def get_patientrecords_related_to_ukrdcid(ukrdcid: str, ukrdc3: Session) -> Quer
     return ukrdc3.query(PatientRecord).filter(PatientRecord.ukrdcid == ukrdcid)
 
 
-def get_patientrecords_related_to_patientrecord(
-    record: PatientRecord, ukrdc3: Session
-) -> Query:
-    """Get a query of PatientRecords with the same UKRDCID as a given PatientRecord
-
-    Args:
-        record (PatientRecord): PatientRecord object
-        ukrdc3 (Session): UKRDC SQLAlchemy session
-
-    Returns:
-        Query: SQLAlchemy query
-    """
-    if not record.ukrdcid:
-        raise AttributeError(
-            f"UKRDC ID for record {record.pid} is missing or NULL. This should never happen."
-        )
-
-    # Return all records with a matching UKRDC ID that the user has permission to access
-    return get_patientrecords_related_to_ukrdcid(record.ukrdcid, ukrdc3)
-
-
 def get_patientrecords_related_to_masterrecord(
     record: MasterRecord, ukrdc3: Session, jtrace: Session
 ) -> Query:
