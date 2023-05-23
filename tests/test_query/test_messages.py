@@ -1,7 +1,9 @@
 import pytest
 from ukrdc_sqla.empi import MasterRecord
 from ukrdc_sqla.errorsdb import Message
+from ukrdc_sqla.ukrdc import PatientRecord
 
+from tests.conftest import NI_1, PID_1
 from ukrdc_fastapi.query import messages
 
 from ..utils import days_ago
@@ -63,9 +65,7 @@ def test_get_errors_multiple_channels(errorsdb_session):
 
 
 def test_get_messages_nis(errorsdb_session):
-    all_msgs = messages.get_messages(
-        errorsdb_session, since=days_ago(730), nis=["999999999"]
-    )
+    all_msgs = messages.get_messages(errorsdb_session, since=days_ago(730), nis=[NI_1])
     assert {error.id for error in all_msgs} == {1, 2}
 
 
@@ -81,6 +81,22 @@ def test_get_masterrecord_errors(errorsdb_session, jtrace_session):
         jtrace_session.query(MasterRecord).get(1),
         errorsdb_session,
         jtrace_session,
+        statuses=["ERROR"],
+    ).all()
+    assert {error.id for error in error_list} == {2}
+
+
+def test_get_patientrecord_messages(errorsdb_session, ukrdc3_session):
+    error_list = messages.get_messages_related_to_patientrecord(
+        ukrdc3_session.query(PatientRecord).get(PID_1), errorsdb_session
+    ).all()
+    assert {error.id for error in error_list} == {1, 2}
+
+
+def test_get_patientrecord_errors(errorsdb_session, ukrdc3_session):
+    error_list = messages.get_messages_related_to_patientrecord(
+        ukrdc3_session.query(PatientRecord).get(PID_1),
+        errorsdb_session,
         statuses=["ERROR"],
     ).all()
     assert {error.id for error in error_list} == {2}
