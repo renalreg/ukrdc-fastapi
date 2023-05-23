@@ -105,4 +105,3 @@ def get_facility_report_pm001(
     )
 
     return q
-    return q

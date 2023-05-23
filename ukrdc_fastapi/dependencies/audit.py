@@ -42,12 +42,6 @@ class Resource(Enum):
     FACILITY = "FACILITY"
 
 
-class MasterRecordResource(Enum):
-    MESSAGE = "MESSAGE"
-    MESSAGES = "MESSAGES"
-    STATISTICS = "STATISTICS"
-
-
 class AuditOperation(Enum):
     CREATE = "CREATE"
     UPDATE = "UPDATE"
