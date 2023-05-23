@@ -1,9 +1,8 @@
 import datetime
 from typing import Optional
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Response, Security
 from fastapi import Query as QueryParam
-from fastapi import Response, Security
 from pydantic import Field
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_204_NO_CONTENT
@@ -45,7 +44,7 @@ from ukrdc_fastapi.schemas.empi import (
 )
 from ukrdc_fastapi.schemas.message import MessageSchema, MinimalMessageSchema
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordSummarySchema
-from ukrdc_fastapi.sorters import ERROR_SORTER
+from ukrdc_fastapi.sorters import AUDIT_SORTER, ERROR_SORTER
 from ukrdc_fastapi.utils.paginate import Page, paginate
 from ukrdc_fastapi.utils.sort import SQLASorter, make_sqla_sorter
 
@@ -419,12 +418,7 @@ def master_record_audit(
     auditdb: Session = Depends(get_auditdb),
     since: Optional[datetime.datetime] = None,
     until: Optional[datetime.datetime] = None,
-    sorter: SQLASorter = Depends(
-        make_sqla_sorter(
-            [AuditEvent.id, AccessEvent.time],
-            default_sort_by=AuditEvent.id,
-        )
-    ),
+    sorter: SQLASorter = Depends(AUDIT_SORTER),
 ):
     """
     Retreive a page of audit events related to a particular master record.
