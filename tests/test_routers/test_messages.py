@@ -1,3 +1,4 @@
+from tests.conftest import PID_1
 from ukrdc_fastapi.config import configuration
 from ukrdc_fastapi.schemas.message import MessageSchema
 
@@ -74,17 +75,17 @@ async def test_message_workitems_denied(client_authenticated):
     assert response.status_code == 403
 
 
-async def test_message_masterrecords(client_authenticated):
+async def test_message_patientrecords(client_authenticated):
     response = await client_authenticated.get(
-        f"{configuration.base_url}/messages/1/masterrecords"
+        f"{configuration.base_url}/messages/1/patientrecords"
     )
     assert response.status_code == 200
-    ids = {item.get("id") for item in response.json()}
-    assert ids == {101}
+    pids = {item.get("pid") for item in response.json()}
+    assert pids == {PID_1}
 
 
-async def test_message_masterrecords_denied(client_authenticated):
+async def test_message_patientrecords_denied(client_authenticated):
     response = await client_authenticated.get(
-        f"{configuration.base_url}/messages/3/masterrecords"
+        f"{configuration.base_url}/messages/3/patientrecords"
     )
     assert response.status_code == 403
