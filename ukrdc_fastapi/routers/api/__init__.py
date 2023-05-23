@@ -14,6 +14,7 @@ from . import (
     search,
     system,
     tasks,
+    ukrdcid,
     workitems,
 )
 
@@ -38,6 +39,7 @@ router.include_router(search.router, prefix="/search")
 
 # UKRDC Records
 router.include_router(patientrecords.router, prefix="/patientrecords")
+router.include_router(ukrdcid.router, prefix="/ukrdcid")
 router.include_router(facilities.router, prefix="/facilities")
 router.include_router(codes.router, prefix="/codes")
 

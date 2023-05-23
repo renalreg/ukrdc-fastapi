@@ -6,6 +6,22 @@ from ukrdc_sqla.ukrdc import PatientRecord
 from ukrdc_fastapi.query.masterrecords import get_masterrecords_related_to_masterrecord
 
 
+def get_patientrecords_related_to_ukrdcid(
+    ukrdcid: str, ukrdc3: Session
+) -> Query:
+    """Get a query of PatientRecords with a particular UKRDCID
+
+    Args:
+        ukrdcid (str): UKRDC ID
+        ukrdc3 (Session): UKRDC SQLAlchemy session
+
+    Returns:
+        Query: SQLAlchemy query
+    """
+    # Return all records with a matching UKRDC ID that the user has permission to access
+    return ukrdc3.query(PatientRecord).filter(PatientRecord.ukrdcid == ukrdcid)
+
+
 def get_patientrecords_related_to_patientrecord(
     record: PatientRecord, ukrdc3: Session
 ) -> Query:
@@ -24,7 +40,7 @@ def get_patientrecords_related_to_patientrecord(
         )
 
     # Return all records with a matching UKRDC ID that the user has permission to access
-    return ukrdc3.query(PatientRecord).filter(PatientRecord.ukrdcid == record.ukrdcid)
+    return get_patientrecords_related_to_ukrdcid(record.ukrdcid, ukrdc3)
 
 
 def get_patientrecords_related_to_masterrecord(
@@ -57,4 +73,5 @@ def get_patientrecords_related_to_masterrecord(
     # Build queries for all records with matching UKRDC IDs
     return ukrdc3.query(PatientRecord).filter(
         PatientRecord.ukrdcid.in_(related_ukrdcids)
+    )
     )

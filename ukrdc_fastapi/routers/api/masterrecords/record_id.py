@@ -1,8 +1,9 @@
 import datetime
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Response, Security
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi import Query as QueryParam
+from fastapi import Response, Security
 from mirth_client import MirthAPI
 from pydantic import Field
 from redis import Redis
@@ -457,6 +458,7 @@ def master_record_audit(
     "/{record_id}/memberships/create/pkb",
     response_model=MirthMessageResponseSchema,
     dependencies=[Security(auth.permission(Permissions.CREATE_MEMBERSHIPS))],
+    deprecated=True,
 )
 async def master_record_memberships_create_pkb(
     record: MasterRecord = Depends(_get_masterrecord),
