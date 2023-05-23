@@ -1,9 +1,8 @@
 import datetime
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Security
 from fastapi import Query as QueryParam
-from fastapi import Security
 from fastapi.responses import Response
 from sqlalchemy.orm import Session, defer
 from ukrdc_sqla.ukrdc import (
@@ -15,7 +14,7 @@ from ukrdc_sqla.ukrdc import (
     ResultItem,
 )
 
-from ukrdc_fastapi.dependencies import get_jtrace, get_ukrdc3
+from ukrdc_fastapi.dependencies import get_auditdb, get_jtrace, get_ukrdc3
 from ukrdc_fastapi.dependencies.audit import (
     Auditer,
     AuditOperation,
@@ -24,7 +23,9 @@ from ukrdc_fastapi.dependencies.audit import (
     get_auditer,
 )
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
+from ukrdc_fastapi.models.audit import AccessEvent, AuditEvent
 from ukrdc_fastapi.permissions.patientrecords import apply_patientrecord_list_permission
+from ukrdc_fastapi.query.audit import get_auditevents_related_to_patientrecord
 from ukrdc_fastapi.query.delete import (
     delete_patientrecord,
     summarise_delete_patientrecord,
@@ -32,6 +33,7 @@ from ukrdc_fastapi.query.delete import (
 from ukrdc_fastapi.query.patientrecords import (
     get_patientrecords_related_to_patientrecord,
 )
+from ukrdc_fastapi.schemas.audit import AuditEventSchema
 from ukrdc_fastapi.schemas.delete import DeletePidRequest, DeletePIDResponseSchema
 from ukrdc_fastapi.schemas.laborder import (
     LabOrderSchema,
@@ -84,6 +86,41 @@ def patient(
     return record
 
 
+@router.get(
+    "/{pid}/audit",
+    response_model=Page[AuditEventSchema],
+    dependencies=[Security(auth.permission(Permissions.READ_RECORDS_AUDIT))],
+)
+def patient_audit(
+    patient_record: PatientRecord = Depends(_get_patientrecord),
+    ukrdc3: Session = Depends(get_ukrdc3),
+    auditdb: Session = Depends(get_auditdb),
+    since: Optional[datetime.datetime] = None,
+    until: Optional[datetime.datetime] = None,
+    sorter: SQLASorter = Depends(
+        make_sqla_sorter(
+            [AuditEvent.id, AccessEvent.time],
+            default_sort_by=AuditEvent.id,
+        )
+    ),
+):
+    """
+    Retreive a page of audit events related to a particular master record.
+    """
+    page = paginate(
+        sorter.sort(
+            get_auditevents_related_to_patientrecord(
+                patient_record, auditdb, since=since, until=until
+            )
+        )
+    )
+
+    for item in page.items:  # type: ignore
+        item.populate_identifiers(None, ukrdc3)
+
+    return page
+
+
 @router.post(
     "/{pid}/delete",
     dependencies=[
@@ -128,7 +165,7 @@ def patient_delete(
     "/{pid}/related",
     response_model=list[PatientRecordSummarySchema],
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
-    deprecated=True
+    deprecated=True,
 )
 def patient_related(
     patient_record: PatientRecord = Depends(_get_patientrecord),
