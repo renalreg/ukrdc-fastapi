@@ -8,7 +8,21 @@ from ukrdc_fastapi.utils.mirth import MirthMessageResponseSchema
 from ukrdc_fastapi.utils.mirth.messages.pkb import build_pkb_membership_message
 
 
-async def create_pkb_membership(
+async def create_pkb_membership_for_ukrdcid(
+    ukrdcid: str,
+    mirth: MirthAPI,
+    redis: Redis,
+) -> MirthMessageResponseSchema:
+    """Export a specific patient's data to PV"""
+    return await safe_send_mirth_message_to_name(
+        "PKB - New Patients",
+        build_pkb_membership_message(ukrdcid),
+        mirth,
+        redis,
+    )
+
+
+async def create_pkb_membership_for_masterrecord(
     master_record: MasterRecord,
     mirth: MirthAPI,
     redis: Redis,
@@ -16,9 +30,6 @@ async def create_pkb_membership(
     """Export a specific patient's data to PV"""
     if master_record.nationalid_type != "UKRDC":
         raise RecordTypeError("Cannot create PKB membership from a non-UKRDC record")
-    return await safe_send_mirth_message_to_name(
-        "PKB - New Patients",
-        build_pkb_membership_message(master_record.nationalid.strip()),
-        mirth,
-        redis,
+    return await create_pkb_membership_for_ukrdcid(
+        master_record.nationalid.strip(), mirth, redis
     )

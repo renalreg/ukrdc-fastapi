@@ -8,7 +8,7 @@ from ukrdc_fastapi.query.mirth import memberships
 @pytest.mark.asyncio
 async def test_create_pkb_membership(jtrace_session, redis_session, mirth_session):
     record = jtrace_session.query(MasterRecord).get(1)
-    response = await memberships.create_pkb_membership(
+    response = await memberships.create_pkb_membership_for_masterrecord(
         record, mirth_session, redis_session
     )
     assert response.status == "success"
@@ -21,4 +21,6 @@ async def test_create_pkb_membership_non_ukrdc(
 ):
     record = jtrace_session.query(MasterRecord).get(101)
     with pytest.raises(RecordTypeError):
-        await memberships.create_pkb_membership(record, mirth_session, redis_session)
+        await memberships.create_pkb_membership_for_masterrecord(
+            record, mirth_session, redis_session
+        )

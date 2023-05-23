@@ -1,9 +1,8 @@
 import datetime
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response, Security
 from fastapi import Query as QueryParam
-from fastapi import Response, Security
 from mirth_client import MirthAPI
 from pydantic import Field
 from redis import Redis
@@ -39,7 +38,7 @@ from ukrdc_fastapi.permissions.workitems import apply_workitem_list_permission
 from ukrdc_fastapi.query.audit import get_auditevents_related_to_masterrecord
 from ukrdc_fastapi.query.masterrecords import get_masterrecords_related_to_masterrecord
 from ukrdc_fastapi.query.messages import get_messages_related_to_masterrecord
-from ukrdc_fastapi.query.mirth.memberships import create_pkb_membership
+from ukrdc_fastapi.query.mirth.memberships import create_pkb_membership_for_masterrecord
 from ukrdc_fastapi.query.patientrecords import (
     get_patientrecords_related_to_masterrecord,
 )
@@ -498,4 +497,4 @@ async def master_record_memberships_create_pkb(
         parent=audit.add_event(Resource.MASTER_RECORD, record.id, AuditOperation.READ),
     )
 
-    return await create_pkb_membership(record, mirth, redis)
+    return await create_pkb_membership_for_masterrecord(record, mirth, redis)
