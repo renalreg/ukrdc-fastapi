@@ -6,9 +6,7 @@ from ukrdc_sqla.ukrdc import PatientRecord
 from ukrdc_fastapi.query.masterrecords import get_masterrecords_related_to_masterrecord
 
 
-def get_patientrecords_related_to_ukrdcid(
-    ukrdcid: str, ukrdc3: Session
-) -> Query:
+def get_patientrecords_related_to_ukrdcid(ukrdcid: str, ukrdc3: Session) -> Query:
     """Get a query of PatientRecords with a particular UKRDCID
 
     Args:
@@ -73,5 +71,4 @@ def get_patientrecords_related_to_masterrecord(
     # Build queries for all records with matching UKRDC IDs
     return ukrdc3.query(PatientRecord).filter(
         PatientRecord.ukrdcid.in_(related_ukrdcids)
-    )
     )
