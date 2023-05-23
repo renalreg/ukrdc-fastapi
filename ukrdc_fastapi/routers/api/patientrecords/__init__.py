@@ -1,9 +1,8 @@
 import datetime
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Security
 from fastapi import Query as QueryParam
-from fastapi import Security
 from fastapi.responses import Response
 from sqlalchemy.orm import Session, defer
 from starlette.status import HTTP_204_NO_CONTENT
@@ -170,7 +169,7 @@ def patient_messages(
     responses={204: {"model": None}},
     dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
 )
-def master_record_latest_message(
+def patient_record_latest_message(
     patient_record: PatientRecord = Depends(_get_patientrecord),
     user: UKRDCUser = Security(auth.get_user()),
     errorsdb: Session = Depends(get_errorsdb),
