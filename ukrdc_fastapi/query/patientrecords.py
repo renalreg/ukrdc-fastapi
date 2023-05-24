@@ -1,7 +1,9 @@
 from sqlalchemy import and_
 from sqlalchemy.orm.query import Query
 from sqlalchemy.orm.session import Session
+from sqlalchemy.sql import false as sql_false
 from ukrdc_sqla.empi import MasterRecord
+from ukrdc_sqla.errorsdb import Message
 from ukrdc_sqla.ukrdc import PatientNumber, PatientRecord
 
 from ukrdc_fastapi.query.masterrecords import get_masterrecords_related_to_masterrecord
@@ -37,6 +39,29 @@ def get_patientrecords_related_to_ni(ni: str, ukrdc3: Session) -> Query:
         .join(PatientNumber, PatientNumber.pid == PatientRecord.pid)
         .filter(and_(PatientNumber.numbertype == "NI", PatientNumber.patientid == ni))
     )
+
+
+def get_patientrecords_related_to_message(
+    message_obj: Message, ukrdc3: Session
+) -> Query:
+    """Get a query of PatientRecords related to a particular message
+
+    Args:
+        message_obj (Message): UKRDC Message object
+        ukrdc3 (Session): UKRDC SQLAlchemy session
+
+    Returns:
+        Query: SQLAlchemy query
+    """
+
+    # If no NI exists on the message, return an empty query with the correct type
+    if not message_obj.ni:
+        return ukrdc3.query(PatientRecord).filter(sql_false())
+
+    records = get_patientrecords_related_to_ni(message_obj.ni, ukrdc3)
+    records = records.filter(PatientRecord.sendingfacility == message_obj.facility)
+
+    return records
 
 
 def get_patientrecords_related_to_masterrecord(

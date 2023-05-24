@@ -1,8 +1,9 @@
 import datetime
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Security
+from fastapi import APIRouter, Depends
 from fastapi import Query as QueryParam
+from fastapi import Security
 from mirth_client.mirth import MirthAPI
 from sqlalchemy.orm import Session
 from ukrdc_sqla.errorsdb import Message
@@ -28,7 +29,7 @@ from ukrdc_fastapi.query.messages import (
     get_message_source,
     get_messages,
 )
-from ukrdc_fastapi.query.patientrecords import get_patientrecords_related_to_ni
+from ukrdc_fastapi.query.patientrecords import get_patientrecords_related_to_message
 from ukrdc_fastapi.query.workitems import get_workitems_related_to_message
 from ukrdc_fastapi.schemas.empi import WorkItemSchema
 from ukrdc_fastapi.schemas.message import MessageSchema
@@ -181,7 +182,7 @@ async def message_patientrecords(
     if not message_obj.ni:
         return []
 
-    records = get_patientrecords_related_to_ni(message_obj.ni, ukrdc3)
+    records = get_patientrecords_related_to_message(message_obj, ukrdc3)
 
     # Apply permissions
     records = apply_patientrecord_list_permission(records, user)
