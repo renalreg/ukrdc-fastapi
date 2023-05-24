@@ -56,7 +56,7 @@ def ukrdcid_records(
     response_model=MirthMessageResponseSchema,
     dependencies=[Security(auth.permission(Permissions.CREATE_MEMBERSHIPS))],
 )
-async def master_record_memberships_create_pkb(
+async def ukrdcid_memberships_create_pkb(
     ukrdcid: str,
     mirth: MirthAPI = Depends(get_mirth),
     audit: Auditer = Depends(get_auditer),
