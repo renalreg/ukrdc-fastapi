@@ -123,8 +123,10 @@ def search_records(
     audit: Auditer = Depends(get_auditer),
 ):
     """Search the UKRDC for a particular patient record"""
+
+    # Get search matches. Exclude facility (we filter by facility later)
     matched_ukrdc_ids = search_ukrdcids(
-        mrn_number, ukrdc_number, full_name, pid, dob, facility, search, ukrdc3
+        mrn_number, ukrdc_number, full_name, pid, dob, [], search, ukrdc3
     )
 
     matched_records = ukrdc3.query(PatientRecord).filter(
@@ -143,6 +145,12 @@ def search_records(
     if not include_informational:
         matched_records = matched_records.filter(
             PatientRecord.sendingfacility.notin_(INFORMATIONAL_FACILITIES)
+        )
+
+    # Strict filter by facility
+    if facility:
+        matched_records = matched_records.filter(
+            PatientRecord.sendingfacility.in_(facility)
         )
 
     # Apply permissions
