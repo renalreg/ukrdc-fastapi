@@ -1,62 +1,12 @@
-from datetime import datetime
 from urllib.parse import quote
 
 from ukrdc_fastapi.config import configuration
-
-from ..utils import create_basic_facility, create_basic_patient
-
-TEST_NUMBERS = [
-    "9434765870",
-    "9434765889",
-    "9434765897",
-    "9434765900",
-    "9434765919",
-    "9434765927",
-    "9434765935",
-    "9434765943",
-    "9434765951",
-]
-
-BUMPER = 200
-
-
-def _commit_extra_patients(ukrdc3, jtrace):
-    for index, number in enumerate(TEST_NUMBERS):
-        nhs_number = number
-        ukrdcid = 100000000 + index
-
-        dob = datetime(1950, 1, (index + 11) % 28)
-        localid = str(number)
-
-        sending_facility = f"TSF{index + BUMPER}"
-        sending_facility_desc = f"TSF{index + BUMPER}_DESCRIPTION"
-        sending_extract = f"TSE{index + BUMPER}"
-
-        create_basic_facility(
-            sending_facility,
-            sending_facility_desc,
-            ukrdc3,
-        )
-
-        create_basic_patient(
-            index + BUMPER,
-            number,
-            str(ukrdcid),
-            nhs_number,
-            sending_facility,
-            sending_extract,
-            localid,
-            f"SURNAME{index}",
-            f"NAME{index}",
-            dob,
-            ukrdc3,
-            jtrace,
-        )
+from .utils import commit_extra_patients, TEST_NUMBERS, BUMPER
 
 
 async def test_search_all(ukrdc3_session, jtrace_session, client_superuser):
     # Add extra test items
-    _commit_extra_patients(ukrdc3_session, jtrace_session)
+    commit_extra_patients(ukrdc3_session, jtrace_session)
 
     # Search for each item individually
     for index, number in enumerate(TEST_NUMBERS):
@@ -71,7 +21,7 @@ async def test_search_all(ukrdc3_session, jtrace_session, client_superuser):
 
 async def test_search_pid(ukrdc3_session, jtrace_session, client_superuser):
     # Add extra test items
-    _commit_extra_patients(ukrdc3_session, jtrace_session)
+    commit_extra_patients(ukrdc3_session, jtrace_session)
 
     # Search for each item individually
     for index, number in enumerate(TEST_NUMBERS):
@@ -86,7 +36,7 @@ async def test_search_pid(ukrdc3_session, jtrace_session, client_superuser):
 
 async def test_search_mrn(ukrdc3_session, jtrace_session, client_superuser):
     # Add extra test items
-    _commit_extra_patients(ukrdc3_session, jtrace_session)
+    commit_extra_patients(ukrdc3_session, jtrace_session)
 
     # Search for each item individually
     for index, number in enumerate(TEST_NUMBERS):
@@ -101,7 +51,7 @@ async def test_search_mrn(ukrdc3_session, jtrace_session, client_superuser):
 
 async def test_search_ukrdc_number(ukrdc3_session, jtrace_session, client_superuser):
     # Add extra test items
-    _commit_extra_patients(ukrdc3_session, jtrace_session)
+    commit_extra_patients(ukrdc3_session, jtrace_session)
 
     # Search for each item individually
     for index, _ in enumerate(TEST_NUMBERS):
@@ -118,7 +68,7 @@ async def test_search_facility_superuser(
     ukrdc3_session, jtrace_session, client_superuser
 ):
     # Add extra test items
-    _commit_extra_patients(ukrdc3_session, jtrace_session)
+    commit_extra_patients(ukrdc3_session, jtrace_session)
 
     # Search for each item individually
     for index, _ in enumerate(TEST_NUMBERS):
@@ -133,7 +83,7 @@ async def test_search_facility_superuser(
 
 async def test_search_name(ukrdc3_session, jtrace_session, client_superuser):
     # Add extra test items
-    _commit_extra_patients(ukrdc3_session, jtrace_session)
+    commit_extra_patients(ukrdc3_session, jtrace_session)
 
     # Search for each item individually
     for index, _ in enumerate(TEST_NUMBERS):
@@ -149,7 +99,7 @@ async def test_search_name(ukrdc3_session, jtrace_session, client_superuser):
 
 async def test_search_dob(ukrdc3_session, jtrace_session, client_superuser):
     # Add extra test items
-    _commit_extra_patients(ukrdc3_session, jtrace_session)
+    commit_extra_patients(ukrdc3_session, jtrace_session)
 
     # Search for each item individually
     for index, _ in enumerate(TEST_NUMBERS):
@@ -165,7 +115,7 @@ async def test_search_dob(ukrdc3_session, jtrace_session, client_superuser):
 
 async def test_search_multiple_mrn(ukrdc3_session, jtrace_session, client_superuser):
     # Add extra test items
-    _commit_extra_patients(ukrdc3_session, jtrace_session)
+    commit_extra_patients(ukrdc3_session, jtrace_session)
 
     # Add extra test items
     path = f"{configuration.base_url}/search?"
@@ -184,7 +134,7 @@ async def test_search_multiple_mrn(ukrdc3_session, jtrace_session, client_superu
 
 async def test_search_implicit_dob(ukrdc3_session, jtrace_session, client_superuser):
     # Add extra test items
-    _commit_extra_patients(ukrdc3_session, jtrace_session)
+    commit_extra_patients(ukrdc3_session, jtrace_session)
 
     # Search for each item individually
     for index, _ in enumerate(TEST_NUMBERS):
@@ -202,7 +152,7 @@ async def test_search_implicit_facility(
     ukrdc3_session, jtrace_session, client_superuser
 ):
     # Add extra test items
-    _commit_extra_patients(ukrdc3_session, jtrace_session)
+    commit_extra_patients(ukrdc3_session, jtrace_session)
 
     # Search for each item individually
     for index, _ in enumerate(TEST_NUMBERS):
