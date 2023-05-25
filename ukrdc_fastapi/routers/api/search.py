@@ -133,13 +133,15 @@ def search_records(
 
     # Filter down by record types
     if not include_migrated:
-        matched_records.filter(PatientRecord.sendingextract.notin_(MIGRATED_EXTRACTS))
+        matched_records = matched_records.filter(
+            PatientRecord.sendingextract.notin_(MIGRATED_EXTRACTS)
+        )
     if not include_memberships:
-        matched_records.filter(
+        matched_records = matched_records.filter(
             PatientRecord.sendingfacility.notin_(MEMBERSHIP_FACILITIES)
         )
     if not include_informational:
-        matched_records.filter(
+        matched_records = matched_records.filter(
             PatientRecord.sendingfacility.notin_(INFORMATIONAL_FACILITIES)
         )
 
