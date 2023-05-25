@@ -124,9 +124,9 @@ def search_records(
 ):
     """Search the UKRDC for a particular patient record"""
 
-    # Get search matches. Exclude facility (we filter by facility later)
+    # Get search matches
     matched_ukrdc_ids = search_ukrdcids(
-        mrn_number, ukrdc_number, full_name, pid, dob, [], search, ukrdc3
+        mrn_number, ukrdc_number, full_name, pid, dob, facility, search, ukrdc3
     )
 
     matched_records = ukrdc3.query(PatientRecord).filter(
@@ -148,6 +148,7 @@ def search_records(
         )
 
     # Strict filter by facility
+    # We also pass facility to search_ukrdcids to allow for searches for all records on a facility
     if facility:
         matched_records = matched_records.filter(
             PatientRecord.sendingfacility.in_(facility)
