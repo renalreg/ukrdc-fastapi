@@ -118,6 +118,9 @@ def search_records(
     include_informational: bool = QueryParam(
         False, description="Include informational-only records in search results"
     ),
+    include_survey: bool = QueryParam(
+        False, description="Include survey-only records in search results"
+    ),
     user: UKRDCUser = Security(auth.get_user()),
     ukrdc3: Session = Depends(get_ukrdc3),
     audit: Auditer = Depends(get_auditer),
@@ -145,6 +148,10 @@ def search_records(
     if not include_informational:
         matched_records = matched_records.filter(
             PatientRecord.sendingfacility.notin_(INFORMATIONAL_FACILITIES)
+        )
+    if not include_survey:
+        matched_records = matched_records.filter(
+            PatientRecord.sendingextract != "SURVEY"
         )
 
     # Strict filter by facility
