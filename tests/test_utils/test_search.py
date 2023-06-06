@@ -1,6 +1,6 @@
 import pytest
 
-from ukrdc_fastapi.utils.search import masterrecords as search
+from ukrdc_fastapi.utils import search as search
 
 
 @pytest.mark.parametrize(

@@ -6,10 +6,9 @@ from fastapi import Query as QueryParam
 from fastapi import Security
 from mirth_client.mirth import MirthAPI
 from sqlalchemy.orm import Session
-from ukrdc_sqla.empi import MasterRecord
 from ukrdc_sqla.errorsdb import Message
 
-from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_mirth
+from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_mirth, get_ukrdc3
 from ukrdc_fastapi.dependencies.audit import (
     Auditer,
     AuditOperation,
@@ -19,20 +18,22 @@ from ukrdc_fastapi.dependencies.audit import (
 )
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.exceptions import ResourceNotFoundError
-from ukrdc_fastapi.permissions.masterrecords import apply_masterrecord_list_permissions
 from ukrdc_fastapi.permissions.messages import (
     apply_message_list_permissions,
     assert_message_permissions,
 )
+from ukrdc_fastapi.permissions.patientrecords import apply_patientrecord_list_permission
 from ukrdc_fastapi.permissions.workitems import apply_workitem_list_permission
 from ukrdc_fastapi.query.messages import (
     MessageSourceSchema,
     get_message_source,
     get_messages,
 )
+from ukrdc_fastapi.query.patientrecords import get_patientrecords_related_to_message
 from ukrdc_fastapi.query.workitems import get_workitems_related_to_message
-from ukrdc_fastapi.schemas.empi import MasterRecordSchema, WorkItemSchema
+from ukrdc_fastapi.schemas.empi import WorkItemSchema
 from ukrdc_fastapi.schemas.message import MessageSchema
+from ukrdc_fastapi.schemas.patientrecord import PatientRecordSummarySchema
 from ukrdc_fastapi.sorters import ERROR_SORTER
 from ukrdc_fastapi.utils.paginate import Page, paginate
 from ukrdc_fastapi.utils.sort import SQLASorter
@@ -164,26 +165,27 @@ async def message_workitems(
 
 
 @router.get(
-    "/{message_id}/masterrecords",
-    response_model=list[MasterRecordSchema],
+    "/{message_id}/patientrecords",
+    response_model=list[PatientRecordSummarySchema],
     dependencies=[
         Security(auth.permission([Permissions.READ_MESSAGES, Permissions.READ_RECORDS]))
     ],
 )
-async def message_masterrecords(
+async def message_patientrecords(
     message_obj: Message = Depends(_get_message),
     user: UKRDCUser = Security(auth.get_user()),
-    jtrace: Session = Depends(get_jtrace),
+    ukrdc3: Session = Depends(get_ukrdc3),
     audit: Auditer = Depends(get_auditer),
 ):
-    """Retreive MasterRecords associated with a specific error message"""
-    # Get masterrecords directly referenced by the error
-    records = jtrace.query(MasterRecord).filter(
-        MasterRecord.nationalid == message_obj.ni
-    )
+    """Retreive patient records associated with a specific error message"""
+    # Get patientrecords directly referenced by the error
+    if not message_obj.ni:
+        return []
+
+    records = get_patientrecords_related_to_message(message_obj, ukrdc3)
 
     # Apply permissions
-    records = apply_masterrecord_list_permissions(records, user)
+    records = apply_patientrecord_list_permission(records, user)
 
     # Add audit events
     message_audit = audit.add_event(
@@ -191,8 +193,8 @@ async def message_masterrecords(
     )
     for record in records:
         audit.add_event(
-            Resource.MASTER_RECORD,
-            record.id,
+            Resource.PATIENT_RECORD,
+            record.pid,
             AuditOperation.READ,
             parent=message_audit,
         )

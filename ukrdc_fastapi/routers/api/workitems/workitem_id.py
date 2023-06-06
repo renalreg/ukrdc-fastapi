@@ -1,9 +1,8 @@
 import datetime
 from typing import Optional
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Security
 from fastapi import Query as QueryParam
-from fastapi import Security
 from mirth_client import MirthAPI
 from pydantic.fields import Field
 from redis import Redis
@@ -218,6 +217,9 @@ def workitem_messages(
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a list of other work items related to a particular work item"""
+
+    # TODO: Move logic into a separate query function and out the router function
+
     # Extend the work item with additional information
     extended_workitem = extend_workitem(worktiem_obj, jtrace)
 

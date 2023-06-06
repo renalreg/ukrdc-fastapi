@@ -84,10 +84,14 @@ MINIMAL_PDF_BYTES = (
     + b"%%EOF"
 )
 
-PID_1: str = "PYTEST01:PV:00000000A"
-PID_2: str = "PYTEST02:PV:00000000A"
-PID_3: str = "PYTEST03:PV:00000000A"
-PID_4: str = "PYTEST04:PV:00000000A"
+PID_1 = "PYTEST01:PV:00000000A"
+PID_2 = "PYTEST02:PV:00000000A"
+PID_3 = "PYTEST03:PV:00000000A"
+PID_4 = "PYTEST04:PV:00000000A"
+NI_1 = "888888888"
+NI_2 = "888888887"
+NI_3 = "888888886"
+NI_4 = "888888885"
 UKRDCID_1 = "999999999"
 UKRDCID_2 = "999999911"
 UKRDCID_3 = "999999922"
@@ -144,7 +148,7 @@ def populate_facilities_and_messages(ukrdc3, statsdb, errorsdb):
         channel_id="00000000-0000-0000-0000-000000000000",
         received=days_ago(2),
         msg_status="RECEIVED",
-        ni=UKRDCID_1,
+        ni=NI_1,
         filename="FILENAME_3.XML",
         facility="TSF01",
         error=None,
@@ -157,14 +161,14 @@ def populate_facilities_and_messages(ukrdc3, statsdb, errorsdb):
         channel_id="00000000-0000-0000-0000-111111111111",
         received=days_ago(1),
         msg_status="ERROR",
-        ni=UKRDCID_1,
+        ni=NI_1,
         filename="FILENAME_1.XML",
         facility="TSF01",
         error="ERROR MESSAGE 1",
         status="STATUS1",
     )
 
-    facility_1_ni_1_latest = Latest(facility="TSF01", ni=UKRDCID_1, message_id=2)
+    facility_1_ni_1_latest = Latest(facility="TSF01", ni=NI_1, message_id=2)
 
     facility_2_message_1 = ErrorMessage(
         id=3,
@@ -172,13 +176,13 @@ def populate_facilities_and_messages(ukrdc3, statsdb, errorsdb):
         channel_id="00000000-0000-0000-0000-000000000000",
         received=days_ago(730),
         msg_status="ERROR",
-        ni=UKRDCID_2,
+        ni=NI_2,
         filename="FILENAME_2.XML",
         facility="TSF02",
         error="ERROR MESSAGE 2",
         status="STATUS2",
     )
-    facility_2_ni_2_latest = Latest(facility="TSF02", ni=UKRDCID_2, message_id=3)
+    facility_2_ni_2_latest = Latest(facility="TSF02", ni=NI_2, message_id=3)
 
     errorsdb.add(facility_1_message_1)
     errorsdb.add(facility_1_message_2)
@@ -582,7 +586,7 @@ def populate_workitems(session: Session):
     work_item_1 = WorkItem(
         id=1,
         person_id=1,
-        master_id=4,
+        master_id=104,
         type=9,
         description="DESCRIPTION_1",
         status=1,
@@ -593,7 +597,7 @@ def populate_workitems(session: Session):
     work_item_2 = WorkItem(
         id=2,
         person_id=2,
-        master_id=4,
+        master_id=104,
         type=9,
         description="DESCRIPTION_2",
         status=1,
@@ -604,7 +608,7 @@ def populate_workitems(session: Session):
     work_item_3 = WorkItem(
         id=3,
         person_id=4,
-        master_id=2,
+        master_id=102,
         type=9,
         description="DESCRIPTION_3",
         status=1,
@@ -615,7 +619,7 @@ def populate_workitems(session: Session):
     work_item_closed = WorkItem(
         id=4,
         person_id=4,
-        master_id=1,
+        master_id=101,
         type=9,
         description="DESCRIPTION_CLOSED",
         status=3,
@@ -640,7 +644,7 @@ def populate_all(ukrdc3: Session, jtrace: Session, errorsdb: Session, statsdb: S
         1,
         PID_1,
         UKRDCID_1,
-        "888888888",
+        NI_1,
         "TSF01",
         "UKRDC",
         "00000000A",
@@ -654,7 +658,7 @@ def populate_all(ukrdc3: Session, jtrace: Session, errorsdb: Session, statsdb: S
         2,
         PID_2,
         UKRDCID_2,
-        "888888887",
+        NI_2,
         "TSF02",
         "UKRDC",
         "00000000B",
@@ -668,7 +672,7 @@ def populate_all(ukrdc3: Session, jtrace: Session, errorsdb: Session, statsdb: S
         3,
         PID_3,
         UKRDCID_3,
-        "888888886",
+        NI_3,
         "TSF03",
         "UKRDC",
         "00000000A",
@@ -682,7 +686,7 @@ def populate_all(ukrdc3: Session, jtrace: Session, errorsdb: Session, statsdb: S
         4,
         PID_4,
         UKRDCID_4,
-        "888888885",
+        NI_4,
         "TSF01",
         "UKRDC",
         "00000000B",

@@ -1,25 +1,15 @@
 import datetime
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, Response, Security
 from fastapi import Query as QueryParam
-from fastapi import Response, Security
-from mirth_client import MirthAPI
 from pydantic import Field
-from redis import Redis
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_204_NO_CONTENT
 from ukrdc_sqla.empi import LinkRecord, MasterRecord
 from ukrdc_sqla.errorsdb import Message
 
-from ukrdc_fastapi.dependencies import (
-    get_auditdb,
-    get_errorsdb,
-    get_jtrace,
-    get_mirth,
-    get_redis,
-    get_ukrdc3,
-)
+from ukrdc_fastapi.dependencies import get_auditdb, get_errorsdb, get_jtrace, get_ukrdc3
 from ukrdc_fastapi.dependencies.audit import (
     Auditer,
     AuditOperation,
@@ -27,7 +17,6 @@ from ukrdc_fastapi.dependencies.audit import (
     get_auditer,
 )
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
-from ukrdc_fastapi.models.audit import AccessEvent, AuditEvent
 from ukrdc_fastapi.permissions.masterrecords import apply_masterrecord_list_permissions
 from ukrdc_fastapi.permissions.messages import (
     apply_message_list_permissions,
@@ -39,7 +28,6 @@ from ukrdc_fastapi.permissions.workitems import apply_workitem_list_permission
 from ukrdc_fastapi.query.audit import get_auditevents_related_to_masterrecord
 from ukrdc_fastapi.query.masterrecords import get_masterrecords_related_to_masterrecord
 from ukrdc_fastapi.query.messages import get_messages_related_to_masterrecord
-from ukrdc_fastapi.query.mirth.memberships import create_pkb_membership
 from ukrdc_fastapi.query.patientrecords import (
     get_patientrecords_related_to_masterrecord,
 )
@@ -55,10 +43,9 @@ from ukrdc_fastapi.schemas.empi import (
 )
 from ukrdc_fastapi.schemas.message import MessageSchema, MinimalMessageSchema
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordSummarySchema
-from ukrdc_fastapi.sorters import ERROR_SORTER
-from ukrdc_fastapi.utils.mirth import MirthMessageResponseSchema
+from ukrdc_fastapi.sorters import AUDIT_SORTER, ERROR_SORTER
 from ukrdc_fastapi.utils.paginate import Page, paginate
-from ukrdc_fastapi.utils.sort import SQLASorter, make_sqla_sorter
+from ukrdc_fastapi.utils.sort import SQLASorter
 
 from .dependencies import _get_masterrecord
 
@@ -430,12 +417,7 @@ def master_record_audit(
     auditdb: Session = Depends(get_auditdb),
     since: Optional[datetime.datetime] = None,
     until: Optional[datetime.datetime] = None,
-    sorter: SQLASorter = Depends(
-        make_sqla_sorter(
-            [AuditEvent.id, AccessEvent.time],
-            default_sort_by=AuditEvent.id,
-        )
-    ),
+    sorter: SQLASorter = Depends(AUDIT_SORTER),
 ):
     """
     Retreive a page of audit events related to a particular master record.
@@ -452,50 +434,3 @@ def master_record_audit(
         item.populate_identifiers(jtrace, ukrdc3)
 
     return page
-
-
-@router.post(
-    "/{record_id}/memberships/create/pkb",
-    response_model=MirthMessageResponseSchema,
-    dependencies=[Security(auth.permission(Permissions.CREATE_MEMBERSHIPS))],
-)
-async def master_record_memberships_create_pkb(
-    record: MasterRecord = Depends(_get_masterrecord),
-    jtrace: Session = Depends(get_jtrace),
-    mirth: MirthAPI = Depends(get_mirth),
-    audit: Auditer = Depends(get_auditer),
-    redis: Redis = Depends(get_redis),
-):
-    """
-    Create a new PKB membership for a master record.
-    """
-
-    # If the request was not triggered from a UKRDC MasterRecord
-    if record.nationalid_type != "UKRDC":
-        # Find all linked UKRDC MasterRecords
-        records = get_masterrecords_related_to_masterrecord(
-            record,
-            jtrace,
-            nationalid_type="UKRDC",
-        ).all()
-        if len(records) > 1:
-            raise HTTPException(
-                500,
-                "Cannot create PKB membership for a patient with multiple UKRDC IDs",
-            )
-        if not records:
-            raise HTTPException(
-                500,
-                "Cannot create PKB membership for a patient with no UKRDC ID",
-            )
-        # Use the UKRDC MasterRecord to create the PKB membership
-        record = records[0]
-
-    audit.add_event(
-        Resource.MEMBERSHIP,
-        "PKB",
-        AuditOperation.CREATE,
-        parent=audit.add_event(Resource.MASTER_RECORD, record.id, AuditOperation.READ),
-    )
-
-    return await create_pkb_membership(record, mirth, redis)

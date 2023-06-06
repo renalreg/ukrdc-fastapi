@@ -41,14 +41,16 @@ class AuditEventSchema(OrmModel):
 
     identifiers: List[str] = Field([], description="Additional resource identifiers")
 
-    def populate_identifiers(self, jtrace: Session, ukrdc3: Session):
+    def populate_identifiers(
+        self, jtrace: Optional[Session], ukrdc3: Optional[Session]
+    ):
         """
         Use database sessions to populate an array of resource identifier strings.
         The identifiers will vary depending on resource type, but should be listed
         in descending priority.
         Identifiers include names, patient numbers, record types etc
         """
-        if self.resource == Resource.PATIENT_RECORD.value:
+        if self.resource == Resource.PATIENT_RECORD.value and ukrdc3:
             record = ukrdc3.query(PatientRecord).get(self.resource_id)
             if record:
                 first_mrn = next(
@@ -66,7 +68,7 @@ class AuditEventSchema(OrmModel):
                         first_mrn.patientid,
                     ]
                 )
-        elif self.resource == Resource.MASTER_RECORD.value:
+        elif self.resource == Resource.MASTER_RECORD.value and jtrace:
             master_record = jtrace.query(MasterRecord).get(self.resource_id)
             if master_record:
                 self.identifiers = [

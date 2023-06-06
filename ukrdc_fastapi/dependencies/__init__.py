@@ -19,10 +19,6 @@ from .database import (
 )
 from .mirth import mirth_session
 
-JTRACE_FRIENDLY_ERROR_CODES = {"e3q8": "Error connecting to JTRACE database."}
-UKRDC3_FRIENDLY_ERROR_CODES = {"e3q8": "Error connecting to UKRDC3 database."}
-ERRORS_FRIENDLY_ERROR_CODES = {"e3q8": "Error connecting to ERRORSDB database."}
-
 
 async def get_mirth() -> AsyncGenerator[MirthAPI, None]:
     """Connect, login to, and yeild a new MirthAPI session

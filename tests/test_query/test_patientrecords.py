@@ -82,20 +82,6 @@ def _create_related_records(ukrdc3_session, jtrace_session):
     )
 
 
-def test_get_patientrecords_related_to_patientrecord(ukrdc3_session, jtrace_session):
-    _create_related_records(ukrdc3_session, jtrace_session)
-
-    records = patientrecords.get_patientrecords_related_to_patientrecord(
-        ukrdc3_session.query(PatientRecord).get("PYTEST02:TPR:TEST1"), ukrdc3_session
-    )
-    assert {record.pid for record in records} == {
-        "PYTEST02:TPR:TEST1",
-        "PYTEST02:TPR:TEST2",
-        "PYTEST02:TPR:TEST3",
-        "PYTEST02:TPR:TEST4",
-    }
-
-
 def test_get_patientrecords_related_to_masterrecord(ukrdc3_session, jtrace_session):
     _create_related_records(ukrdc3_session, jtrace_session)
 
@@ -104,6 +90,24 @@ def test_get_patientrecords_related_to_masterrecord(ukrdc3_session, jtrace_sessi
     )
 
     assert {record.pid for record in records} == {
+        "PYTEST02:TPR:TEST1",
+        "PYTEST02:TPR:TEST2",
+        "PYTEST02:TPR:TEST3",
+        "PYTEST02:TPR:TEST4",
+    }
+
+
+def test_get_patientrecords_related_to_ni(ukrdc3_session, jtrace_session):
+    _create_related_records(ukrdc3_session, jtrace_session)
+
+    records = patientrecords.get_patientrecords_related_to_ni(
+        "888888885", ukrdc3_session
+    )
+
+    assert {record.pid for record in records} == {
+        # The original
+        "PYTEST04:PV:00000000A",
+        # Newly created test records
         "PYTEST02:TPR:TEST1",
         "PYTEST02:TPR:TEST2",
         "PYTEST02:TPR:TEST3",

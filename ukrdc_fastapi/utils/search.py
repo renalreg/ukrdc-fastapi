@@ -196,7 +196,7 @@ def records_from_dob(ukrdc3: Session, dobs: Iterable[Union[str, datetime.date]])
     return ukrdc3.query(PatientRecord).join(Patient).filter(or_(*conditions))
 
 
-def search_masterrecord_ids(  # pylint: disable=too-many-branches
+def search_ukrdcids(  # pylint: disable=too-many-branches
     mrn_number: list[str],
     ukrdc_number: list[str],
     full_name: list[str],
@@ -205,8 +205,8 @@ def search_masterrecord_ids(  # pylint: disable=too-many-branches
     facility: list[str],
     search: list[str],
     ukrdc3: Session,
-):
-    """Search the UKRDC for a set of search items, and return a set of matching Patient Records"""
+) -> set[int]:
+    """Search the UKRDC for a set of search items, and return a set of matching UKRDC IDs"""
     match_sets: list[set[int]] = []
 
     searchset = SearchSet()

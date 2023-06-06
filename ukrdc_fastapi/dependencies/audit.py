@@ -16,6 +16,8 @@ from .auth import auth
 
 class Resource(Enum):
     PATIENT_RECORD = "PATIENT_RECORD"
+    UKRDCID = "UKRDCID"
+
     MEDICATIONS = "MEDICATIONS"
     TREATMENTS = "TREATMENTS"
     SURVEYS = "SURVEYS"
@@ -40,12 +42,6 @@ class Resource(Enum):
     FACILITY = "FACILITY"
 
 
-class MasterRecordResource(Enum):
-    MESSAGE = "MESSAGE"
-    MESSAGES = "MESSAGES"
-    STATISTICS = "STATISTICS"
-
-
 class AuditOperation(Enum):
     CREATE = "CREATE"
     UPDATE = "UPDATE"
@@ -64,6 +60,10 @@ class RecordOperation(Enum):
     EXPORT_PV_DOCS = "EXPORT_PV_DOCS"
     EXPORT_RADAR = "EXPORT_RADAR"
     EXPORT_PKB = "EXPORT_PKB"
+
+
+class UKRDCIDOperation(Enum):
+    READ = "READ"
 
 
 class MessageOperation(Enum):
@@ -116,7 +116,9 @@ class Auditer:
         self,
         resource: Resource,
         resource_id: Optional[Union[str, int]],
-        operation: Optional[Union[RecordOperation, MessageOperation, AuditOperation]],
+        operation: Optional[
+            Union[RecordOperation, UKRDCIDOperation, MessageOperation, AuditOperation]
+        ],
         parent: Optional[AuditEvent] = None,
     ) -> AuditEvent:
         """Add an audit event
