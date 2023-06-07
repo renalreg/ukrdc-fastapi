@@ -1,18 +1,15 @@
 import datetime
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Security
+from fastapi import APIRouter, Depends, Security
 from fastapi import Query as QueryParam
 from fastapi.responses import Response
-from sqlalchemy.orm import Session, defer
+from sqlalchemy.orm import Session
 from starlette.status import HTTP_204_NO_CONTENT
 from ukrdc_sqla.errorsdb import Message
 from ukrdc_sqla.ukrdc import (
-    Document,
-    LabOrder,
     Observation,
     PatientRecord,
-    PVDelete,
     ResultItem,
 )
 
@@ -38,17 +35,12 @@ from ukrdc_fastapi.query.messages import get_messages_related_to_patientrecord
 from ukrdc_fastapi.schemas.audit import AuditEventSchema
 from ukrdc_fastapi.schemas.delete import DeletePidRequest, DeletePIDResponseSchema
 from ukrdc_fastapi.schemas.laborder import (
-    LabOrderSchema,
-    LabOrderShortSchema,
-    ResultItemSchema,
     ResultItemServiceSchema,
 )
 from ukrdc_fastapi.schemas.medication import MedicationSchema
 from ukrdc_fastapi.schemas.message import MessageSchema, MinimalMessageSchema
 from ukrdc_fastapi.schemas.observation import ObservationSchema
 from ukrdc_fastapi.schemas.patientrecord import (
-    DocumentSchema,
-    DocumentSummarySchema,
     PatientRecordSchema,
 )
 from ukrdc_fastapi.schemas.survey import SurveySchema
@@ -57,12 +49,16 @@ from ukrdc_fastapi.sorters import AUDIT_SORTER, ERROR_SORTER
 from ukrdc_fastapi.utils.paginate import Page, paginate
 from ukrdc_fastapi.utils.sort import SQLASorter, make_sqla_sorter
 
-from . import export, update
+from . import export, update, results, laborders, documents, diagnoses
 from .dependencies import _get_patientrecord
 
 router = APIRouter(tags=["Patient Records"])
 router.include_router(export.router, prefix="/{pid}/export")
 router.include_router(update.router, prefix="/{pid}/update")
+router.include_router(results.router, prefix="/{pid}/results")
+router.include_router(laborders.router, prefix="/{pid}/laborders")
+router.include_router(documents.router, prefix="/{pid}/documents")
+router.include_router(diagnoses.router, prefix="/{pid}/diagnoses")
 
 
 # Self-resources
@@ -309,9 +305,6 @@ def patient_surveys(
     return patient_record.surveys.all()
 
 
-# Complex internal resources
-
-
 @router.get(
     "/{pid}/observations",
     response_model=Page[ObservationSchema],
@@ -345,6 +338,9 @@ def patient_observations(
     return paginate(sorter.sort(observations))
 
 
+# Available codes used to filter other resources
+
+
 @router.get(
     "/{pid}/observation_codes",
     response_model=list[str],
@@ -356,212 +352,6 @@ def patient_observation_codes(
     """Retreive a list of observation codes available for a specific patient"""
     codes = patient_record.observations.distinct(Observation.observation_code)
     return {item.observation_code for item in codes.all()}
-
-
-@router.get(
-    "/{pid}/laborders",
-    response_model=Page[LabOrderShortSchema],
-    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
-)
-def patient_laborders(
-    patient_record: PatientRecord = Depends(_get_patientrecord),
-    audit: Auditer = Depends(get_auditer),
-):
-    """Retreive a specific patient's lab orders"""
-    audit.add_event(
-        Resource.LABORDERS,
-        None,
-        RecordOperation.READ,
-        parent=audit.add_event(
-            Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.READ
-        ),
-    )
-
-    return paginate(
-        patient_record.lab_orders.order_by(LabOrder.specimen_collected_time.desc())
-    )
-
-
-@router.get(
-    "/{pid}/laborders/{order_id}",
-    response_model=LabOrderSchema,
-    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
-)
-def patient_laborder(
-    order_id: str,
-    patient_record: PatientRecord = Depends(_get_patientrecord),
-    audit: Auditer = Depends(get_auditer),
-) -> LabOrder:
-    """Retreive a particular lab order"""
-    order = patient_record.lab_orders.filter(LabOrder.id == order_id).first()
-    if not order:
-        raise HTTPException(404, detail="Lab Order not found")
-
-    audit.add_event(
-        Resource.LABORDER,
-        order_id,
-        RecordOperation.READ,
-        parent=audit.add_event(
-            Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.READ
-        ),
-    )
-
-    return order
-
-
-@router.delete(
-    "/{pid}/laborders/{order_id}",
-    dependencies=[Security(auth.permission(Permissions.WRITE_RECORDS))],
-)
-def patient_laborder_delete(
-    order_id: str,
-    patient_record: PatientRecord = Depends(_get_patientrecord),
-    ukrdc3: Session = Depends(get_ukrdc3),
-    audit: Auditer = Depends(get_auditer),
-):
-    """Mark a particular lab order for deletion"""
-    order = patient_record.lab_orders.filter(LabOrder.id == order_id).first()
-    if not order:
-        raise HTTPException(404, detail="Lab Order not found")
-
-    deletes = [
-        PVDelete(
-            pid=item.pid,
-            observationtime=item.observation_time,
-            serviceidcode=item.service_id,
-        )
-        for item in order.result_items
-    ]
-
-    # Audit the laborder delete and then each resulitem delete
-    order_audit = audit.add_event(
-        Resource.LABORDER,
-        order_id,
-        RecordOperation.DELETE,
-        parent=audit.add_event(
-            Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.UPDATE
-        ),
-    )
-    for item in order.result_items:
-        audit.add_event(
-            Resource.RESULTITEM,
-            item.id,
-            RecordOperation.DELETE,
-            parent=order_audit,
-        )
-
-    ukrdc3.bulk_save_objects(deletes)
-    ukrdc3.delete(order)
-    ukrdc3.commit()
-
-    return Response(status_code=204)
-
-
-@router.get(
-    "/{pid}/results",
-    response_model=Page[ResultItemSchema],
-    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
-)
-def patient_results(
-    patient_record: PatientRecord = Depends(_get_patientrecord),
-    service_id: Optional[list[str]] = QueryParam([]),
-    order_id: Optional[list[str]] = QueryParam([]),
-    since: Optional[datetime.datetime] = None,
-    until: Optional[datetime.datetime] = None,
-    sorter: SQLASorter = Depends(
-        make_sqla_sorter(
-            [ResultItem.observation_time, ResultItem.entered_on],
-            default_sort_by=ResultItem.observation_time,
-        )
-    ),
-    audit: Auditer = Depends(get_auditer),
-):
-    """Retreive a specific patient's lab orders"""
-
-    query = patient_record.result_items
-
-    if service_id:
-        query = query.filter(ResultItem.service_id.in_(service_id))
-    if order_id:
-        query = query.filter(ResultItem.order_id.in_(order_id))
-    if since:
-        query = query.filter(ResultItem.observation_time >= since)
-    if until:
-        query = query.filter(ResultItem.observation_time <= until)
-
-    audit.add_event(
-        Resource.RESULTITEMS,
-        None,
-        RecordOperation.READ,
-        parent=audit.add_event(
-            Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.READ
-        ),
-    )
-
-    return paginate(sorter.sort(query))
-
-
-@router.get(
-    "/{pid}/results/{resultitem_id}",
-    response_model=ResultItemSchema,
-    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
-)
-def patient_result(
-    resultitem_id: str,
-    patient_record: PatientRecord = Depends(_get_patientrecord),
-    audit: Auditer = Depends(get_auditer),
-) -> ResultItem:
-    """Retreive a particular lab result"""
-    item = patient_record.result_items.filter(ResultItem.id == resultitem_id).first()
-    if not item:
-        raise HTTPException(404, detail="Result item not found")
-
-    audit.add_event(
-        Resource.RESULTITEM,
-        resultitem_id,
-        RecordOperation.READ,
-        parent=audit.add_event(
-            Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.READ
-        ),
-    )
-
-    return item
-
-
-@router.delete(
-    "/{pid}/results/{resultitem_id}",
-    dependencies=[Security(auth.permission(Permissions.WRITE_RECORDS))],
-)
-def patient_result_delete(
-    resultitem_id: str,
-    patient_record: PatientRecord = Depends(_get_patientrecord),
-    ukrdc3: Session = Depends(get_ukrdc3),
-    audit: Auditer = Depends(get_auditer),
-):
-    """Mark a particular lab result for deletion"""
-    item = patient_record.result_items.filter(ResultItem.id == resultitem_id).first()
-    if not item:
-        raise HTTPException(404, detail="Result item not found")
-
-    order: Optional[LabOrder] = item.order
-
-    ukrdc3.delete(item)
-    ukrdc3.commit()
-
-    if order and order.result_items.count() == 0:
-        ukrdc3.delete(order)
-    ukrdc3.commit()
-
-    audit.add_event(
-        Resource.RESULTITEM,
-        resultitem_id,
-        RecordOperation.DELETE,
-        parent=audit.add_event(
-            Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.UPDATE
-        ),
-    )
-
-    return Response(status_code=204)
 
 
 @router.get(
@@ -582,101 +372,3 @@ def patient_result_services(
         )
         for item in services.all()
     ]
-
-
-@router.get(
-    "/{pid}/documents",
-    response_model=Page[DocumentSummarySchema],
-    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
-)
-def patient_documents(
-    patient_record: PatientRecord = Depends(_get_patientrecord),
-    sorter: SQLASorter = Depends(
-        make_sqla_sorter(
-            [Document.documenttime, Document.updatedon],
-            default_sort_by=Document.documenttime,
-        )
-    ),
-    audit: Auditer = Depends(get_auditer),
-):
-    """Retreive a specific patient's documents"""
-    audit.add_event(
-        Resource.DOCUMENTS,
-        None,
-        RecordOperation.READ,
-        parent=audit.add_event(
-            Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.READ
-        ),
-    )
-    # NOTE: We defer the 'stream' column to avoid sending the full PDF file content
-    # when we're just querying the list of documents.
-    return paginate(sorter.sort(patient_record.documents.options(defer("stream"))))
-
-
-@router.get(
-    "/{pid}/documents/{document_id}",
-    response_model=DocumentSchema,
-    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
-)
-def patient_document(
-    document_id: str,
-    patient_record: PatientRecord = Depends(_get_patientrecord),
-    audit: Auditer = Depends(get_auditer),
-):
-    """Retreive a specific patient's document information"""
-    document_obj = patient_record.documents.filter(Document.id == document_id).first()
-    if not document_obj:
-        raise HTTPException(404, detail="Document not found")
-
-    audit.add_event(
-        Resource.DOCUMENT,
-        document_id,
-        RecordOperation.READ,
-        parent=audit.add_event(
-            Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.READ
-        ),
-    )
-
-    return document_obj
-
-
-@router.get(
-    "/{pid}/documents/{document_id}/download",
-    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
-)
-def patient_document_download(
-    document_id: str,
-    patient_record: PatientRecord = Depends(_get_patientrecord),
-    audit: Auditer = Depends(get_auditer),
-):
-    """Retreive a specific patient's document file"""
-    document_obj: Optional[Document] = patient_record.documents.filter(
-        Document.id == document_id
-    ).first()
-    if not document_obj:
-        raise HTTPException(404, detail="Document not found")
-
-    audit.add_event(
-        Resource.DOCUMENT,
-        document_id,
-        RecordOperation.READ,
-        parent=audit.add_event(
-            Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.READ
-        ),
-    )
-
-    media_type: str
-    stream: bytes
-    filename: str
-    if not document_obj.filetype:
-        media_type = "text/csv"
-        stream = (document_obj.notetext or "").encode()
-        filename = f"{document_obj.documentname}.txt"
-    else:
-        media_type = document_obj.filetype
-        stream = document_obj.stream or b""
-        filename = document_obj.filename or document_obj.documentname or "NoFileName"
-
-    response = Response(content=stream, media_type=media_type)
-    response.headers["Content-Disposition"] = f"attachment; filename={filename}"
-    return response
