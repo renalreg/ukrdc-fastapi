@@ -680,7 +680,3 @@ def patient_document_download(
     response = Response(content=stream, media_type=media_type)
     response.headers["Content-Disposition"] = f"attachment; filename={filename}"
     return response
-
-    response = Response(content=stream, media_type=media_type)
-    response.headers["Content-Disposition"] = f"attachment; filename={filename}"
-    return response
