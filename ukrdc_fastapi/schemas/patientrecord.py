@@ -45,17 +45,34 @@ class AllergySchema(OrmModel):
     pid: str = Field(..., description="Patient ID")
 
 
-class DiagnosisSchema(OrmModel):
-    """A diagnosis record."""
+class BaseDiagnosisSchema(OrmModel):
+    """Base class for Diagnosis, RenalDiagnosis, and CauseOfDeath"""
 
-    id: str = Field(..., description="Diagnosis ID")
     pid: str = Field(..., description="Patient ID")
+
+    creation_date: datetime.datetime = Field(..., description="Database creation date")
+    update_date: Optional[datetime.datetime] = Field(
+        ..., description="Database update date"
+    )
+
+    enteredon: Optional[datetime.datetime] = Field(..., description="Entered date")
+    updatedon: Optional[datetime.datetime] = Field(..., description="Updated date")
+
+    diagnosistype: Optional[str] = Field(..., description="Diagnosis type")
 
     diagnosis_code: Optional[str] = Field(None, description="Diagnosis code")
     diagnosis_code_std: Optional[str] = Field(
         None, description="Diagnosis code standard"
     )
     diagnosis_desc: Optional[str] = Field(None, description="Diagnosis description")
+
+    comments: Optional[str] = Field(None, description="Diagnosis comments")
+
+
+class DiagnosisSchema(BaseDiagnosisSchema):
+    """A diagnosis record."""
+
+    id: str = Field(..., description="Diagnosis ID")
 
     identification_time: Optional[datetime.datetime] = Field(
         None, description="Diagnosis identification timestamp"
@@ -64,25 +81,22 @@ class DiagnosisSchema(OrmModel):
         None, description="Diagnosis onset timestamp"
     )
 
-    comments: Optional[str] = Field(None, description="Diagnosis comments")
 
-
-class RenalDiagnosisSchema(OrmModel):
+class RenalDiagnosisSchema(BaseDiagnosisSchema):
     """A renal diagnosis record."""
-
-    pid: str = Field(..., description="Patient ID")
-
-    diagnosis_code: Optional[str] = Field(None, description="Diagnosis code")
-    diagnosis_code_std: Optional[str] = Field(
-        None, description="Diagnosis code standard"
-    )
-    diagnosis_desc: Optional[str] = Field(None, description="Diagnosis description")
 
     identification_time: Optional[datetime.datetime] = Field(
         None, description="Diagnosis identification timestamp"
     )
+    onset_time: Optional[datetime.datetime] = Field(
+        None, description="Diagnosis onset timestamp"
+    )
 
-    comments: Optional[str] = Field(None, description="Diagnosis comments")
+
+class CauseOfDeathSchema(BaseDiagnosisSchema):
+    """A cause of death record."""
+
+    pass
 
 
 class ProcedureSchema(OrmModel):

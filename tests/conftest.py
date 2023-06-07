@@ -19,7 +19,6 @@ from ukrdc_sqla.empi import LinkRecord, WorkItem
 from ukrdc_sqla.errorsdb import Base as ErrorsBase
 from ukrdc_sqla.errorsdb import Channel, Latest
 from ukrdc_sqla.errorsdb import Message as ErrorMessage
-from ukrdc_sqla.pkb import PKBLink
 from ukrdc_sqla.stats import Base as StatsBase
 from ukrdc_sqla.stats import ErrorHistory, MultipleUKRDCID
 from ukrdc_sqla.ukrdc import Base as UKRDC3Base
@@ -27,7 +26,6 @@ from ukrdc_sqla.ukrdc import (
     Code,
     CodeExclusion,
     CodeMap,
-    Diagnosis,
     Document,
     LabOrder,
     Level,
@@ -35,7 +33,6 @@ from ukrdc_sqla.ukrdc import (
     Observation,
     ProgramMembership,
     Question,
-    RenalDiagnosis,
     ResultItem,
     Score,
     Survey,
@@ -279,60 +276,6 @@ def populate_patient_1_extra(session):
     )
     session.add(membership_1)
     session.add(membership_2)
-
-    diagnosis_1 = Diagnosis(
-        id="DIAGNOSIS1",
-        pid=PID_1,
-        diagnosis_code="DIAGNOSIS_CODE",
-        diagnosis_code_std="DIAGNOSIS_CODE_STD",
-        diagnosis_desc="DIAGNOSIS_DESCRIPTION",
-        identification_time=days_ago(365),
-        onset_time=days_ago(730),
-        comments="DIAGNOSIS_COMMENTS",
-    )
-    pkb_link_1 = PKBLink(
-        coding_standard="DIAGNOSIS",
-        code="DIAGNOSIS_CODE",
-        link="http://pkb_link.1",
-        link_name="PKB_LINK_1",
-    )
-    diagnosis_2 = Diagnosis(
-        id="DIAGNOSIS2",
-        pid=PID_1,
-        diagnosis_code="DIAGNOSIS_CODE_2",
-        diagnosis_code_std="DIAGNOSIS_CODE_STD_2",
-        identification_time=days_ago(365),
-        onset_time=days_ago(730),
-        comments="DIAGNOSIS_COMMENTS_2",
-    )
-    pkb_link_2 = PKBLink(
-        coding_standard="DIAGNOSIS",
-        code="DIAGNOSIS_CODE_2",
-        link="http://pkb_link.2",
-        link_name="PKB_LINK_2",
-    )
-    session.add(diagnosis_1)
-    session.add(pkb_link_1)
-    session.add(diagnosis_2)
-    session.add(pkb_link_2)
-
-    renal_diagnosis_1 = RenalDiagnosis(
-        pid=PID_1,
-        diagnosis_code="R_DIAGNOSIS_CODE",
-        diagnosis_code_std="R_DIAGNOSIS_CODE_STD",
-        diagnosis_desc="R_DIAGNOSIS_DESCRIPTION",
-        identification_time=days_ago(365),
-        comments="R_DIAGNOSIS_COMMENTS",
-    )
-    renal_pkb_link_2 = PKBLink(
-        coding_standard="TREATMENT",
-        code="R_DIAGNOSIS_CODE",
-        link="http://renal_pkb_link.2",
-        link_name="RENAL_PKB_LINK_2",
-    )
-
-    session.add(renal_diagnosis_1)
-    session.add(renal_pkb_link_2)
 
     medication_1 = Medication(
         id="MEDICATION1",
