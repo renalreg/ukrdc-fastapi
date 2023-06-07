@@ -1,7 +1,6 @@
 from datetime import datetime
 
 from ukrdc_sqla.empi import MasterRecord
-from ukrdc_sqla.ukrdc import PatientRecord
 
 from tests.utils import create_basic_patient
 from ukrdc_fastapi.query import patientrecords
@@ -113,3 +112,6 @@ def test_get_patientrecords_related_to_ni(ukrdc3_session, jtrace_session):
         "PYTEST02:TPR:TEST3",
         "PYTEST02:TPR:TEST4",
     }
+
+
+# TODO: Test records related to UKRDCID

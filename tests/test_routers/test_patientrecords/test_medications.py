@@ -1,4 +1,3 @@
-from tests.utils import days_ago
 from ukrdc_fastapi.config import configuration
 
 
