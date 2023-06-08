@@ -2,6 +2,7 @@ import re
 import tempfile
 from datetime import datetime
 from pathlib import Path
+import uuid
 
 import fakeredis
 import pytest
@@ -37,6 +38,7 @@ from ukrdc_sqla.ukrdc import (
     Score,
     Survey,
     Treatment,
+    DialysisSession,
 )
 
 from ukrdc_fastapi.dependencies import (
@@ -409,6 +411,51 @@ def populate_patient_1_extra(session):
     )
     session.add(observation_dia)
     session.add(observation_sys)
+
+    dia_session_1 = DialysisSession(
+        id="DIA_SESSION_1",
+        pid=PID_1,
+        proceduretypecode="302497006",
+        proceduretypecodestd="SNOMED",
+        proceduretypedesc="Haemodialysis",
+        proceduretime=days_ago(1),
+        enteredbycode="user1",
+        enteredbycodestd="LOCAL",
+        enteredbydesc="User 1 Name",
+        enteredatcode="TSF01",
+        externalid=str(uuid.uuid4()),
+        qhd19="N",
+        qhd20="AVF",
+        qhd21="BB",
+        qhd22="N",
+        qhd30="300",
+        qhd31="150",
+        qhd32="140",
+        qhd33="U",
+    )
+    dia_session_2 = DialysisSession(
+        id="DIA_SESSION_2",
+        pid=PID_1,
+        proceduretypecode="PX",
+        proceduretypecodestd="RR35",
+        proceduretypedesc="Plasma Exchange",
+        proceduretime=days_ago(2),
+        enteredbycode="user1",
+        enteredbycodestd="LOCAL",
+        enteredbydesc="User 1 Name",
+        enteredatcode="TSF01",
+        externalid=str(uuid.uuid4()),
+        qhd19="N",
+        qhd20="AVF",
+        qhd21="BB",
+        qhd22="N",
+        qhd30="300",
+        qhd31="150",
+        qhd32="140",
+        qhd33="U",
+    )
+    session.add(dia_session_1)
+    session.add(dia_session_2)
 
     survey_1 = Survey(
         id="SURVEY1",
