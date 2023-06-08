@@ -99,6 +99,75 @@ class CauseOfDeathSchema(BaseDiagnosisSchema):
     pass
 
 
+class DialysisSessionSchema(OrmModel):
+    id: str = Field(..., description="Session ID")
+    pid: str = Field(..., description="Patient ID")
+
+    creation_date: datetime.datetime = Field(..., description="Database creation date")
+    update_date: Optional[datetime.datetime] = Field(
+        ..., description="Database update date"
+    )
+
+    # idx: Currently unused
+    externalid: Optional[str] = Field(None, description="External session ID")
+
+    proceduretime: Optional[datetime.datetime] = Field(
+        ..., description="Procedure datetime"
+    )
+
+    # Procedure type
+    proceduretypecode: Optional[str] = Field(None, description="Procedure code")
+    proceduretypecodestd: Optional[str] = Field(
+        None, description="Procedure code standard"
+    )
+    proceduretypedesc: Optional[str] = Field(None, description="Procedure description")
+
+    # Clinician
+    cliniciancode: Optional[str] = Field(
+        None, description="Clinicial code. Rarely used."
+    )
+    cliniciancodestd: Optional[str] = Field(
+        None, description="Clinicial code standard. Rarely used."
+    )
+    cliniciandesc: Optional[str] = Field(None, description="Clinician description")
+
+    # Data-entry user
+    enteredbycode: Optional[str] = Field(
+        None, description="Data-entry user code. Usually a local username or ID."
+    )
+    enteredbycodestd: Optional[str] = Field(
+        None, description="Data-entry user code standard. Usually local."
+    )
+    enteredbydesc: Optional[str] = Field(
+        None, description="Data-entry user description"
+    )
+
+    # Data entry site/unit
+    enteredatcode: Optional[str] = Field(
+        None,
+        description="Site code at which the data was entered. Usually an RR1+ code.",
+    )
+    enteredatcodestd: Optional[str] = Field(
+        None, description="Site code standard at which the data was entered."
+    )
+    enteredatdesc: Optional[str] = Field(
+        None, description="Site description at which the data was entered."
+    )
+
+    # Session data
+    qhd19: Optional[str]
+    qhd20: Optional[str]
+    qhd21: Optional[str]
+    qhd22: Optional[str]
+    qhd30: Optional[str]
+    qhd31: Optional[str]
+    qhd32: Optional[str]
+    qhd33: Optional[str]
+
+    # updatedon: Currently unused
+    # actioncode: Currently unused
+
+
 class ProcedureSchema(OrmModel):
     """A procedure record."""
 
