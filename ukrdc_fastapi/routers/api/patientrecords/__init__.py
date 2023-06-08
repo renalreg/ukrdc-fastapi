@@ -7,11 +7,7 @@ from fastapi.responses import Response
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_204_NO_CONTENT
 from ukrdc_sqla.errorsdb import Message
-from ukrdc_sqla.ukrdc import (
-    Observation,
-    PatientRecord,
-    ResultItem,
-)
+from ukrdc_sqla.ukrdc import Observation, PatientRecord, ResultItem, DialysisSession
 
 from ukrdc_fastapi.dependencies import get_auditdb, get_errorsdb, get_jtrace, get_ukrdc3
 from ukrdc_fastapi.dependencies.audit import (
@@ -41,6 +37,7 @@ from ukrdc_fastapi.schemas.medication import MedicationSchema
 from ukrdc_fastapi.schemas.message import MessageSchema, MinimalMessageSchema
 from ukrdc_fastapi.schemas.observation import ObservationSchema
 from ukrdc_fastapi.schemas.patientrecord import (
+    DialysisSessionSchema,
     PatientRecordSchema,
 )
 from ukrdc_fastapi.schemas.survey import SurveySchema
@@ -336,6 +333,36 @@ def patient_observations(
     )
 
     return paginate(sorter.sort(observations))
+
+
+@router.get(
+    "/{pid}/dialysissessions",
+    response_model=Page[DialysisSessionSchema],
+    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
+)
+def patient_dialysis_sessions(
+    patient_record: PatientRecord = Depends(_get_patientrecord),
+    sorter: SQLASorter = Depends(
+        make_sqla_sorter(
+            [DialysisSession.procedure_time, DialysisSession.creation_date],
+            default_sort_by=DialysisSession.procedure_time,
+        )
+    ),
+    audit: Auditer = Depends(get_auditer),
+):
+    """Retreive a specific patient's lab orders"""
+    sessions = patient_record.dialysis_sessions
+
+    audit.add_event(
+        Resource.DIALYSISSESSIONS,
+        None,
+        RecordOperation.READ,
+        parent=audit.add_event(
+            Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.READ
+        ),
+    )
+
+    return paginate(sorter.sort(sessions))
 
 
 # Available codes used to filter other resources
