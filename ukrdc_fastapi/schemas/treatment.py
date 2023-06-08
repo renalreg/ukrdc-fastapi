@@ -14,6 +14,7 @@ class TreatmentSchema(OrmModel):
     from_time: Optional[datetime.date] = Field(None, description="Treatment start date")
     to_time: Optional[datetime.date] = Field(None, description="Treatment end date")
 
+    # Admit reason
     admit_reason_code: Optional[str] = Field(
         None, description="Treatment admission reason code"
     )
@@ -24,6 +25,7 @@ class TreatmentSchema(OrmModel):
         None, description="Treatment admission reason description"
     )
 
+    # Discharge reason
     discharge_reason_code: Optional[str] = Field(
         None, description="Treatment discharge reason code"
     )
@@ -34,6 +36,27 @@ class TreatmentSchema(OrmModel):
         None, description="Treatment discharge reason description"
     )
 
+    # Discharge location
+    discharge_location_code: Optional[str] = Field(
+        None, description="Treatment discharge location code"
+    )
+    discharge_location_code_std: Optional[str] = Field(
+        None, description="Treatment discharge location code standard"
+    )
+    discharge_location_desc: Optional[str] = Field(
+        None, description="Treatment discharge location description"
+    )
+
+    # Health care facility
     health_care_facility_code: Optional[str] = Field(
         None, description="Treatment health care facility code"
     )
+    health_care_facility_code_std: Optional[str] = Field(
+        None, description="Treatment health care facility code standard"
+    )
+    health_care_facility_desc: Optional[str] = Field(
+        None, description="Treatment health care facility description"
+    )
+
+    # Attributes
+    qbl05: Optional[str]
