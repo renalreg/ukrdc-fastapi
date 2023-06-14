@@ -8,14 +8,14 @@ from .base import OrmModel
 class UserPreferences(OrmModel, extra=Extra.ignore):
     """User preferences"""
 
-    search_show_ukrdc: bool = Field(
-        default=False, description="Show UKRDC records in search results by default"
+    placeholder: bool = Field(
+        default=False, description="Placeholder preference, does not do anything"
     )
 
 
 class UserPreferencesRequest(OrmModel):
     """A request to update user preferences"""
 
-    search_show_ukrdc: Optional[bool] = Field(
-        default=None, description="Show UKRDC records in search results by default"
+    placeholder: Optional[bool] = Field(
+        default=None, description="Placeholder preference, does not do anything"
     )

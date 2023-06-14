@@ -19,15 +19,15 @@ def test_get_user_preferences_ignores(users_session, superuser):
     assert prefs == UserPreferences().dict()
 
 
-def test_update_user_preferences_show_ukrdc(users_session, superuser):
-    # Update the search_show_ukrdc preference
-    prefs = update_user_preferences(users_session, superuser, UserPreferencesRequest(search_show_ukrdc=True))  # type: ignore
+def test_update_user_preferences_placeholder(users_session, superuser):
+    # Update the placeholder preference
+    prefs = update_user_preferences(users_session, superuser, UserPreferencesRequest(placeholder=True))  # type: ignore
 
     # Ensure we get the new value back
-    assert prefs.search_show_ukrdc == True
+    assert prefs.placeholder is True
 
     # Ensure the update preference has been committed to the database
-    db_search_show_ukrdc = users_session.query(UserPreference).get(
-        (superuser.id, "search_show_ukrdc")
+    db_placeholder = users_session.query(UserPreference).get(
+        (superuser.id, "placeholder")
     )
-    assert db_search_show_ukrdc
+    assert db_placeholder
