@@ -64,7 +64,7 @@ The application version will be used as the API version in all documentation and
 - Minor version changes should be accompanied by a non-breaking change in the API.
 - Patch version changes should be accompanied by fixes or updates introducing no new API functionality.
 
-[Use Poetry to set the application version.](https://python-poetry.org/docs/cli/#version)
+Use `./setversion.sh {version_number}` to set the application version. E.g. `./setversion.sh 4.0.0-rc.1`.
 
 ### Github Release Versions
 
