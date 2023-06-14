@@ -5,7 +5,7 @@ name = "ukrdc-fastapi"
 packages = [
   {include = "ukrdc_fastapi"},
 ]
-version = "4.0.0-rc.1"
+version = "4.0.0-rc.2"
 
 [tool.poetry.dependencies]
 SQLAlchemy = "^1.4.42" 
