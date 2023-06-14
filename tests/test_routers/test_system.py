@@ -27,10 +27,10 @@ async def test_read_system_user_preferences(client_superuser):
     assert UserPreferences(**response.json()) == UserPreferences().dict()
 
 
-async def test_update_system_user_preferences_show_ukrdc(client_superuser):
+async def test_update_system_user_preferences_placeholder(client_superuser):
     response = await client_superuser.put(
         f"{configuration.base_url}/system/user/preferences",
-        json={"searchShowUkrdc": True},
+        json={"placeholder": True},
     )
     # Ensure we get the new value back
-    assert UserPreferences(**response.json()).search_show_ukrdc == True
+    assert UserPreferences(**response.json()).placeholder is True
