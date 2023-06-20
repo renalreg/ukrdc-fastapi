@@ -37,9 +37,15 @@ def get_auditevents_related_to_patientrecord(
         audit.query(AuditEvent)
         .join(AccessEvent)
         .filter(
-            and_(
-                AuditEvent.resource == Resource.PATIENT_RECORD.value,
-                AuditEvent.resource_id == str(record.pid),
+            or_(
+                and_(
+                    AuditEvent.resource == Resource.PATIENT_RECORD.value,
+                    AuditEvent.resource_id == str(record.pid),
+                ),
+                and_(
+                    AuditEvent.resource == Resource.UKRDCID.value,
+                    AuditEvent.resource_id == str(record.ukrdcid),
+                ),
             )
         )
     )
