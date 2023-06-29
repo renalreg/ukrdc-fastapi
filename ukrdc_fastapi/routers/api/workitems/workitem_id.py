@@ -237,14 +237,31 @@ def workitem_messages(
         parent=audit.add_event(Resource.WORKITEM, worktiem_obj.id, AuditOperation.READ),
     )
 
+    # Calculate target dates
+    msg_since = datetime.datetime(
+        worktiem_obj.creation_date.year,
+        worktiem_obj.creation_date.month,
+        worktiem_obj.creation_date.day,
+        worktiem_obj.creation_date.hour,
+        worktiem_obj.creation_date.minute - 1,
+    )
+
+    msg_until = datetime.datetime(
+        worktiem_obj.creation_date.year,
+        worktiem_obj.creation_date.month,
+        worktiem_obj.creation_date.day,
+        worktiem_obj.creation_date.hour,
+        worktiem_obj.creation_date.minute + 1,
+    )
+
     # Get messages for NIs related to the work item
     messages = get_messages(
         errorsdb,
         statuses=status,
         nis=workitem_nis,
         facility=facility,
-        since=since,
-        until=until,
+        since=since or msg_since,
+        until=until or msg_until,
     )
 
     # Apply permissions
