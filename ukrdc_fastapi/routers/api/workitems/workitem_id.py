@@ -243,8 +243,8 @@ def workitem_messages(
         statuses=status,
         nis=workitem_nis,
         facility=facility,
-        since=since,
-        until=until,
+        since=since or worktiem_obj.creation_date - datetime.timedelta(minutes=1),
+        until=until or worktiem_obj.creation_date + datetime.timedelta(minutes=1),
     )
 
     # Apply permissions
