@@ -2189,13 +2189,12 @@ ukrdc-sqla = ">=2.0.0,<3.0.0"
 
 [[package]]
 name = "ukrdc-xsdata"
-version = "3.3.0.post1"
+version = "3.4.5"
 description = ""
 optional = false
 python-versions = "*"
 files = [
-    {file = "ukrdc-xsdata-3.3.0.post1.tar.gz", hash = "sha256:fc4ef1dfe94b00e0edeb97101dc4b02e3eb3a7ac4ff10e02a54528075e22261b"},
-    {file = "ukrdc_xsdata-3.3.0.post1-py3-none-any.whl", hash = "sha256:a3988040b209b66c794f0f30ba02532b475038b547c99fe58cbe8ab9854b6cf7"},
+    {file = "ukrdc_xsdata-3.4.5-py3-none-any.whl", hash = "sha256:d2084fd01cc45228e5bc73703f86f9b825cfa112263da10bcf84294110dc53b3"},
 ]
 
 [package.dependencies]
@@ -2374,4 +2373,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "b89db1aaabd345d74c876ac1898c35632d4eee8f625fb496b07ae2f85c7fcc9f"
+content-hash = "2f868bbe48151675987f14364d4c038ee42f053fbf98171dcedc3fbbbcd91396"
