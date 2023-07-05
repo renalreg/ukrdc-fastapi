@@ -2,7 +2,6 @@ import datetime
 from typing import Optional
 
 from sqlalchemy import and_, or_
-from sqlalchemy.orm import aliased
 from sqlalchemy.orm.query import Query
 from sqlalchemy.orm.session import Session
 from ukrdc_sqla.ukrdc import PatientRecord
@@ -34,7 +33,7 @@ def get_auditevents_related_to_patientrecord(
     """
 
     # Recursive query to fetch all rows where resource and operation match, or are unspecified
-    recursive_query = audit.query(AuditEvent).filter(
+    query = audit.query(AuditEvent).filter(
         or_(
             AuditEvent.resource == (resource.value if resource else None),
             resource is None,
@@ -44,7 +43,7 @@ def get_auditevents_related_to_patientrecord(
             operation is None,
         ),
     )
-    recursive_query = recursive_query.cte(recursive=True)
+    recursive_query = query.cte(recursive=True)
 
     # Join the recursive query with the original table, but only keep the top-level parent rows.
     # This way, we return just the parents of any child rows that match the resource and operation values specified.
