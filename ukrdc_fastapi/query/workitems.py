@@ -100,7 +100,9 @@ def extend_workitem(workitem: WorkItem, jtrace: Session) -> WorkItemExtendedSche
         "master_record": workitem.master_record,
         "persons": get_persons_related_to_masterrecord(workitem.master_record, jtrace)
         .filter(Person.id != workitem.person_id)
-        .all(),
+        .all()
+        if workitem.master_record
+        else [],
     }
 
     return WorkItemExtendedSchema(

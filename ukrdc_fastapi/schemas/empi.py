@@ -157,7 +157,12 @@ class WorkItemSchema(OrmModel):
         # Re-map dictionary keys
         if isinstance(value, dict):
             return {
-                WORKITEM_ATTRIBUTE_MAP.get(key, key): attribute
+                # Double check incoming and current values are actually different (JTRACE seems to always include DoB by mistake)
+                WORKITEM_ATTRIBUTE_MAP.get(key, key): (
+                    attribute
+                    if attribute and attribute.split(":")[0] != attribute.split(":")[-1]
+                    else None
+                )
                 for key, attribute in value.items()
             }
         # Return existing value
