@@ -2,7 +2,6 @@ from datetime import datetime
 
 from tests.utils import create_basic_patient
 from ukrdc_fastapi.config import configuration
-from ukrdc_fastapi.schemas.patientrecord import PatientRecordSchema
 
 
 def _create_related_records(ukrdc3_session, jtrace_session):
