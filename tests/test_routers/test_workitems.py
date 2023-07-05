@@ -59,7 +59,7 @@ async def test_workitem_messages(client_authenticated, errorsdb_session):
         id=901,
         message_id=901,
         channel_id="00000000-0000-0000-0000-000000000000",
-        received=days_ago(2),
+        received=days_ago(365),
         msg_status="RECEIVED",
         ni=NI_4,
         filename="FILENAME_901.XML",
