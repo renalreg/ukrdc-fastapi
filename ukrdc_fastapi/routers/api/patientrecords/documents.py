@@ -10,7 +10,7 @@ from ukrdc_sqla.ukrdc import (
 
 from ukrdc_fastapi.dependencies.audit import (
     Auditer,
-    RecordOperation,
+    AuditOperation,
     Resource,
     get_auditer,
 )
@@ -46,9 +46,9 @@ def patient_documents(
     audit.add_event(
         Resource.DOCUMENTS,
         None,
-        RecordOperation.READ,
+        AuditOperation.READ,
         parent=audit.add_event(
-            Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.READ
+            Resource.PATIENT_RECORD, patient_record.pid, AuditOperation.READ
         ),
     )
     # NOTE: We defer the 'stream' column to avoid sending the full PDF file content
@@ -74,9 +74,9 @@ def patient_document(
     audit.add_event(
         Resource.DOCUMENT,
         document_id,
-        RecordOperation.READ,
+        AuditOperation.READ,
         parent=audit.add_event(
-            Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.READ
+            Resource.PATIENT_RECORD, patient_record.pid, AuditOperation.READ
         ),
     )
 
@@ -102,9 +102,9 @@ def patient_document_download(
     audit.add_event(
         Resource.DOCUMENT,
         document_id,
-        RecordOperation.READ,
+        AuditOperation.READ,
         parent=audit.add_event(
-            Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.READ
+            Resource.PATIENT_RECORD, patient_record.pid, AuditOperation.READ
         ),
     )
 

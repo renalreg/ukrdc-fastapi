@@ -7,9 +7,7 @@ from ukrdc_fastapi.dependencies import get_mirth, get_redis, get_ukrdc3
 from ukrdc_fastapi.dependencies.audit import (
     Auditer,
     AuditOperation,
-    RecordOperation,
     Resource,
-    UKRDCIDOperation,
     get_auditer,
 )
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
@@ -39,12 +37,12 @@ def ukrdcid_records(
     # Apply permissions
     related = apply_patientrecord_list_permission(related, user)
 
-    record_audit = audit.add_event(Resource.UKRDCID, ukrdcid, UKRDCIDOperation.READ)
+    record_audit = audit.add_event(Resource.UKRDCID, ukrdcid, AuditOperation.READ)
     for record in related:
         audit.add_event(
             Resource.PATIENT_RECORD,
             record.pid,
-            RecordOperation.READ,
+            AuditOperation.READ,
             parent=record_audit,
         )
 
@@ -70,7 +68,7 @@ async def ukrdcid_memberships_create_pkb(
         Resource.MEMBERSHIP,
         "PKB",
         AuditOperation.CREATE,
-        parent=audit.add_event(Resource.UKRDCID, ukrdcid, UKRDCIDOperation.READ),
+        parent=audit.add_event(Resource.UKRDCID, ukrdcid, AuditOperation.READ),
     )
 
     return await create_pkb_membership_for_ukrdcid(ukrdcid, mirth, redis)

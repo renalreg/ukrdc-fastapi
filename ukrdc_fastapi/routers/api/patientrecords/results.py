@@ -14,7 +14,7 @@ from ukrdc_sqla.ukrdc import (
 from ukrdc_fastapi.dependencies import get_ukrdc3
 from ukrdc_fastapi.dependencies.audit import (
     Auditer,
-    RecordOperation,
+    AuditOperation,
     Resource,
     get_auditer,
 )
@@ -65,9 +65,9 @@ def patient_results(
     audit.add_event(
         Resource.RESULTITEMS,
         None,
-        RecordOperation.READ,
+        AuditOperation.READ,
         parent=audit.add_event(
-            Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.READ
+            Resource.PATIENT_RECORD, patient_record.pid, AuditOperation.READ
         ),
     )
 
@@ -92,9 +92,9 @@ def patient_result(
     audit.add_event(
         Resource.RESULTITEM,
         resultitem_id,
-        RecordOperation.READ,
+        AuditOperation.READ,
         parent=audit.add_event(
-            Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.READ
+            Resource.PATIENT_RECORD, patient_record.pid, AuditOperation.READ
         ),
     )
 
@@ -128,9 +128,9 @@ def patient_result_delete(
     audit.add_event(
         Resource.RESULTITEM,
         resultitem_id,
-        RecordOperation.DELETE,
+        AuditOperation.DELETE,
         parent=audit.add_event(
-            Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.UPDATE
+            Resource.PATIENT_RECORD, patient_record.pid, AuditOperation.UPDATE
         ),
     )
 

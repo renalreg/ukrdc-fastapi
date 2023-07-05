@@ -9,7 +9,7 @@ from ukrdc_sqla.ukrdc import PatientRecord
 from ukrdc_fastapi.dependencies import get_mirth, get_redis
 from ukrdc_fastapi.dependencies.audit import (
     Auditer,
-    RecordOperation,
+    AuditOperation,
     Resource,
     get_auditer,
 )
@@ -65,5 +65,5 @@ async def patient_update_demographics(
         mirth,
         redis,
     )
-    audit.add_event(Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.UPDATE)
+    audit.add_event(Resource.PATIENT_RECORD, patient_record.pid, AuditOperation.UPDATE)
     return response

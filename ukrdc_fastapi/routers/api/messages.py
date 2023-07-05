@@ -12,7 +12,6 @@ from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_mirth, get_
 from ukrdc_fastapi.dependencies.audit import (
     Auditer,
     AuditOperation,
-    MessageOperation,
     Resource,
     get_auditer,
 )
@@ -91,7 +90,7 @@ def messages(
     query = apply_message_list_permissions(query, user)
 
     # Add audit events
-    audit.add_event(Resource.MESSAGES, None, MessageOperation.READ)
+    audit.add_event(Resource.MESSAGES, None, AuditOperation.READ)
 
     # Sort, paginate, and return
     return paginate(sorter.sort(query))
@@ -110,7 +109,7 @@ def message(
     # For some reason the fastAPI response_model doesn't call our channel_name
     # validator, meaning we don't get a populated channel name unless we explicitly
     # call it here.
-    audit.add_event(Resource.MESSAGE, message_obj.id, MessageOperation.READ)
+    audit.add_event(Resource.MESSAGE, message_obj.id, AuditOperation.READ)
     return MessageSchema.from_orm(message_obj)
 
 
@@ -128,7 +127,7 @@ async def message_source(
     message_source_obj = await get_message_source(message_obj, mirth)
 
     # Add audit events
-    audit.add_event(Resource.MESSAGE, message_obj.id, MessageOperation.READ_SOURCE)
+    audit.add_event(Resource.MESSAGE, message_obj.id, AuditOperation.READ_SOURCE)
 
     return message_source_obj
 
@@ -156,7 +155,7 @@ async def message_workitems(
 
     # Add audit events
     message_audit = audit.add_event(
-        Resource.MESSAGE, message_obj.id, MessageOperation.READ
+        Resource.MESSAGE, message_obj.id, AuditOperation.READ
     )
     for item in workitems:
         audit.add_workitem(item, parent=message_audit)
@@ -189,7 +188,7 @@ async def message_patientrecords(
 
     # Add audit events
     message_audit = audit.add_event(
-        Resource.MESSAGE, message_obj.id, MessageOperation.READ
+        Resource.MESSAGE, message_obj.id, AuditOperation.READ
     )
     for record in records:
         audit.add_event(

@@ -14,7 +14,7 @@ from ukrdc_sqla.ukrdc import (
 
 from ukrdc_fastapi.dependencies.audit import (
     Auditer,
-    RecordOperation,
+    AuditOperation,
     Resource,
     get_auditer,
 )
@@ -40,9 +40,9 @@ def patient_diagnosis(
     audit.add_event(
         Resource.DIAGNOSES,
         None,
-        RecordOperation.READ,
+        AuditOperation.READ,
         parent=audit.add_event(
-            Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.READ
+            Resource.PATIENT_RECORD, patient_record.pid, AuditOperation.READ
         ),
     )
 
@@ -62,9 +62,9 @@ def patient_renal_diagnosis(
     audit.add_event(
         Resource.RENALDIAGNOSES,
         None,
-        RecordOperation.READ,
+        AuditOperation.READ,
         parent=audit.add_event(
-            Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.READ
+            Resource.PATIENT_RECORD, patient_record.pid, AuditOperation.READ
         ),
     )
 
@@ -85,9 +85,9 @@ def patient_cause_of_death(
     audit.add_event(
         Resource.CAUSEOFDEATH,
         None,
-        RecordOperation.READ,
+        AuditOperation.READ,
         parent=audit.add_event(
-            Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.READ
+            Resource.PATIENT_RECORD, patient_record.pid, AuditOperation.READ
         ),
     )
 
