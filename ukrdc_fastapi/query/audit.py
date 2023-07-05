@@ -7,7 +7,7 @@ from sqlalchemy.orm.session import Session
 from ukrdc_sqla.empi import MasterRecord
 from ukrdc_sqla.ukrdc import PatientRecord
 
-from ukrdc_fastapi.dependencies.audit import Resource
+from ukrdc_fastapi.dependencies.audit import AuditOperation, Resource
 from ukrdc_fastapi.models.audit import AccessEvent, AuditEvent
 from ukrdc_fastapi.query.masterrecords import get_masterrecords_related_to_masterrecord
 from ukrdc_fastapi.query.patientrecords import (
@@ -18,6 +18,8 @@ from ukrdc_fastapi.query.patientrecords import (
 def get_auditevents_related_to_patientrecord(
     record: PatientRecord,
     audit: Session,
+    resource: Optional[Resource] = None,
+    operation: Optional[AuditOperation] = None,
     since: Optional[datetime.datetime] = None,
     until: Optional[datetime.datetime] = None,
 ) -> Query:
@@ -49,6 +51,12 @@ def get_auditevents_related_to_patientrecord(
             )
         )
     )
+
+    if resource:
+        query = query.filter(AuditEvent.resource == resource.value)
+
+    if operation:
+        query = query.filter(AuditEvent.operation == operation.value)
 
     # Only show top-level events in the query. Child events are attached to parents
     query = query.filter(AuditEvent.parent_id.is_(None))
