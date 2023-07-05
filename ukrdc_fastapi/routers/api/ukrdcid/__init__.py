@@ -11,6 +11,7 @@ from ukrdc_fastapi.dependencies.audit import (
     get_auditer,
 )
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
+from ukrdc_fastapi.exceptions import PermissionsError
 from ukrdc_fastapi.permissions.patientrecords import apply_patientrecord_list_permission
 from ukrdc_fastapi.query.mirth.memberships import create_pkb_membership_for_ukrdcid
 from ukrdc_fastapi.query.patientrecords import get_patientrecords_related_to_ukrdcid
@@ -56,6 +57,8 @@ def ukrdcid_records(
 )
 async def ukrdcid_memberships_create_pkb(
     ukrdcid: str,
+    user: UKRDCUser = Security(auth.get_user()),
+    ukrdc3: Session = Depends(get_ukrdc3),
     mirth: MirthAPI = Depends(get_mirth),
     audit: Auditer = Depends(get_auditer),
     redis: Redis = Depends(get_redis),
@@ -63,6 +66,14 @@ async def ukrdcid_memberships_create_pkb(
     """
     Create a new PKB membership for a master record.
     """
+
+    related = get_patientrecords_related_to_ukrdcid(ukrdcid, ukrdc3)
+
+    # Apply permissions
+    related = apply_patientrecord_list_permission(related, user)
+
+    if related.count() == 0:
+        raise PermissionsError()
 
     audit.add_event(
         Resource.MEMBERSHIP,
