@@ -73,12 +73,10 @@ class AuditEventSchema(OrmModel):
                     )
                 # If the patient has an MRN, add it to the identifiers
                 if first_mrn:
-                    self.identifiers.extend(
-                        [
-                            first_mrn.organization,
-                            first_mrn.patientid,
-                        ]
-                    )
+                    if first_mrn.organization:
+                        self.identifiers.append(first_mrn.organization)
+                    if first_mrn.patientid:
+                        self.identifiers.append(first_mrn.patientid)
         # For MasterRecord items
         elif self.resource == Resource.MASTER_RECORD.value and jtrace:
             master_record = jtrace.query(MasterRecord).get(self.resource_id)
