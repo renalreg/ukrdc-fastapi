@@ -101,7 +101,6 @@ async def test_record_pkb_membership_resource_audit(
         resource=Resource.MEMBERSHIP,
     ).all()
 
-    # One for viewing the record (PID), another for creating the membership (UKRDCID -> MEMBERSHIP)
     assert len(events) == 1
 
     event = events[0]
@@ -141,7 +140,6 @@ async def test_record_create_operation_audit(
         operation=AuditOperation.CREATE,
     ).all()
 
-    # One for viewing the record (PID), another for creating the membership (UKRDCID -> MEMBERSHIP)
     assert len(events) == 1
 
     event = events[0]
