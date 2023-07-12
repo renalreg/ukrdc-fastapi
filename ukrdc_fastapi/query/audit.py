@@ -32,7 +32,7 @@ def get_auditevents_related_to_patientrecord(
         Query: Audit query
     """
 
-    # Recursive query to fetch all rows where resource and operation match, or are unspecified
+    # Recursive query to fetch all rows where resource and operation match, unless unspecified
     query = audit.query(AuditEvent).filter(
         or_(
             AuditEvent.resource == (resource.value if resource else None),
