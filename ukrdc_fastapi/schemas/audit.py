@@ -4,7 +4,7 @@ from typing import List, Optional
 from pydantic.fields import Field
 from sqlalchemy.orm.session import Session
 from ukrdc_sqla.empi import MasterRecord
-from ukrdc_sqla.ukrdc import PatientRecord
+from ukrdc_sqla.ukrdc import PatientRecord, PatientNumber
 
 from ukrdc_fastapi.dependencies.audit import Resource
 
@@ -50,24 +50,36 @@ class AuditEventSchema(OrmModel):
         in descending priority.
         Identifiers include names, patient numbers, record types etc
         """
+        # For PatientRecord items
         if self.resource == Resource.PATIENT_RECORD.value and ukrdc3:
             record = ukrdc3.query(PatientRecord).get(self.resource_id)
             if record:
-                first_mrn = next(
-                    number
-                    for number in record.patient.numbers
-                    if number.numbertype == "MRN"
-                )
+                # Obtain the first known MRN for the patient
+                first_mrn: Optional[PatientNumber] = None
+                # Try to find the first PatientNumber of type MRN
+                try:
+                    first_mrn = next(
+                        number
+                        for number in record.patient.numbers
+                        if number.numbertype == "MRN"
+                    )
+                # If no matching PatientNumber is found, skip this identifier
+                except StopIteration:
+                    pass
+                # If the patient has a name, add it to the identifiers
                 if record.patient.name:
                     self.identifiers.append(
                         f"{record.patient.name.given} {record.patient.name.family}"
                     )
-                self.identifiers.extend(
-                    [
-                        first_mrn.organization,
-                        first_mrn.patientid,
-                    ]
-                )
+                # If the patient has an MRN, add it to the identifiers
+                if first_mrn:
+                    self.identifiers.extend(
+                        [
+                            first_mrn.organization,
+                            first_mrn.patientid,
+                        ]
+                    )
+        # For MasterRecord items
         elif self.resource == Resource.MASTER_RECORD.value and jtrace:
             master_record = jtrace.query(MasterRecord).get(self.resource_id)
             if master_record:
@@ -77,6 +89,7 @@ class AuditEventSchema(OrmModel):
                     master_record.nationalid.strip(),
                 ]
 
+        # Recursively populate children
         if self.children:
             for child in self.children:
                 child.populate_identifiers(jtrace, ukrdc3)
