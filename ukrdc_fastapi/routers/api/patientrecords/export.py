@@ -12,7 +12,7 @@ from ukrdc_fastapi.dependencies import (
 )
 from ukrdc_fastapi.dependencies.audit import (
     Auditer,
-    RecordOperation,
+    AuditOperation,
     Resource,
     get_auditer,
 )
@@ -55,7 +55,7 @@ async def patient_export_pv(
 
     background_tasks.add_task(task.tracked, patient_record, mirth, redis)
     audit.add_event(
-        Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.EXPORT_PV
+        Resource.PATIENT_RECORD, patient_record.pid, AuditOperation.EXPORT_PV
     )
 
     return task.response()
@@ -85,7 +85,7 @@ async def patient_export_pv_tests(
 
     background_tasks.add_task(task.tracked, patient_record, mirth, redis)
     audit.add_event(
-        Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.EXPORT_PV_TESTS
+        Resource.PATIENT_RECORD, patient_record.pid, AuditOperation.EXPORT_PV_TESTS
     )
 
     return task.response()
@@ -115,7 +115,7 @@ async def patient_export_pv_docs(
 
     background_tasks.add_task(task.tracked, patient_record, mirth, redis)
     audit.add_event(
-        Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.EXPORT_PV_DOCS
+        Resource.PATIENT_RECORD, patient_record.pid, AuditOperation.EXPORT_PV_DOCS
     )
 
     return task.response()
@@ -145,7 +145,7 @@ async def patient_export_radar(
 
     background_tasks.add_task(task.tracked, patient_record, mirth, redis)
     audit.add_event(
-        Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.EXPORT_RADAR
+        Resource.PATIENT_RECORD, patient_record.pid, AuditOperation.EXPORT_RADAR
     )
 
     return task.response()
@@ -179,7 +179,7 @@ async def patient_export_pkb(
 
     background_tasks.add_task(task.tracked, patient_record, ukrdc3, mirth, redis)
     audit.add_event(
-        Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.EXPORT_PKB
+        Resource.PATIENT_RECORD, patient_record.pid, AuditOperation.EXPORT_PKB
     )
 
     return task.response()

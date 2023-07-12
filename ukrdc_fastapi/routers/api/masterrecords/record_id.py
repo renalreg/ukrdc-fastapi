@@ -9,7 +9,7 @@ from starlette.status import HTTP_204_NO_CONTENT
 from ukrdc_sqla.empi import LinkRecord, MasterRecord
 from ukrdc_sqla.errorsdb import Message
 
-from ukrdc_fastapi.dependencies import get_auditdb, get_errorsdb, get_jtrace, get_ukrdc3
+from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_ukrdc3
 from ukrdc_fastapi.dependencies.audit import (
     Auditer,
     AuditOperation,
@@ -25,7 +25,6 @@ from ukrdc_fastapi.permissions.messages import (
 from ukrdc_fastapi.permissions.patientrecords import apply_patientrecord_list_permission
 from ukrdc_fastapi.permissions.persons import apply_persons_list_permission
 from ukrdc_fastapi.permissions.workitems import apply_workitem_list_permission
-from ukrdc_fastapi.query.audit import get_auditevents_related_to_masterrecord
 from ukrdc_fastapi.query.masterrecords import get_masterrecords_related_to_masterrecord
 from ukrdc_fastapi.query.messages import get_messages_related_to_masterrecord
 from ukrdc_fastapi.query.patientrecords import (
@@ -33,7 +32,6 @@ from ukrdc_fastapi.query.patientrecords import (
 )
 from ukrdc_fastapi.query.persons import get_persons_related_to_masterrecord
 from ukrdc_fastapi.query.workitems import get_workitems
-from ukrdc_fastapi.schemas.audit import AuditEventSchema
 from ukrdc_fastapi.schemas.base import OrmModel
 from ukrdc_fastapi.schemas.empi import (
     LinkRecordSchema,
@@ -43,7 +41,7 @@ from ukrdc_fastapi.schemas.empi import (
 )
 from ukrdc_fastapi.schemas.message import MessageSchema, MinimalMessageSchema
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordSummarySchema
-from ukrdc_fastapi.sorters import AUDIT_SORTER, ERROR_SORTER
+from ukrdc_fastapi.sorters import ERROR_SORTER
 from ukrdc_fastapi.utils.paginate import Page, paginate
 from ukrdc_fastapi.utils.sort import SQLASorter
 
@@ -403,34 +401,3 @@ def master_record_patientrecords(
         )
 
     return related_records.all()
-
-
-@router.get(
-    "/{record_id}/audit",
-    response_model=Page[AuditEventSchema],
-    dependencies=[Security(auth.permission(Permissions.READ_RECORDS_AUDIT))],
-)
-def master_record_audit(
-    record: MasterRecord = Depends(_get_masterrecord),
-    jtrace: Session = Depends(get_jtrace),
-    ukrdc3: Session = Depends(get_ukrdc3),
-    auditdb: Session = Depends(get_auditdb),
-    since: Optional[datetime.datetime] = None,
-    until: Optional[datetime.datetime] = None,
-    sorter: SQLASorter = Depends(AUDIT_SORTER),
-):
-    """
-    Retreive a page of audit events related to a particular master record.
-    """
-    page = paginate(
-        sorter.sort(
-            get_auditevents_related_to_masterrecord(
-                record, auditdb, ukrdc3, jtrace, since=since, until=until
-            )
-        )
-    )
-
-    for item in page.items:  # type: ignore
-        item.populate_identifiers(jtrace, ukrdc3)
-
-    return page

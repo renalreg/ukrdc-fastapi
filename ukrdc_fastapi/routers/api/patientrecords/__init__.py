@@ -13,7 +13,6 @@ from ukrdc_fastapi.dependencies import get_auditdb, get_errorsdb, get_jtrace, ge
 from ukrdc_fastapi.dependencies.audit import (
     Auditer,
     AuditOperation,
-    RecordOperation,
     Resource,
     get_auditer,
 )
@@ -78,7 +77,7 @@ def patient(
     record: PatientRecordSchema = PatientRecordSchema.from_orm_with_master_record(
         patient_record, jtrace
     )
-    audit.add_event(Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.READ)
+    audit.add_event(Resource.PATIENT_RECORD, patient_record.pid, AuditOperation.READ)
     return record
 
 
@@ -91,6 +90,8 @@ def patient_audit(
     patient_record: PatientRecord = Depends(_get_patientrecord),
     ukrdc3: Session = Depends(get_ukrdc3),
     auditdb: Session = Depends(get_auditdb),
+    resource: Optional[Resource] = None,
+    operation: Optional[AuditOperation] = None,
     since: Optional[datetime.datetime] = None,
     until: Optional[datetime.datetime] = None,
     sorter: SQLASorter = Depends(AUDIT_SORTER),
@@ -101,7 +102,12 @@ def patient_audit(
     page = paginate(
         sorter.sort(
             get_auditevents_related_to_patientrecord(
-                patient_record, auditdb, since=since, until=until
+                patient_record,
+                auditdb,
+                resource=resource,
+                operation=operation,
+                since=since,
+                until=until,
             )
         )
     )
@@ -252,9 +258,9 @@ def patient_medications(
     audit.add_event(
         Resource.MEDICATIONS,
         None,
-        RecordOperation.READ,
+        AuditOperation.READ,
         parent=audit.add_event(
-            Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.READ
+            Resource.PATIENT_RECORD, patient_record.pid, AuditOperation.READ
         ),
     )
     return patient_record.medications.all()
@@ -273,9 +279,9 @@ def patient_treatments(
     audit.add_event(
         Resource.TREATMENTS,
         None,
-        RecordOperation.READ,
+        AuditOperation.READ,
         parent=audit.add_event(
-            Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.READ
+            Resource.PATIENT_RECORD, patient_record.pid, AuditOperation.READ
         ),
     )
     return patient_record.treatments.all()
@@ -294,9 +300,9 @@ def patient_surveys(
     audit.add_event(
         Resource.SURVEYS,
         None,
-        RecordOperation.READ,
+        AuditOperation.READ,
         parent=audit.add_event(
-            Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.READ
+            Resource.PATIENT_RECORD, patient_record.pid, AuditOperation.READ
         ),
     )
     return patient_record.surveys.all()
@@ -326,9 +332,9 @@ def patient_observations(
     audit.add_event(
         Resource.OBSERVATIONS,
         None,
-        RecordOperation.READ,
+        AuditOperation.READ,
         parent=audit.add_event(
-            Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.READ
+            Resource.PATIENT_RECORD, patient_record.pid, AuditOperation.READ
         ),
     )
 
@@ -356,9 +362,9 @@ def patient_dialysis_sessions(
     audit.add_event(
         Resource.DIALYSISSESSIONS,
         None,
-        RecordOperation.READ,
+        AuditOperation.READ,
         parent=audit.add_event(
-            Resource.PATIENT_RECORD, patient_record.pid, RecordOperation.READ
+            Resource.PATIENT_RECORD, patient_record.pid, AuditOperation.READ
         ),
     )
 

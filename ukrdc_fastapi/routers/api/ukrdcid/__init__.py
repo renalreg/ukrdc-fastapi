@@ -7,12 +7,11 @@ from ukrdc_fastapi.dependencies import get_mirth, get_redis, get_ukrdc3
 from ukrdc_fastapi.dependencies.audit import (
     Auditer,
     AuditOperation,
-    RecordOperation,
     Resource,
-    UKRDCIDOperation,
     get_auditer,
 )
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
+from ukrdc_fastapi.exceptions import PermissionsError
 from ukrdc_fastapi.permissions.patientrecords import apply_patientrecord_list_permission
 from ukrdc_fastapi.query.mirth.memberships import create_pkb_membership_for_ukrdcid
 from ukrdc_fastapi.query.patientrecords import get_patientrecords_related_to_ukrdcid
@@ -39,12 +38,12 @@ def ukrdcid_records(
     # Apply permissions
     related = apply_patientrecord_list_permission(related, user)
 
-    record_audit = audit.add_event(Resource.UKRDCID, ukrdcid, UKRDCIDOperation.READ)
+    record_audit = audit.add_event(Resource.UKRDCID, ukrdcid, AuditOperation.READ)
     for record in related:
         audit.add_event(
             Resource.PATIENT_RECORD,
             record.pid,
-            RecordOperation.READ,
+            AuditOperation.READ,
             parent=record_audit,
         )
 
@@ -58,6 +57,8 @@ def ukrdcid_records(
 )
 async def ukrdcid_memberships_create_pkb(
     ukrdcid: str,
+    user: UKRDCUser = Security(auth.get_user()),
+    ukrdc3: Session = Depends(get_ukrdc3),
     mirth: MirthAPI = Depends(get_mirth),
     audit: Auditer = Depends(get_auditer),
     redis: Redis = Depends(get_redis),
@@ -66,11 +67,19 @@ async def ukrdcid_memberships_create_pkb(
     Create a new PKB membership for a master record.
     """
 
+    related = get_patientrecords_related_to_ukrdcid(ukrdcid, ukrdc3)
+
+    # Apply permissions
+    related = apply_patientrecord_list_permission(related, user)
+
+    if related.count() == 0:
+        raise PermissionsError()
+
     audit.add_event(
         Resource.MEMBERSHIP,
         "PKB",
         AuditOperation.CREATE,
-        parent=audit.add_event(Resource.UKRDCID, ukrdcid, UKRDCIDOperation.READ),
+        parent=audit.add_event(Resource.UKRDCID, ukrdcid, AuditOperation.READ),
     )
 
     return await create_pkb_membership_for_ukrdcid(ukrdcid, mirth, redis)

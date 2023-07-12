@@ -9,7 +9,6 @@ from ukrdc_fastapi.dependencies import get_jtrace, get_ukrdc3
 from ukrdc_fastapi.dependencies.audit import (
     Auditer,
     AuditOperation,
-    RecordOperation,
     Resource,
     get_auditer,
 )
@@ -168,6 +167,6 @@ def search_records(
     page: Page[PatientRecord] = paginate(matched_records)  # type: ignore
 
     for record in page.items:
-        audit.add_event(Resource.PATIENT_RECORD, record.pid, RecordOperation.READ)  # type: ignore  # MyPy doesn't like the generic page.item type T being used here
+        audit.add_event(Resource.PATIENT_RECORD, record.pid, AuditOperation.READ)  # type: ignore  # MyPy doesn't like the generic page.item type T being used here
 
     return page

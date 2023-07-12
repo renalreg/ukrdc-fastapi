@@ -53,30 +53,14 @@ class AuditOperation(Enum):
     DELETE = "DELETE"
     READ = "READ"
 
-
-class RecordOperation(Enum):
-    CREATE = "CREATE"
-    UPDATE = "UPDATE"
-    DELETE = "DELETE"
-    READ = "READ"
-
+    # Export-specific
     EXPORT_PV = "EXPORT_PV"
     EXPORT_PV_TESTS = "EXPORT_PV_TESTS"
     EXPORT_PV_DOCS = "EXPORT_PV_DOCS"
     EXPORT_RADAR = "EXPORT_RADAR"
     EXPORT_PKB = "EXPORT_PKB"
 
-
-class UKRDCIDOperation(Enum):
-    READ = "READ"
-
-
-class MessageOperation(Enum):
-    CREATE = "CREATE"
-    UPDATE = "UPDATE"
-    DELETE = "DELETE"
-    READ = "READ"
-
+    # Message-specific
     READ_SOURCE = "READ_SOURCE"
 
 
@@ -122,7 +106,7 @@ class Auditer:
         resource: Resource,
         resource_id: Optional[Union[str, int]],
         operation: Optional[
-            Union[RecordOperation, UKRDCIDOperation, MessageOperation, AuditOperation]
+            Union[AuditOperation, AuditOperation, AuditOperation, AuditOperation]
         ],
         parent: Optional[AuditEvent] = None,
     ) -> AuditEvent:
@@ -131,7 +115,7 @@ class Auditer:
         Args:
             resource (Resource): Resource type
             resource_id (Optional[Union[str, int]]): Resource ID (e.g. PID, Master Record ID etc)
-            operation (Optional[Union[RecordOperation, MessageOperation, AuditOperation]]): Audit operation (e.g. READ, UPDATE etc)
+            operation (Optional[Union[AuditOperation, AuditOperation, AuditOperation]]): Audit operation (e.g. READ, UPDATE etc)
             parent (Optional[AuditEvent], optional): Parent AuditEvent. Defaults to None.
 
         Returns:
