@@ -317,6 +317,7 @@ def master_record_messages(
 )
 def master_record_workitems(
     record: MasterRecord = Depends(_get_masterrecord),
+    status: Optional[list[int]] = QueryParam([1]),
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
     audit: Auditer = Depends(get_auditer),
@@ -326,7 +327,9 @@ def master_record_workitems(
     # Find work items related to record
     related_records = get_masterrecords_related_to_masterrecord(record, jtrace)
     workitems = get_workitems(
-        jtrace, master_id=[record.id for record in related_records]
+        jtrace,
+        statuses=status or [],
+        master_id=[record.id for record in related_records],
     )
 
     # Apply permissions
