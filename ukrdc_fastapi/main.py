@@ -51,6 +51,8 @@ app = FastAPI(
     generate_unique_id_function=_custom_generate_unique_id,
 )
 
+app.openapi_version = "3.0.2"
+
 # Add routes
 
 app.include_router(
