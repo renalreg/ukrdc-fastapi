@@ -53,7 +53,7 @@ def get_auditevents_related_to_patientrecord(
     bottomq = audit.query(AuditEvent)
     bottomq = bottomq.join(topq, AuditEvent.parent_id == topq.c.id)
 
-    matched_ids_q = audit.query(topq.union(bottomq)).subquery()
+    matched_ids_q = audit.query(topq.union(bottomq)).subquery()  # type: ignore
 
     # Create a query of all audit rows related to this patient
 
