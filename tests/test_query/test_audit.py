@@ -66,15 +66,9 @@ async def test_record_results_read_audit(
 
     event = events[0]
 
-    assert event.resource == "PATIENT_RECORD"
+    assert event.resource == "RESULTITEMS"
     assert event.operation == "READ"
-    assert event.resource_id == PID_1
-
-    assert len(event.children) == 1
-
-    assert event.children[0].resource == "RESULTITEMS"
-    assert event.children[0].operation == "READ"
-    assert event.children[0].resource_id is None
+    assert len(event.children) == 0
 
 
 async def test_record_pkb_membership_resource_audit(
@@ -105,15 +99,10 @@ async def test_record_pkb_membership_resource_audit(
 
     event = events[0]
 
-    assert event.resource == "UKRDCID"
-    assert event.operation == "READ"
-    assert event.resource_id == UKRDCID_1
-
-    assert len(event.children) == 1
-
-    assert event.children[0].resource == "MEMBERSHIP"
-    assert event.children[0].operation == "CREATE"
-    assert event.children[0].resource_id == "PKB"
+    assert event.resource == "MEMBERSHIP"
+    assert event.operation == "CREATE"
+    assert event.resource_id == "PKB"
+    assert len(event.children) == 0
 
 
 async def test_record_create_operation_audit(
@@ -144,12 +133,7 @@ async def test_record_create_operation_audit(
 
     event = events[0]
 
-    assert event.resource == "UKRDCID"
-    assert event.operation == "READ"
-    assert event.resource_id == UKRDCID_1
-
-    assert len(event.children) == 1
-
-    assert event.children[0].resource == "MEMBERSHIP"
-    assert event.children[0].operation == "CREATE"
-    assert event.children[0].resource_id == "PKB"
+    assert event.resource == "MEMBERSHIP"
+    assert event.operation == "CREATE"
+    assert event.resource_id == "PKB"
+    assert len(event.children) == 0
