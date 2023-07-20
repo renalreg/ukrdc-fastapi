@@ -1,7 +1,7 @@
 import datetime
 from typing import Optional
 
-from sqlalchemy import and_, or_
+from sqlalchemy import and_, or_, select
 from sqlalchemy.orm.query import Query
 from sqlalchemy.orm.session import Session
 from ukrdc_sqla.ukrdc import PatientRecord
@@ -32,56 +32,73 @@ def get_auditevents_related_to_patientrecord(
         Query: Audit query
     """
 
-    # Recursive query to fetch all rows where resource and operation match, unless unspecified
-    query = audit.query(AuditEvent).filter(
-        or_(
-            AuditEvent.resource == (resource.value if resource else None),
-            resource is None,
-        ),
-        or_(
-            AuditEvent.operation == (operation.value if operation else None),
-            operation is None,
-        ),
-    )
-    recursive_query = query.cte(recursive=True)
-
-    # Join the recursive query with the original table, but only keep the top-level parent rows.
-    # This way, we return just the parents of any child rows that match the resource and operation values specified.
-    # This happens recursively, e.g. if a child of a child of a parent matches the condition, that parent is returned.
-    top_level_parents_query = (
+    # Recursively find audit events where the row or any parent of the row matches this patient
+    topq = (
         audit.query(AuditEvent)
-        .outerjoin(recursive_query, AuditEvent.id == recursive_query.c.parent_id)
-        .filter(AuditEvent.parent_id.is_(None))
+        .filter(
+            or_(
+                and_(
+                    AuditEvent.resource == Resource.PATIENT_RECORD.value,
+                    AuditEvent.resource_id == str(record.pid),
+                ),
+                and_(
+                    AuditEvent.resource == Resource.UKRDCID.value,
+                    AuditEvent.resource_id == str(record.ukrdcid),
+                ),
+            )
+        )
+        .cte("cte", recursive=True)
     )
 
-    # Filter to top-level parent rows matching PID or UKRDCID, and turn into a subquery
-    matching_top_level_parents_subquery = top_level_parents_query.filter(
-        or_(
-            and_(
-                AuditEvent.resource == Resource.PATIENT_RECORD.value,
-                AuditEvent.resource_id == str(record.pid),
-            ),
-            and_(
-                AuditEvent.resource == Resource.UKRDCID.value,
-                AuditEvent.resource_id == str(record.ukrdcid),
-            ),
-        )
-    ).subquery()
+    bottomq = audit.query(AuditEvent)
+    bottomq = bottomq.join(topq, AuditEvent.parent_id == topq.c.id)
 
-    # Find all audit events where the event ID appears in the subquery above.
-    # If we don't create this fresh, simple query then filtering by AccessEvent attributes
-    # won't reliably work, so all "simple" filters should happen here.
-    query_to_return = (
+    matched_ids_q = audit.query(topq.union(bottomq)).subquery()
+
+    # Create a query of all audit rows related to this patient
+
+    q = (
         audit.query(AuditEvent)
         .join(AccessEvent)
-        .filter(AuditEvent.id == matching_top_level_parents_subquery.c.id)
+        .filter(AuditEvent.id == matched_ids_q.c.id)
     )
 
-    # Filter to top-level parent rows matching date range
+    # Filter to rows matching date range
     if since:
-        query_to_return = query_to_return.filter(AccessEvent.time >= since)
+        q = q.filter(AccessEvent.time >= since)
 
     if until:
-        query_to_return = query_to_return.filter(AccessEvent.time <= until)
+        q = q.filter(AccessEvent.time <= until)
 
-    return query_to_return
+    # Filter to rows matching resource and operation
+
+    if resource:
+        q = q.filter(AuditEvent.resource == resource.value)
+
+    if operation:
+        q = q.filter(AuditEvent.operation == operation.value)
+
+    # Remove children who's parent is already in the query
+
+    subq = q.subquery()
+
+    q_cleaned = (
+        audit.query(AuditEvent)
+        .join(AccessEvent)
+        .filter(
+            and_(
+                AuditEvent.id
+                == subq.c.id,  # Include rows that appeared in the main query...
+                or_(  # ... but only include the subset of rows...
+                    AuditEvent.parent_id.is_(
+                        None
+                    ),  # ...with no parent (top of the tree)...
+                    AuditEvent.parent_id.notin_(
+                        select([subq.c.id])
+                    ),  # ...or who's parent isn't already included.
+                ),
+            )
+        )
+    )
+
+    return q_cleaned
