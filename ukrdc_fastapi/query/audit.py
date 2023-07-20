@@ -54,8 +54,8 @@ def get_auditevents_related_to_patientrecord(
         .filter(AuditEvent.parent_id.is_(None))
     )
 
-    # Filter to top-level parent rows matching PID or UKRDCID
-    matching_top_level_parents_query = top_level_parents_query.filter(
+    # Filter to top-level parent rows matching PID or UKRDCID, and turn into a subquery
+    matching_top_level_parents_subquery = top_level_parents_query.filter(
         or_(
             and_(
                 AuditEvent.resource == Resource.PATIENT_RECORD.value,
@@ -66,17 +66,22 @@ def get_auditevents_related_to_patientrecord(
                 AuditEvent.resource_id == str(record.ukrdcid),
             ),
         )
+    ).subquery()
+
+    # Find all audit events where the event ID appears in the subquery above.
+    # If we don't create this fresh, simple query then filtering by AccessEvent attributes
+    # won't reliably work, so all "simple" filters should happen here.
+    query_to_return = (
+        audit.query(AuditEvent)
+        .join(AccessEvent)
+        .filter(AuditEvent.id == matching_top_level_parents_subquery.c.id)
     )
 
     # Filter to top-level parent rows matching date range
     if since:
-        matching_top_level_parents_query = matching_top_level_parents_query.filter(
-            AccessEvent.time >= since
-        )
+        query_to_return = query_to_return.filter(AccessEvent.time >= since)
 
     if until:
-        matching_top_level_parents_query = matching_top_level_parents_query.filter(
-            AccessEvent.time <= until
-        )
+        query_to_return = query_to_return.filter(AccessEvent.time <= until)
 
-    return matching_top_level_parents_query
+    return query_to_return
