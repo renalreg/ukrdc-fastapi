@@ -7,7 +7,15 @@ from fastapi.responses import Response
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_204_NO_CONTENT
 from ukrdc_sqla.errorsdb import Message
-from ukrdc_sqla.ukrdc import Observation, PatientRecord, ResultItem, DialysisSession
+from ukrdc_sqla.ukrdc import (
+    Observation,
+    PatientRecord,
+    ResultItem,
+    DialysisSession,
+    Treatment,
+    Medication,
+    Survey,
+)
 
 from ukrdc_fastapi.dependencies import get_auditdb, get_errorsdb, get_jtrace, get_ukrdc3
 from ukrdc_fastapi.dependencies.audit import (
@@ -252,6 +260,12 @@ def patient_delete(
 )
 def patient_medications(
     patient_record: PatientRecord = Depends(_get_patientrecord),
+    sorter: SQLASorter = Depends(
+        make_sqla_sorter(
+            [Medication.fromtime, Medication.totime],
+            default_sort_by=Medication.fromtime,
+        )
+    ),
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's medications"""
@@ -263,7 +277,7 @@ def patient_medications(
             Resource.PATIENT_RECORD, patient_record.pid, AuditOperation.READ
         ),
     )
-    return patient_record.medications.all()
+    return sorter.sort(patient_record.medications).all()
 
 
 @router.get(
@@ -273,6 +287,12 @@ def patient_medications(
 )
 def patient_treatments(
     patient_record: PatientRecord = Depends(_get_patientrecord),
+    sorter: SQLASorter = Depends(
+        make_sqla_sorter(
+            [Treatment.fromtime, Treatment.totime],
+            default_sort_by=Treatment.fromtime,
+        )
+    ),
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's treatments"""
@@ -284,7 +304,7 @@ def patient_treatments(
             Resource.PATIENT_RECORD, patient_record.pid, AuditOperation.READ
         ),
     )
-    return patient_record.treatments.all()
+    return sorter.sort(patient_record.treatments).all()
 
 
 @router.get(
@@ -294,6 +314,12 @@ def patient_treatments(
 )
 def patient_surveys(
     patient_record: PatientRecord = Depends(_get_patientrecord),
+    sorter: SQLASorter = Depends(
+        make_sqla_sorter(
+            [Survey.surveytime, Survey.updatedon],
+            default_sort_by=Survey.surveytime,
+        )
+    ),
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's surveys"""
@@ -305,7 +331,7 @@ def patient_surveys(
             Resource.PATIENT_RECORD, patient_record.pid, AuditOperation.READ
         ),
     )
-    return patient_record.surveys.all()
+    return sorter.sort(patient_record.surveys).all()
 
 
 @router.get(
