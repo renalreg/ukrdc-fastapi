@@ -160,3 +160,6 @@ data/
 
 node_modules/
 docs/
+
+# Script outputs
+scripts/analytics/output/
