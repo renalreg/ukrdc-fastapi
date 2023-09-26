@@ -54,7 +54,7 @@ class Settings(BaseSettings):
 
     swagger_client_id: str = ""
     app_client_id: str = ""
-    oauth_issuer: str = "https://renalregistry.okta.com/oauth2/ausn7fa9zfh1DC2La5d6"
+    oauth_issuer: str = "https://sso.ukkidney.org/oauth2/ausn7fa9zfh1DC2La5d6"
     oauth_audience: str = "api://ukrdc"
 
     # Mirth settings
