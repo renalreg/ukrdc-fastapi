@@ -188,6 +188,7 @@ jobs:
       - name: Generate Axios Client
         uses: openapi-generators/openapitools-generator-action@v1
         with:
+          generator-tag: v6.6.0
           generator: typescript-axios
           config-file: clients/typescript-axios-client/config.json
           openapi-file: clients/openapi.json
