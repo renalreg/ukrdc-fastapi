@@ -193,6 +193,12 @@ jobs:
           openapi-file: clients/openapi.json
           command-args: --additional-properties=snapshot=${SNAPSHOT}
 
+      - name: Store typescript-axios-client
+        uses: actions/upload-artifact@v3
+        with:
+          name: typescript-axios-client
+          path: typescript-axios-client
+
       - name: Install Node
         uses: actions/setup-node@v3
         with:
