@@ -1,4 +1,5 @@
 from typing import Optional
+from sqlalchemy import or_
 
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.query import Query
@@ -33,7 +34,9 @@ def get_codes(
         query = query.filter(Code.coding_standard.in_(coding_standard))
 
     if search:
-        query = query.filter(Code.code.ilike(f"%{search}%"))
+        query = query.filter(
+            or_(Code.code.ilike(f"%{search}%"), Code.description.ilike(f"%{search}%"))
+        )
 
     return query
 

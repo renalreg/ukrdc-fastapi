@@ -33,8 +33,17 @@ def test_get_codes_filter_standard(ukrdc3_session):
     }
 
 
-def test_get_codes_search(ukrdc3_session):
+def test_get_codes_search_code(ukrdc3_session):
     code_list = codes.get_codes(ukrdc3_session, search="CODE_").all()
+    assert {code.code for code in code_list} == {
+        "CODE_1",
+        "CODE_2",
+        "CODE_3",
+    }
+
+
+def test_get_codes_search_description(ukrdc3_session):
+    code_list = codes.get_codes(ukrdc3_session, search="DESCRIPTION_").all()
     assert {code.code for code in code_list} == {
         "CODE_1",
         "CODE_2",
