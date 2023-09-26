@@ -20,7 +20,12 @@ class CodeSchema(OrmModel):
     creation_date: datetime.datetime = Field(..., description="Creation date")
     update_date: Optional[datetime.datetime] = Field(..., description="Update date")
 
-    units: Optional[str] = Field(None, description="Units o fmeasurement")
+    units: Optional[str] = Field(None, description="Units of measurement")
+
+    pkb_reference_range: Optional[str] = Field(
+        None, description="Test result reference range for PKB"
+    )
+    pkb_comment: Optional[str] = Field(None, description="Test result comment for PKB")
 
 
 class CodeMapSchema(OrmModel):

@@ -244,7 +244,7 @@ def populate_codes(ukrdc3):
     code_eth_1 = Code(
         coding_standard="NHS_DATA_DICTIONARY",
         code="G",
-        description="ETHNICITY_GROUP_CODE_DESCRIPTION",
+        description="ETHNICITY_GROUP_DESCRIPTION",
         creation_date=days_ago(365),
     )
 
