@@ -38,6 +38,8 @@ def get_codes(
             or_(Code.code.ilike(f"%{search}%"), Code.description.ilike(f"%{search}%"))
         )
 
+    query = query.order_by(Code.code)
+
     return query
 
 
@@ -110,6 +112,8 @@ def get_code_maps(
     if destination_code:
         query = query.filter(CodeMap.destination_code == destination_code)
 
+    query = query.order_by(CodeMap.source_code)
+
     return query
 
 
@@ -141,6 +145,8 @@ def get_code_exclusions(
     if system:
         query = query.filter(CodeExclusion.system.in_(system))
 
+    query = query.order_by(CodeExclusion.code)
+
     return query
 
 
@@ -153,6 +159,6 @@ def get_coding_standards(ukrdc3: Session) -> list[str]:
     Returns:
         list[str]: List of coding standards
     """
-    query = ukrdc3.query(Code.coding_standard).distinct()
+    query = ukrdc3.query(Code.coding_standard).distinct().order_by(Code.coding_standard)
     standards = [code.coding_standard for code in query]
     return standards
