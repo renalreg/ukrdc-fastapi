@@ -38,7 +38,7 @@ def get_codes(
             or_(Code.code.ilike(f"%{search}%"), Code.description.ilike(f"%{search}%"))
         )
 
-    query = query.order_by(Code.code)
+    query = query.order_by(Code.coding_standard, Code.code)
 
     return query
 
@@ -145,7 +145,7 @@ def get_code_exclusions(
     if system:
         query = query.filter(CodeExclusion.system.in_(system))
 
-    query = query.order_by(CodeExclusion.code)
+    query = query.order_by(CodeExclusion.coding_standard, CodeExclusion.code)
 
     return query
 
