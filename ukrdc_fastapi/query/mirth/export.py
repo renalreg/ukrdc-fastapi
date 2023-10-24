@@ -22,6 +22,7 @@ async def export_all_to_pv(
     redis: Redis,
 ) -> MirthMessageResponseSchema:
     """Export a specific patient's data to PV"""
+    # TODO: Remove now PV is shut down
     if not record_is_data(record):
         raise RecordTypeError(
             f"Cannot export a {record.sendingfacility}/{record.sendingextract} record to PatientView"
@@ -38,6 +39,7 @@ async def export_tests_to_pv(
     redis: Redis,
 ) -> MirthMessageResponseSchema:
     """Export a specific patient's test data to PV"""
+    # TODO: Remove now PV is shut down
     if not record_is_data(record):
         raise RecordTypeError(
             f"Cannot export a {record.sendingfacility}/{record.sendingextract} record to PatientView"
@@ -54,6 +56,7 @@ async def export_docs_to_pv(
     redis: Redis,
 ) -> MirthMessageResponseSchema:
     """Export a specific patient's docs data to PV"""
+    # TODO: Remove now PV is shut down
     if not record_is_data(record):
         raise RecordTypeError(
             f"Cannot export a {record.sendingfacility}/{record.sendingextract} record to PatientView"
