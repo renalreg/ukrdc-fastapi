@@ -21,6 +21,10 @@
 - Install Poetry
 - Run `poetry install`
 
+#### Install pre-commit hooks
+
+- Run `pre-commit install`
+
 ## Create local databases
 
 ### Users Database
