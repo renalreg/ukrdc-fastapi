@@ -21,7 +21,9 @@ def test_get_user_preferences_ignores(users_session, superuser):
 
 def test_update_user_preferences_placeholder(users_session, superuser):
     # Update the placeholder preference
-    prefs = update_user_preferences(users_session, superuser, UserPreferencesRequest(placeholder=True))  # type: ignore
+    prefs = update_user_preferences(
+        users_session, superuser, UserPreferencesRequest(placeholder=True)
+    )  # type: ignore
 
     # Ensure we get the new value back
     assert prefs.placeholder is True

@@ -19,7 +19,7 @@ for code in codes:
     q = (
         session.query(Message.ni, Message.received, Message.msg_status)
         .filter(Message.facility == facility)
-        .filter(Message.ni != None)
+        .filter(Message.ni != None)  # noqa: E711
         .order_by(Message.ni, Message.received.desc())
         .distinct(Message.ni)
     )

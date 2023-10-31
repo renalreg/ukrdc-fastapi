@@ -21,6 +21,10 @@
 - Install Poetry
 - Run `poetry install`
 
+#### Install pre-commit hooks
+
+- Run `pre-commit install`
+
 ## Create local databases
 
 ### Users Database
@@ -53,8 +57,8 @@ CREATE TABLE user_preference (uid VARCHAR NOT NULL, "key" VARCHAR NOT NULL, val 
 
 ### Autofix issues before commit
 
-- `poetry run black ./ukrdc_fastapi`
 - `poetry run ruff --fix ./ukrdc_fastapi`
+- `poetry run ruff format ./ukrdc_fastapi`
 
 ### Application and API versioning
 
@@ -90,20 +94,6 @@ For development purposes, you can [manually trigger the Build Client Libraries w
 ### Local CORS
 
 On some oeprating systems and environments, it may be difficult to properly set a CORS policy for local development. In these cases, add `allow_origins=["*"]` to your `.env` file.
-
-### VSCode config for auto-formatting
-
-```json
-{
-  "editor.formatOnSave": true,
-  "python.formatting.provider": "black",
-  "[python]": {
-    "editor.codeActionsOnSave": {
-      "source.organizeImports": true
-    }
-  }
-}
-```
 
 ### Build ARCHITECTURE.md
 
