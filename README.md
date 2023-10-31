@@ -60,9 +60,7 @@ These scripts require an activate database connection and a corresponding `.env`
 
 ### Create the local user-preferences `sqlite` database
 
-`poetry run python scripts/sqlite/create_databases.py`
-
-This creates an empty local users database. You should only need to run this once per deployment.
+See "Create local databases" section above
 
 ### Automatically resolve type-9 JTRACE work items
 
