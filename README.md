@@ -48,10 +48,55 @@ sqlite3 data/users.sqlite
 CREATE TABLE user_preference (uid VARCHAR NOT NULL, "key" VARCHAR NOT NULL, val JSON, PRIMARY KEY (uid, "key"));
 ```
 
-## Run the server
+## Run the API server
 
-- `poetry run uvicorn ukrdc_fastapi.main:app`
+`poetry run uvicorn ukrdc_fastapi.main:app` or `./run.sh`
 
+## Run the utility scripts
+
+This application includes a small number of utility scripts which make use of the internal API functionality to simplify some tasks.
+
+These scripts require an activate database connection and a corresponding `.env` file in the project root, just like the API server.
+
+### Create the local user-preferences `sqlite` database
+
+`poetry run python scripts/sqlite/create_databases.py`
+
+This creates an empty local users database. You should only need to run this once per deployment.
+
+### Automatically resolve type-9 JTRACE work items
+
+`poetry run python scripts/type_9_resolver/process.py {work item ID}`
+
+Type-9 work items, in essence, are raised when a data file is received which simultaneously changes a local hospital ID as well as demographics. In order to close the work item, two things need to happen:
+
+1. The work item attributes must be manually checked to ensure they do indeed correspond to the claimed patient.
+2. Data files blocked by the work item must be reprocessed in two parts. First, we modify the incoming file to use the _current_ local hospital number, but include the new demographics. Then, we reprocess the original incoming file with both the new local hospital number and new demographics.
+
+This script automates step 2.
+
+### Find all records with multiple UKRDC IDs
+
+`poetry run python scripts/ukrdc_dupes/find.py`
+
+Results will be saved to a file `dupes.json`
+
+### Query and analyse PKB membership creation events
+
+We include scripts to query and analyse who created PKB memberships, and when they were created.
+This is useful for identifying which hospitals are engaging with the process.
+
+#### Query events
+
+`poetry run python scripts/analytics/query_memberships.py`
+
+This will create two output files used in analysis, `scripts/analytics/output/events.json` and `scripts/analytics/output/uids.json`
+
+#### Analyse events
+
+`scripts/analytics/analyse_memberships.py`
+
+This will create timeline plots for each user in `scripts/analytics/output/plot/`
 
 ## Developer notes
 
