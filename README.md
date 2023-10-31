@@ -96,6 +96,10 @@ This will create two output files used in analysis, `scripts/analytics/output/ev
 
 This will create timeline plots for each user in `scripts/analytics/output/plot/`
 
+### Testing scripts
+
+Scripts in `scripts/testing` are one-off scripts used to check or verify functionality before being included in the API. Things like performance benchmarks used to justify API code changes live here.
+
 ## Developer notes
 
 ### Autofix issues before commit
