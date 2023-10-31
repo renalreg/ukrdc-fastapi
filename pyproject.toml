@@ -56,7 +56,6 @@ ignore = [
 ]
 
 [tool.ruff.format]
-exclude = [".eggs", ".git", ".venv", "node_modules"]
 
 [tool.ruff.isort]
 
