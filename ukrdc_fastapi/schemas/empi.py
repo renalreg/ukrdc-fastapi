@@ -154,7 +154,7 @@ class WorkItemSchema(OrmModel):
             value = json.loads(value)
         # Re-map dictionary keys
         if isinstance(value, dict):
-            new_attribute_dict: dict[str, str] = {}
+            new_attribute_dict: dict[str, Optional[str]] = {}
             for key, attribute in value.items():
                 # Pick a new key
                 new_key = WORKITEM_ATTRIBUTE_MAP.get(key, key)
