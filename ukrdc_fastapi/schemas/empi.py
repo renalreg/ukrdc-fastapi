@@ -154,15 +154,24 @@ class WorkItemSchema(OrmModel):
             value = json.loads(value)
         # Re-map dictionary keys
         if isinstance(value, dict):
-            return {
-                # Double check incoming and current values are actually different (JTRACE seems to always include DoB by mistake)
-                WORKITEM_ATTRIBUTE_MAP.get(key, key): (
-                    attribute
-                    if attribute and attribute.split(":")[0] != attribute.split(":")[-1]
-                    else None
+            new_attribute_dict: dict[str, str] = {}
+            for key, attribute in value.items():
+                # Pick a new key
+                new_key = WORKITEM_ATTRIBUTE_MAP.get(key, key)
+                # Break the colon-delimited attribute value into a list
+                split_value: Optional[list[str]] = (
+                    attribute.split(":") if attribute else None
                 )
-                for key, attribute in value.items()
-            }
+
+                if split_value and (
+                    # If the arribute doesn't have an old and new value, or we have an old and new value, and they're different
+                    (len(split_value) < 2) or (split_value[0] != split_value[-1])
+                ):
+                    new_attribute_dict[new_key] = attribute
+                else:
+                    new_attribute_dict[new_key] = None
+            return new_attribute_dict
+
         # Return existing value
         return value
 
