@@ -53,7 +53,6 @@ async def process_workitem(workitem_id: int):
             sending_extract = workitem_obj.attributes.sending_extract
             sending_facility = workitem_obj.attributes.sending_facility
 
-            print(workitem_obj.destination.persons)
             destination_persons = [
                 person
                 for person in workitem_obj.destination.persons
@@ -101,7 +100,7 @@ async def process_workitem(workitem_id: int):
                                     source_map={"originalFilename": original_filename},
                                 )
 
-                                time.sleep(2)
+                                time.sleep(5)
 
                                 # Reprocess original message
                                 print(f"Reprocessing original message {message_id}...")
