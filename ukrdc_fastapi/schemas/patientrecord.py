@@ -6,6 +6,7 @@ from sqlalchemy.orm.session import Session
 from ukrdc_sqla.empi import MasterRecord
 from ukrdc_sqla.ukrdc import PatientRecord
 
+from ukrdc_fastapi.schemas.laborder import ResultItemSchema
 from ukrdc_fastapi.schemas.medication import MedicationSchema
 from ukrdc_fastapi.schemas.observation import ObservationSchema
 from ukrdc_fastapi.schemas.patient import PatientSchema
@@ -362,6 +363,7 @@ class PatientRecordFullSchema(PatientRecordSummarySchema):
         [], description="Family histories"
     )
     observations: list[ObservationSchema] = Field(..., description="Observations")
+    result_items: list[ResultItemSchema] = Field(..., description="Result Items")
     allergies: list[AllergySchema] = Field(..., description="Allergies")
     diagnoses: list[DiagnosisSchema] = Field(..., description="Diagnoses")
     renaldiagnoses: list[RenalDiagnosisSchema] = Field(
