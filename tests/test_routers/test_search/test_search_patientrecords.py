@@ -17,8 +17,6 @@ async def test_search_all(ukrdc3_session, jtrace_session, client_superuser):
         response = await client_superuser.get(url)
         assert response.status_code == 200
 
-        print(response.json()["items"])
-
         returned_ids = {item["pid"] for item in response.json()["items"]}
         assert returned_ids == {number}
 
@@ -75,7 +73,7 @@ async def test_search_facility_superuser(
     # Add extra test items
     commit_extra_patients(ukrdc3_session, jtrace_session)
 
-    for facility in ["TSF00", "TSF01"]:
+    for facility in ["TSF01", "TSF02"]:
         url = f"{configuration.base_url}/search/records?facility={facility}"
 
         response = await client_superuser.get(url)
@@ -91,7 +89,7 @@ async def test_search_extract_superuser(
     commit_extra_patients(ukrdc3_session, jtrace_session)
 
     for i, extract in enumerate(["PV", "UKRDC"]):
-        url = f"{configuration.base_url}/search/records?facility=TSF0{i}&extract={extract}"
+        url = f"{configuration.base_url}/search/records?facility=TSF0{i+1}&extract={extract}"
 
         response = await client_superuser.get(url)
         assert response.status_code == 200
@@ -172,7 +170,7 @@ async def test_search_implicit_facility(
     # Add extra test items
     commit_extra_patients(ukrdc3_session, jtrace_session)
 
-    for facility in ["TSF00", "TSF01"]:
+    for facility in ["TSF01", "TSF02"]:
         url = f"{configuration.base_url}/search/records?search={facility}"
 
         response = await client_superuser.get(url)

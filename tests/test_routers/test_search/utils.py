@@ -25,7 +25,7 @@ def commit_extra_patients(ukrdc3, jtrace):
             number,
             str(100000000 + index),
             number,
-            f"TSF0{record_group_no}",
+            f"TSF0{record_group_no + 1}",
             "UKRDC" if record_group_no else "PV",
             str(number),
             f"SURNAME{index}",

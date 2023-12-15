@@ -162,12 +162,10 @@ def search_records(
         )
 
     # Strict filter by sending extract
-    print(matched_records.all())
     if extract:
         matched_records = matched_records.filter(
             PatientRecord.sendingextract.in_(extract)
         )
-        print(matched_records.all())
 
     # Apply permissions
     matched_records = apply_patientrecord_list_permission(matched_records, user)
