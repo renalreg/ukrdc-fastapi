@@ -18,33 +18,19 @@ BUMPER = 200
 
 def commit_extra_patients(ukrdc3, jtrace):
     for index, number in enumerate(TEST_NUMBERS):
-        nhs_number = number
-        ukrdcid = 100000000 + index
-
-        dob = datetime(1950, 1, (index + 11) % 28)
-        localid = str(number)
-
-        sending_facility = f"TSF{index + BUMPER}"
-        sending_facility_desc = f"TSF{index + BUMPER}_DESCRIPTION"
-        sending_extract = "UKRDC"
-
-        create_basic_facility(
-            sending_facility,
-            sending_facility_desc,
-            ukrdc3,
-        )
+        record_group_no = index % 2
 
         create_basic_patient(
             index + BUMPER,
             number,
-            str(ukrdcid),
-            nhs_number,
-            sending_facility,
-            sending_extract,
-            localid,
+            str(100000000 + index),
+            number,
+            f"TSF0{record_group_no}",
+            "UKRDC" if record_group_no else "PV",
+            str(number),
             f"SURNAME{index}",
             f"NAME{index}",
-            dob,
+            datetime(1950, 1, (index + 11) % 28),
             ukrdc3,
             jtrace,
         )
