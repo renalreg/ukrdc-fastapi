@@ -107,6 +107,7 @@ def search_records(
     full_name: list[str] = QueryParam([], description="Patient full name"),
     dob: list[str] = QueryParam([], description="Patient date of birth"),
     facility: list[str] = QueryParam([], description="Facility code"),
+    extract: list[str] = QueryParam([], description="Extract code"),
     search: list[str] = QueryParam([], description="Free-text search query"),
     include_migrated: bool = QueryParam(
         False, description="Include migrated records in search results"
@@ -158,6 +159,12 @@ def search_records(
     if facility:
         matched_records = matched_records.filter(
             PatientRecord.sendingfacility.in_(facility)
+        )
+
+    # Strict filter by sending extract
+    if extract:
+        matched_records = matched_records.filter(
+            PatientRecord.sendingextract.in_(extract)
         )
 
     # Apply permissions
