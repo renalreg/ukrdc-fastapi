@@ -15,8 +15,7 @@ Thank you for improving the security of `UKRDC-FastAPI`. We appreciate your effo
 responsible disclosure and will make every effort to acknowledge your
 contributions.
 
-Report security bugs by emailing the lead maintainer at joel.collins@renalregistry.nhs.uk,
-or the head of systems at tim.whitlock@renalregistry.nhs.uk.
+Report security bugs by emailing rrsystems@ukkidney.org.
 
 The lead maintainer will acknowledge your email within 48 hours, and will send a
 more detailed response within 48 hours indicating the next steps in handling
