@@ -146,7 +146,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Download OpenAPI spec
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: openapi-spec
           path: clients/
@@ -180,7 +180,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Download OpenAPI spec
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: openapi-spec
           path: clients/
@@ -251,19 +251,19 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Download OpenAPI spec
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: openapi-spec
           path: docs/
 
       - name: Download Redoc documentation
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: redoc-docs
           path: docs/redoc/
 
       - name: Download typescript-axios-client documentation
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: typescript-axios-client-docs
           path: docs/typescript-axios-client/
