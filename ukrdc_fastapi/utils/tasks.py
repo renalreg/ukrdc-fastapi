@@ -283,7 +283,8 @@ class TaskTracker:
     ) -> TrackableTask:
         """
         Create, track, and start a new background task, returning HTTP exceptions
-        if the task cannot be launched
+        if the task cannot be launched. Mostly used if you need to create a
+        background task from within a router function.
 
         Args:
             func (Callable): Function to wrap and run in the background

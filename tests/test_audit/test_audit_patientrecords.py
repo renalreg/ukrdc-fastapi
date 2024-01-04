@@ -437,7 +437,7 @@ async def test_record_export_data(client_superuser, audit_session):
         f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/export/pv",
         json={},
     )
-    assert response.status_code == 202
+    assert response.status_code == 200
 
     events = audit_session.query(AuditEvent).all()
     assert len(events) == 1
@@ -456,7 +456,7 @@ async def test_record_export_tests(client_superuser, audit_session):
         f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/export/pv-tests",
         json={},
     )
-    assert response.status_code == 202
+    assert response.status_code == 200
 
     events = audit_session.query(AuditEvent).all()
     assert len(events) == 1
@@ -475,7 +475,7 @@ async def test_record_export_docs(client_superuser, audit_session):
         f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/export/pv-docs",
         json={},
     )
-    assert response.status_code == 202
+    assert response.status_code == 200
 
     events = audit_session.query(AuditEvent).all()
     assert len(events) == 1
@@ -494,7 +494,7 @@ async def test_record_export_radar(client_superuser, audit_session):
         f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/export/radar",
         json={},
     )
-    assert response.status_code == 202
+    assert response.status_code == 200
 
     events = audit_session.query(AuditEvent).all()
     assert len(events) == 1

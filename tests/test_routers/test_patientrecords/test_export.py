@@ -5,6 +5,7 @@ from ukrdc_sqla.ukrdc import ProgramMembership
 
 from tests.utils import days_ago
 from ukrdc_fastapi.config import configuration
+from ukrdc_fastapi.exceptions import NoActiveMembershipError
 from ukrdc_fastapi.utils.tasks import TrackableTaskSchema
 
 
@@ -19,27 +20,15 @@ def _last_sent_mirth_message(httpx_mock) -> str:
 
 
 @pytest.mark.asyncio
-async def test_record_export_data(client_authenticated, httpx_mock):
+async def test_record_export_data(client_authenticated):
     response = await client_authenticated.post(
         f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/export/pv",
         json={},
     )
 
-    assert response.status_code == 202
-    task = TrackableTaskSchema(**response.json())
-    assert task.status == "pending"
-
-    task_status = await client_authenticated.get(
-        f"{configuration.base_url}/tasks/{task.id}"
-    )
-    assert task_status.status_code == 200
-    assert task_status.json().get("status") == "finished"
-
-    assert (
-        _last_sent_mirth_message(httpx_mock)
-        == "<result><pid>PYTEST01:PV:00000000A</pid><tests>FULL</tests><documents>FULL</documents></result>"
-    )
-
+    assert response.status_code == 200
+    assert response.json().get("status") == "success"
+    assert response.json().get("numberOfMessages") == 1
 
 @pytest.mark.asyncio
 async def test_record_export_tests(client_authenticated, httpx_mock):
@@ -48,21 +37,9 @@ async def test_record_export_tests(client_authenticated, httpx_mock):
         json={},
     )
 
-    assert response.status_code == 202
-    task = TrackableTaskSchema(**response.json())
-    assert task.status == "pending"
-
-    task_status = await client_authenticated.get(
-        f"{configuration.base_url}/tasks/{task.id}"
-    )
-    assert task_status.status_code == 200
-    assert task_status.json().get("status") == "finished"
-
-    assert (
-        _last_sent_mirth_message(httpx_mock)
-        == "<result><pid>PYTEST01:PV:00000000A</pid><tests>FULL</tests></result>"
-    )
-
+    assert response.status_code == 200
+    assert response.json().get("status") == "success"
+    assert response.json().get("numberOfMessages") == 1
 
 @pytest.mark.asyncio
 async def test_record_export_docs(client_authenticated, httpx_mock):
@@ -71,21 +48,9 @@ async def test_record_export_docs(client_authenticated, httpx_mock):
         json={},
     )
 
-    assert response.status_code == 202
-    task = TrackableTaskSchema(**response.json())
-    assert task.status == "pending"
-
-    task_status = await client_authenticated.get(
-        f"{configuration.base_url}/tasks/{task.id}"
-    )
-    assert task_status.status_code == 200
-    assert task_status.json().get("status") == "finished"
-
-    assert (
-        _last_sent_mirth_message(httpx_mock)
-        == "<result><pid>PYTEST01:PV:00000000A</pid><documents>FULL</documents></result>"
-    )
-
+    assert response.status_code == 200
+    assert response.json().get("status") == "success"
+    assert response.json().get("numberOfMessages") == 1
 
 @pytest.mark.asyncio
 async def test_record_export_radar(client_authenticated, httpx_mock):
@@ -94,21 +59,9 @@ async def test_record_export_radar(client_authenticated, httpx_mock):
         json={},
     )
 
-    assert response.status_code == 202
-    task = TrackableTaskSchema(**response.json())
-    assert task.status == "pending"
-
-    task_status = await client_authenticated.get(
-        f"{configuration.base_url}/tasks/{task.id}"
-    )
-    assert task_status.status_code == 200
-    assert task_status.json().get("status") == "finished"
-
-    assert (
-        _last_sent_mirth_message(httpx_mock)
-        == "<result><pid>PYTEST01:PV:00000000A</pid></result>"
-    )
-
+    assert response.status_code == 200
+    assert response.json().get("status") == "success"
+    assert response.json().get("numberOfMessages") == 1
 
 @pytest.mark.asyncio
 async def test_record_export_pkb(client_authenticated, ukrdc3_session):
@@ -128,38 +81,18 @@ async def test_record_export_pkb(client_authenticated, ukrdc3_session):
         f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/export/pkb",
         json={},
     )
-    assert response.status_code == 202
-    task = TrackableTaskSchema(**response.json())
-    assert task.status == "pending"
-
-    task_status = await client_authenticated.get(
-        f"{configuration.base_url}/tasks/{task.id}"
-    )
-    assert task_status.status_code == 200
-    assert task_status.json().get("status") == "finished"
+    assert response.status_code == 200
+    assert response.json().get("status") == "success"
+    assert response.json().get("numberOfMessages") == 9
 
 
 @pytest.mark.asyncio
 async def test_record_export_pkb_no_memberships(client_authenticated):
-    response = await client_authenticated.post(
-        f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/export/pkb",
-        json={},
-    )
-    assert response.status_code == 202
-    task = TrackableTaskSchema(**response.json())
-    assert task.status == "pending"
-
-    status_response = await client_authenticated.get(
-        f"{configuration.base_url}/tasks/{task.id}"
-    )
-    assert status_response.status_code == 200
-    status_task = TrackableTaskSchema(**status_response.json())
-
-    assert status_task.status == "failed"
-    assert (
-        status_task.error
-        == "Patient PYTEST01:PV:00000000A has no active PKB membership"
-    )
+    with pytest.raises(NoActiveMembershipError):
+        await client_authenticated.post(
+            f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/export/pkb",
+            json={},
+        )
 
 
 @pytest.mark.parametrize("route", ["pv", "pv-tests", "pv-docs", "radar", "pkb"])
