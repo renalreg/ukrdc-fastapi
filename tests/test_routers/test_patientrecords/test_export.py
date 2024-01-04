@@ -27,7 +27,8 @@ async def test_record_export_data(client_authenticated):
     )
 
     assert response.status_code == 200
-    assert response.json().get("message") == "<result><pid>PYTEST01:PV:00000000A</pid><tests>FULL</tests><documents>FULL</documents></result>"
+    assert response.json().get("status") == "success"
+    assert response.json().get("numberOfMessages") == 1
 
 @pytest.mark.asyncio
 async def test_record_export_tests(client_authenticated, httpx_mock):
@@ -37,8 +38,8 @@ async def test_record_export_tests(client_authenticated, httpx_mock):
     )
 
     assert response.status_code == 200
-    assert response.json().get("message") == "<result><pid>PYTEST01:PV:00000000A</pid><tests>FULL</tests></result>"
-
+    assert response.json().get("status") == "success"
+    assert response.json().get("numberOfMessages") == 1
 
 @pytest.mark.asyncio
 async def test_record_export_docs(client_authenticated, httpx_mock):
@@ -48,8 +49,8 @@ async def test_record_export_docs(client_authenticated, httpx_mock):
     )
 
     assert response.status_code == 200
-    assert response.json().get("message") == "<result><pid>PYTEST01:PV:00000000A</pid><documents>FULL</documents></result>"
-
+    assert response.json().get("status") == "success"
+    assert response.json().get("numberOfMessages") == 1
 
 @pytest.mark.asyncio
 async def test_record_export_radar(client_authenticated, httpx_mock):
@@ -59,8 +60,8 @@ async def test_record_export_radar(client_authenticated, httpx_mock):
     )
 
     assert response.status_code == 200
-    assert response.json().get("message") == "<result><pid>PYTEST01:PV:00000000A</pid></result>"
-
+    assert response.json().get("status") == "success"
+    assert response.json().get("numberOfMessages") == 1
 
 @pytest.mark.asyncio
 async def test_record_export_pkb(client_authenticated, ukrdc3_session):
@@ -81,8 +82,8 @@ async def test_record_export_pkb(client_authenticated, ukrdc3_session):
         json={},
     )
     assert response.status_code == 200
-    # Expect 9 messages to be sent for sync
-    assert len(response.json()) == 9
+    assert response.json().get("status") == "success"
+    assert response.json().get("numberOfMessages") == 9
 
 
 @pytest.mark.asyncio

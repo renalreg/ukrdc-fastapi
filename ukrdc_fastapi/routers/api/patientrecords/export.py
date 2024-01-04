@@ -23,7 +23,7 @@ from ukrdc_fastapi.query.mirth.export import (
     export_docs_to_pv,
     export_tests_to_pv,
 )
-from ukrdc_fastapi.utils.mirth import MirthMessageResponseSchema
+from ukrdc_fastapi.schemas.export import ExportResponseSchema
 
 from .dependencies import _get_patientrecord
 
@@ -32,7 +32,7 @@ router = APIRouter(tags=["Patient Records/Export"])
 
 @router.post(
     "/pv",
-    response_model=MirthMessageResponseSchema,
+    response_model=ExportResponseSchema,
     dependencies=[Security(auth.permission(Permissions.EXPORT_RECORDS))],
 )
 async def patient_export_pv(
@@ -47,12 +47,12 @@ async def patient_export_pv(
         Resource.PATIENT_RECORD, patient_record.pid, AuditOperation.EXPORT_PV
     )
 
-    return response
+    return ExportResponseSchema(status=response.status, number_of_messages=1)
 
 
 @router.post(
     "/pv-tests",
-    response_model=MirthMessageResponseSchema,
+    response_model=ExportResponseSchema,
     dependencies=[Security(auth.permission(Permissions.EXPORT_RECORDS))],
 )
 async def patient_export_pv_tests(
@@ -67,12 +67,12 @@ async def patient_export_pv_tests(
         Resource.PATIENT_RECORD, patient_record.pid, AuditOperation.EXPORT_PV_TESTS
     )
 
-    return response
+    return ExportResponseSchema(status=response.status, number_of_messages=1)
 
 
 @router.post(
     "/pv-docs",
-    response_model=MirthMessageResponseSchema,
+    response_model=ExportResponseSchema,
     dependencies=[Security(auth.permission(Permissions.EXPORT_RECORDS))],
 )
 async def patient_export_pv_docs(
@@ -87,12 +87,12 @@ async def patient_export_pv_docs(
         Resource.PATIENT_RECORD, patient_record.pid, AuditOperation.EXPORT_PV_DOCS
     )
 
-    return response
+    return ExportResponseSchema(status=response.status, number_of_messages=1)
 
 
 @router.post(
     "/radar",
-    response_model=MirthMessageResponseSchema,
+    response_model=ExportResponseSchema,
     dependencies=[Security(auth.permission(Permissions.EXPORT_RECORDS))],
 )
 async def patient_export_radar(
@@ -107,12 +107,12 @@ async def patient_export_radar(
         Resource.PATIENT_RECORD, patient_record.pid, AuditOperation.EXPORT_RADAR
     )
 
-    return response
+    return ExportResponseSchema(status=response.status, number_of_messages=1)
 
 
 @router.post(
     "/pkb",
-    response_model=list[MirthMessageResponseSchema],
+    response_model=ExportResponseSchema,
     dependencies=[Security(auth.permission(Permissions.EXPORT_RECORDS))],
 )
 async def patient_export_pkb(
@@ -130,4 +130,12 @@ async def patient_export_pkb(
         Resource.PATIENT_RECORD, patient_record.pid, AuditOperation.EXPORT_PKB
     )
 
-    return response
+    combined_status = (
+        "success"
+        if all(response.status == "success" for response in response)
+        else "fail"
+    )
+
+    return ExportResponseSchema(
+        status=combined_status, number_of_messages=len(response)
+    )
