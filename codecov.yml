@@ -12,3 +12,6 @@ coverage:
         target: 80%
         threshold: 5%
         base: auto
+ignore:
+  # ignore schemas
+  - "ukrdc_fastapi/schemas"
