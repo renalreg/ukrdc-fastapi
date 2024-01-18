@@ -5,14 +5,13 @@ from pydantic import Field
 from sqlalchemy.orm.session import Session
 from ukrdc_sqla.empi import MasterRecord
 from ukrdc_sqla.ukrdc import PatientRecord
+from ukrdc_fastapi.schemas.base import OrmModel
 
-from ukrdc_fastapi.schemas.laborder import ResultItemSchema
-from ukrdc_fastapi.schemas.medication import MedicationSchema
-from ukrdc_fastapi.schemas.observation import ObservationSchema
-from ukrdc_fastapi.schemas.patient import PatientSchema
-from ukrdc_fastapi.schemas.survey import SurveySchema
-
-from .base import OrmModel
+from ukrdc_fastapi.schemas.patientrecord.laborder import ResultItemSchema
+from ukrdc_fastapi.schemas.patientrecord.medication import MedicationSchema
+from ukrdc_fastapi.schemas.patientrecord.observation import ObservationSchema
+from ukrdc_fastapi.schemas.patientrecord.patient import PatientSchema
+from ukrdc_fastapi.schemas.patientrecord.survey import SurveySchema
 
 SendingExtract = Literal["PV", "UKRDC", "UKRR", "RADAR", "SURVEY", "PVMIG", "HSMIG"]
 

@@ -37,18 +37,18 @@ from ukrdc_fastapi.query.delete import (
 from ukrdc_fastapi.query.messages import get_messages_related_to_patientrecord
 from ukrdc_fastapi.schemas.audit import AuditEventSchema
 from ukrdc_fastapi.schemas.delete import DeletePidRequest, DeletePIDResponseSchema
-from ukrdc_fastapi.schemas.laborder import (
+from ukrdc_fastapi.schemas.patientrecord.laborder import (
     ResultItemServiceSchema,
 )
-from ukrdc_fastapi.schemas.medication import MedicationSchema
+from ukrdc_fastapi.schemas.patientrecord.medication import MedicationSchema
 from ukrdc_fastapi.schemas.message import MessageSchema, MinimalMessageSchema
-from ukrdc_fastapi.schemas.observation import ObservationSchema
+from ukrdc_fastapi.schemas.patientrecord.observation import ObservationSchema
 from ukrdc_fastapi.schemas.patientrecord import (
     DialysisSessionSchema,
     PatientRecordSchema,
 )
-from ukrdc_fastapi.schemas.survey import SurveySchema
-from ukrdc_fastapi.schemas.treatment import TreatmentSchema
+from ukrdc_fastapi.schemas.patientrecord.survey import SurveySchema
+from ukrdc_fastapi.schemas.patientrecord.treatments import TreatmentSchema
 from ukrdc_fastapi.sorters import AUDIT_SORTER, ERROR_SORTER
 from ukrdc_fastapi.utils.paginate import Page, paginate
 from ukrdc_fastapi.utils.sort import SQLASorter, make_sqla_sorter

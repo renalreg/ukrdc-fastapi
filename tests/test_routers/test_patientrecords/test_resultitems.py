@@ -1,5 +1,5 @@
 from ukrdc_fastapi.config import configuration
-from ukrdc_fastapi.schemas.laborder import ResultItemSchema
+from ukrdc_fastapi.schemas.patientrecord.laborder import ResultItemSchema
 
 
 async def test_record_resultitems(client_superuser):

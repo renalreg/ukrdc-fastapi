@@ -3,7 +3,7 @@ from typing import Literal, Optional
 
 from pydantic import Field
 
-from .base import OrmModel
+from ..base import OrmModel
 
 GenderType = Literal["1", "2", "9"]
 

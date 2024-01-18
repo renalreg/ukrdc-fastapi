@@ -6,7 +6,11 @@ from redis import Redis
 from ukrdc_sqla.ukrdc import PatientRecord
 
 from ukrdc_fastapi.query.mirth.base import safe_send_mirth_message_to_name
-from ukrdc_fastapi.schemas.patient import AddressSchema, GenderType, NameSchema
+from ukrdc_fastapi.schemas.patientrecord.patient import (
+    AddressSchema,
+    GenderType,
+    NameSchema,
+)
 from ukrdc_fastapi.utils.mirth import MirthMessageResponseSchema
 from ukrdc_fastapi.utils.mirth.messages.rda import build_demographic_update_message
 
