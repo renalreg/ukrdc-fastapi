@@ -16,7 +16,11 @@ from ukrdc_fastapi.dependencies.audit import (
 from ukrdc_fastapi.dependencies.auth import Permissions, auth
 from ukrdc_fastapi.query.mirth.rda import update_patient_demographics
 from ukrdc_fastapi.schemas.base import JSONModel
-from ukrdc_fastapi.schemas.patient import AddressSchema, GenderType, NameSchema
+from ukrdc_fastapi.schemas.patientrecord.patient import (
+    AddressSchema,
+    GenderType,
+    NameSchema,
+)
 from ukrdc_fastapi.utils.mirth import MirthMessageResponseSchema
 
 from .dependencies import _get_patientrecord

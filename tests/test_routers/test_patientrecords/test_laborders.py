@@ -2,7 +2,7 @@ from ukrdc_sqla.ukrdc import LabOrder, ResultItem
 
 from tests.utils import days_ago
 from ukrdc_fastapi.config import configuration
-from ukrdc_fastapi.schemas.laborder import LabOrderSchema
+from ukrdc_fastapi.schemas.patientrecord.laborder import LabOrderSchema
 
 
 async def test_record_laborders(client_authenticated):

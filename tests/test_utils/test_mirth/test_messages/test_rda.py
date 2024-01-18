@@ -2,7 +2,7 @@ import datetime
 
 from ukrdc_sqla.ukrdc import PatientRecord
 
-from ukrdc_fastapi.schemas.patient import AddressSchema, NameSchema
+from ukrdc_fastapi.schemas.patientrecord.patient import AddressSchema, NameSchema
 from ukrdc_fastapi.utils.mirth.messages.rda import build_demographic_update_message
 
 

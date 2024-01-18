@@ -3,7 +3,7 @@ from typing import Optional
 
 from pydantic import Field
 
-from .base import OrmModel
+from ..base import OrmModel
 
 
 class ObservationSchema(OrmModel):

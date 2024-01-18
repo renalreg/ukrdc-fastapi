@@ -15,7 +15,7 @@ from ukrdc_fastapi.dependencies.audit import (
     get_auditer,
 )
 from ukrdc_fastapi.dependencies.auth import Permissions, auth
-from ukrdc_fastapi.schemas.laborder import (
+from ukrdc_fastapi.schemas.patientrecord.laborder import (
     LabOrderSchema,
     LabOrderShortSchema,
 )

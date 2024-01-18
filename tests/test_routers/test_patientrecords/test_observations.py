@@ -1,5 +1,5 @@
 from ukrdc_fastapi.config import configuration
-from ukrdc_fastapi.schemas.observation import ObservationSchema
+from ukrdc_fastapi.schemas.patientrecord.observation import ObservationSchema
 
 
 async def test_record_observations(client_superuser):

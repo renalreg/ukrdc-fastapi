@@ -5,7 +5,7 @@ from pydantic import Field, root_validator
 
 from ukrdc_fastapi.utils.codes import yhq
 
-from .base import OrmModel
+from ..base import OrmModel
 
 
 class SurveyQuestionSchema(OrmModel):

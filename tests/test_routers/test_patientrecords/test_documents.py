@@ -1,5 +1,4 @@
 from ukrdc_fastapi.config import configuration
-from ukrdc_fastapi.schemas.patientrecord import DocumentSchema, DocumentSummarySchema
 
 
 async def test_record_documents(client_authenticated):

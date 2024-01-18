@@ -8,7 +8,11 @@ from ukrdc_xsdata.ukrdc import types
 from xsdata.formats.dataclass.serializers.xml import XmlSerializer
 from xsdata.models.datatype import XmlDate, XmlDateTime
 
-from ukrdc_fastapi.schemas.patient import AddressSchema, GenderType, NameSchema
+from ukrdc_fastapi.schemas.patientrecord.patient import (
+    AddressSchema,
+    GenderType,
+    NameSchema,
+)
 
 
 def build_demographic_update_message(
