@@ -8,13 +8,14 @@ from sqlalchemy.orm import Session
 from starlette.status import HTTP_204_NO_CONTENT
 from ukrdc_sqla.errorsdb import Message
 from ukrdc_sqla.ukrdc import (
+    DialysisSession,
+    Medication,
     Observation,
     PatientRecord,
     ResultItem,
-    DialysisSession,
-    Treatment,
-    Medication,
     Survey,
+    Transplant,
+    Treatment,
 )
 
 from ukrdc_fastapi.dependencies import get_auditdb, get_errorsdb, get_jtrace, get_ukrdc3
@@ -37,23 +38,24 @@ from ukrdc_fastapi.query.delete import (
 from ukrdc_fastapi.query.messages import get_messages_related_to_patientrecord
 from ukrdc_fastapi.schemas.audit import AuditEventSchema
 from ukrdc_fastapi.schemas.delete import DeletePidRequest, DeletePIDResponseSchema
-from ukrdc_fastapi.schemas.patientrecord.laborder import (
-    ResultItemServiceSchema,
-)
-from ukrdc_fastapi.schemas.patientrecord.medication import MedicationSchema
 from ukrdc_fastapi.schemas.message import MessageSchema, MinimalMessageSchema
-from ukrdc_fastapi.schemas.patientrecord.observation import ObservationSchema
 from ukrdc_fastapi.schemas.patientrecord import (
     DialysisSessionSchema,
     PatientRecordSchema,
 )
+from ukrdc_fastapi.schemas.patientrecord.laborder import (
+    ResultItemServiceSchema,
+)
+from ukrdc_fastapi.schemas.patientrecord.medication import MedicationSchema
+from ukrdc_fastapi.schemas.patientrecord.observation import ObservationSchema
+from ukrdc_fastapi.schemas.patientrecord.procedure import TransplantSchema
 from ukrdc_fastapi.schemas.patientrecord.survey import SurveySchema
 from ukrdc_fastapi.schemas.patientrecord.treatments import TreatmentSchema
 from ukrdc_fastapi.sorters import AUDIT_SORTER, ERROR_SORTER
 from ukrdc_fastapi.utils.paginate import Page, paginate
 from ukrdc_fastapi.utils.sort import SQLASorter, make_sqla_sorter
 
-from . import export, update, results, laborders, documents, diagnoses
+from . import diagnoses, documents, export, laborders, results, update
 from .dependencies import _get_patientrecord
 
 router = APIRouter(tags=["Patient Records"])
@@ -376,8 +378,8 @@ def patient_dialysis_sessions(
     patient_record: PatientRecord = Depends(_get_patientrecord),
     sorter: SQLASorter = Depends(
         make_sqla_sorter(
-            [DialysisSession.procedure_time, DialysisSession.creation_date],
-            default_sort_by=DialysisSession.procedure_time,
+            [DialysisSession.proceduretime, DialysisSession.creation_date],
+            default_sort_by=DialysisSession.proceduretime,
         )
     ),
     audit: Auditer = Depends(get_auditer),
@@ -387,6 +389,36 @@ def patient_dialysis_sessions(
 
     audit.add_event(
         Resource.DIALYSISSESSIONS,
+        None,
+        AuditOperation.READ,
+        parent=audit.add_event(
+            Resource.PATIENT_RECORD, patient_record.pid, AuditOperation.READ
+        ),
+    )
+
+    return paginate(sorter.sort(sessions))
+
+
+@router.get(
+    "/{pid}/transplants",
+    response_model=Page[TransplantSchema],
+    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
+)
+def patient_transplants(
+    patient_record: PatientRecord = Depends(_get_patientrecord),
+    sorter: SQLASorter = Depends(
+        make_sqla_sorter(
+            [Transplant.proceduretime, Transplant.creation_date],
+            default_sort_by=Transplant.proceduretime,
+        )
+    ),
+    audit: Auditer = Depends(get_auditer),
+):
+    """Retreive a specific patient's transplant procedures"""
+    sessions = patient_record.transplants
+
+    audit.add_event(
+        Resource.TRANSPLANTS,
         None,
         AuditOperation.READ,
         parent=audit.add_event(
