@@ -282,6 +282,9 @@ def patient_medications(
     return sorter.sort(patient_record.medications).all()
 
 
+# Treatments
+
+
 @router.get(
     "/{pid}/treatments",
     response_model=list[TreatmentSchema],
@@ -307,6 +310,34 @@ def patient_treatments(
         ),
     )
     return sorter.sort(patient_record.treatments).all()
+
+
+@router.get(
+    "/{pid}/transplants",
+    response_model=list[TransplantSchema],
+    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
+)
+def patient_transplants(
+    patient_record: PatientRecord = Depends(_get_patientrecord),
+    sorter: SQLASorter = Depends(
+        make_sqla_sorter(
+            [Transplant.proceduretime, Transplant.creation_date],
+            default_sort_by=Transplant.proceduretime,
+        )
+    ),
+    audit: Auditer = Depends(get_auditer),
+):
+    """Retreive a specific patient's transplant procedures"""
+    audit.add_event(
+        Resource.TRANSPLANTS,
+        None,
+        AuditOperation.READ,
+        parent=audit.add_event(
+            Resource.PATIENT_RECORD, patient_record.pid, AuditOperation.READ
+        ),
+    )
+
+    return sorter.sort(patient_record.transplants).all()
 
 
 @router.get(
@@ -389,36 +420,6 @@ def patient_dialysis_sessions(
 
     audit.add_event(
         Resource.DIALYSISSESSIONS,
-        None,
-        AuditOperation.READ,
-        parent=audit.add_event(
-            Resource.PATIENT_RECORD, patient_record.pid, AuditOperation.READ
-        ),
-    )
-
-    return paginate(sorter.sort(sessions))
-
-
-@router.get(
-    "/{pid}/transplants",
-    response_model=Page[TransplantSchema],
-    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
-)
-def patient_transplants(
-    patient_record: PatientRecord = Depends(_get_patientrecord),
-    sorter: SQLASorter = Depends(
-        make_sqla_sorter(
-            [Transplant.proceduretime, Transplant.creation_date],
-            default_sort_by=Transplant.proceduretime,
-        )
-    ),
-    audit: Auditer = Depends(get_auditer),
-):
-    """Retreive a specific patient's transplant procedures"""
-    sessions = patient_record.transplants
-
-    audit.add_event(
-        Resource.TRANSPLANTS,
         None,
         AuditOperation.READ,
         parent=audit.add_event(
