@@ -67,7 +67,11 @@ class PVDataSchema(OrmModel):
     update_date: Optional[datetime.datetime] = Field(None, description="Update date")
 
     rrtstatus: Optional[str] = Field(None, description="RRT status code")
-    tpstatus: Optional[str] = Field(None, description="Transplant status")
+    rrtstatus_desc: Optional[str] = Field(None, description="RRT status")
+
+    tpstatus: Optional[str] = Field(None, description="Transplant status code")
+    tpstatus_desc: Optional[str] = Field(None, description="Transplant status")
+
     bloodgroup: Optional[str] = Field(None, description="Blood group")
 
     diagnosisdate: Optional[datetime.datetime] = Field(
