@@ -18,6 +18,7 @@ class MedicationSchema(OrmModel):
 
     drug_product_generic: str = Field(..., description="Generic name of the medication")
 
+    dosequantity: Optional[str] = Field(None, description="Dose quantity")
     doseuomcode: Optional[str] = Field(
         None, description="Dose unit of measurement code"
     )
@@ -28,11 +29,11 @@ class MedicationSchema(OrmModel):
         None, description="Dose unit of measurement description"
     )
 
+    frequency: Optional[str] = Field(None, description="Medication frequency")
+
     routecode: Optional[str] = Field(None, description="Route code")
     routecodestd: Optional[str] = Field(None, description="Route coding standard")
     routedesc: Optional[str] = Field(None, description="Route description")
-
-    frequency: Optional[str] = Field(None, description="Medication frequency")
 
     comment: Optional[str] = Field(None, description="Comment on the medication")
 
