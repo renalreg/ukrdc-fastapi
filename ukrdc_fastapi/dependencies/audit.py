@@ -2,6 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import AsyncGenerator, Optional, Union
 
+from starlette.requests import ClientDisconnect
 from fastapi import Depends, Request, Security
 from sqlalchemy.orm.session import Session
 from ukrdc_sqla.empi import WorkItem
@@ -97,7 +98,12 @@ class Auditer:
 
     async def add_request(self):
         """Add the audit request"""
-        self.event.body = (await self.request.body()).decode("utf-8") or None
+        try:
+            # Try to extract the request body and add it to the audit log
+            self.event.body = (await self.request.body()).decode("utf-8") or None
+        except ClientDisconnect:
+            # If the client disconnects before the request body can be read, ignore it
+            self.event.body = None
 
         self.session.add(self.event)
         self.session.flush()
