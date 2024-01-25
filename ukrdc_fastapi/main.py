@@ -36,7 +36,7 @@ async def lifespan(_: FastAPI):
     await repeated.update_facilities_list()
     await repeated.precalculate_facility_stats_dialysis()
     yield
-    # Shutdown tasks
+    # Anything here will be executed on app shutdown
 
 
 app = FastAPI(
