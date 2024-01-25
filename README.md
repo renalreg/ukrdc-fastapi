@@ -141,9 +141,3 @@ For development purposes, you can [manually trigger the Build Client Libraries w
 ### Local CORS
 
 On some oeprating systems and environments, it may be difficult to properly set a CORS policy for local development. In these cases, add `allow_origins=["*"]` to your `.env` file.
-
-### Build ARCHITECTURE.md
-
-- Install `pipx`
-- `pipx install archmd`
-- `archmd . --out "ARCHITECTURE.md" --title="UKRDC-FastAPI Architecture"`
