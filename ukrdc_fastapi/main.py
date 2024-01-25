@@ -1,4 +1,4 @@
-import logging
+from contextlib import asynccontextmanager
 import re
 
 from fastapi import Depends, FastAPI
@@ -27,6 +27,18 @@ def _custom_generate_unique_id(route: APIRoute):
     return operation_id
 
 
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    # Clear the task tracker
+    startup.clear_task_tracker()
+    # Start repeated tasks
+    await repeated.update_channel_id_name_map()
+    await repeated.update_facilities_list()
+    await repeated.precalculate_facility_stats_dialysis()
+    yield
+    # Shutdown tasks
+
+
 app = FastAPI(
     title="UKRDC API",
     description="Early test version of an updated, simpler UKRDC API",
@@ -41,6 +53,7 @@ app = FastAPI(
         "scopes": ["openid", "profile", "email", "offline_access"],
     },
     generate_unique_id_function=_custom_generate_unique_id,
+    lifespan=lifespan,
 )
 
 app.openapi_version = "3.0.2"
@@ -74,16 +87,6 @@ async def http_exception_handler(_, exc):
     """Handle missing resources with a 404 response"""
     return PlainTextResponse(str(exc), status_code=404)
 
-
-# Run synchronous startup functions
-logging.info("Clearing task tracker and locks...")
-startup.clear_task_tracker()
-
-# Attach async startup event handlers
-logging.info("Starting repeated background tasks...")
-app.router.add_event_handler("startup", repeated.update_channel_id_name_map)
-app.router.add_event_handler("startup", repeated.update_facilities_list)
-app.router.add_event_handler("startup", repeated.precalculate_facility_stats_dialysis)
 
 # Run app
 
