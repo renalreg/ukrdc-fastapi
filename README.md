@@ -107,50 +107,10 @@ Scripts in `scripts/testing` are one-off scripts used to check or verify functio
 - `poetry run ruff --fix ./ukrdc_fastapi`
 - `poetry run ruff format ./ukrdc_fastapi`
 
-### Application and API versioning
+### Versioning, releases, and deployments
 
-The application version will be used as the API version in all documentation and clients. Therefore, the application should follow [semantic versioning](https://semver.org/) for the API functionality, that is:
+See our [internal Confluence documentation](https://renalregistry.atlassian.net/wiki/spaces/UDF/pages/2516680711/Releases+and+Deployment) for up-to-date guidelines on versioning, releases, and deployment.
 
-- Major version changes should be accompanied by a breaking change in the API.
-- Minor version changes should be accompanied by a non-breaking change in the API.
-- Patch version changes should be accompanied by fixes or updates introducing no new API functionality.
-
-Use `./setversion.sh {version_number}` to set the application version. E.g. `./setversion.sh 4.0.0-rc.1`.
-
-### Github Release Versions
-
-Github releases should use tags that follow the application version. E.g. application version 1.0.1 will be tagged with `v1.0.1`.
-
-### Container Image Tags
-
-Container images are published on either a GitHub Release, or a manual workflow dispatch.
-
-All published images are tagged with `edge`. The `edge` tag will always point to the most recently published image.
-
-Manual workflow dispatch will tag the image with the branch name, e.g. manually running a workflow on the `main` branch will tag the image with `edge` and `main`.
-
-Pre-release GitHub releases (those with semantic version names with a pre-release suffix,  e.g. `1.0.1-beta.1`) publish a container image tagged with the version number, and `edge`.
-
-Stable GitHub releases (those with semantic version names but no pre-release suffix) publish a container image tagged with the version number, `edge`, and `latest`.
-
-See [ukrdc-compose](https://github.com/renalreg/ukrdc-compose?tab=readme-ov-file#instances-and-edge) for more information on how these tags are used in deployments.
-
-#### Suggested release flow
-
-- Make all changes to bundle into a release
-- Iterate version number of the application to a pre-release (e.g. v1.0.0-beta.1) with `setversion.sh` (see above section), and push.
-- Create a matching pre-release using GitHub releases.
-  - This will publish a docker image with a version-numbered tag, as well as the `edge` tag
-- Update and restart containers on staging and live environments.
-  - This will pull the `edge` build and route internal UKKA traffic to that edge build. External users will remain on the latest stable release (tagged `latest`).
-
-Once internal testing is complete:
-
-- Iterate version number of the application to a stable release (e.g. v1.0.0) with `setversion.sh` (see above section), and push.
-- Create a matching pre-release using GitHub releases.
-  - This will publish a docker image with a version-numbered tag, as well as the `edge` tag _and the `latest` tag_.
-- Update and restart containers on staging and live environments.
-  - This will pull the `latest` build and route external traffic to that stable build.
 
 ### Build client libraries
 
