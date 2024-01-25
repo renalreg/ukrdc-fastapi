@@ -1,6 +1,5 @@
 import logging
 
-from fastapi_utils.tasks import repeat_every
 from sqlalchemy.sql.functions import func
 from ukrdc_sqla.ukrdc import PatientRecord
 
@@ -15,6 +14,8 @@ from ukrdc_fastapi.schemas.message import MessageSchema
 from ukrdc_fastapi.utils.cache import BasicCache, DynamicCacheKey, FacilityCachePrefix
 from ukrdc_fastapi.utils.mirth import get_channel_map
 from ukrdc_fastapi.utils.records import ABSTRACT_FACILITIES
+
+from .utils import repeat_every
 
 
 @repeat_every(seconds=settings.cache_mirth_channel_seconds)
