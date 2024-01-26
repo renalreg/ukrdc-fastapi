@@ -61,32 +61,33 @@ def search_masterrecords(
     # Matched UKRDC IDs will only give us UKRDC-type Master Records,
     # but we also want the associated NHS/CHI/HSC master records.
     # So, we do a single pass of the link records to expand our selection.
-    person_ids = (
-        jtrace.query(LinkRecord.person_id)
+    stmt = (
+        select(LinkRecord.person_id)
         .join(MasterRecord)
-        .filter(MasterRecord.nationalid.in_(matched_ukrdc_ids))
+        .where(MasterRecord.nationalid.in_(matched_ukrdc_ids))
     )
+    person_ids = jtrace.scalars(stmt).all()
 
-    master_ids = (
-        jtrace.query(MasterRecord.id)
+    stmt = (
+        select(MasterRecord.id)
         .join(LinkRecord)
-        .filter(LinkRecord.person_id.in_(person_ids))
+        .where(LinkRecord.person_id.in_(person_ids))
     )
+    master_ids = jtrace.scalars(stmt).all()
 
-    matched_records = jtrace.query(MasterRecord).filter(MasterRecord.id.in_(master_ids))
+    # Get matched records
+    stmt = select(MasterRecord).where(MasterRecord.id.in_(master_ids))
 
     # If a number type filter is explicitly given
     if number_type:
         # Filter by number types
-        matched_records = matched_records.filter(
-            MasterRecord.nationalid_type.in_(number_type)
-        )
+        stmt = stmt.where(MasterRecord.nationalid_type.in_(number_type))
 
     # Apply permissions
-    matched_records = apply_masterrecord_list_permissions(matched_records, user)
+    stmt = apply_masterrecord_list_permissions(stmt, user)
 
     # Paginate results
-    page: Page[MasterRecord] = paginate(matched_records)  # type: ignore
+    page: Page[MasterRecord] = paginate(jtrace, stmt)  # type: ignore
 
     for record in page.items:
         audit.add_event(Resource.MASTER_RECORD, record.id, AuditOperation.READ)  # type: ignore  # MyPy doesn't like the generic page.item type T being used here
