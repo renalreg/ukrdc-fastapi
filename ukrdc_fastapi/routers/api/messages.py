@@ -26,7 +26,7 @@ from ukrdc_fastapi.permissions.workitems import apply_workitem_list_permission
 from ukrdc_fastapi.query.messages import (
     MessageSourceSchema,
     get_message_source,
-    get_messages,
+    select_messages,
 )
 from ukrdc_fastapi.query.patientrecords import select_patientrecords_related_to_message
 from ukrdc_fastapi.query.workitems import get_workitems_related_to_message
@@ -46,7 +46,7 @@ def _get_message(
     errorsdb: Session = Depends(get_errorsdb),
 ):
     """Simple dependency to turn ID query param and User object into a Message object."""
-    message_obj = errorsdb.query(Message).get(message_id)
+    message_obj = errorsdb.get(Message, message_id)
     if not message_obj:
         raise ResourceNotFoundError("Message record not found")
 
@@ -76,8 +76,7 @@ def messages(
     Retreive a list of error messages, optionally filtered by NI, facility, or date.
     By default returns message created within the last 365 days.
     """
-    query = get_messages(
-        errorsdb,
+    stmt = select_messages(
         statuses=status,
         channels=channel,
         nis=ni,
@@ -85,15 +84,13 @@ def messages(
         since=since,
         until=until,
     )
-
-    # Apply permissions
-    query = apply_message_list_permissions(query, user)
+    stmt = apply_message_list_permissions(stmt, user)
 
     # Add audit events
     audit.add_event(Resource.MESSAGES, None, AuditOperation.READ)
 
     # Sort, paginate, and return
-    return paginate(sorter.sort(query))
+    return paginate(errorsdb, sorter.sort(stmt))
 
 
 @router.get(

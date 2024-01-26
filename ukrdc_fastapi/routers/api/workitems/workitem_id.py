@@ -23,7 +23,7 @@ from ukrdc_fastapi.permissions.workitems import (
     apply_workitem_list_permission,
     assert_workitem_permission,
 )
-from ukrdc_fastapi.query.messages import get_messages
+from ukrdc_fastapi.query.messages import select_messages
 from ukrdc_fastapi.query.mirth.workitems import close_workitem, update_workitem
 from ukrdc_fastapi.query.workitems import (
     extend_workitem,
@@ -238,16 +238,13 @@ def workitem_messages(
     )
 
     # Get messages for NIs related to the work item
-    messages = get_messages(
-        errorsdb,
+    stmt = select_messages(
         statuses=status,
         nis=workitem_nis,
         facility=facility,
         since=since or worktiem_obj.creation_date - datetime.timedelta(hours=12),
         until=until or worktiem_obj.creation_date + datetime.timedelta(hours=12),
     )
+    stmt = apply_message_list_permissions(stmt, user)
 
-    # Apply permissions
-    messages = apply_message_list_permissions(messages, user)
-
-    return paginate(messages)
+    return paginate(errorsdb, stmt)

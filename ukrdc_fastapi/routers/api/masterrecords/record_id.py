@@ -28,11 +28,12 @@ from ukrdc_fastapi.permissions.workitems import apply_workitem_list_permission
 from ukrdc_fastapi.query.masterrecords import (
     select_masterrecords_related_to_masterrecord,
 )
-from ukrdc_fastapi.query.messages import get_messages_related_to_masterrecord
+from ukrdc_fastapi.query.messages import select_messages_related_to_masterrecord
 from ukrdc_fastapi.query.patientrecords import (
     select_patientrecords_related_to_masterrecord,
 )
 from ukrdc_fastapi.query.persons import get_persons_related_to_masterrecord
+from ukrdc_fastapi.query.utils import count_rows
 from ukrdc_fastapi.query.workitems import get_workitems
 from ukrdc_fastapi.schemas.base import OrmModel
 from ukrdc_fastapi.schemas.empi import (
@@ -142,22 +143,20 @@ def master_record_latest_message(
     if received within the last year."""
 
     # Get messages related to the master record
-    msgs = (
-        get_messages_related_to_masterrecord(
+    stmt = (
+        select_messages_related_to_masterrecord(
             record,
-            errorsdb,
             jtrace,
             since=datetime.datetime.utcnow() - datetime.timedelta(days=365),
         )
-        .filter(Message.facility != "TRACING")
-        .filter(Message.filename.isnot(None))
+        .where(Message.facility != "TRACING")
+        .where(Message.filename.isnot(None))
     )
-
-    # Apply permissions
-    msgs = apply_message_list_permissions(msgs, user)
+    stmt = apply_message_list_permissions(stmt, user)
 
     # Get latest message
-    latest = msgs.order_by(Message.received.desc()).first()
+    stmt = stmt.order_by(Message.received.desc())
+    latest = errorsdb.scalars(stmt).first()
 
     if not latest:
         return Response(status_code=HTTP_204_NO_CONTENT)
@@ -179,8 +178,9 @@ def master_record_statistics(
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a particular master record from the EMPI"""
-    errors = get_messages_related_to_masterrecord(
-        record, errorsdb, jtrace, statuses=["ERROR"]
+    # Select errors
+    stmt_errors = select_messages_related_to_masterrecord(
+        record, jtrace, statuses=["ERROR"]
     )
 
     # Get related records
@@ -204,7 +204,7 @@ def master_record_statistics(
 
     return MasterRecordStatisticsSchema(
         workitems=workitems.count(),
-        errors=errors.count(),
+        errors=count_rows(stmt_errors, errorsdb),
         # Workaround for https://jira.ukrdc.org/browse/UI-56
         # For some reason, if you log in as a non-admin user,
         # related_ukrdc_records.count() returns the wrong value
@@ -288,9 +288,8 @@ def master_record_messages(
     Retreive a list of errors related to a particular master record.
     By default returns message created within the last 365 days.
     """
-    messages = get_messages_related_to_masterrecord(
+    stmt = select_messages_related_to_masterrecord(
         record,
-        errorsdb,
         jtrace,
         statuses=status,
         channels=channel,
@@ -298,9 +297,7 @@ def master_record_messages(
         since=since,
         until=until,
     )
-
-    # Apply permissions
-    messages = apply_message_list_permissions(messages, user)
+    stmt = apply_message_list_permissions(stmt, user)
 
     # Add audit events
     audit.add_event(
@@ -309,7 +306,7 @@ def master_record_messages(
         AuditOperation.READ,
         parent=audit.add_event(Resource.MASTER_RECORD, record.id, AuditOperation.READ),
     )
-    return paginate(sorter.sort(messages))
+    return paginate(errorsdb, sorter.sort(stmt))
 
 
 @router.get(

@@ -35,7 +35,7 @@ from ukrdc_fastapi.query.delete import (
     delete_patientrecord,
     summarise_delete_patientrecord,
 )
-from ukrdc_fastapi.query.messages import get_messages_related_to_patientrecord
+from ukrdc_fastapi.query.messages import select_messages_related_to_patientrecord
 from ukrdc_fastapi.schemas.audit import AuditEventSchema
 from ukrdc_fastapi.schemas.delete import DeletePidRequest, DeletePIDResponseSchema
 from ukrdc_fastapi.schemas.message import MessageSchema, MinimalMessageSchema
@@ -148,7 +148,7 @@ def patient_messages(
     Retreive a list of messages related to a particular patient record.
     By default returns message created within the last 365 days.
     """
-    messages = get_messages_related_to_patientrecord(
+    messages = select_messages_related_to_patientrecord(
         patient_record,
         errorsdb,
         statuses=status,
@@ -189,7 +189,7 @@ def patient_record_latest_message(
 
     # Get messages related to the master record
     msgs = (
-        get_messages_related_to_patientrecord(
+        select_messages_related_to_patientrecord(
             patient_record,
             errorsdb,
             since=datetime.datetime.utcnow() - datetime.timedelta(days=365),
