@@ -9,7 +9,7 @@ from ukrdc_sqla.empi import MasterRecord, Person, PidXRef, WorkItem
 from ukrdc_sqla.errorsdb import Message
 from ukrdc_sqla.utils.links import find_related_ids
 
-from ukrdc_fastapi.query.masterrecords import get_masterrecords_related_to_person
+from ukrdc_fastapi.query.masterrecords import select_masterrecords_related_to_person
 from ukrdc_fastapi.query.persons import get_persons_related_to_masterrecord
 from ukrdc_fastapi.schemas.common import HistoryPoint
 from ukrdc_fastapi.schemas.empi import WorkItemExtendedSchema
@@ -85,15 +85,15 @@ def extend_workitem(workitem: WorkItem, jtrace: Session) -> WorkItemExtendedSche
     Returns:
         WorkItemExtendedSchema: Extended WorkItem object
     """
+    stmt = select_masterrecords_related_to_person(
+        workitem.person, jtrace, nationalid_type="UKRDC"
+    ).where(MasterRecord.id != workitem.master_id)
+
+    master_records = jtrace.scalars(stmt).all() if workitem.person else []
+
     incoming = {
         "person": workitem.person or None,
-        "master_records": get_masterrecords_related_to_person(
-            workitem.person, jtrace, nationalid_type="UKRDC"
-        )
-        .filter(MasterRecord.id != workitem.master_id)
-        .all()
-        if workitem.person
-        else [],
+        "master_records": master_records,
     }
 
     destination = {

@@ -25,10 +25,12 @@ from ukrdc_fastapi.permissions.messages import (
 from ukrdc_fastapi.permissions.patientrecords import apply_patientrecord_list_permission
 from ukrdc_fastapi.permissions.persons import apply_persons_list_permission
 from ukrdc_fastapi.permissions.workitems import apply_workitem_list_permission
-from ukrdc_fastapi.query.masterrecords import get_masterrecords_related_to_masterrecord
+from ukrdc_fastapi.query.masterrecords import (
+    select_masterrecords_related_to_masterrecord,
+)
 from ukrdc_fastapi.query.messages import get_messages_related_to_masterrecord
 from ukrdc_fastapi.query.patientrecords import (
-    get_patientrecords_related_to_masterrecord,
+    select_patientrecords_related_to_masterrecord,
 )
 from ukrdc_fastapi.query.persons import get_persons_related_to_masterrecord
 from ukrdc_fastapi.query.workitems import get_workitems
@@ -98,15 +100,14 @@ def master_record_related(
     """Retreive a list of other master records related to a particular master record"""
 
     # Get related records
-    related_records = get_masterrecords_related_to_masterrecord(
+    stmt = select_masterrecords_related_to_masterrecord(
         record,
         jtrace,
         nationalid_type=nationalid_type,
         exclude_self=exclude_self,
     )
-
-    # Apply permissions and store list of records
-    related_records = apply_masterrecord_list_permissions(related_records, user)
+    stmt = apply_masterrecord_list_permissions(stmt, user)
+    related_records = jtrace.scalars(stmt).all()
 
     # Add audit events
     record_audit = audit.add_event(
@@ -121,7 +122,7 @@ def master_record_related(
                 parent=record_audit,
             )
 
-    return related_records.all()
+    return related_records
 
 
 @router.get(
@@ -182,16 +183,18 @@ def master_record_statistics(
         record, errorsdb, jtrace, statuses=["ERROR"]
     )
 
-    related_records = get_masterrecords_related_to_masterrecord(record, jtrace)
-
-    related_ukrdc_records = related_records.filter(
+    # Get related records
+    stmt = select_masterrecords_related_to_masterrecord(record, jtrace).where(
         MasterRecord.nationalid_type == "UKRDC"
     )
+    related_records = jtrace.scalars(stmt).all()
 
+    # Get workitems
     workitems = get_workitems(
-        jtrace, master_id=[record.id for record in related_records.all()]
+        jtrace, master_id=[record.id for record in related_records]
     )
 
+    # Add audit events
     audit.add_event(
         Resource.STATISTICS,
         None,
@@ -210,7 +213,7 @@ def master_record_statistics(
         # so I've had to implement this slightly slower workaround.
         # Assuming the patient doesn't somehow have hundreds of
         # UKRDC records, the speed decrease should be negligable.
-        ukrdcids=len(related_ukrdc_records.all()),
+        ukrdcids=len(related_records),
     )
 
 
@@ -227,10 +230,9 @@ def master_record_linkrecords(
 ):
     """Retreive a list of link records related to a particular master record"""
     # Find record and asserrt permissions
-    related_records = get_masterrecords_related_to_masterrecord(record, jtrace)
-
-    # Apply permissions to related records
-    related_records = apply_masterrecord_list_permissions(related_records, user)
+    stmt = select_masterrecords_related_to_masterrecord(record, jtrace)
+    stmt = apply_masterrecord_list_permissions(stmt, user)
+    related_records = jtrace.scalars(stmt).all()
 
     # Get link records
     link_records: list[LinkRecord] = []
@@ -325,7 +327,9 @@ def master_record_workitems(
     """Retreive a list of work items related to a particular master record."""
 
     # Find work items related to record
-    related_records = get_masterrecords_related_to_masterrecord(record, jtrace)
+    stmt = select_masterrecords_related_to_masterrecord(record, jtrace)
+    related_records = jtrace.scalars(stmt).all()
+
     workitems = get_workitems(
         jtrace,
         statuses=status or [],
@@ -387,10 +391,9 @@ def master_record_patientrecords(
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a list of patient records related to a particular master record."""
-    related_records = get_patientrecords_related_to_masterrecord(record, ukrdc3, jtrace)
-
-    # Apply permissions
-    related_records = apply_patientrecord_list_permission(related_records, user)
+    stmt = select_patientrecords_related_to_masterrecord(record, jtrace)
+    stmt = apply_patientrecord_list_permission(stmt, user)
+    related_records = ukrdc3.scalars(stmt).all()
 
     record_audit = audit.add_event(
         Resource.MASTER_RECORD, record.id, AuditOperation.READ
@@ -403,4 +406,4 @@ def master_record_patientrecords(
             parent=record_audit,
         )
 
-    return related_records.all()
+    return related_records

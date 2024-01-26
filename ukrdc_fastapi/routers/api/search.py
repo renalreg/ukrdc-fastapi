@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from fastapi import Query as QueryParam
 from fastapi import Security
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import LinkRecord, MasterRecord
 from ukrdc_sqla.ukrdc import PatientRecord
@@ -132,46 +133,34 @@ def search_records(
         mrn_number, ukrdc_number, full_name, pid, dob, facility, search, ukrdc3
     )
 
-    matched_records = ukrdc3.query(PatientRecord).filter(
-        PatientRecord.ukrdcid.in_(matched_ukrdc_ids)
-    )
+    stmt = select(PatientRecord).where(PatientRecord.ukrdcid.in_(matched_ukrdc_ids))
 
     # Filter down by record types
     if not include_migrated:
-        matched_records = matched_records.filter(
-            PatientRecord.sendingextract.notin_(MIGRATED_EXTRACTS)
-        )
+        stmt = stmt.where(PatientRecord.sendingextract.notin_(MIGRATED_EXTRACTS))
     if not include_memberships:
-        matched_records = matched_records.filter(
-            PatientRecord.sendingfacility.notin_(MEMBERSHIP_FACILITIES)
-        )
+        stmt = stmt.where(PatientRecord.sendingfacility.notin_(MEMBERSHIP_FACILITIES))
     if not include_informational:
-        matched_records = matched_records.filter(
+        stmt = stmt.where(
             PatientRecord.sendingfacility.notin_(INFORMATIONAL_FACILITIES)
         )
     if not include_survey:
-        matched_records = matched_records.filter(
-            PatientRecord.sendingextract != "SURVEY"
-        )
+        stmt = stmt.where(PatientRecord.sendingextract != "SURVEY")
 
     # Strict filter by facility
     # We also pass facility to search_ukrdcids to allow for searches for all records on a facility
     if facility:
-        matched_records = matched_records.filter(
-            PatientRecord.sendingfacility.in_(facility)
-        )
+        stmt = stmt.where(PatientRecord.sendingfacility.in_(facility))
 
     # Strict filter by sending extract
     if extract:
-        matched_records = matched_records.filter(
-            PatientRecord.sendingextract.in_(extract)
-        )
+        stmt = stmt.where(PatientRecord.sendingextract.in_(extract))
 
     # Apply permissions
-    matched_records = apply_patientrecord_list_permission(matched_records, user)
+    stmt = apply_patientrecord_list_permission(stmt, user)
 
     # Paginate results
-    page: Page[PatientRecord] = paginate(matched_records)  # type: ignore
+    page: Page[PatientRecord] = paginate(ukrdc3, stmt)  # type: ignore
 
     for record in page.items:
         audit.add_event(Resource.PATIENT_RECORD, record.pid, AuditOperation.READ)  # type: ignore  # MyPy doesn't like the generic page.item type T being used here

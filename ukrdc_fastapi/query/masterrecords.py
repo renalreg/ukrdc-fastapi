@@ -1,7 +1,8 @@
 from typing import Optional
 
+from sqlalchemy import select
+from sqlalchemy.sql.selectable import Select
 from sqlalchemy.orm import Session
-from sqlalchemy.orm.query import Query
 from ukrdc_sqla.empi import MasterRecord, Person
 from ukrdc_sqla.utils.links import (
     PersonMasterLink,
@@ -10,12 +11,12 @@ from ukrdc_sqla.utils.links import (
 )
 
 
-def get_masterrecords_related_to_masterrecord(
+def select_masterrecords_related_to_masterrecord(
     record: MasterRecord,
     jtrace: Session,
     exclude_self: bool = False,
     nationalid_type: Optional[str] = None,
-) -> Query:
+) -> Select:
     """Get a query of MasterRecords related via the LinkRecord network to a given MasterRecord
 
     Args:
@@ -29,25 +30,25 @@ def get_masterrecords_related_to_masterrecord(
     """
     # Find all related master record IDs by recursing through link records
     related_master_ids, _ = find_related_ids(jtrace, {record.id}, set())
-    # Return a jtrace query of the matched master records
-    records = jtrace.query(MasterRecord).filter(MasterRecord.id.in_(related_master_ids))
+    # Return a select of the matched master records
+    records = select(MasterRecord).where(MasterRecord.id.in_(related_master_ids))
 
     # Exclude self from related items
     if exclude_self:
-        records = records.filter(MasterRecord.id != record.id)
+        records = records.where(MasterRecord.id != record.id)
 
     # Optionally filter by record type
     if nationalid_type:
-        records = records.filter(MasterRecord.nationalid_type == nationalid_type)
+        records = records.where(MasterRecord.nationalid_type == nationalid_type)
 
     return records
 
 
-def get_masterrecords_related_to_person(
+def select_masterrecords_related_to_person(
     person: Person,
     jtrace: Session,
     nationalid_type: Optional[str] = None,
-) -> Query:
+) -> Select:
     """Get a query of MasterRecords related via the LinkRecord network to a given Person
 
     Args:
@@ -64,11 +65,11 @@ def get_masterrecords_related_to_person(
     )
 
     # Find all related master records within the UKRDC
-    query = jtrace.query(MasterRecord).filter(
+    records = select(MasterRecord).where(
         MasterRecord.id.in_([link.master_id for link in related_person_master_links])
     )
 
     if nationalid_type:
-        query = query.filter(MasterRecord.nationalid_type == nationalid_type)
+        records = records.where(MasterRecord.nationalid_type == nationalid_type)
 
-    return query
+    return records

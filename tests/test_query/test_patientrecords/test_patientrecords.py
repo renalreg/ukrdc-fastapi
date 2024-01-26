@@ -84,9 +84,10 @@ def _create_related_records(ukrdc3_session, jtrace_session):
 def test_get_patientrecords_related_to_masterrecord(ukrdc3_session, jtrace_session):
     _create_related_records(ukrdc3_session, jtrace_session)
 
-    records = patientrecords.get_patientrecords_related_to_masterrecord(
-        jtrace_session.query(MasterRecord).get(105), ukrdc3_session, jtrace_session
+    stmt = patientrecords.select_patientrecords_related_to_masterrecord(
+        jtrace_session.get(MasterRecord, 105), jtrace_session
     )
+    records = ukrdc3_session.scalars(stmt).all()
 
     assert {record.pid for record in records} == {
         "PYTEST02:TPR:TEST1",
@@ -99,9 +100,10 @@ def test_get_patientrecords_related_to_masterrecord(ukrdc3_session, jtrace_sessi
 def test_get_patientrecords_related_to_ni(ukrdc3_session, jtrace_session):
     _create_related_records(ukrdc3_session, jtrace_session)
 
-    records = patientrecords.get_patientrecords_related_to_ni(
-        "888888885", ukrdc3_session
+    stmt = patientrecords.select_patientrecords_related_to_ni(
+        "888888885"
     )
+    records = ukrdc3_session.scalars(stmt).all()
 
     assert {record.pid for record in records} == {
         # The original

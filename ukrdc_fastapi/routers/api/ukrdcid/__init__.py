@@ -14,7 +14,7 @@ from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.exceptions import PermissionsError
 from ukrdc_fastapi.permissions.patientrecords import apply_patientrecord_list_permission
 from ukrdc_fastapi.query.mirth.memberships import create_pkb_membership_for_ukrdcid
-from ukrdc_fastapi.query.patientrecords import get_patientrecords_related_to_ukrdcid
+from ukrdc_fastapi.query.patientrecords import select_patientrecords_related_to_ukrdcid
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordSummarySchema
 from ukrdc_fastapi.utils.mirth import MirthMessageResponseSchema
 
@@ -33,7 +33,7 @@ def ukrdcid_records(
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive patient records related to a specific patient record"""
-    related = get_patientrecords_related_to_ukrdcid(ukrdcid, ukrdc3)
+    related = select_patientrecords_related_to_ukrdcid(ukrdcid, ukrdc3)
 
     # Apply permissions
     related = apply_patientrecord_list_permission(related, user)
@@ -67,12 +67,13 @@ async def ukrdcid_memberships_create_pkb(
     Create a new PKB membership for a master record.
     """
 
-    related = get_patientrecords_related_to_ukrdcid(ukrdcid, ukrdc3)
+    # Find related records the user has permission to access
+    stmt = select_patientrecords_related_to_ukrdcid(ukrdcid)
+    stmt = apply_patientrecord_list_permission(stmt, user)
+    records = ukrdc3.scalars(stmt).all()
 
-    # Apply permissions
-    related = apply_patientrecord_list_permission(related, user)
-
-    if related.count() == 0:
+    # If the user doesn't have access to any related records, raise a permission error
+    if len(records) == 0:
         raise PermissionsError()
 
     audit.add_event(

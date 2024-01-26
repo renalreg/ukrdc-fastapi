@@ -11,7 +11,9 @@ from ukrdc_sqla.errorsdb import Message
 from ukrdc_sqla.ukrdc import PatientRecord
 
 from ukrdc_fastapi.exceptions import ResourceNotFoundError
-from ukrdc_fastapi.query.masterrecords import get_masterrecords_related_to_masterrecord
+from ukrdc_fastapi.query.masterrecords import (
+    select_masterrecords_related_to_masterrecord,
+)
 from ukrdc_fastapi.schemas.base import OrmModel
 
 
@@ -148,10 +150,12 @@ def get_messages_related_to_masterrecord(
     Returns:
         Query: SQLAlchemy query
     """
-    related_master_records = get_masterrecords_related_to_masterrecord(record, jtrace)
+    related_master_records = jtrace.scalars(
+        select_masterrecords_related_to_masterrecord(record, jtrace)
+    )
 
     related_national_ids: list[str] = [
-        record.nationalid for record in related_master_records.all()
+        record.nationalid for record in related_master_records
     ]
 
     return get_messages(

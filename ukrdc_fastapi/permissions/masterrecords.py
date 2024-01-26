@@ -1,4 +1,4 @@
-from sqlalchemy.orm.query import Query
+from sqlalchemy.sql.selectable import Select
 from ukrdc_sqla.empi import LinkRecord, MasterRecord, Person, PidXRef
 
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
@@ -30,12 +30,12 @@ def assert_masterrecord_permission(record: MasterRecord, user: UKRDCUser):
     raise PermissionsError()
 
 
-def apply_masterrecord_list_permissions(query: Query, user: UKRDCUser) -> Query:
+def apply_masterrecord_list_permissions(stmt: Select, user: UKRDCUser) -> Select:
     """
     Apply permissions to a list of MasterRecords based on the user's permissions
 
     Args:
-        query (Query): Query of MasterRecord objects
+        stmt (Select): Select statement of MasterRecord objects
         user (UKRDCUser): Logged-in user
 
     Returns:
@@ -43,11 +43,11 @@ def apply_masterrecord_list_permissions(query: Query, user: UKRDCUser) -> Query:
     """
     units = Permissions.unit_codes(user.permissions)
     if Permissions.UNIT_WILDCARD in units:
-        return query
+        return stmt
 
     return (
-        query.join(LinkRecord)
+        stmt.join(LinkRecord)
         .join(Person)
         .join(PidXRef)
-        .filter(PidXRef.sending_facility.in_(units))
+        .where(PidXRef.sending_facility.in_(units))
     )

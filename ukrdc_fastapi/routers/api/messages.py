@@ -28,7 +28,7 @@ from ukrdc_fastapi.query.messages import (
     get_message_source,
     get_messages,
 )
-from ukrdc_fastapi.query.patientrecords import get_patientrecords_related_to_message
+from ukrdc_fastapi.query.patientrecords import select_patientrecords_related_to_message
 from ukrdc_fastapi.query.workitems import get_workitems_related_to_message
 from ukrdc_fastapi.schemas.empi import WorkItemSchema
 from ukrdc_fastapi.schemas.message import MessageSchema
@@ -181,10 +181,10 @@ async def message_patientrecords(
     if not message_obj.ni:
         return []
 
-    records = get_patientrecords_related_to_message(message_obj, ukrdc3)
-
-    # Apply permissions
-    records = apply_patientrecord_list_permission(records, user)
+    # Get patientrecords referenced by the messages national identifier
+    stmt = select_patientrecords_related_to_message(message_obj)
+    stmt = apply_patientrecord_list_permission(stmt, user)
+    records = ukrdc3.scalars(stmt).all()
 
     # Add audit events
     message_audit = audit.add_event(
@@ -198,4 +198,4 @@ async def message_patientrecords(
             parent=message_audit,
         )
 
-    return records.all()
+    return records
