@@ -19,7 +19,7 @@ def _get_masterrecord(
 ) -> MasterRecord:
     """Simple dependency to turn ID query param and User object into a MasterRecord object."""
     # Get the record
-    record: Optional[MasterRecord] = jtrace.query(MasterRecord).get(record_id)
+    record: Optional[MasterRecord] = jtrace.get(MasterRecord, record_id)
     if not record:
         raise ResourceNotFoundError("Master Record not found")
 

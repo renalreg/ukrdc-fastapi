@@ -52,7 +52,7 @@ class AuditEventSchema(OrmModel):
         """
         # For PatientRecord items
         if self.resource == Resource.PATIENT_RECORD.value and ukrdc3:
-            record = ukrdc3.query(PatientRecord).get(self.resource_id)
+            record = ukrdc3.get(PatientRecord, self.resource_id)
             if record:
                 # Obtain the first known MRN for the patient
                 first_mrn: Optional[PatientNumber] = None
@@ -79,7 +79,7 @@ class AuditEventSchema(OrmModel):
                         self.identifiers.append(first_mrn.patientid)
         # For MasterRecord items
         elif self.resource == Resource.MASTER_RECORD.value and jtrace:
-            master_record = jtrace.query(MasterRecord).get(self.resource_id)
+            master_record = jtrace.get(MasterRecord, self.resource_id)
             if master_record:
                 self.identifiers = [
                     f"{master_record.givenname} {master_record.surname}",
