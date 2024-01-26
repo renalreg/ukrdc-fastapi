@@ -23,7 +23,7 @@ class AdminCountsSchema(OrmModel):
 
 
 def _open_workitems_count(jtrace: Session) -> int:
-    query = select(func.count()).select_from(WorkItem).filter(WorkItem.status == 1)
+    query = select(func.count()).select_from(WorkItem).where(WorkItem.status == 1)
     result = jtrace.execute(query)
     return result.scalar()
 
@@ -39,7 +39,7 @@ def _patients_receiving_errors_count(errorsdb: Session) -> int:
         select(func.count())
         .select_from(Latest)
         .join(Message)
-        .filter(Message.msg_status == "ERROR")
+        .where(Message.msg_status == "ERROR")
     )
     result = errorsdb.execute(query)
     return result.scalar()

@@ -54,13 +54,13 @@ def patient_results(
     query = patient_record.result_items
 
     if service_id:
-        query = query.filter(ResultItem.service_id.in_(service_id))
+        query = query.where(ResultItem.service_id.in_(service_id))
     if order_id:
-        query = query.filter(ResultItem.order_id.in_(order_id))
+        query = query.where(ResultItem.order_id.in_(order_id))
     if since:
-        query = query.filter(ResultItem.observation_time >= since)
+        query = query.where(ResultItem.observation_time >= since)
     if until:
-        query = query.filter(ResultItem.observation_time <= until)
+        query = query.where(ResultItem.observation_time <= until)
 
     audit.add_event(
         Resource.RESULTITEMS,
@@ -85,7 +85,7 @@ def patient_result(
     audit: Auditer = Depends(get_auditer),
 ) -> ResultItem:
     """Retreive a particular lab result"""
-    item = patient_record.result_items.filter(ResultItem.id == resultitem_id).first()
+    item = patient_record.result_items.where(ResultItem.id == resultitem_id).first()
     if not item:
         raise HTTPException(404, detail="Result item not found")
 
@@ -112,7 +112,7 @@ def patient_result_delete(
     audit: Auditer = Depends(get_auditer),
 ):
     """Mark a particular lab result for deletion"""
-    item = patient_record.result_items.filter(ResultItem.id == resultitem_id).first()
+    item = patient_record.result_items.where(ResultItem.id == resultitem_id).first()
     if not item:
         raise HTTPException(404, detail="Result item not found")
 

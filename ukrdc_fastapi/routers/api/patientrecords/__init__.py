@@ -194,8 +194,8 @@ def patient_record_latest_message(
             errorsdb,
             since=datetime.datetime.utcnow() - datetime.timedelta(days=365),
         )
-        .filter(Message.facility != "TRACING")
-        .filter(Message.filename.isnot(None))
+        .where(Message.facility != "TRACING")
+        .where(Message.filename.isnot(None))
     )
 
     # Apply permissions
@@ -386,7 +386,7 @@ def patient_observations(
     """Retreive a specific patient's lab orders"""
     observations = patient_record.observations
     if code:
-        observations = observations.filter(Observation.observation_code.in_(code))
+        observations = observations.where(Observation.observation_code.in_(code))
 
     audit.add_event(
         Resource.OBSERVATIONS,

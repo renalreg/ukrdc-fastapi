@@ -275,7 +275,7 @@ def get_facilities(
     # Look for a pre-calculated cache of the facilities list (see `ukrdc_fastapi.tasks.repeated`)
     cache = BasicCache(redis, CacheKey.FACILITIES_LIST)
     if not cache.exists:
-        stmt = select(Facility).filter(Facility.code.notin_(ABSTRACT_FACILITIES))
+        stmt = select(Facility).where(Facility.code.notin_(ABSTRACT_FACILITIES))
         cache.set(
             build_facilities_list(stmt, ukrdc3, errorsdb),
             expire=settings.cache_facilities_list_seconds,

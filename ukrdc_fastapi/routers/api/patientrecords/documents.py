@@ -67,7 +67,7 @@ def patient_document(
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's document information"""
-    document_obj = patient_record.documents.filter(Document.id == document_id).first()
+    document_obj = patient_record.documents.where(Document.id == document_id).first()
     if not document_obj:
         raise HTTPException(404, detail="Document not found")
 
@@ -93,7 +93,7 @@ def patient_document_download(
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's document file"""
-    document_obj: Optional[Document] = patient_record.documents.filter(
+    document_obj: Optional[Document] = patient_record.documents.where(
         Document.id == document_id
     ).first()
     if not document_obj:

@@ -61,7 +61,7 @@ def patient_laborder(
     audit: Auditer = Depends(get_auditer),
 ) -> LabOrder:
     """Retreive a particular lab order"""
-    order = patient_record.lab_orders.filter(LabOrder.id == order_id).first()
+    order = patient_record.lab_orders.where(LabOrder.id == order_id).first()
     if not order:
         raise HTTPException(404, detail="Lab Order not found")
 
@@ -88,7 +88,7 @@ def patient_laborder_delete(
     audit: Auditer = Depends(get_auditer),
 ):
     """Mark a particular lab order for deletion"""
-    order = patient_record.lab_orders.filter(LabOrder.id == order_id).first()
+    order = patient_record.lab_orders.where(LabOrder.id == order_id).first()
     if not order:
         raise HTTPException(404, detail="Lab Order not found")
 

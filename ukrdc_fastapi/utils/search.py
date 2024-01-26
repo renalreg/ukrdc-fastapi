@@ -210,7 +210,7 @@ def records_from_dob(
     """Finds Ids from date of birth"""
     conditions = [Patient.birth_time == dob for dob in dobs]
     return ukrdc3.scalars(
-        select(PatientRecord).join(Patient).filter(or_(*conditions))
+        select(PatientRecord).join(Patient).where(or_(*conditions))
     ).all()
 
 
