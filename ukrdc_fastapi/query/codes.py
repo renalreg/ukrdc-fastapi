@@ -1,8 +1,8 @@
 from typing import Optional
-from sqlalchemy import or_
+from sqlalchemy import or_, select
+from sqlalchemy.sql.selectable import Select
 
 from sqlalchemy.orm import Session
-from sqlalchemy.orm.query import Query
 from ukrdc_sqla.ukrdc import Code, CodeExclusion, CodeMap
 
 from ukrdc_fastapi.exceptions import MissingCodeError
@@ -14,11 +14,10 @@ class ExtendedCodeSchema(CodeSchema):
     mapped_by: list[CodeMapSchema]
 
 
-def get_codes(
-    ukrdc3: Session,
+def select_codes(
     coding_standard: Optional[list[str]] = None,
     search: Optional[str] = None,
-) -> Query:
+) -> Select:
     """Get the list of codes from the code list
 
     Args:
@@ -28,13 +27,13 @@ def get_codes(
     Returns:
         Query: Codes
     """
-    query = ukrdc3.query(Code)
+    query = select(Code)
 
     if coding_standard:
-        query = query.filter(Code.coding_standard.in_(coding_standard))
+        query = query.where(Code.coding_standard.in_(coding_standard))
 
     if search:
-        query = query.filter(
+        query = query.where(
             or_(Code.code.ilike(f"%{search}%"), Code.description.ilike(f"%{search}%"))
         )
 
@@ -54,20 +53,22 @@ def get_code(ukrdc3: Session, coding_standard: str, code: str) -> ExtendedCodeSc
     Returns:
         ExtendedCodeSchema: Extended code details
     """
-    code_obj: Optional[Code] = ukrdc3.query(Code).get((coding_standard, code))
+    code_obj: Optional[Code] = ukrdc3.get(Code, (coding_standard, code))
 
     if not code_obj:
         raise MissingCodeError(coding_standard, code)
 
-    maps_to = get_code_maps(
-        ukrdc3,
-        source_coding_standard=[code_obj.coding_standard],
-        source_code=code_obj.code,
+    maps_to = ukrdc3.scalars(
+        select_code_maps(
+            source_coding_standard=[code_obj.coding_standard],
+            source_code=code_obj.code,
+        )
     ).all()
-    mapped_by = get_code_maps(
-        ukrdc3,
-        destination_coding_standard=[code_obj.coding_standard],
-        destination_code=code_obj.code,
+    mapped_by = ukrdc3.scalars(
+        select_code_maps(
+            destination_coding_standard=[code_obj.coding_standard],
+            destination_code=code_obj.code,
+        )
     ).all()
 
     return ExtendedCodeSchema(
@@ -77,13 +78,12 @@ def get_code(ukrdc3: Session, coding_standard: str, code: str) -> ExtendedCodeSc
     )
 
 
-def get_code_maps(
-    ukrdc3: Session,
+def select_code_maps(
     source_coding_standard: Optional[list[str]] = None,
     destination_coding_standard: Optional[list[str]] = None,
     source_code: Optional[str] = None,
     destination_code: Optional[str] = None,
-) -> Query:
+) -> Select:
     """Get the list of codes from the code map
 
     Args:
@@ -96,33 +96,32 @@ def get_code_maps(
     Returns:
         Query: Code maps
     """
-    query = ukrdc3.query(CodeMap)
+    query = select(CodeMap)
 
     if source_coding_standard:
-        query = query.filter(CodeMap.source_coding_standard.in_(source_coding_standard))
+        query = query.where(CodeMap.source_coding_standard.in_(source_coding_standard))
 
     if destination_coding_standard:
-        query = query.filter(
+        query = query.where(
             CodeMap.destination_coding_standard.in_(destination_coding_standard)
         )
 
     if source_code:
-        query = query.filter(CodeMap.source_code == source_code)
+        query = query.where(CodeMap.source_code == source_code)
 
     if destination_code:
-        query = query.filter(CodeMap.destination_code == destination_code)
+        query = query.where(CodeMap.destination_code == destination_code)
 
     query = query.order_by(CodeMap.source_code)
 
     return query
 
 
-def get_code_exclusions(
-    ukrdc3: Session,
+def select_code_exclusions(
     coding_standard: Optional[list[str]] = None,
     code: Optional[list[str]] = None,
     system: Optional[list[str]] = None,
-) -> Query:
+) -> Select:
     """Get the list of code exclusions
 
     Args:
@@ -134,16 +133,16 @@ def get_code_exclusions(
     Returns:
         Query: Code exclusions
     """
-    query = ukrdc3.query(CodeExclusion)
+    query = select(CodeExclusion)
 
     if coding_standard:
-        query = query.filter(CodeExclusion.coding_standard.in_(coding_standard))
+        query = query.where(CodeExclusion.coding_standard.in_(coding_standard))
 
     if code:
-        query = query.filter(CodeExclusion.code.in_(code))
+        query = query.where(CodeExclusion.code.in_(code))
 
     if system:
-        query = query.filter(CodeExclusion.system.in_(system))
+        query = query.where(CodeExclusion.system.in_(system))
 
     query = query.order_by(CodeExclusion.coding_standard, CodeExclusion.code)
 
@@ -159,6 +158,5 @@ def get_coding_standards(ukrdc3: Session) -> list[str]:
     Returns:
         list[str]: List of coding standards
     """
-    query = ukrdc3.query(Code.coding_standard).distinct().order_by(Code.coding_standard)
-    standards = [code.coding_standard for code in query]
-    return standards
+    query = select(Code.coding_standard).distinct().order_by(Code.coding_standard)
+    return ukrdc3.scalars(query).all()

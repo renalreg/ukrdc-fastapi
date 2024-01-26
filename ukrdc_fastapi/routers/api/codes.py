@@ -10,9 +10,9 @@ from ukrdc_fastapi.dependencies.auth import Permissions, auth
 from ukrdc_fastapi.query.codes import (
     ExtendedCodeSchema,
     get_code,
-    get_code_exclusions,
-    get_code_maps,
-    get_codes,
+    select_code_exclusions,
+    select_code_maps,
+    select_codes,
     get_coding_standards,
 )
 from ukrdc_fastapi.schemas.code import CodeExclusionSchema, CodeMapSchema, CodeSchema
@@ -37,7 +37,7 @@ def code_list(
     search: Optional[str] = Query(None),
 ):
     """Retreive a list of internal codes"""
-    return paginate(get_codes(ukrdc3, coding_standard, search))
+    return paginate(ukrdc3, select_codes(coding_standard, search))
 
 
 @router.get(
@@ -68,13 +68,13 @@ def code_maps(
 ):
     """Retreive a list of internal code maps"""
     return paginate(
-        get_code_maps(
-            ukrdc3,
+        ukrdc3,
+        select_code_maps(
             source_coding_standard,
             destination_coding_standard,
             source_code,
             destination_code,
-        )
+        ),
     )
 
 
@@ -90,7 +90,7 @@ def code_exclusions(
     system: Optional[list[str]] = Query(None),
 ):
     """Retreive a list of internal code maps"""
-    return paginate(get_code_exclusions(ukrdc3, coding_standard, code, system))
+    return paginate(ukrdc3, select_code_exclusions(coding_standard, code, system))
 
 
 @router.get(
@@ -114,7 +114,7 @@ def code_list_export(
     search: Optional[str] = Query(None),
 ):
     """Export a CSV of a list of internal codes"""
-    selected_codes = get_codes(ukrdc3, coding_standard, search)
+    selected_codes = ukrdc3.scalars(select_codes(coding_standard, search)).all()
 
     output = io.StringIO()
     writer = csv.writer(output, quoting=csv.QUOTE_NONNUMERIC)
@@ -138,13 +138,14 @@ def code_maps_export(
     destination_code: Optional[str] = None,
 ):
     """Export a CSV of a list of internal codes"""
-    selected_maps = get_code_maps(
-        ukrdc3,
-        source_coding_standard,
-        destination_coding_standard,
-        source_code,
-        destination_code,
-    )
+    selected_maps = ukrdc3.scalars(
+        select_code_maps(
+            source_coding_standard,
+            destination_coding_standard,
+            source_code,
+            destination_code,
+        )
+    ).all()
 
     output = io.StringIO()
     writer = csv.writer(output, quoting=csv.QUOTE_NONNUMERIC)
@@ -174,7 +175,9 @@ def code_exclusions_export(
     system: Optional[list[str]] = Query(None),
 ):
     """Export a CSV of a list of internal codes"""
-    selected_exclusions = get_code_exclusions(ukrdc3, coding_standard, code, system)
+    selected_exclusions = ukrdc3.scalars(
+        select_code_exclusions(coding_standard, code, system)
+    ).all()
 
     output = io.StringIO()
     writer = csv.writer(output, quoting=csv.QUOTE_NONNUMERIC)
