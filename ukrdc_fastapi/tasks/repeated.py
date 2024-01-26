@@ -1,4 +1,5 @@
 import logging
+from sqlalchemy import select
 
 from sqlalchemy.sql.functions import func
 from ukrdc_sqla.ukrdc import PatientRecord
@@ -74,22 +75,24 @@ async def precalculate_facility_stats_dialysis() -> None:
     async def innerfunc():
         with ukrdc3_session() as ukrdc3:
             # Get all non-abstract facilities with UKRDC/RDA feed records
-            query = (
-                ukrdc3.query(
+            stmt = (
+                select(
                     PatientRecord.sendingfacility,
                     PatientRecord.sendingextract,
                     func.count(PatientRecord.sendingfacility),
                 )
-                .filter(PatientRecord.sendingfacility.notin_(ABSTRACT_FACILITIES))
-                .filter(PatientRecord.sendingextract == "UKRDC")
+                .where(PatientRecord.sendingfacility.notin_(ABSTRACT_FACILITIES))
+                .where(PatientRecord.sendingextract == "UKRDC")
                 .group_by(PatientRecord.sendingfacility, PatientRecord.sendingextract)
                 .order_by(func.count(PatientRecord.sendingfacility).desc())
             )
 
+            facilities = ukrdc3.execute(stmt).all()
+
             # Only cache facilities with more than `cache_facilities_stats_dialysis_min` records
             facilities_to_cache = (
                 row[0]
-                for row in query
+                for row in facilities
                 if row[2] > settings.cache_facilities_stats_dialysis_min
             )
 
