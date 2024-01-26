@@ -15,8 +15,8 @@ from ukrdc_fastapi.query.facilities.errors import (
     query_patients_latest_errors,
 )
 from ukrdc_fastapi.query.facilities.reports import (
-    get_facility_report_cc001,
-    get_facility_report_pm001,
+    select_facility_report_cc001,
+    select_facility_report_pm001,
 )
 from ukrdc_fastapi.utils.cache import BasicCache, CacheKey
 
@@ -175,29 +175,29 @@ def test_get_facility_extracts(ukrdc3_session):
 
 
 def test_get_facility_report_cc001(ukrdc3_session):
-    report1 = get_facility_report_cc001(
+    report1 = ukrdc3_session.scalars(select_facility_report_cc001(
         ukrdc3_session,
         "TSF01",
-    ).all()
+    )).all()
 
     # Only 1 default test record has no treatments or memberships
     assert len(report1) == 1
     assert report1[0].pid == "PYTEST04:PV:00000000A"
 
-    report2 = get_facility_report_cc001(
+    report2 = ukrdc3_session.scalars(select_facility_report_cc001(
         ukrdc3_session,
         "TSF02",
-    ).all()
+    )).all()
 
     # TSF02 has no default test records with no treatments or memberships
     assert len(report2) == 0
 
 
 def test_get_facility_report_pm001(ukrdc3_session, jtrace_session):
-    report1 = get_facility_report_pm001(
+    report1 = ukrdc3_session.scalars(select_facility_report_pm001(
         ukrdc3_session,
         "TSF01",
-    ).all()
+    )).all()
 
     assert len(report1) == 2
     assert {record.pid for record in report1} == {
@@ -235,10 +235,10 @@ def test_get_facility_report_pm001(ukrdc3_session, jtrace_session):
 
     # Test again
 
-    report1 = get_facility_report_pm001(
+    report1 = ukrdc3_session.scalars(select_facility_report_pm001(
         ukrdc3_session,
         "TSF01",
-    ).all()
+    )).all()
 
     assert len(report1) == 1
     assert {record.pid for record in report1} == {"PYTEST04:PV:00000000A"}
