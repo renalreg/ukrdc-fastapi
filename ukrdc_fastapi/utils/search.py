@@ -223,9 +223,9 @@ def search_ukrdcids(  # pylint: disable=too-many-branches
     facility: list[str],
     search: list[str],
     ukrdc3: Session,
-) -> set[int]:
+) -> set[str]:
     """Search the UKRDC for a set of search items, and return a set of matching UKRDC IDs"""
-    match_sets: list[set[int]] = []
+    match_sets: list[set[str]] = []
 
     searchset = SearchSet()
 
@@ -248,33 +248,33 @@ def search_ukrdcids(  # pylint: disable=too-many-branches
 
     if searchset.ukrdc_numbers:
         query = records_from_ukrdcid(ukrdc3, searchset.ukrdc_numbers)
-        match_sets.append({record.ukrdcid for record in query})
+        match_sets.append({record.ukrdcid for record in query if record.ukrdcid})
 
     if searchset.mrn_numbers:
         query = records_from_mrn_no(ukrdc3, searchset.mrn_numbers)
-        match_sets.append({record.ukrdcid for record in query})
+        match_sets.append({record.ukrdcid for record in query if record.ukrdcid})
 
     if searchset.names:
         query = records_from_full_name(ukrdc3, searchset.names)
-        match_sets.append({record.ukrdcid for record in query})
+        match_sets.append({record.ukrdcid for record in query if record.ukrdcid})
 
     if searchset.dates:
         query = records_from_dob(ukrdc3, searchset.dates)
-        match_sets.append({record.ukrdcid for record in query})
+        match_sets.append({record.ukrdcid for record in query if record.ukrdcid})
 
     if searchset.pids:
         query = records_from_pid(ukrdc3, searchset.pids)
-        match_sets.append({record.ukrdcid for record in query})
+        match_sets.append({record.ukrdcid for record in query if record.ukrdcid})
 
     if searchset.facilities:
         query = records_from_facility(ukrdc3, searchset.facilities)
-        match_sets.append({record.ukrdcid for record in query})
+        match_sets.append({record.ukrdcid for record in query if record.ukrdcid})
 
-    non_empty_sets: list[set[int]] = [
+    non_empty_sets: list[set[str]] = [
         match_set for match_set in match_sets if match_set
     ]
 
-    matched_ids: set[int]
+    matched_ids: set[str]
     if non_empty_sets:
         matched_ids = set.intersection(*non_empty_sets)
     else:

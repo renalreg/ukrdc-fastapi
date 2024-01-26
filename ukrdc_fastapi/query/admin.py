@@ -1,3 +1,4 @@
+from typing import Any
 from pydantic import Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -22,16 +23,31 @@ class AdminCountsSchema(OrmModel):
     )
 
 
+def _int_or_zero(value: Any) -> int:
+    """
+    If the value is an int, return it, otherwise return 0.
+
+    Really this is pointless as everywhere we use it we're
+    counting rows, so it will always be an int, but it's
+    here for completeness, and to make mypy happy.
+
+    Args:
+        value (Any): Value to check
+
+    Returns:
+        int: Value or 0
+    """
+    return value if isinstance(value, int) else 0
+
+
 def _open_workitems_count(jtrace: Session) -> int:
     query = select(func.count()).select_from(WorkItem).where(WorkItem.status == 1)
-    result = jtrace.execute(query)
-    return result.scalar()
+    return _int_or_zero(jtrace.execute(query).scalar())
 
 
 def _distinct_patients_count(ukrdc3: Session) -> int:
     query = select(func.count(PatientRecord.ukrdcid.distinct()))
-    result = ukrdc3.execute(query)
-    return result.scalar()
+    return _int_or_zero(ukrdc3.execute(query).scalar())
 
 
 def _patients_receiving_errors_count(errorsdb: Session) -> int:
@@ -41,8 +57,7 @@ def _patients_receiving_errors_count(errorsdb: Session) -> int:
         .join(Message)
         .where(Message.msg_status == "ERROR")
     )
-    result = errorsdb.execute(query)
-    return result.scalar()
+    return _int_or_zero(errorsdb.execute(query).scalar())
 
 
 def get_admin_counts(

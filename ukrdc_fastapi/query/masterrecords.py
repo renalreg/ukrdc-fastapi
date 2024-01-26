@@ -29,7 +29,9 @@ def select_masterrecords_related_to_masterrecord(
         Query: SQLAlchemy query
     """
     # Find all related master record IDs by recursing through link records
-    related_master_ids, _ = find_related_ids(jtrace, {record.id}, set())
+    related_master_ids, _ = find_related_ids(
+        jtrace, {record.id} if record.id else set(), set()
+    )
     # Return a select of the matched master records
     records = select(MasterRecord).where(MasterRecord.id.in_(related_master_ids))
 

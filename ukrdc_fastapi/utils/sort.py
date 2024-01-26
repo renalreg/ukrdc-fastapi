@@ -98,7 +98,7 @@ def make_sqla_sorter(
     Returns:
         [function]: FastAPI dependency function returning a SQLASorter instance
     """
-    column_map: dict[str, Column] = {col.key: col for col in columns}
+    column_map: dict[str, Column] = {col.key: col for col in columns if col.key}
     sort_enum = enum.Enum(  # type: ignore
         _make_sorter_enum_name(columns), {col.key: col.key for col in columns}
     )

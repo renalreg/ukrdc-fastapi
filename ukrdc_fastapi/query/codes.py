@@ -60,13 +60,17 @@ def get_code(ukrdc3: Session, coding_standard: str, code: str) -> ExtendedCodeSc
 
     maps_to = ukrdc3.scalars(
         select_code_maps(
-            source_coding_standard=[code_obj.coding_standard],
+            source_coding_standard=[code_obj.coding_standard]
+            if code_obj.coding_standard
+            else [],
             source_code=code_obj.code,
         )
     ).all()
     mapped_by = ukrdc3.scalars(
         select_code_maps(
-            destination_coding_standard=[code_obj.coding_standard],
+            destination_coding_standard=[code_obj.coding_standard]
+            if code_obj.coding_standard
+            else [],
             destination_code=code_obj.code,
         )
     ).all()

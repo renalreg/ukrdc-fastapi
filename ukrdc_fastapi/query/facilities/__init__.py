@@ -114,13 +114,17 @@ def get_facility_extracts(
     if not facility:
         raise MissingFacilityError(facility_code)
 
-    stmt_query = (
+    stmt_extract_counts = (
         select(PatientRecord.sendingextract, func.count("*"))
         .where(PatientRecord.sendingfacility == facility_code)
         .group_by(PatientRecord.sendingextract)
     )
 
-    extracts = dict(ukrdc3.execute(stmt_query).all())
+    extract_counts = ukrdc3.execute(stmt_extract_counts).all()
+
+    extracts: dict[str, int] = {
+        row[0]: row[1] for row in extract_counts if row[0] is not None
+    }
 
     return FacilityExtractsSchema(
         ukrdc=extracts.get("UKRDC", 0),

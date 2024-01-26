@@ -17,5 +17,7 @@ def select_persons_related_to_masterrecord(
     Returns:
         Select: SQLAlchemy select of Person records
     """
-    _, related_person_ids = find_related_ids(jtrace, {record.id}, set())
+    _, related_person_ids = find_related_ids(
+        jtrace, {record.id} if record.id else set(), set()
+    )
     return select(Person).where(Person.id.in_(related_person_ids))

@@ -34,10 +34,12 @@ class AuditEvent(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     parent_id = Column(Integer, ForeignKey("audit_event.id"))
-    children = relationship("AuditEvent")
+    children: Mapped[list["AuditEvent"]] = relationship("AuditEvent")
 
     access_event_id = Column(Integer, ForeignKey("access_event.id"))
-    access_event = relationship("AccessEvent", back_populates="audit_events")
+    access_event: Mapped["AccessEvent"] = relationship(
+        "AccessEvent", back_populates="audit_events"
+    )
 
     resource = Column(String)  # Resource type (null if self)
     resource_id = Column(String)  # Resource ID if applicable

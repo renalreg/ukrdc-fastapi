@@ -3,7 +3,7 @@ from typing import Optional
 from sqlalchemy import select
 
 from sqlalchemy.orm import Session
-from sqlalchemy.orm.query import Query
+from sqlalchemy.sql.selectable import Select
 from ukrdc_sqla.errorsdb import Latest, Message
 from ukrdc_sqla.stats import ErrorHistory
 from ukrdc_sqla.ukrdc import Code, Facility
@@ -17,7 +17,7 @@ def query_patients_latest_errors(
     ukrdc3: Session,
     facility_code: str,
     channels: Optional[list[str]] = None,
-) -> Query:
+) -> Select:
     """Retrieve the most recent error messages for each patient currently receiving errors.
 
     Args:
