@@ -1,10 +1,10 @@
-from sqlalchemy.orm import Query, Session
+from sqlalchemy import null, select
+from sqlalchemy.sql.selectable import Select
+from sqlalchemy.orm import Session
 from ukrdc_sqla.ukrdc import PatientRecord, ProgramMembership
 
 
-def get_active_memberships_for_patientrecord(
-    ukrdc3: Session, record: PatientRecord
-) -> Query:
+def get_active_memberships_for_patientrecord(record: PatientRecord) -> Select:
     """
     Get a list of active program memberships on any record
     related to a given PatientRecord.
@@ -14,13 +14,13 @@ def get_active_memberships_for_patientrecord(
         record (PatientRecord): PatientRecord to find memberships for
 
     Returns:
-        Query: [description]
+        Select: [description]
     """
     return (
-        ukrdc3.query(ProgramMembership)
+        select(ProgramMembership)
         .join(PatientRecord)
-        .filter(PatientRecord.ukrdcid == record.ukrdcid)
-        .filter(ProgramMembership.to_time == None)  # noqa: E711
+        .where(PatientRecord.ukrdcid == record.ukrdcid)
+        .where(ProgramMembership.to_time == null())
     )
 
 
@@ -39,11 +39,10 @@ def record_has_active_membership(
     Returns:
         bool: Does the patient have the specified membership
     """
-    active_memberships = get_active_memberships_for_patientrecord(ukrdc3, record)
+    stmt = get_active_memberships_for_patientrecord(record)
+    stmt = stmt.where(ProgramMembership.program_name.like(membership_type + "%"))
 
-    active_memberships_of_this_type = active_memberships.filter(
-        ProgramMembership.program_name.like(membership_type + "%")
-    ).all()
+    active_memberships_of_this_type = ukrdc3.scalars(stmt).all()
 
     if active_memberships_of_this_type:
         return True
