@@ -2,7 +2,7 @@ import datetime
 
 from fastapi import APIRouter, Depends, Security
 from pydantic import Field
-from sqlalchemy import func
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import MasterRecord
 from ukrdc_sqla.stats import LastRunTimes
@@ -86,18 +86,20 @@ def record_workitem_counts(
     subq1 = select_workitems(statuses=[1]).subquery()
 
     subq2 = (
-        jtrace.query(subq1.c.masterid, func.count("*").label("workitem_count"))
+        select(subq1.c.masterid, func.count("*").label("workitem_count"))
         .group_by(subq1.c.masterid)
         .subquery()
     )
 
-    count_query = jtrace.query(MasterRecord, subq2.c.workitem_count).join(
+    count_query = select(MasterRecord, subq2.c.workitem_count).join(
         subq2, MasterRecord.id == subq2.c.masterid
     )
 
+    result = jtrace.execute(count_query)
+
     items = [
         WorkItemGroup(master_record=record, work_item_count=count)
-        for record, count in count_query
+        for record, count in result
     ]
 
     return paginate_sequence(sorter.sort(items))
