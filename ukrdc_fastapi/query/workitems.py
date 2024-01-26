@@ -10,7 +10,7 @@ from ukrdc_sqla.errorsdb import Message
 from ukrdc_sqla.utils.links import find_related_ids
 
 from ukrdc_fastapi.query.masterrecords import select_masterrecords_related_to_person
-from ukrdc_fastapi.query.persons import get_persons_related_to_masterrecord
+from ukrdc_fastapi.query.persons import select_persons_related_to_masterrecord
 from ukrdc_fastapi.schemas.common import HistoryPoint
 from ukrdc_fastapi.schemas.empi import WorkItemExtendedSchema
 from ukrdc_fastapi.utils import daterange
@@ -96,13 +96,14 @@ def extend_workitem(workitem: WorkItem, jtrace: Session) -> WorkItemExtendedSche
         "master_records": master_records,
     }
 
+    stmt = select_persons_related_to_masterrecord(workitem.master_record, jtrace).where(
+        Person.id != workitem.person_id
+    )
+    persons = jtrace.scalars(stmt).all() if workitem.master_record else []
+
     destination = {
         "master_record": workitem.master_record,
-        "persons": get_persons_related_to_masterrecord(workitem.master_record, jtrace)
-        .filter(Person.id != workitem.person_id)
-        .all()
-        if workitem.master_record
-        else [],
+        "persons": persons,
     }
 
     return WorkItemExtendedSchema(

@@ -32,7 +32,7 @@ from ukrdc_fastapi.query.messages import select_messages_related_to_masterrecord
 from ukrdc_fastapi.query.patientrecords import (
     select_patientrecords_related_to_masterrecord,
 )
-from ukrdc_fastapi.query.persons import get_persons_related_to_masterrecord
+from ukrdc_fastapi.query.persons import select_persons_related_to_masterrecord
 from ukrdc_fastapi.query.utils import count_rows
 from ukrdc_fastapi.query.workitems import get_workitems
 from ukrdc_fastapi.schemas.base import OrmModel
@@ -358,10 +358,9 @@ def master_record_persons(
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a list of person records related to a particular master record."""
-    persons = get_persons_related_to_masterrecord(record, jtrace)
-
-    # Apply permissions
-    persons = apply_persons_list_permission(persons, user)
+    stmt = select_persons_related_to_masterrecord(record, jtrace)
+    stmt = apply_persons_list_permission(stmt, user)
+    persons = jtrace.scalars(stmt).all()
 
     # Add audit events
     record_audit = audit.add_event(
@@ -372,7 +371,7 @@ def master_record_persons(
             Resource.PERSON, person.id, AuditOperation.READ, parent=record_audit
         )
 
-    return persons.all()
+    return persons
 
 
 @router.get(
