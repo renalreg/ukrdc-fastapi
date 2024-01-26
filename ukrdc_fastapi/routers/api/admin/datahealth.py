@@ -10,7 +10,7 @@ from ukrdc_sqla.stats import LastRunTimes
 from ukrdc_fastapi.dependencies import get_jtrace, get_statsdb
 from ukrdc_fastapi.dependencies.auth import Permissions, auth
 from ukrdc_fastapi.query.stats import MultipleUKRDCIDGroup, get_multiple_ukrdcids
-from ukrdc_fastapi.query.workitems import get_workitems
+from ukrdc_fastapi.query.workitems import select_workitems
 from ukrdc_fastapi.schemas.base import OrmModel
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema
 from ukrdc_fastapi.utils.paginate import Page, paginate_sequence
@@ -83,7 +83,7 @@ def record_workitem_counts(
     Retreive a list of all master records with open work items, and the number of work items on each.
     Most useful when sorted by descending work item count, to identify records most in need of work item resolution.
     """
-    subq1 = get_workitems(jtrace, statuses=[1]).subquery()
+    subq1 = select_workitems(statuses=[1]).subquery()
 
     subq2 = (
         jtrace.query(subq1.c.masterid, func.count("*").label("workitem_count"))

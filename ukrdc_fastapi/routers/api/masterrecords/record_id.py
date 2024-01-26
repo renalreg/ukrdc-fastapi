@@ -34,7 +34,7 @@ from ukrdc_fastapi.query.patientrecords import (
 )
 from ukrdc_fastapi.query.persons import select_persons_related_to_masterrecord
 from ukrdc_fastapi.query.utils import count_rows
-from ukrdc_fastapi.query.workitems import get_workitems
+from ukrdc_fastapi.query.workitems import select_workitems
 from ukrdc_fastapi.schemas.base import OrmModel
 from ukrdc_fastapi.schemas.empi import (
     LinkRecordSchema,
@@ -190,8 +190,8 @@ def master_record_statistics(
     related_records = jtrace.scalars(stmt).all()
 
     # Get workitems
-    workitems = get_workitems(
-        jtrace, master_id=[record.id for record in related_records]
+    stmt_workitems = select_workitems(
+        master_id=[record.id for record in related_records]
     )
 
     # Add audit events
@@ -203,7 +203,7 @@ def master_record_statistics(
     )
 
     return MasterRecordStatisticsSchema(
-        workitems=workitems.count(),
+        workitems=count_rows(stmt_workitems, jtrace),
         errors=count_rows(stmt_errors, errorsdb),
         # Workaround for https://jira.ukrdc.org/browse/UI-56
         # For some reason, if you log in as a non-admin user,
@@ -327,14 +327,12 @@ def master_record_workitems(
     stmt = select_masterrecords_related_to_masterrecord(record, jtrace)
     related_records = jtrace.scalars(stmt).all()
 
-    workitems = get_workitems(
-        jtrace,
+    stmt = select_workitems(
         statuses=status or [],
         master_id=[record.id for record in related_records],
     )
-
-    # Apply permissions
-    workitems = apply_workitem_list_permission(workitems, user)
+    stmt = apply_workitem_list_permission(stmt, user)
+    workitems = jtrace.scalars(stmt).all()
 
     # Add audit events
     record_audit = audit.add_event(
@@ -343,7 +341,7 @@ def master_record_workitems(
     for item in workitems:
         audit.add_workitem(item, parent=record_audit)
 
-    return workitems.all()
+    return workitems
 
 
 @router.get(

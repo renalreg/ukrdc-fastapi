@@ -27,8 +27,8 @@ from ukrdc_fastapi.query.messages import select_messages
 from ukrdc_fastapi.query.mirth.workitems import close_workitem, update_workitem
 from ukrdc_fastapi.query.workitems import (
     extend_workitem,
-    get_workitem_collection,
-    get_workitems_related_to_workitem,
+    select_workitem_collection,
+    select_workitems_related_to_workitem,
 )
 from ukrdc_fastapi.schemas.base import JSONModel
 from ukrdc_fastapi.schemas.empi import WorkItemExtendedSchema, WorkItemSchema
@@ -54,7 +54,7 @@ def _get_workitem(
     jtrace: Session = Depends(get_jtrace),
 ):
     """Retreive a particular work item from the EMPI"""
-    workitem_obj = jtrace.query(WorkItem).get(workitem_id)
+    workitem_obj = jtrace.get(WorkItem, workitem_id)
     if not workitem_obj:
         raise ResourceNotFoundError("Work item not found")
 
@@ -164,7 +164,7 @@ def workitem_collection(
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a list of other work items related to a particular work item"""
-    collection = get_workitem_collection(workitem_obj, jtrace)
+    collection = select_workitem_collection(workitem_obj, jtrace)
 
     # Apply permissions
     collection = apply_workitem_list_permission(collection, user)
@@ -188,16 +188,16 @@ def workitem_related(
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a list of other work items related to a particular work item"""
-    related = get_workitems_related_to_workitem(workitem_obj, jtrace)
+    stmt = select_workitems_related_to_workitem(workitem_obj, jtrace)
+    stmt = apply_workitem_list_permission(stmt, user)
 
-    # Apply permissions
-    related = apply_workitem_list_permission(related, user)
+    related = jtrace.scalars(stmt).all()
 
     # Add audit events
     for item in related:
         audit.add_workitem(item)
 
-    return related.all()
+    return related
 
 
 @router.get(

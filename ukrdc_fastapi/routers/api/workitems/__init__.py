@@ -10,7 +10,7 @@ from ukrdc_fastapi.dependencies import get_jtrace
 from ukrdc_fastapi.dependencies.audit import Auditer, get_auditer
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.permissions.workitems import apply_workitem_list_permission
-from ukrdc_fastapi.query.workitems import get_workitems
+from ukrdc_fastapi.query.workitems import select_workitems
 from ukrdc_fastapi.schemas.empi import WorkItemSchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
 from ukrdc_fastapi.utils.sort import SQLASorter, make_sqla_sorter
@@ -53,15 +53,13 @@ def workitems(
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a list of open work items from the EMPI"""
-    query = get_workitems(
-        jtrace, statuses=status or [], facility=facility, since=since, until=until
+    stmt = select_workitems(
+        statuses=status or [], facility=facility, since=since, until=until
     )
-
-    # Apply permissions
-    query = apply_workitem_list_permission(query, user)
+    stmt = apply_workitem_list_permission(stmt, user)
 
     # Paginate and sort
-    page = paginate(sorter.sort(query))
+    page = paginate(jtrace, sorter.sort(stmt))
 
     # Add audit events
     for item in page.items:  # type: ignore

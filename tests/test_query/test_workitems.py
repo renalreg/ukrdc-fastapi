@@ -8,44 +8,44 @@ from ukrdc_fastapi.query import workitems
 
 
 def test_get_workitems_superuser(jtrace_session):
-    all_items = workitems.get_workitems(jtrace_session)
+    all_items = jtrace_session.scalars(workitems.select_workitems()).all()
     assert {item.id for item in all_items} == {1, 2, 3}
 
 
 def test_get_workitems_facility(jtrace_session, superuser):
-    all_items = workitems.get_workitems(jtrace_session, statuses=[3])
+    all_items = jtrace_session.scalars(workitems.select_workitems(statuses=[3])).all()
     assert {item.id for item in all_items} == {4}
 
 
 def test_get_workitems_statuses(jtrace_session):
-    all_items = workitems.get_workitems(jtrace_session, statuses=[1, 3])
+    all_items = jtrace_session.scalars(workitems.select_workitems(statuses=[1, 3])).all()
     assert {item.id for item in all_items} == {1, 2, 3, 4}
 
 
 def test_get_workitems_since(jtrace_session):
-    all_items = workitems.get_workitems(jtrace_session, since=days_ago(1))
+    all_items = jtrace_session.scalars(workitems.select_workitems(since=days_ago(1))).all()
     assert {item.id for item in all_items} == {2, 3}
 
 
 def test_get_workitems_until(jtrace_session):
-    all_items = workitems.get_workitems(jtrace_session, until=days_ago(2))
+    all_items = jtrace_session.scalars(workitems.select_workitems(until=days_ago(2))).all()
     assert {item.id for item in all_items} == {1}
 
 
 def test_get_workitems_masterid(jtrace_session):
-    all_items = workitems.get_workitems(jtrace_session, master_id=[104])
+    all_items = jtrace_session.scalars(workitems.select_workitems(master_id=[104])).all()
     assert {item.id for item in all_items} == {1, 2}
 
 
 def test_get_workitem_related(jtrace_session):
-    related = workitems.get_workitems_related_to_workitem(
+    related = jtrace_session.scalars(workitems.select_workitems_related_to_workitem(
         jtrace_session.query(WorkItem).get(1), jtrace_session
-    )
+    )).all()
     assert {item.id for item in related} == {2, 3, 4}
 
-    related = workitems.get_workitems_related_to_workitem(
+    related = jtrace_session.scalars(workitems.select_workitems_related_to_workitem(
         jtrace_session.query(WorkItem).get(2), jtrace_session
-    )
+    )).all()
     assert {item.id for item in related} == {1, 3, 4}
 
 
@@ -94,21 +94,21 @@ def test_get_extended_workitem_superuser(jtrace_session):
 
 
 def test_get_workitem_collection(jtrace_session):
-    collection = workitems.get_workitem_collection(
+    collection = jtrace_session.scalars(workitems.select_workitem_collection(
         jtrace_session.query(WorkItem).get(1), jtrace_session
-    )
+    )).all()
     assert {item.id for item in collection} == set()
 
-    collection = workitems.get_workitem_collection(
+    collection = jtrace_session.scalars(workitems.select_workitem_collection(
         jtrace_session.query(WorkItem).get(2), jtrace_session
-    )
+    )).all()
     assert {item.id for item in collection} == {3, 4}
 
 
 def test_get_workitems_related_to_message(jtrace_session, errorsdb_session):
-    related = workitems.get_workitems_related_to_message(
+    related = jtrace_session.scalars(workitems.select_workitems_related_to_message(
         errorsdb_session.query(Message).get(3), jtrace_session
-    )
+    )).all()
     assert {item.id for item in related} == {3}
 
 

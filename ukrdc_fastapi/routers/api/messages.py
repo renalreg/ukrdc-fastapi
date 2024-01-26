@@ -29,7 +29,7 @@ from ukrdc_fastapi.query.messages import (
     select_messages,
 )
 from ukrdc_fastapi.query.patientrecords import select_patientrecords_related_to_message
-from ukrdc_fastapi.query.workitems import get_workitems_related_to_message
+from ukrdc_fastapi.query.workitems import select_workitems_related_to_message
 from ukrdc_fastapi.schemas.empi import WorkItemSchema
 from ukrdc_fastapi.schemas.message import MessageSchema
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordSummarySchema
@@ -145,10 +145,10 @@ async def message_workitems(
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive WorkItems associated with a specific error message"""
-    workitems = get_workitems_related_to_message(message_obj, jtrace)
+    stmt = select_workitems_related_to_message(message_obj, jtrace)
+    stmt = apply_workitem_list_permission(stmt, user)
 
-    # Apply permissions
-    workitems = apply_workitem_list_permission(workitems, user)
+    workitems = jtrace.scalars(stmt).all()
 
     # Add audit events
     message_audit = audit.add_event(
@@ -157,7 +157,7 @@ async def message_workitems(
     for item in workitems:
         audit.add_workitem(item, parent=message_audit)
 
-    return workitems.all()
+    return workitems
 
 
 @router.get(
