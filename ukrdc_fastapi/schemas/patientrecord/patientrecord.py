@@ -2,6 +2,7 @@ import datetime
 from typing import Literal, Optional
 
 from pydantic import Field
+from sqlalchemy import select
 from sqlalchemy.orm.session import Session
 from ukrdc_sqla.empi import MasterRecord
 from ukrdc_sqla.ukrdc import PatientRecord
@@ -339,14 +340,12 @@ class PatientRecordSchema(PatientRecordSummarySchema):
         """
         record_dict = cls.from_orm(patient_record).dict()  # type: ignore  # mypy bug, see https://github.com/pydantic/pydantic/issues/5187
         if not record_dict.get("masterId"):
-            master_record = (
-                jtrace.query(MasterRecord)
-                .filter(
-                    MasterRecord.nationalid_type == "UKRDC",
-                    MasterRecord.nationalid == record_dict.get("ukrdcid"),
-                )
-                .first()
+            stmt_master_record = select(MasterRecord).where(
+                MasterRecord.nationalid_type == "UKRDC",
+                MasterRecord.nationalid == record_dict.get("ukrdcid"),
             )
+            master_record = jtrace.scalars(stmt_master_record).first()
+
             if master_record:
                 record_dict["masterId"] = master_record.id
         return cls(**record_dict)
