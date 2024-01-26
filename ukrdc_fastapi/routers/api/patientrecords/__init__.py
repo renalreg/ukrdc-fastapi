@@ -30,7 +30,7 @@ from ukrdc_fastapi.permissions.messages import (
     apply_message_list_permissions,
     assert_message_permissions,
 )
-from ukrdc_fastapi.query.audit import get_auditevents_related_to_patientrecord
+from ukrdc_fastapi.query.audit import select_auditevents_related_to_patientrecord
 from ukrdc_fastapi.query.delete import (
     delete_patientrecord,
     summarise_delete_patientrecord,
@@ -110,16 +110,16 @@ def patient_audit(
     Retreive a page of audit events related to a particular master record.
     """
     page = paginate(
+        auditdb,
         sorter.sort(
-            get_auditevents_related_to_patientrecord(
+            select_auditevents_related_to_patientrecord(
                 patient_record,
-                auditdb,
                 resource=resource,
                 operation=operation,
                 since=since,
                 until=until,
             )
-        )
+        ),
     )
 
     for item in page.items:  # type: ignore

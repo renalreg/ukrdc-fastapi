@@ -4,7 +4,8 @@ from typing import Any, Optional, Union
 
 from fastapi import HTTPException
 from sqlalchemy import Column
-from sqlalchemy.orm import Query as ORMQuery
+from sqlalchemy.orm import Query
+from sqlalchemy.sql.selectable import Select
 
 
 def rgetattr(obj, attr, *args):
@@ -41,7 +42,7 @@ class SQLASorter:
         self.default_sort_by = default_sort_by
         self.default_order_by = default_order_by
 
-    def sort(self, query: ORMQuery):
+    def sort(self, query: Union[Query, Select]):
         """Sort an SQLAlchemy query by the paremeters obtained from FastAPI
 
         Args:

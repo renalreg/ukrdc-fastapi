@@ -1,23 +1,21 @@
 import datetime
 from typing import Optional
 
-from sqlalchemy import and_, or_, select
-from sqlalchemy.orm.query import Query
-from sqlalchemy.orm.session import Session
+from sqlalchemy import and_, not_, or_, select
+from sqlalchemy.sql.selectable import Select
 from ukrdc_sqla.ukrdc import PatientRecord
 
 from ukrdc_fastapi.dependencies.audit import AuditOperation, Resource
 from ukrdc_fastapi.models.audit import AccessEvent, AuditEvent
 
 
-def get_auditevents_related_to_patientrecord(
+def select_auditevents_related_to_patientrecord(
     record: PatientRecord,
-    audit: Session,
     resource: Optional[Resource] = None,
     operation: Optional[AuditOperation] = None,
     since: Optional[datetime.datetime] = None,
     until: Optional[datetime.datetime] = None,
-) -> Query:
+) -> Select:
     """Get all audit events related to a patient record
 
     Args:
@@ -34,8 +32,8 @@ def get_auditevents_related_to_patientrecord(
 
     # Recursively find audit events where the row or any parent of the row matches this patient
     topq = (
-        audit.query(AuditEvent)
-        .filter(
+        select(AuditEvent)
+        .where(
             or_(
                 and_(
                     AuditEvent.resource == Resource.PATIENT_RECORD.value,
@@ -50,42 +48,34 @@ def get_auditevents_related_to_patientrecord(
         .cte("cte", recursive=True)
     )
 
-    bottomq = audit.query(AuditEvent)
-    bottomq = bottomq.join(topq, AuditEvent.parent_id == topq.c.id)
+    bottomq = select(AuditEvent).join(topq, AuditEvent.parent_id == topq.c.id)
 
-    matched_ids_q = audit.query(topq.union(bottomq)).subquery()  # type: ignore
+    matched_ids_q = select(topq.union(bottomq)).subquery()
 
     # Create a query of all audit rows related to this patient
-
-    q = (
-        audit.query(AuditEvent)
-        .join(AccessEvent)
-        .filter(AuditEvent.id == matched_ids_q.c.id)
-    )
+    q = select(AuditEvent).join(AccessEvent).where(AuditEvent.id == matched_ids_q.c.id)
 
     # Filter to rows matching date range
     if since:
-        q = q.filter(AccessEvent.time >= since)
+        q = q.where(AccessEvent.time >= since)
 
     if until:
-        q = q.filter(AccessEvent.time <= until)
+        q = q.where(AccessEvent.time <= until)
 
     # Filter to rows matching resource and operation
-
     if resource:
-        q = q.filter(AuditEvent.resource == resource.value)
+        q = q.where(AuditEvent.resource == resource.value)
 
     if operation:
-        q = q.filter(AuditEvent.operation == operation.value)
+        q = q.where(AuditEvent.operation == operation.value)
 
-    # Remove children who's parent is already in the query
-
+    # Remove children whose parent is already in the query
     subq = q.subquery()
 
     q_cleaned = (
-        audit.query(AuditEvent)
+        select(AuditEvent)
         .join(AccessEvent)
-        .filter(
+        .where(
             and_(
                 AuditEvent.id
                 == subq.c.id,  # Include rows that appeared in the main query...
@@ -93,9 +83,9 @@ def get_auditevents_related_to_patientrecord(
                     AuditEvent.parent_id.is_(
                         None
                     ),  # ...with no parent (top of the tree)...
-                    AuditEvent.parent_id.notin_(
-                        select([subq.c.id])
-                    ),  # ...or who's parent isn't already included.
+                    not_(
+                        AuditEvent.parent_id.in_(select(subq.c.id))
+                    ),  # ...or whose parent isn't already included.
                 ),
             )
         )
