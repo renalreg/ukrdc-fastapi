@@ -33,10 +33,10 @@ def ukrdcid_records(
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive patient records related to a specific patient record"""
-    related = select_patientrecords_related_to_ukrdcid(ukrdcid, ukrdc3)
+    stmt = select_patientrecords_related_to_ukrdcid(ukrdcid, ukrdc3)
+    stmt = apply_patientrecord_list_permission(stmt, user)
 
-    # Apply permissions
-    related = apply_patientrecord_list_permission(related, user)
+    related = ukrdc3.scalars(stmt).all()
 
     record_audit = audit.add_event(Resource.UKRDCID, ukrdcid, AuditOperation.READ)
     for record in related:
@@ -47,7 +47,7 @@ def ukrdcid_records(
             parent=record_audit,
         )
 
-    return related.all()
+    return related
 
 
 @router.post(
