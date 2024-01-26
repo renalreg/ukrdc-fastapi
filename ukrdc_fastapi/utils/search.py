@@ -1,6 +1,7 @@
 import datetime
 import re
 from typing import Iterable, Optional, Union
+from sqlalchemy import select
 
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import or_
@@ -79,7 +80,8 @@ class SearchSet:
         Add a list of strings to the search query set.
         Each string will be added to any search query group in which it is valid
         """
-        facility_codes = {facility.code for facility in ukrdc3.query(Facility).all()}
+        stmt = select(Facility.code)
+        facility_codes = ukrdc3.scalars(stmt).all()
 
         for item in terms:
             item = item.strip()
@@ -133,45 +135,55 @@ def _convert_query_to_pg_like(item: str) -> str:
     return f"{item}%"
 
 
-def records_from_mrn_no(ukrdc3: Session, mrn_nos: Iterable[str]) -> set[str]:
+def records_from_mrn_no(ukrdc3: Session, mrn_nos: Iterable[str]) -> list[PatientRecord]:
     """
     Patient Records from MRN/NHS/HSC/CHI/RADAR number.
     """
-    return (
-        ukrdc3.query(PatientRecord)
+    return ukrdc3.scalars(
+        select(PatientRecord)
         .join(Patient)
         .join(PatientNumber)
-        .filter(PatientNumber.patientid.in_(mrn_nos))
-    )
+        .where(PatientNumber.patientid.in_(mrn_nos))
+    ).all()
 
 
-def records_from_pid(ukrdc3: Session, pid_nos: Iterable[str]):
+def records_from_pid(ukrdc3: Session, pid_nos: Iterable[str]) -> list[PatientRecord]:
     """
     Finds Patient Records from PIDs
     """
-    return ukrdc3.query(PatientRecord).filter(PatientRecord.pid.in_(pid_nos))
+    return ukrdc3.scalars(
+        select(PatientRecord).where(PatientRecord.pid.in_(pid_nos))
+    ).all()
 
 
-def records_from_ukrdcid(ukrdc3: Session, ukrdcids: Iterable[str]):
+def records_from_ukrdcid(
+    ukrdc3: Session, ukrdcids: Iterable[str]
+) -> list[PatientRecord]:
     """
     Finds Patient Records from UKRDC IDs
     """
-    return ukrdc3.query(PatientRecord).filter(PatientRecord.ukrdcid.in_(ukrdcids))
+    return ukrdc3.scalars(
+        select(PatientRecord).where(PatientRecord.ukrdcid.in_(ukrdcids))
+    ).all()
 
 
-def records_from_facility(ukrdc3: Session, facilities: Iterable[str]):
+def records_from_facility(
+    ukrdc3: Session, facilities: Iterable[str]
+) -> list[PatientRecord]:
     """
     Finds Patient Records from facilities
     """
     ignore_extracts = {"PVMIG", "HSMIG"}
-    return (
-        ukrdc3.query(PatientRecord)
-        .filter(PatientRecord.sendingfacility.in_(facilities))
-        .filter(PatientRecord.sendingextract.notin_(ignore_extracts))
-    )
+    return ukrdc3.scalars(
+        select(PatientRecord)
+        .where(PatientRecord.sendingfacility.in_(facilities))
+        .where(PatientRecord.sendingextract.notin_(ignore_extracts))
+    ).all()
 
 
-def records_from_full_name(ukrdc3: Session, names: Iterable[str]):
+def records_from_full_name(
+    ukrdc3: Session, names: Iterable[str]
+) -> list[PatientRecord]:
     """Finds Ids from full name"""
     conditions = []
 
@@ -187,13 +199,19 @@ def records_from_full_name(ukrdc3: Session, names: Iterable[str]):
             ]
         )
 
-    return ukrdc3.query(PatientRecord).join(Patient).join(Name).filter(or_(*conditions))
+    return ukrdc3.scalars(
+        select(PatientRecord).join(Patient).join(Name).where(or_(*conditions))
+    ).all()
 
 
-def records_from_dob(ukrdc3: Session, dobs: Iterable[Union[str, datetime.date]]):
+def records_from_dob(
+    ukrdc3: Session, dobs: Iterable[Union[str, datetime.date]]
+) -> list[PatientRecord]:
     """Finds Ids from date of birth"""
     conditions = [Patient.birth_time == dob for dob in dobs]
-    return ukrdc3.query(PatientRecord).join(Patient).filter(or_(*conditions))
+    return ukrdc3.scalars(
+        select(PatientRecord).join(Patient).filter(or_(*conditions))
+    ).all()
 
 
 def search_ukrdcids(  # pylint: disable=too-many-branches
