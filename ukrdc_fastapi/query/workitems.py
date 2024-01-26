@@ -218,14 +218,14 @@ def get_full_workitem_history(
 
     # Get history within range
     trunc_func = func.date_trunc("day", WorkItem.creation_date)
-    history_stmt = (
+    stmt_history = (
         select(trunc_func, func.count(trunc_func))
         .where(trunc_func >= range_since)
         .where(trunc_func <= range_until)
         .group_by(trunc_func)
         .order_by(trunc_func)
     )
-    history = jtrace.execute(history_stmt)
+    history = jtrace.execute(stmt_history)
 
     # Create an initially empty full history dictionary
     full_history: dict[datetime.date, int] = {

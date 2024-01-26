@@ -8,9 +8,9 @@ def count_rows(stmt: Select, session: Session) -> int:
     subquery = stmt.alias()
 
     # Create a new select statement that selects the count of rows from the subquery
-    count_stmt = select(func.count()).select_from(subquery)
+    stmt_count = select(func.count()).select_from(subquery)
 
     # Execute the count statement and fetch the count
-    count = session.execute(count_stmt).scalar_one()
+    count = session.execute(stmt_count).scalar_one()
 
     return count
