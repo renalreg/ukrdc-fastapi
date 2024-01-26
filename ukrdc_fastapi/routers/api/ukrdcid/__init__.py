@@ -33,7 +33,7 @@ def ukrdcid_records(
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive patient records related to a specific patient record"""
-    stmt = select_patientrecords_related_to_ukrdcid(ukrdcid, ukrdc3)
+    stmt = select_patientrecords_related_to_ukrdcid(ukrdcid)
     stmt = apply_patientrecord_list_permission(stmt, user)
 
     related = ukrdc3.scalars(stmt).all()

@@ -6,7 +6,6 @@ from mirth_client.models import ConnectorMessageData, ConnectorMessageModel
 from pydantic import Field
 from sqlalchemy import select
 from sqlalchemy.sql.selectable import Select
-from sqlalchemy.orm.query import Query
 from sqlalchemy.orm.session import Session
 from ukrdc_sqla.empi import MasterRecord
 from ukrdc_sqla.errorsdb import Message
@@ -173,11 +172,11 @@ def select_messages_related_to_patientrecord(
     channels: Optional[list[str]] = None,
     since: Optional[datetime.datetime] = None,
     until: Optional[datetime.datetime] = None,
-) -> Query:
+) -> Select:
     national_ids: list[str] = [
         number.patientid
         for number in record.patient.numbers
-        if number.numbertype == "NI"
+        if number.numbertype == "NI" and number.patientid is not None
     ]
 
     return select_messages(

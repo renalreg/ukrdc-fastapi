@@ -160,9 +160,9 @@ class Auditer:
         )
         audited_master_ids: set[int] = set()
         audited_person_ids: set[int] = set()
-        if workitem.master_record:
+        if workitem.master_record and workitem.master_record.id:
             audited_master_ids.add(workitem.master_record.id)
-        if workitem.person:
+        if workitem.person and workitem.person.id:
             audited_person_ids.add(workitem.person.id)
 
         if isinstance(workitem, WorkItemExtendedSchema):

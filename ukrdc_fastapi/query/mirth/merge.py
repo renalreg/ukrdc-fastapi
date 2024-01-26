@@ -14,6 +14,12 @@ async def merge_master_records(
     redis: Redis,
 ) -> MirthMessageResponseSchema:
     """Merge a pair of MasterRecords"""
+    if not superseding.id:
+        raise ValueError("Superseding MasterRecord has no ID")
+
+    if not superseded.id:
+        raise ValueError("Superseded MasterRecord has no ID")
+
     return await safe_send_mirth_message_to_name(
         "Merge Patient",
         build_merge_message(superseding=superseding.id, superseded=superseded.id),

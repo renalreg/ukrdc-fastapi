@@ -84,8 +84,9 @@ class AuditEventSchema(OrmModel):
                 self.identifiers = [
                     f"{master_record.givenname} {master_record.surname}",
                     master_record.nationalid_type,
-                    master_record.nationalid.strip(),
                 ]
+                if master_record.nationalid:
+                    self.identifiers.append(master_record.nationalid.strip())
 
         # Recursively populate children
         if self.children:

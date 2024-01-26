@@ -22,7 +22,11 @@ async def unlink_person_from_master_record(
     redis: Redis,
 ) -> LinkRecordSchema:
     """Unlink a particular Person record from a Master Record"""
-    # Get records to assert user permission
+    if not master.id:
+        raise ValueError("Master Record has no ID")
+
+    if not person.id:
+        raise ValueError("Person has no ID")
 
     # Build and send the unlink message
     await safe_send_mirth_message_to_name(

@@ -148,17 +148,14 @@ def patient_messages(
     Retreive a list of messages related to a particular patient record.
     By default returns message created within the last 365 days.
     """
-    messages = select_messages_related_to_patientrecord(
+    stmt = select_messages_related_to_patientrecord(
         patient_record,
-        errorsdb,
         statuses=status,
         channels=channel,
         since=since,
         until=until,
     )
-
-    # Apply permissions
-    messages = apply_message_list_permissions(messages, user)
+    stmt = apply_message_list_permissions(stmt, user)
 
     # Add audit events
     audit.add_event(
@@ -169,7 +166,7 @@ def patient_messages(
             Resource.PATIENT_RECORD, patient_record.pid, AuditOperation.READ
         ),
     )
-    return paginate(sorter.sort(messages))
+    return paginate(errorsdb, sorter.sort(stmt))
 
 
 @router.get(
@@ -188,21 +185,21 @@ def patient_record_latest_message(
     if received within the last year."""
 
     # Get messages related to the master record
-    msgs = (
+    stmt = (
         select_messages_related_to_patientrecord(
             patient_record,
-            errorsdb,
             since=datetime.datetime.utcnow() - datetime.timedelta(days=365),
         )
         .where(Message.facility != "TRACING")
         .where(Message.filename.isnot(None))
     )
+    stmt = apply_message_list_permissions(stmt, user)
 
-    # Apply permissions
-    msgs = apply_message_list_permissions(msgs, user)
+    # Sort by received date
+    stmt = stmt.order_by(Message.received.desc())
 
     # Get latest message
-    latest = msgs.order_by(Message.received.desc()).first()
+    latest = errorsdb.scalars(stmt).first()
 
     if not latest:
         return Response(status_code=HTTP_204_NO_CONTENT)
