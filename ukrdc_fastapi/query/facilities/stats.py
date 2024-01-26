@@ -1,5 +1,6 @@
 import datetime
 from typing import Optional
+from sqlalchemy import select
 
 from sqlalchemy.orm import Session
 from ukrdc_sqla.ukrdc import Facility
@@ -29,7 +30,8 @@ def get_facility_demographic_stats(
         FacilityDemographicStats: Facility demographic distribution statistics
     """
     # Assert the facility exists
-    facility = ukrdc3.query(Facility).filter(Facility.code == facility_code).first()
+    stmt = select(Facility).where(Facility.code == facility_code)
+    facility = ukrdc3.scalars(stmt).first()
 
     if not facility:
         raise MissingFacilityError(facility_code)
@@ -54,7 +56,8 @@ def get_facility_dialysis_stats(
         DialysisStats: Facility demographic distribution statistics
     """
     # Assert the facility exists
-    facility = ukrdc3.query(Facility).filter(Facility.code == facility_code).first()
+    stmt = select(Facility).where(Facility.code == facility_code)
+    facility = ukrdc3.scalars(stmt).first()
 
     if not facility:
         raise MissingFacilityError(facility_code)
