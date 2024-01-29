@@ -15,6 +15,7 @@ from ukrdc_sqla.ukrdc import (
     Observation,
     PatientRecord,
     ResultItem,
+    LabOrder,
     Survey,
     Transplant,
     Treatment,
@@ -477,16 +478,13 @@ def patient_result_services(
 ):
     """Retreive a list of resultitem services available for a specific patient"""
     stmt = (
-        select(
-            ResultItem.service_id,
-            ResultItem.service_id_description,
-            ResultItem.service_id_std,
-        )
-        .where(ResultItem.pid == patient_record.pid)
+        select(ResultItem)
+        .join(LabOrder)
+        .where(LabOrder.pid == patient_record.pid)
         .distinct(ResultItem.service_id)
     )
 
-    services = ukrdc3.execute(stmt)
+    services = ukrdc3.scalars(stmt).all()
 
     return [
         ResultItemServiceSchema(
@@ -494,5 +492,5 @@ def patient_result_services(
             description=item.service_id_description,
             standard=item.service_id_std,
         )
-        for item in services.all()
+        for item in services
     ]

@@ -47,7 +47,7 @@ def patient_results(
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's lab orders"""
-    stmt = select(ResultItem).where(ResultItem.pid == patient_record.pid)
+    stmt = select(ResultItem).join(LabOrder).where(LabOrder.pid == patient_record.pid)
 
     if service_id:
         stmt = stmt.where(ResultItem.service_id.in_(service_id))
