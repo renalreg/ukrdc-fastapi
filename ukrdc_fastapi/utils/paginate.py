@@ -5,10 +5,17 @@ from fastapi_pagination import paginate as paginate_sequence
 from fastapi_pagination.default import Page as BasePage
 from fastapi_pagination.default import Params as BaseParams
 from fastapi_pagination.ext.sqlalchemy import paginate, paginate_query
+from fastapi_pagination.utils import disable_installed_extensions_check
 
 __all__ = ["Page", "Params", "paginate", "paginate_sequence", "paginate_query"]
 
 T = TypeVar("T")  # pylint: disable=invalid-name
+
+# We sometimes paginate normal lists, not just SQLAlchemy queries,
+# so we need to disable the check that fastapi_pagination does
+# to warn you if you use the normal pagination function when you
+# have SQLAlchemy installed.
+disable_installed_extensions_check()
 
 
 class Params(BaseParams):
