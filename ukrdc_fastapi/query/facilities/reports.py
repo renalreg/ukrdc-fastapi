@@ -55,11 +55,13 @@ def select_facility_report_cc001(
         select(PatientRecord.ukrdcid)
         .join(q_no_treatment, PatientRecord.ukrdcid == q_no_treatment.c.ukrdcid)
         .join(ProgramMembership, ProgramMembership.pid == PatientRecord.pid)
-    ).subquery()
+    )
 
     # Return all the rows in q_no_treatment that do NOT appear in q_has_memberships
-    q_no_treatment_and_no_memberships = select(q_no_treatment).where(
-        q_no_treatment.c.ukrdcid.notin_(q_no_treatment_but_has_memberships)
+    q_no_treatment_and_no_memberships = (
+        select(q_no_treatment)
+        .where(q_no_treatment.c.ukrdcid.notin_(q_no_treatment_but_has_memberships))
+        .subquery()
     )
 
     # Return PatientRecord ORM objects from q_no_treatment_and_no_memberships
@@ -96,7 +98,7 @@ def select_facility_report_pm001(
         .join(ProgramMembership, ProgramMembership.pid == PatientRecord.pid)
         .where(ProgramMembership.program_name == "PKB")
         .where(ProgramMembership.totime == None)  # noqa: E711 # No end time
-    ).subquery()
+    )
 
     return (
         select(PatientRecord)
