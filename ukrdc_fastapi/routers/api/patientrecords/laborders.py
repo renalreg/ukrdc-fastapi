@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Security
 from fastapi.responses import Response
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 from ukrdc_sqla.ukrdc import (
     LabOrder,
@@ -33,9 +34,16 @@ router = APIRouter()
 )
 def patient_laborders(
     patient_record: PatientRecord = Depends(_get_patientrecord),
+    ukrdc3: Session = Depends(get_ukrdc3),
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's lab orders"""
+    stmt = (
+        select(LabOrder)
+        .where(LabOrder.pid == patient_record.pid)
+        .order_by(LabOrder.specimen_collected_time.desc())
+    )
+
     audit.add_event(
         Resource.LABORDERS,
         None,
@@ -45,9 +53,7 @@ def patient_laborders(
         ),
     )
 
-    return paginate(
-        patient_record.lab_orders.order_by(LabOrder.specimen_collected_time.desc())
-    )
+    return paginate(ukrdc3, stmt)
 
 
 @router.get(
@@ -58,10 +64,12 @@ def patient_laborders(
 def patient_laborder(
     order_id: str,
     patient_record: PatientRecord = Depends(_get_patientrecord),
+    ukrdc3: Session = Depends(get_ukrdc3),
     audit: Auditer = Depends(get_auditer),
 ) -> LabOrder:
     """Retreive a particular lab order"""
-    order = patient_record.lab_orders.where(LabOrder.id == order_id).first()
+    stmt = select(LabOrder).where(LabOrder.id == order_id)
+    order = ukrdc3.execute(stmt).scalar_one_or_none()
 
     if not order:
         raise HTTPException(404, detail="Lab Order not found")
@@ -89,7 +97,9 @@ def patient_laborder_delete(
     audit: Auditer = Depends(get_auditer),
 ):
     """Mark a particular lab order for deletion"""
-    order = patient_record.lab_orders.where(LabOrder.id == order_id).first()
+    stmt = select(LabOrder).where(LabOrder.id == order_id)
+    order = ukrdc3.execute(stmt).scalar_one_or_none()
+
     if not order:
         raise HTTPException(404, detail="Lab Order not found")
 
