@@ -62,6 +62,7 @@ def patient_laborder(
 ) -> LabOrder:
     """Retreive a particular lab order"""
     order = patient_record.lab_orders.where(LabOrder.id == order_id).first()
+
     if not order:
         raise HTTPException(404, detail="Lab Order not found")
 
