@@ -74,7 +74,7 @@ def patient_document(
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's document information"""
-    stmt = select(Document).where(Document.pid == patient_record.pid)
+    stmt = select(Document).where(Document.id == document_id)
     document_obj = ukrdc3.execute(stmt).scalar_one_or_none()
 
     if not document_obj:
@@ -103,7 +103,7 @@ def patient_document_download(
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's document file"""
-    stmt = select(Document).where(Document.pid == patient_record.pid)
+    stmt = select(Document).where(Document.id == document_id)
     document_obj = ukrdc3.execute(stmt).scalar_one_or_none()
 
     if not document_obj:
