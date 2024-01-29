@@ -5,7 +5,7 @@ from ukrdc_fastapi.utils.cache import (
     BasicCache,
     CacheNotSetException,
     DynamicCacheKey,
-    TestCachePrefix,
+    PytestCachePrefix,
 )
 
 
@@ -23,7 +23,7 @@ class PydanticModel(BaseModel):
 
 
 def test_basic_cache_empty(redis_session):
-    cache = BasicCache(redis_session, DynamicCacheKey(TestCachePrefix.PYTEST, "1"))
+    cache = BasicCache(redis_session, DynamicCacheKey(PytestCachePrefix.PYTEST, "1"))
     assert cache.exists is False
 
     with pytest.raises(CacheNotSetException):
@@ -31,7 +31,7 @@ def test_basic_cache_empty(redis_session):
 
 
 def test_basic_cache_set_primitive(redis_session):
-    cache = BasicCache(redis_session, DynamicCacheKey(TestCachePrefix.PYTEST, "2"))
+    cache = BasicCache(redis_session, DynamicCacheKey(PytestCachePrefix.PYTEST, "2"))
     assert cache.exists is False
 
     cache.set("foo")
@@ -42,7 +42,7 @@ def test_basic_cache_set_primitive(redis_session):
 
 
 def test_basic_cache_set_dict(redis_session):
-    cache = BasicCache(redis_session, DynamicCacheKey(TestCachePrefix.PYTEST, "3"))
+    cache = BasicCache(redis_session, DynamicCacheKey(PytestCachePrefix.PYTEST, "3"))
     assert cache.exists is False
 
     cache.set(
@@ -67,7 +67,7 @@ def test_basic_cache_set_dict(redis_session):
 
 
 def test_basic_cache_set_pydantic(redis_session):
-    cache = BasicCache(redis_session, DynamicCacheKey(TestCachePrefix.PYTEST, "4"))
+    cache = BasicCache(redis_session, DynamicCacheKey(PytestCachePrefix.PYTEST, "4"))
     assert cache.exists is False
 
     cache.set(
@@ -95,7 +95,7 @@ def test_basic_cache_set_pydantic(redis_session):
 
 
 def test_basic_cache_restore(redis_session):
-    cache_key = DynamicCacheKey(TestCachePrefix.PYTEST, "5")
+    cache_key = DynamicCacheKey(PytestCachePrefix.PYTEST, "5")
 
     cache_1 = BasicCache(redis_session, cache_key)
     assert cache_1.exists is False

@@ -53,7 +53,7 @@ class FacilityCachePrefix(CachePrefix):
     KRT = "facilities:stats:krt"
 
 
-class TestCachePrefix(CachePrefix):
+class PytestCachePrefix(CachePrefix):
     """Key prefixes for internal test cache keys"""
 
     # For internal testing only
