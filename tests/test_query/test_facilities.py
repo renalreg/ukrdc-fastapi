@@ -1,6 +1,7 @@
 from datetime import datetime
 
 import pytest
+from sqlalchemy import select
 from ukrdc_sqla.ukrdc import Code, Facility, ProgramMembership
 
 from tests.conftest import UKRDCID_1
@@ -41,7 +42,7 @@ def test_get_facilities_cached(ukrdc3_session, errorsdb_session, redis_session):
     # Create the cache
     BasicCache(redis_session, CacheKey.FACILITIES_LIST).set(
         build_facilities_list(
-            ukrdc3_session.query(Facility), ukrdc3_session, errorsdb_session
+            select(Facility), ukrdc3_session, errorsdb_session
         )
     )
 
