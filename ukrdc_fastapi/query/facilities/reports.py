@@ -2,8 +2,8 @@ import datetime
 
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import or_, select
-from sqlalchemy.sql.selectable import Select
 from sqlalchemy.orm import Session
+from sqlalchemy.sql.selectable import Select
 from ukrdc_sqla.ukrdc import Facility, Patient, PatientRecord, ProgramMembership
 
 from ukrdc_fastapi.exceptions import MissingFacilityError

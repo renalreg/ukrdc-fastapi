@@ -1,4 +1,4 @@
-from sqlalchemy import select, func
+from sqlalchemy import func, select
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.selectable import Select
 

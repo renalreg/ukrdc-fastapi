@@ -1,6 +1,6 @@
-from sqlalchemy import select, or_, and_, exists
-from sqlalchemy.sql.selectable import Select
+from sqlalchemy import and_, exists, or_, select
 from sqlalchemy.orm.session import Session
+from sqlalchemy.sql.selectable import Select
 from ukrdc_sqla.ukrdc import PatientRecord
 
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser

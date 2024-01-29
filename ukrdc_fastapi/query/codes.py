@@ -1,8 +1,8 @@
 from typing import Optional
-from sqlalchemy import or_, select
-from sqlalchemy.sql.selectable import Select
 
+from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
+from sqlalchemy.sql.selectable import Select
 from ukrdc_sqla.ukrdc import Code, CodeExclusion, CodeMap
 
 from ukrdc_fastapi.exceptions import MissingCodeError

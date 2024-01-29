@@ -1,7 +1,7 @@
 import datetime
 from typing import Optional
-from sqlalchemy import select
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 from ukrdc_sqla.ukrdc import Facility
 from ukrdc_stats.calculators.demographics import (

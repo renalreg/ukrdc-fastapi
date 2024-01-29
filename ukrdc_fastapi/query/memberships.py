@@ -1,6 +1,6 @@
 from sqlalchemy import null, select
-from sqlalchemy.sql.selectable import Select
 from sqlalchemy.orm import Session
+from sqlalchemy.sql.selectable import Select
 from ukrdc_sqla.ukrdc import PatientRecord, ProgramMembership
 
 

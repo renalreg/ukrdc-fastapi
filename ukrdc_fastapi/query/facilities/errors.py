@@ -1,7 +1,7 @@
 import datetime
 from typing import Optional
-from sqlalchemy import select
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.selectable import Select
 from ukrdc_sqla.errorsdb import Latest, Message

@@ -1,6 +1,6 @@
 import logging
-from sqlalchemy import select
 
+from sqlalchemy import select
 from sqlalchemy.sql.functions import func
 from ukrdc_sqla.ukrdc import PatientRecord
 

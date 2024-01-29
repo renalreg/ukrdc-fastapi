@@ -1,8 +1,9 @@
 import datetime
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Security
+from fastapi import APIRouter, Depends
 from fastapi import Query as QueryParam
+from fastapi import Security
 from fastapi.responses import Response
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -44,9 +45,7 @@ from ukrdc_fastapi.schemas.patientrecord import (
     DialysisSessionSchema,
     PatientRecordSchema,
 )
-from ukrdc_fastapi.schemas.patientrecord.laborder import (
-    ResultItemServiceSchema,
-)
+from ukrdc_fastapi.schemas.patientrecord.laborder import ResultItemServiceSchema
 from ukrdc_fastapi.schemas.patientrecord.medication import MedicationSchema
 from ukrdc_fastapi.schemas.patientrecord.observation import ObservationSchema
 from ukrdc_fastapi.schemas.patientrecord.procedure import TransplantSchema

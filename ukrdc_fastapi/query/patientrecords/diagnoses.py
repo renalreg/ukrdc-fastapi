@@ -1,18 +1,20 @@
 from typing import Optional
+
 from pydantic import Field
 from sqlalchemy import and_, select
-from ukrdc_fastapi.schemas.patientrecord import (
-    DiagnosisSchema,
-    RenalDiagnosisSchema,
-    CauseOfDeathSchema,
-)
 from sqlalchemy.orm import Session
 from ukrdc_sqla.ukrdc import (
-    PatientRecord,
-    Diagnosis,
-    RenalDiagnosis,
     CauseOfDeath,
     Code,
+    Diagnosis,
+    PatientRecord,
+    RenalDiagnosis,
+)
+
+from ukrdc_fastapi.schemas.patientrecord import (
+    CauseOfDeathSchema,
+    DiagnosisSchema,
+    RenalDiagnosisSchema,
 )
 
 # Extended schemas which will include descriptions obtained by looking up codes in the code_list table

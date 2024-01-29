@@ -1,8 +1,8 @@
 from typing import Optional
 
 from sqlalchemy import select
-from sqlalchemy.sql.selectable import Select
 from sqlalchemy.orm import Session
+from sqlalchemy.sql.selectable import Select
 from ukrdc_sqla.empi import MasterRecord, Person
 from ukrdc_sqla.utils.links import (
     PersonMasterLink,

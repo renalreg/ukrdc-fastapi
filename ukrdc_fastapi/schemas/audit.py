@@ -4,7 +4,7 @@ from typing import List, Optional
 from pydantic.fields import Field
 from sqlalchemy.orm.session import Session
 from ukrdc_sqla.empi import MasterRecord
-from ukrdc_sqla.ukrdc import PatientRecord, PatientNumber
+from ukrdc_sqla.ukrdc import PatientNumber, PatientRecord
 
 from ukrdc_fastapi.dependencies.audit import Resource
 

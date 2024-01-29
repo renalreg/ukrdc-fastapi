@@ -6,8 +6,8 @@ from sqlalchemy import select
 from sqlalchemy.orm.session import Session
 from ukrdc_sqla.empi import MasterRecord
 from ukrdc_sqla.ukrdc import PatientRecord
-from ukrdc_fastapi.schemas.base import OrmModel
 
+from ukrdc_fastapi.schemas.base import OrmModel
 from ukrdc_fastapi.schemas.patientrecord.laborder import ResultItemSchema
 from ukrdc_fastapi.schemas.patientrecord.medication import MedicationSchema
 from ukrdc_fastapi.schemas.patientrecord.observation import ObservationSchema

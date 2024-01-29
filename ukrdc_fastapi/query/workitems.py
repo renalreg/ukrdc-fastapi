@@ -3,9 +3,9 @@ from typing import Optional
 
 from sqlalchemy import select
 from sqlalchemy.orm.session import Session
-from sqlalchemy.sql.selectable import Select
 from sqlalchemy.sql.expression import or_
 from sqlalchemy.sql.functions import func
+from sqlalchemy.sql.selectable import Select
 from ukrdc_sqla.empi import MasterRecord, Person, PidXRef, WorkItem
 from ukrdc_sqla.errorsdb import Message
 from ukrdc_sqla.utils.links import find_related_ids

@@ -1,4 +1,15 @@
+from fastapi import APIRouter, Depends, Security
+from sqlalchemy.orm import Session
+from ukrdc_sqla.ukrdc import PatientRecord
+
 from ukrdc_fastapi.dependencies import get_ukrdc3
+from ukrdc_fastapi.dependencies.audit import (
+    Auditer,
+    AuditOperation,
+    Resource,
+    get_auditer,
+)
+from ukrdc_fastapi.dependencies.auth import Permissions, auth
 from ukrdc_fastapi.query.patientrecords.diagnoses import (
     ExtendedCauseOfDeathSchema,
     ExtendedDiagnosisSchema,
@@ -7,19 +18,7 @@ from ukrdc_fastapi.query.patientrecords.diagnoses import (
     get_patient_diagnosis,
     get_patient_renal_diagnosis,
 )
-from sqlalchemy.orm import Session
-from fastapi import APIRouter, Depends, Security
-from ukrdc_sqla.ukrdc import (
-    PatientRecord,
-)
 
-from ukrdc_fastapi.dependencies.audit import (
-    Auditer,
-    AuditOperation,
-    Resource,
-    get_auditer,
-)
-from ukrdc_fastapi.dependencies.auth import Permissions, auth
 from .dependencies import _get_patientrecord
 
 router = APIRouter()

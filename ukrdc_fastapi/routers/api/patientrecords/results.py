@@ -1,16 +1,13 @@
 import datetime
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Security
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi import Query as QueryParam
+from fastapi import Security
 from fastapi.responses import Response
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-from ukrdc_sqla.ukrdc import (
-    LabOrder,
-    PatientRecord,
-    ResultItem,
-)
+from ukrdc_sqla.ukrdc import LabOrder, PatientRecord, ResultItem
 
 from ukrdc_fastapi.dependencies import get_ukrdc3
 from ukrdc_fastapi.dependencies.audit import (
@@ -20,9 +17,7 @@ from ukrdc_fastapi.dependencies.audit import (
     get_auditer,
 )
 from ukrdc_fastapi.dependencies.auth import Permissions, auth
-from ukrdc_fastapi.schemas.patientrecord.laborder import (
-    ResultItemSchema,
-)
+from ukrdc_fastapi.schemas.patientrecord.laborder import ResultItemSchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
 from ukrdc_fastapi.utils.sort import SQLASorter, make_sqla_sorter
 

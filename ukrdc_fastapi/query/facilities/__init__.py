@@ -1,10 +1,9 @@
 from typing import Optional
 
 from redis import Redis
-from sqlalchemy import select
-from sqlalchemy.sql.selectable import Select
-from sqlalchemy import func
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
+from sqlalchemy.sql.selectable import Select
 from ukrdc_sqla.errorsdb import Latest, Message
 from ukrdc_sqla.ukrdc import Code, Facility, PatientRecord
 

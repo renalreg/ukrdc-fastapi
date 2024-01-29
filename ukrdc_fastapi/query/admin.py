@@ -1,4 +1,5 @@
 from typing import Any
+
 from pydantic import Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
