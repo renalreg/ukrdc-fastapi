@@ -12,7 +12,6 @@ def assert_patientrecord_permission(
     record: PatientRecord, ukrdc3: Session, user: UKRDCUser
 ):
     units = Permissions.unit_codes(user.permissions)
-    print(units)
 
     # If the user has full admin permissions, return success
     if Permissions.UNIT_WILDCARD in units:
