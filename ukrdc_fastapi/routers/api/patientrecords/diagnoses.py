@@ -1,3 +1,4 @@
+from ukrdc_fastapi.dependencies import get_ukrdc3
 from ukrdc_fastapi.query.patientrecords.diagnoses import (
     ExtendedCauseOfDeathSchema,
     ExtendedDiagnosisSchema,
@@ -6,7 +7,7 @@ from ukrdc_fastapi.query.patientrecords.diagnoses import (
     get_patient_diagnosis,
     get_patient_renal_diagnosis,
 )
-
+from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends, Security
 from ukrdc_sqla.ukrdc import (
     PatientRecord,
@@ -33,6 +34,7 @@ router = APIRouter()
 )
 def patient_diagnosis(
     patient_record: PatientRecord = Depends(_get_patientrecord),
+    ukrdc3: Session = Depends(get_ukrdc3),
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's diagnoses"""
@@ -46,7 +48,7 @@ def patient_diagnosis(
         ),
     )
 
-    return get_patient_diagnosis(patient_record)
+    return get_patient_diagnosis(patient_record, ukrdc3)
 
 
 @router.get(
@@ -56,6 +58,7 @@ def patient_diagnosis(
 )
 def patient_renal_diagnosis(
     patient_record: PatientRecord = Depends(_get_patientrecord),
+    ukrdc3: Session = Depends(get_ukrdc3),
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's renal diagnoses"""
@@ -68,7 +71,7 @@ def patient_renal_diagnosis(
         ),
     )
 
-    return get_patient_renal_diagnosis(patient_record)
+    return get_patient_renal_diagnosis(patient_record, ukrdc3)
 
 
 @router.get(
@@ -78,6 +81,7 @@ def patient_renal_diagnosis(
 )
 def patient_cause_of_death(
     patient_record: PatientRecord = Depends(_get_patientrecord),
+    ukrdc3: Session = Depends(get_ukrdc3),
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's cause of death"""
@@ -91,4 +95,4 @@ def patient_cause_of_death(
         ),
     )
 
-    return get_patient_cause_of_death(patient_record)
+    return get_patient_cause_of_death(patient_record, ukrdc3)

@@ -1,12 +1,12 @@
 from typing import Optional
 from pydantic import Field
-from sqlalchemy import and_
+from sqlalchemy import and_, select
 from ukrdc_fastapi.schemas.patientrecord import (
     DiagnosisSchema,
     RenalDiagnosisSchema,
     CauseOfDeathSchema,
 )
-
+from sqlalchemy.orm import Session
 from ukrdc_sqla.ukrdc import (
     PatientRecord,
     Diagnosis,
@@ -38,24 +38,28 @@ class ExtendedCauseOfDeathSchema(CauseOfDeathSchema):
 
 def get_patient_diagnosis(
     patient_record: PatientRecord,
+    ukrdc3: Session,
 ) -> list[ExtendedDiagnosisSchema]:
     """Retreive a specific patient's diagnoses, including coding lookups"""
 
-    q = (
-        patient_record.diagnoses.outerjoin(
+    stmt = (
+        select(Diagnosis, Code.description)
+        .outerjoin(
             Code,
             and_(
                 Code.coding_standard == Diagnosis.diagnosiscodestd,
                 Code.code == Diagnosis.diagnosiscode,
             ),
         )
-        .with_entities(Diagnosis, Code.description)
+        .where(Diagnosis.pid == patient_record.pid)
         .order_by(Diagnosis.creation_date.desc())
     )
 
+    result = ukrdc3.execute(stmt)
+
     items = []
 
-    for row in q:
+    for row in result:
         item = ExtendedDiagnosisSchema.from_orm(row[0])
         item.description = row[1]
         items.append(item)
@@ -65,25 +69,30 @@ def get_patient_diagnosis(
 
 def get_patient_renal_diagnosis(
     patient_record: PatientRecord,
+    ukrdc3: Session,
 ) -> list[ExtendedRenalDiagnosisSchema]:
     """Retreive a specific patient's renal diagnoses, including coding lookups"""
-    q = (
-        patient_record.renaldiagnoses.join(
+
+    stmt = (
+        select(RenalDiagnosis, Code.description)
+        .outerjoin(
             Code,
             and_(
                 Code.coding_standard == RenalDiagnosis.diagnosiscodestd,
                 Code.code == RenalDiagnosis.diagnosiscode,
             ),
         )
-        .with_entities(RenalDiagnosis, Code.description)
+        .where(RenalDiagnosis.pid == patient_record.pid)
         .order_by(RenalDiagnosis.creation_date.desc())
     )
 
+    result = ukrdc3.execute(stmt)
+
     items = []
 
-    for row in q:
-        item = ExtendedRenalDiagnosisSchema.from_orm(row[0])
-        item.description = row[1]
+    for row in result:
+        item = ExtendedRenalDiagnosisSchema.from_orm(row.RenalDiagnosis)
+        item.description = row.description
         items.append(item)
 
     return items
@@ -91,25 +100,30 @@ def get_patient_renal_diagnosis(
 
 def get_patient_cause_of_death(
     patient_record: PatientRecord,
+    ukrdc3: Session,
 ) -> list[ExtendedCauseOfDeathSchema]:
-    """Retreive a specific patient's cause of death, including coding lookups"""
-    q = (
-        patient_record.cause_of_death.join(
+    """Retrieve a specific patient's cause of death, including coding lookups"""
+
+    stmt = (
+        select(CauseOfDeath, Code.description)
+        .outerjoin(
             Code,
             and_(
                 Code.coding_standard == CauseOfDeath.diagnosiscodestd,
                 Code.code == CauseOfDeath.diagnosiscode,
             ),
         )
-        .with_entities(CauseOfDeath, Code.description)
+        .where(CauseOfDeath.pid == patient_record.pid)
         .order_by(CauseOfDeath.creation_date.desc())
     )
 
+    result = ukrdc3.execute(stmt)
+
     items = []
 
-    for row in q:
-        item = ExtendedCauseOfDeathSchema.from_orm(row[0])
-        item.description = row[1]
+    for row in result:
+        item = ExtendedCauseOfDeathSchema.from_orm(row.CauseOfDeath)
+        item.description = row.description
         items.append(item)
 
     return items
