@@ -65,7 +65,7 @@ async def test_export_all_to_pv_forbidden(
 
     with pytest.raises(RecordTypeError):
         await export.export_all_to_pv(
-            ukrdc3_session.query(PatientRecord).get(TEST_PID),
+            ukrdc3_session.get(PatientRecord, TEST_PID),
             mirth_session,
             redis_session,
         )
@@ -86,7 +86,7 @@ async def test_record_export_tests_forbidden(
 
     with pytest.raises(RecordTypeError):
         await export.export_tests_to_pv(
-            ukrdc3_session.query(PatientRecord).get(TEST_PID),
+            ukrdc3_session.get(PatientRecord, TEST_PID),
             mirth_session,
             redis_session,
         )
@@ -107,7 +107,7 @@ async def test_record_export_docs_forbidden(
 
     with pytest.raises(RecordTypeError):
         await export.export_docs_to_pv(
-            ukrdc3_session.query(PatientRecord).get(TEST_PID),
+            ukrdc3_session.get(PatientRecord, TEST_PID),
             mirth_session,
             redis_session,
         )
@@ -128,7 +128,7 @@ async def test_record_export_radar_forbidden(
 
     with pytest.raises(RecordTypeError):
         await export.export_all_to_radar(
-            ukrdc3_session.query(PatientRecord).get(TEST_PID),
+            ukrdc3_session.get(PatientRecord, TEST_PID),
             mirth_session,
             redis_session,
         )
@@ -149,7 +149,7 @@ async def test_record_export_pkb_forbidden(
 
     with pytest.raises(RecordTypeError):
         await export.export_all_to_pkb(
-            ukrdc3_session.query(PatientRecord).get(TEST_PID),
+            ukrdc3_session.get(PatientRecord,TEST_PID),
             ukrdc3_session,
             mirth_session,
             redis_session,

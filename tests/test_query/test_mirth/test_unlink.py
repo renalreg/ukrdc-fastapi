@@ -9,8 +9,8 @@ async def test_unlink_person_from_master_record(
     jtrace_session, redis_session, mirth_session, superuser
 ):
     response = await unlink_person_from_master_record(
-        jtrace_session.query(Person).get(4),
-        jtrace_session.query(MasterRecord).get(1),
+        jtrace_session.get(Person, 4),
+        jtrace_session.get(MasterRecord, 1),
         "comment",
         "user",
         jtrace_session,

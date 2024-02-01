@@ -1,3 +1,4 @@
+from sqlalchemy import select
 from ukrdc_sqla.ukrdc import LabOrder, ResultItem
 
 from ukrdc_fastapi.config import configuration
@@ -12,7 +13,7 @@ async def test_record_read_audit(client_superuser, audit_session):
     )
     assert response.status_code == 200
 
-    events = audit_session.query(AuditEvent).all()
+    events = audit_session.scalars(select(AuditEvent)).all()
     assert len(events) == 1
 
     event = events[0]
@@ -30,7 +31,7 @@ async def test_record_delete_summary_audit(client_superuser, audit_session):
     )
     assert response.status_code == 200
 
-    events = audit_session.query(AuditEvent).all()
+    events = audit_session.scalars(select(AuditEvent)).all()
     assert len(events) == 4
 
     # All events should be related to the primary event
@@ -63,7 +64,7 @@ async def test_record_delete_audit(client_superuser, audit_session):
 
     assert deleted_response.status_code == 200
 
-    events = audit_session.query(AuditEvent).all()
+    events = audit_session.scalars(select(AuditEvent)).all()
     assert len(events) == 8
 
     # We get 4 events for the delete summary and 4 for the actual delete
@@ -91,7 +92,7 @@ async def test_record_read_medications(client_superuser, audit_session):
     )
     assert response.status_code == 200
 
-    events = audit_session.query(AuditEvent).all()
+    events = audit_session.scalars(select(AuditEvent)).all()
     assert len(events) == 2
 
     event = events[0]
@@ -115,7 +116,7 @@ async def test_record_read_treatments(client_superuser, audit_session):
     )
     assert response.status_code == 200
 
-    events = audit_session.query(AuditEvent).all()
+    events = audit_session.scalars(select(AuditEvent)).all()
     assert len(events) == 2
 
     event = events[0]
@@ -139,7 +140,7 @@ async def test_record_read_surveys(client_superuser, audit_session):
     )
     assert response.status_code == 200
 
-    events = audit_session.query(AuditEvent).all()
+    events = audit_session.scalars(select(AuditEvent)).all()
     assert len(events) == 2
 
     event = events[0]
@@ -163,7 +164,7 @@ async def test_record_read_observations(client_superuser, audit_session):
     )
     assert response.status_code == 200
 
-    events = audit_session.query(AuditEvent).all()
+    events = audit_session.scalars(select(AuditEvent)).all()
     assert len(events) == 2
 
     event = events[0]
@@ -187,7 +188,7 @@ async def test_record_read_laborders(client_superuser, audit_session):
     )
     assert response.status_code == 200
 
-    events = audit_session.query(AuditEvent).all()
+    events = audit_session.scalars(select(AuditEvent)).all()
     assert len(events) == 2
 
     event = events[0]
@@ -211,7 +212,7 @@ async def test_record_read_laborder(client_superuser, audit_session):
     )
     assert response.status_code == 200
 
-    events = audit_session.query(AuditEvent).all()
+    events = audit_session.scalars(select(AuditEvent)).all()
     assert len(events) == 2
 
     event = events[0]
@@ -252,15 +253,15 @@ async def test_record_delete_laborder(client_superuser, ukrdc3_session, audit_se
     ukrdc3_session.commit()
 
     # Make sure the laborder was created
-    assert ukrdc3_session.query(LabOrder).get("LABORDER_TEMP")
-    assert ukrdc3_session.query(ResultItem).get("RESULTITEM_TEMP")
+    assert ukrdc3_session.get(LabOrder, "LABORDER_TEMP")
+    assert ukrdc3_session.get(ResultItem, "RESULTITEM_TEMP")
 
     response = await client_superuser.delete(
         f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/laborders/LABORDER_TEMP"
     )
     assert response.status_code == 204
 
-    events = audit_session.query(AuditEvent).all()
+    events = audit_session.scalars(select(AuditEvent)).all()
     assert len(events) == 3
 
     record_event = events[0]
@@ -294,7 +295,7 @@ async def test_record_read_resultitems(client_superuser, audit_session):
     )
     assert response.status_code == 200
 
-    events = audit_session.query(AuditEvent).all()
+    events = audit_session.scalars(select(AuditEvent)).all()
     assert len(events) == 2
 
     event = events[0]
@@ -318,7 +319,7 @@ async def test_record_read_resultitem(client_superuser, audit_session):
     )
     assert response.status_code == 200
 
-    events = audit_session.query(AuditEvent).all()
+    events = audit_session.scalars(select(AuditEvent)).all()
     assert len(events) == 2
 
     event = events[0]
@@ -342,7 +343,7 @@ async def test_record_delete_resultitem(client_superuser, audit_session):
     )
     assert response.status_code == 204
 
-    events = audit_session.query(AuditEvent).all()
+    events = audit_session.scalars(select(AuditEvent)).all()
     assert len(events) == 2
 
     event = events[0]
@@ -366,7 +367,7 @@ async def test_record_read_documents(client_superuser, audit_session):
     )
     assert response.status_code == 200
 
-    events = audit_session.query(AuditEvent).all()
+    events = audit_session.scalars(select(AuditEvent)).all()
     assert len(events) == 2
 
     event = events[0]
@@ -390,7 +391,7 @@ async def test_record_read_document(client_superuser, audit_session):
     )
     assert response.status_code == 200
 
-    events = audit_session.query(AuditEvent).all()
+    events = audit_session.scalars(select(AuditEvent)).all()
     assert len(events) == 2
 
     event = events[0]
@@ -414,7 +415,7 @@ async def test_record_download_document(client_superuser, audit_session):
     )
     assert response.status_code == 200
 
-    events = audit_session.query(AuditEvent).all()
+    events = audit_session.scalars(select(AuditEvent)).all()
     assert len(events) == 2
 
     event = events[0]
@@ -439,7 +440,7 @@ async def test_record_export_data(client_superuser, audit_session):
     )
     assert response.status_code == 200
 
-    events = audit_session.query(AuditEvent).all()
+    events = audit_session.scalars(select(AuditEvent)).all()
     assert len(events) == 1
 
     event = events[0]
@@ -458,7 +459,7 @@ async def test_record_export_tests(client_superuser, audit_session):
     )
     assert response.status_code == 200
 
-    events = audit_session.query(AuditEvent).all()
+    events = audit_session.scalars(select(AuditEvent)).all()
     assert len(events) == 1
 
     event = events[0]
@@ -477,7 +478,7 @@ async def test_record_export_docs(client_superuser, audit_session):
     )
     assert response.status_code == 200
 
-    events = audit_session.query(AuditEvent).all()
+    events = audit_session.scalars(select(AuditEvent)).all()
     assert len(events) == 1
 
     event = events[0]
@@ -496,7 +497,7 @@ async def test_record_export_radar(client_superuser, audit_session):
     )
     assert response.status_code == 200
 
-    events = audit_session.query(AuditEvent).all()
+    events = audit_session.scalars(select(AuditEvent)).all()
     assert len(events) == 1
 
     event = events[0]

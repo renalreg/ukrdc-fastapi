@@ -1,3 +1,4 @@
+from sqlalchemy import select
 from ukrdc_fastapi.config import configuration
 from ukrdc_fastapi.models.audit import AuditEvent
 
@@ -7,7 +8,7 @@ async def test_access_event(client_superuser, audit_session):
     response = await client_superuser.get(path)
     assert response.status_code == 200
 
-    events = audit_session.query(AuditEvent).all()
+    events = audit_session.scalars(select(AuditEvent)).all()
     assert len(events) == 1
 
     event = events[0]

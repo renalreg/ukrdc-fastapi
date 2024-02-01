@@ -96,7 +96,7 @@ def _add_extra_diagnoses(session):
 
 def test_get_patient_diagnosis(ukrdc3_session):
     _add_extra_diagnoses(ukrdc3_session)
-    record = ukrdc3_session.query(PatientRecord).get(PID_1)
+    record = ukrdc3_session.get(PatientRecord, PID_1)
 
     diagnoses = get_patient_diagnosis(record, ukrdc3_session)
 
@@ -109,7 +109,7 @@ def test_get_patient_diagnosis(ukrdc3_session):
 
 def test_get_patient_renal_diagnosis(ukrdc3_session):
     _add_extra_diagnoses(ukrdc3_session)
-    record = ukrdc3_session.query(PatientRecord).get(PID_1)
+    record = ukrdc3_session.get(PatientRecord, PID_1)
 
     renal_diagnoses = get_patient_renal_diagnosis(record, ukrdc3_session)
 
@@ -121,7 +121,7 @@ def test_get_patient_renal_diagnosis(ukrdc3_session):
 
 def test_get_patient_cause_of_death(ukrdc3_session):
     _add_extra_diagnoses(ukrdc3_session)
-    record = ukrdc3_session.query(PatientRecord).get(PID_1)
+    record = ukrdc3_session.get(PatientRecord, PID_1)
 
     cause_of_death = get_patient_cause_of_death(record, ukrdc3_session)
 

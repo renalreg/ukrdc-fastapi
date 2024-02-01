@@ -1,3 +1,4 @@
+from sqlalchemy import select
 from tests.conftest import PID_1
 from ukrdc_fastapi.config import configuration
 from ukrdc_fastapi.models.audit import AuditEvent
@@ -8,7 +9,7 @@ async def test_messages_list(client_superuser, audit_session):
     response = await client_superuser.get(f"{configuration.base_url}/messages")
     assert response.status_code == 200
 
-    events = audit_session.query(AuditEvent).all()
+    events = audit_session.scalars(select(AuditEvent)).all()
     assert len(events) == 1
 
     event = events[0]
@@ -24,7 +25,7 @@ async def test_message_detail(client_superuser, audit_session):
     response = await client_superuser.get(f"{configuration.base_url}/messages/1")
     assert response.status_code == 200
 
-    events = audit_session.query(AuditEvent).all()
+    events = audit_session.scalars(select(AuditEvent)).all()
     assert len(events) == 1
 
     event = events[0]
@@ -42,7 +43,7 @@ async def test_message_workitems(client_superuser, audit_session):
     )
     workitems = [WorkItemSchema(**item) for item in response.json()]
 
-    events = audit_session.query(AuditEvent).all()
+    events = audit_session.scalars(select(AuditEvent)).all()
     assert len(events) == 4
 
     event = events[0]
@@ -82,7 +83,7 @@ async def test_message_patientrecords(client_superuser, audit_session):
     returned_pids = {item.get("pid") for item in response.json()}
     assert returned_pids == {PID_1}
 
-    events = audit_session.query(AuditEvent).all()
+    events = audit_session.scalars(select(AuditEvent)).all()
     assert len(events) == 2
 
     primary_event = events[0]

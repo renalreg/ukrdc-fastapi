@@ -59,8 +59,8 @@ async def test_laborder_delete(client_authenticated, ukrdc3_session):
     ukrdc3_session.commit()
 
     # Make sure the laborder was created
-    assert ukrdc3_session.query(LabOrder).get("LABORDER_TEMP")
-    assert ukrdc3_session.query(ResultItem).get("RESULTITEM_TEMP")
+    assert ukrdc3_session.get(LabOrder, "LABORDER_TEMP")
+    assert ukrdc3_session.get(ResultItem, "RESULTITEM_TEMP")
     response = await client_authenticated.get(
         f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/laborders/LABORDER_TEMP"
     )
@@ -77,8 +77,8 @@ async def test_laborder_delete(client_authenticated, ukrdc3_session):
         f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/laborders/LABORDER_TEMP"
     )
     assert response.status_code == 404
-    assert not ukrdc3_session.query(LabOrder).get("LABORDER_TEMP")
-    assert not ukrdc3_session.query(ResultItem).get("RESULTITEM_TEMP")
+    assert not ukrdc3_session.get(LabOrder, "LABORDER_TEMP")
+    assert not ukrdc3_session.get(ResultItem, "RESULTITEM_TEMP")
 
 
 async def test_laborder_delete_denied(client_authenticated):

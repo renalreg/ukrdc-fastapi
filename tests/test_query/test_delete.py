@@ -12,7 +12,7 @@ from ukrdc_fastapi.query.delete import (
 
 
 def test_summarise_delete_pid_superuser(ukrdc3_session, jtrace_session):
-    record_to_delete = ukrdc3_session.query(PatientRecord).get("PYTEST03:PV:00000000A")
+    record_to_delete = ukrdc3_session.get(PatientRecord, "PYTEST03:PV:00000000A")
 
     summary_1 = summarise_delete_patientrecord(record_to_delete, jtrace_session)
     summary_2 = summarise_delete_patientrecord(record_to_delete, jtrace_session)
@@ -22,22 +22,22 @@ def test_summarise_delete_pid_superuser(ukrdc3_session, jtrace_session):
 
 
 def test_delete_pid_superuser(ukrdc3_session, jtrace_session):
-    record_to_delete = ukrdc3_session.query(PatientRecord).get("PYTEST03:PV:00000000A")
+    record_to_delete = ukrdc3_session.get(PatientRecord, "PYTEST03:PV:00000000A")
 
     summary = summarise_delete_patientrecord(record_to_delete, jtrace_session)
 
     # Assert all expected records exist
-    assert ukrdc3_session.query(PatientRecord).get("PYTEST03:PV:00000000A")
+    assert ukrdc3_session.get(PatientRecord, "PYTEST03:PV:00000000A")
     for person in summary.empi.persons:
-        assert jtrace_session.query(Person).get(person.id)
+        assert jtrace_session.get(Person, person.id)
     for master_record in summary.empi.master_records:
-        assert jtrace_session.query(MasterRecord).get(master_record.id)
+        assert jtrace_session.get(MasterRecord, master_record.id)
     for pidxref in summary.empi.pidxrefs:
-        assert jtrace_session.query(PidXRef).get(pidxref.id)
+        assert jtrace_session.get(PidXRef, pidxref.id)
     for work_item in summary.empi.work_items:
-        assert jtrace_session.query(WorkItem).get(work_item.id)
+        assert jtrace_session.get(WorkItem, work_item.id)
     for link_record in summary.empi.link_records:
-        assert jtrace_session.query(LinkRecord).get(link_record.id)
+        assert jtrace_session.get(LinkRecord, link_record.id)
 
     deleted = delete_patientrecord(
         record_to_delete, ukrdc3_session, jtrace_session, summary.hash
@@ -46,21 +46,21 @@ def test_delete_pid_superuser(ukrdc3_session, jtrace_session):
     assert deleted.hash == summary.hash
 
     # Assert all expected records have been deleted
-    assert not ukrdc3_session.query(PatientRecord).get("PYTEST03:PV:00000000A")
+    assert not ukrdc3_session.get(PatientRecord, "PYTEST03:PV:00000000A")
     for person in summary.empi.persons:
-        assert not jtrace_session.query(Person).get(person.id)
+        assert not jtrace_session.get(Person, person.id)
     for master_record in summary.empi.master_records:
-        assert not jtrace_session.query(MasterRecord).get(master_record.id)
+        assert not jtrace_session.get(MasterRecord, master_record.id)
     for pidxref in summary.empi.pidxrefs:
-        assert not jtrace_session.query(PidXRef).get(pidxref.id)
+        assert not jtrace_session.get(PidXRef, pidxref.id)
     for work_item in summary.empi.work_items:
-        assert not jtrace_session.query(WorkItem).get(work_item.id)
+        assert not jtrace_session.get(WorkItem, work_item.id)
     for link_record in summary.empi.link_records:
-        assert not jtrace_session.query(LinkRecord).get(link_record.id)
+        assert not jtrace_session.get(LinkRecord, link_record.id)
 
 
 def test_delete_pid_badhash(ukrdc3_session, jtrace_session):
-    record_to_delete = ukrdc3_session.query(PatientRecord).get("PYTEST03:PV:00000000A")
+    record_to_delete = ukrdc3_session.get(PatientRecord, "PYTEST03:PV:00000000A")
 
     with pytest.raises(ConfirmationError):
         delete_patientrecord(

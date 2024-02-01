@@ -1,3 +1,4 @@
+from sqlalchemy import select
 from ukrdc_fastapi.config import configuration
 from ukrdc_fastapi.models.audit import AuditEvent
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema, PersonSchema, WorkItemSchema
@@ -8,7 +9,7 @@ async def test_masterrecord_detail(client, audit_session):
     response = await client.get(f"{configuration.base_url}/masterrecords/1")
     assert response.status_code == 200
 
-    events = audit_session.query(AuditEvent).all()
+    events = audit_session.scalars(select(AuditEvent)).all()
     assert len(events) == 1
 
     event = events[0]
@@ -31,7 +32,7 @@ async def test_masterrecord_related(client_superuser, audit_session):
     returned_ids = {item.id for item in mrecs}
     assert returned_ids == {4, 101, 104}
 
-    events = audit_session.query(AuditEvent).all()
+    events = audit_session.scalars(select(AuditEvent)).all()
     assert len(events) == 4
 
     primary_event = events[0]
@@ -55,7 +56,7 @@ async def test_masterrecord_statistics(client_superuser, audit_session):
     )
     assert response.status_code == 200
 
-    events = audit_session.query(AuditEvent).all()
+    events = audit_session.scalars(select(AuditEvent)).all()
     assert len(events) == 2
 
     event = events[0]
@@ -79,7 +80,7 @@ async def test_masterrecord_linkrecords(client_superuser, audit_session):
     )
     assert response.status_code == 200
 
-    events = audit_session.query(AuditEvent).all()
+    events = audit_session.scalars(select(AuditEvent)).all()
     assert len(events) == 7
 
     event = events[0]
@@ -120,7 +121,7 @@ async def test_masterrecord_messages(client_superuser, audit_session):
     )
     assert response.status_code == 200
 
-    events = audit_session.query(AuditEvent).all()
+    events = audit_session.scalars(select(AuditEvent)).all()
     assert len(events) == 2
 
     event = events[0]
@@ -144,7 +145,7 @@ async def test_masterrecord_workitems(client_superuser, audit_session):
     assert response.status_code == 200
     workitems = [WorkItemSchema(**item) for item in response.json()]
 
-    events = audit_session.query(AuditEvent).all()
+    events = audit_session.scalars(select(AuditEvent)).all()
     assert len(events) == 7
 
     event = events[0]
@@ -185,7 +186,7 @@ async def test_masterrecord_persons(client_superuser, audit_session):
     returned_ids = {item.id for item in persons}
     assert returned_ids == {1, 4}
 
-    events = audit_session.query(AuditEvent).all()
+    events = audit_session.scalars(select(AuditEvent)).all()
     assert len(events) == 3
 
     primary_event = events[0]
@@ -212,7 +213,7 @@ async def test_masterrecord_patientrecords(client_superuser, audit_session):
     returned_pids = {item.pid for item in records}
     assert returned_pids == {"PYTEST01:PV:00000000A", "PYTEST04:PV:00000000A"}
 
-    events = audit_session.query(AuditEvent).all()
+    events = audit_session.scalars(select(AuditEvent)).all()
     assert len(events) == 3
 
     primary_event = events[0]

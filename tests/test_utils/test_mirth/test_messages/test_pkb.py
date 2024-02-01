@@ -36,7 +36,7 @@ def test_build_pkb_membership_message():
 def test_build_pkb_sync_message(ukrdc3_session):
     PID_1 = "PYTEST01:PV:00000000A"
     _create_membership(PID_1, ukrdc3_session)
-    record = ukrdc3_session.query(PatientRecord).get(PID_1)
+    record = ukrdc3_session.get(PatientRecord, PID_1)
 
     messages = build_pkb_sync_messages(record, ukrdc3_session)
     assert messages == [
@@ -54,7 +54,7 @@ def test_build_pkb_sync_message(ukrdc3_session):
 
 def test_build_pkb_sync_message_no_membership(ukrdc3_session):
     PID_1 = "PYTEST01:PV:00000000A"
-    record = ukrdc3_session.query(PatientRecord).get(PID_1)
+    record = ukrdc3_session.get(PatientRecord, PID_1)
 
     with pytest.raises(NoActiveMembershipError):
         build_pkb_sync_messages(record, ukrdc3_session)
@@ -63,7 +63,7 @@ def test_build_pkb_sync_message_no_membership(ukrdc3_session):
 def test_build_pkb_sync_message_missing_facility(ukrdc3_session):
     PID_1 = "PYTEST01:PV:00000000A"
     _create_membership(PID_1, ukrdc3_session)
-    record = ukrdc3_session.query(PatientRecord).get(PID_1)
+    record = ukrdc3_session.get(PatientRecord, PID_1)
 
     record.sendingfacility = "MISSING"
     ukrdc3_session.commit()
@@ -75,9 +75,9 @@ def test_build_pkb_sync_message_missing_facility(ukrdc3_session):
 def test_build_pkb_sync_disabled_facility(ukrdc3_session):
     PID_1 = "PYTEST01:PV:00000000A"
     _create_membership(PID_1, ukrdc3_session)
-    record = ukrdc3_session.query(PatientRecord).get(PID_1)
+    record = ukrdc3_session.get(PatientRecord, PID_1)
 
-    facility = ukrdc3_session.query(Facility).get(record.sendingfacility)
+    facility = ukrdc3_session.get(Facility, record.sendingfacility)
     facility.pkb_out = False
     ukrdc3_session.commit()
 
@@ -89,7 +89,7 @@ def test_build_pkb_sync_disabled_facility(ukrdc3_session):
 def test_build_pkb_sync_disabled_extract(ukrdc3_session, extract):
     PID_1 = "PYTEST01:PV:00000000A"
     _create_membership(PID_1, ukrdc3_session)
-    record = ukrdc3_session.query(PatientRecord).get(PID_1)
+    record = ukrdc3_session.get(PatientRecord, PID_1)
 
     record.sendingextract = extract
     ukrdc3_session.commit()
@@ -101,9 +101,9 @@ def test_build_pkb_sync_disabled_extract(ukrdc3_session, extract):
 def test_build_pkb_sync_message_facility_exclusions(ukrdc3_session):
     PID_1 = "PYTEST01:PV:00000000A"
     _create_membership(PID_1, ukrdc3_session)
-    record = ukrdc3_session.query(PatientRecord).get(PID_1)
+    record = ukrdc3_session.get(PatientRecord, PID_1)
 
-    facility = ukrdc3_session.query(Facility).get(record.sendingfacility)
+    facility = ukrdc3_session.get(Facility, record.sendingfacility)
     facility.pkb_msg_exclusions = ["MDM_T02_DOC"]
     ukrdc3_session.commit()
 
