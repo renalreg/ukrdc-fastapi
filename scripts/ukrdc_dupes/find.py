@@ -1,5 +1,6 @@
 import json
 import os
+from sqlalchemy import select
 
 from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import MasterRecord
@@ -25,9 +26,9 @@ def find_ukrdc_dupes(jtrace: Session):
         results = {"cleared": [], "failed": {}}
 
     print("Fetching records")
-    records: MasterRecord = jtrace.query(MasterRecord).filter(
-        MasterRecord.id.notin_(results["cleared"])
-    )
+
+    stmt = select(MasterRecord).where(MasterRecord.id.not_in_(results["cleared"]))
+    records = jtrace.scalars(stmt).all()
 
     for record in records:
         print(f"Processing record {record.id}")

@@ -16,7 +16,7 @@ CHANNEL_IDS = [RDA_INBOUND_FILE, PV_INBOUND]
 async def process_workitem(workitem_id: int):
     # Find workitem and related messages
     with jtrace_session() as jtrace, errors_session() as errorsdb:
-        workitem_obj = extend_workitem(jtrace.query(WorkItem).get(workitem_id), jtrace)
+        workitem_obj = extend_workitem(jtrace.get(WorkItem, workitem_id), jtrace)
 
         assert workitem_obj.type == 9
 

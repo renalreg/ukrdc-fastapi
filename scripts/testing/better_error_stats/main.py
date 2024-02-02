@@ -1,4 +1,5 @@
 from time import time
+from sqlalchemy import and_, desc, select
 
 from ukrdc_sqla.errorsdb import Message
 from ukrdc_sqla.ukrdc import Code
@@ -8,7 +9,8 @@ from ukrdc_fastapi.dependencies.database import ErrorsSession, Ukrdc3Session
 ukrdc3 = Ukrdc3Session()
 session = ErrorsSession()
 
-codes = ukrdc3.query(Code).filter(Code.coding_standard == "RR1+").all()
+stmt = select(Code).where(Code.coding_standard == "RR1+")
+codes = ukrdc3.scalars(stmt).all()
 
 t0 = time()
 
@@ -16,15 +18,14 @@ for code in codes:
     facility = code.code
     print(f"Scanning facility {facility}...")
 
-    q = (
-        session.query(Message.ni, Message.received, Message.msg_status)
-        .filter(Message.facility == facility)
-        .filter(Message.ni != None)  # noqa: E711
-        .order_by(Message.ni, Message.received.desc())
+    stmt = (
+        select(Message.ni, Message.received, Message.msg_status)
+        .where(and_(Message.facility == facility, Message.ni.isnot(None)))
+        .order_by(Message.ni, desc(Message.received))
         .distinct(Message.ni)
     )
 
-    all = q.all()
+    all = session.scalars(stmt).all()
 
     err = [m for m in all if m.msg_status == "ERROR"]
 
