@@ -29,7 +29,7 @@ async def export_all_to_pv(
         )
 
     if not record.pid:
-        raise ValueError("PatientRecord has no PID")
+        raise ValueError("PatientRecord has no PID")  # pragma: no cover
 
     return await safe_send_mirth_message_to_name(
         "PV Outbound", build_export_all_message(record.pid), mirth, redis
@@ -49,7 +49,7 @@ async def export_tests_to_pv(
         )
 
     if not record.pid:
-        raise ValueError("PatientRecord has no PID")
+        raise ValueError("PatientRecord has no PID")  # pragma: no cover
 
     return await safe_send_mirth_message_to_name(
         "PV Outbound", build_export_tests_message(record.pid), mirth, redis
@@ -69,7 +69,7 @@ async def export_docs_to_pv(
         )
 
     if not record.pid:
-        raise ValueError("PatientRecord has no PID")
+        raise ValueError("PatientRecord has no PID")  # pragma: no cover
 
     return await safe_send_mirth_message_to_name(
         "PV Outbound", build_export_docs_message(record.pid), mirth, redis
@@ -88,7 +88,7 @@ async def export_all_to_radar(
         )
 
     if not record.pid:
-        raise ValueError("PatientRecord has no PID")
+        raise ValueError("PatientRecord has no PID")  # pragma: no cover
 
     return await safe_send_mirth_message_to_name(
         "RADAR Outbound", build_export_radar_message(record.pid), mirth, redis

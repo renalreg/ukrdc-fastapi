@@ -15,10 +15,10 @@ async def merge_master_records(
 ) -> MirthMessageResponseSchema:
     """Merge a pair of MasterRecords"""
     if not superseding.id:
-        raise ValueError("Superseding MasterRecord has no ID")
+        raise ValueError("Superseding MasterRecord has no ID")  # pragma: no cover
 
     if not superseded.id:
-        raise ValueError("Superseded MasterRecord has no ID")
+        raise ValueError("Superseded MasterRecord has no ID")  # pragma: no cover
 
     return await safe_send_mirth_message_to_name(
         "Merge Patient",

@@ -130,7 +130,7 @@ def summarise_delete_patientrecord(
         DeletePIDResponseSchema: Summary of database items to be deleted
     """
     if not record_to_delete.pid:
-        raise ValueError("Target PatientRecord does not have a PID")
+        raise ValueError("Target PatientRecord does not have a PID")  # pragma: no cover
 
     empi_to_delete = _find_empi_items_to_delete(jtrace, record_to_delete.pid)
 
@@ -158,7 +158,7 @@ def delete_patientrecord(
         DeletePIDResponseSchema:  Summary of database items deleted
     """
     if not record_to_delete.pid:
-        raise ValueError("Target PatientRecord does not have a PID")
+        raise ValueError("Target PatientRecord does not have a PID")  # pragma: no cover
 
     empi_to_delete = _find_empi_items_to_delete(jtrace, record_to_delete.pid)
 
