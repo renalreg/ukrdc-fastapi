@@ -1,7 +1,4 @@
 from ukrdc_fastapi.config import configuration
-from ukrdc_fastapi.query.admin import AdminCountsSchema
-from ukrdc_fastapi.routers.api.admin.datahealth import WorkItemGroup
-from ukrdc_fastapi.schemas.common import HistoryPoint
 
 
 async def test_full_workitem_history(client_superuser):

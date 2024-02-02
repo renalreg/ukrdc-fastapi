@@ -19,4 +19,4 @@ async def test_search_pid(client_superuser, audit_session):
         assert event.resource == "MASTER_RECORD"
         assert event.operation == "READ"
         assert int(event.resource_id) in returned_ids
-        assert event.parent_id == None
+        assert event.parent_id is None

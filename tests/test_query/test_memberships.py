@@ -8,7 +8,9 @@ from ukrdc_fastapi.query.memberships import (
 
 def test_get_active_memberships_for_patientrecord(ukrdc3_session):
     record = ukrdc3_session.get(PatientRecord, "PYTEST01:PV:00000000A")
-    memberships = ukrdc3_session.scalars(get_active_memberships_for_patientrecord(record)).all()
+    memberships = ukrdc3_session.scalars(
+        get_active_memberships_for_patientrecord(record)
+    ).all()
     assert len(memberships) == 1
     assert memberships[0].program_name == "PROGRAM_NAME_1"
 

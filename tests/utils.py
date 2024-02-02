@@ -49,7 +49,13 @@ def create_basic_patient(
             ethnic_group_code="G",
             ethnic_group_description="ETHNICITY_GROUP",
             names=[
-                Name(id=id_, pid=pid, family=family_name, given=given_name, nameuse="L")
+                Name(
+                    id=str(id_),
+                    pid=pid,
+                    family=family_name,
+                    given=given_name,
+                    nameuse="L",
+                )
             ],
             addresses=[
                 Address(
@@ -64,7 +70,7 @@ def create_basic_patient(
             ],
             numbers=[
                 PatientNumber(
-                    id=id_,
+                    id=str(id_),
                     pid=pid,
                     patientid=nhs_number,
                     organization="NHS",

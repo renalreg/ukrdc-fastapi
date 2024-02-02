@@ -41,9 +41,7 @@ def test_get_facilities(ukrdc3_session, errorsdb_session, redis_session):
 def test_get_facilities_cached(ukrdc3_session, errorsdb_session, redis_session):
     # Create the cache
     BasicCache(redis_session, CacheKey.FACILITIES_LIST).set(
-        build_facilities_list(
-            select(Facility), ukrdc3_session, errorsdb_session
-        )
+        build_facilities_list(select(Facility), ukrdc3_session, errorsdb_session)
     )
 
     all_facils = get_facilities(
@@ -130,40 +128,48 @@ def test_get_facility_history_range(ukrdc3_session, errorsdb_session):
 
 
 def test_get_patients_latest_errors(ukrdc3_session, errorsdb_session):
-    messages = errorsdb_session.scalars(query_patients_latest_errors(
-        ukrdc3_session, "TSF01"
-    )).all()
+    messages = errorsdb_session.scalars(
+        query_patients_latest_errors(ukrdc3_session, "TSF01")
+    ).all()
     assert len(messages) == 1
     assert messages[0].id == 2
 
 
 def test_get_patients_latest_errors_channel(ukrdc3_session, errorsdb_session):
-    messages_1_1 = errorsdb_session.scalars(query_patients_latest_errors(
-        ukrdc3_session,
-        "TSF01",
-        channels=["00000000-0000-0000-0000-111111111111"],
-    )).all()
+    messages_1_1 = errorsdb_session.scalars(
+        query_patients_latest_errors(
+            ukrdc3_session,
+            "TSF01",
+            channels=["00000000-0000-0000-0000-111111111111"],
+        )
+    ).all()
     assert len(messages_1_1) == 1
 
-    messages_1_0 = errorsdb_session.scalars(query_patients_latest_errors(
-        ukrdc3_session,
-        "TSF01",
-        channels=["00000000-0000-0000-0000-000000000000"],
-    )).all()
+    messages_1_0 = errorsdb_session.scalars(
+        query_patients_latest_errors(
+            ukrdc3_session,
+            "TSF01",
+            channels=["00000000-0000-0000-0000-000000000000"],
+        )
+    ).all()
     assert len(messages_1_0) == 0
 
-    messages_2_1 = errorsdb_session.scalars(query_patients_latest_errors(
-        ukrdc3_session,
-        "TSF02",
-        channels=["00000000-0000-0000-0000-111111111111"],
-    )).all()
+    messages_2_1 = errorsdb_session.scalars(
+        query_patients_latest_errors(
+            ukrdc3_session,
+            "TSF02",
+            channels=["00000000-0000-0000-0000-111111111111"],
+        )
+    ).all()
     assert len(messages_2_1) == 0
 
-    messages_2_0 = errorsdb_session.scalars(query_patients_latest_errors(
-        ukrdc3_session,
-        "TSF02",
-        channels=["00000000-0000-0000-0000-000000000000"],
-    )).all()
+    messages_2_0 = errorsdb_session.scalars(
+        query_patients_latest_errors(
+            ukrdc3_session,
+            "TSF02",
+            channels=["00000000-0000-0000-0000-000000000000"],
+        )
+    ).all()
     assert len(messages_2_0) == 1
 
 
@@ -176,29 +182,35 @@ def test_get_facility_extracts(ukrdc3_session):
 
 
 def test_get_facility_report_cc001(ukrdc3_session):
-    report1 = ukrdc3_session.scalars(select_facility_report_cc001(
-        ukrdc3_session,
-        "TSF01",
-    )).all()
+    report1 = ukrdc3_session.scalars(
+        select_facility_report_cc001(
+            ukrdc3_session,
+            "TSF01",
+        )
+    ).all()
 
     # Only 1 default test record has no treatments or memberships
     assert len(report1) == 1
     assert report1[0].pid == "PYTEST04:PV:00000000A"
 
-    report2 = ukrdc3_session.scalars(select_facility_report_cc001(
-        ukrdc3_session,
-        "TSF02",
-    )).all()
+    report2 = ukrdc3_session.scalars(
+        select_facility_report_cc001(
+            ukrdc3_session,
+            "TSF02",
+        )
+    ).all()
 
     # TSF02 has no default test records with no treatments or memberships
     assert len(report2) == 0
 
 
 def test_get_facility_report_pm001(ukrdc3_session, jtrace_session):
-    report1 = ukrdc3_session.scalars(select_facility_report_pm001(
-        ukrdc3_session,
-        "TSF01",
-    )).all()
+    report1 = ukrdc3_session.scalars(
+        select_facility_report_pm001(
+            ukrdc3_session,
+            "TSF01",
+        )
+    ).all()
 
     assert len(report1) == 2
     assert {record.pid for record in report1} == {
@@ -236,10 +248,12 @@ def test_get_facility_report_pm001(ukrdc3_session, jtrace_session):
 
     # Test again
 
-    report1 = ukrdc3_session.scalars(select_facility_report_pm001(
-        ukrdc3_session,
-        "TSF01",
-    )).all()
+    report1 = ukrdc3_session.scalars(
+        select_facility_report_pm001(
+            ukrdc3_session,
+            "TSF01",
+        )
+    ).all()
 
     assert len(report1) == 1
     assert {record.pid for record in report1} == {"PYTEST04:PV:00000000A"}

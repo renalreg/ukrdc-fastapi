@@ -18,7 +18,7 @@ async def test_masterrecord_detail(client, audit_session):
     assert event.resource == "MASTER_RECORD"
     assert event.operation == "READ"
     assert event.resource_id == "1"
-    assert event.parent_id == None
+    assert event.parent_id is None
 
 
 async def test_masterrecord_related(client_superuser, audit_session):
@@ -41,7 +41,7 @@ async def test_masterrecord_related(client_superuser, audit_session):
     assert primary_event.resource == "MASTER_RECORD"
     assert primary_event.operation == "READ"
     assert primary_event.resource_id == "1"
-    assert primary_event.parent_id == None
+    assert primary_event.parent_id is None
 
     for child_event in primary_event.children:
         assert child_event.resource == "MASTER_RECORD"
@@ -65,12 +65,12 @@ async def test_masterrecord_statistics(client_superuser, audit_session):
     assert event.resource == "MASTER_RECORD"
     assert event.operation == "READ"
     assert event.resource_id == "1"
-    assert event.parent_id == None
+    assert event.parent_id is None
 
     child_event = event.children[0]
     assert child_event.resource == "STATISTICS"
     assert child_event.operation == "READ"
-    assert child_event.resource_id == None
+    assert child_event.resource_id is None
     assert child_event.parent_id == event.id
 
 
@@ -89,7 +89,7 @@ async def test_masterrecord_linkrecords(client_superuser, audit_session):
     assert event.resource == "MASTER_RECORD"
     assert event.operation == "READ"
     assert event.resource_id == "1"
-    assert event.parent_id == None
+    assert event.parent_id is None
 
     for child_event in event.children:
         assert child_event.operation == "READ"
@@ -130,7 +130,7 @@ async def test_masterrecord_messages(client_superuser, audit_session):
     assert event.resource == "MASTER_RECORD"
     assert event.operation == "READ"
     assert event.resource_id == "1"
-    assert event.parent_id == None
+    assert event.parent_id is None
 
     child_event = event.children[0]
     assert child_event.resource == "MESSAGES"
@@ -154,7 +154,7 @@ async def test_masterrecord_workitems(client_superuser, audit_session):
     assert event.resource == "MASTER_RECORD"
     assert event.operation == "READ"
     assert event.resource_id == "1"
-    assert event.parent_id == None
+    assert event.parent_id is None
 
     for i, workitem_event in enumerate(event.children):
         assert workitem_event.resource == "WORKITEM"
@@ -195,7 +195,7 @@ async def test_masterrecord_persons(client_superuser, audit_session):
     assert primary_event.resource == "MASTER_RECORD"
     assert primary_event.operation == "READ"
     assert primary_event.resource_id == "1"
-    assert primary_event.parent_id == None
+    assert primary_event.parent_id is None
 
     for child_event in primary_event.children:
         assert child_event.resource == "PERSON"
@@ -222,7 +222,7 @@ async def test_masterrecord_patientrecords(client_superuser, audit_session):
     assert primary_event.resource == "MASTER_RECORD"
     assert primary_event.operation == "READ"
     assert primary_event.resource_id == "1"
-    assert primary_event.parent_id == None
+    assert primary_event.parent_id is None
 
     for child_event in primary_event.children:
         assert child_event.resource == "PATIENT_RECORD"

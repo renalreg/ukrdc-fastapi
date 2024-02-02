@@ -149,7 +149,7 @@ async def test_record_export_pkb_forbidden(
 
     with pytest.raises(RecordTypeError):
         await export.export_all_to_pkb(
-            ukrdc3_session.get(PatientRecord,TEST_PID),
+            ukrdc3_session.get(PatientRecord, TEST_PID),
             ukrdc3_session,
             mirth_session,
             redis_session,

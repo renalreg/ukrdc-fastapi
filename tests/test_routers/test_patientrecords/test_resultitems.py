@@ -10,7 +10,8 @@ async def test_record_resultitems(client_superuser):
 
     items = response.json().get("items", [])
     assert len(items) > 0
-    assert([ResultItemSchema(**x) for x in items])
+    assert [ResultItemSchema(**x) for x in items]
+
 
 async def test_resultitems_list_filtered_serviceId(client_superuser):
     # Filter by NI

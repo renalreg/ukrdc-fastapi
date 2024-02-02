@@ -24,9 +24,9 @@ async def test_record_read_audit(
     # Test audit patient filtering
     record = ukrdc3_session.get(PatientRecord, PID_1)
 
-    events = audit_session.scalars(select_auditevents_related_to_patientrecord(
-        record
-    )).all()
+    events = audit_session.scalars(
+        select_auditevents_related_to_patientrecord(record)
+    ).all()
 
     assert len(events) == 1
 
@@ -57,10 +57,12 @@ async def test_record_results_read_audit(
 
     # Test audit patient filtering
     record = ukrdc3_session.get(PatientRecord, PID_1)
-    events = audit_session.scalars(select_auditevents_related_to_patientrecord(
-        record,
-        resource=Resource.RESULTITEMS,
-    )).all()
+    events = audit_session.scalars(
+        select_auditevents_related_to_patientrecord(
+            record,
+            resource=Resource.RESULTITEMS,
+        )
+    ).all()
 
     assert len(events) == 1
 
@@ -89,10 +91,12 @@ async def test_record_pkb_membership_resource_audit(
 
     # Test audit patient and resource filtering
     record = ukrdc3_session.get(PatientRecord, PID_1)
-    events = audit_session.scalars(select_auditevents_related_to_patientrecord(
-        record,
-        resource=Resource.MEMBERSHIP,
-    )).all()
+    events = audit_session.scalars(
+        select_auditevents_related_to_patientrecord(
+            record,
+            resource=Resource.MEMBERSHIP,
+        )
+    ).all()
 
     assert len(events) == 1
 
@@ -122,10 +126,12 @@ async def test_record_create_operation_audit(
 
     # Test audit patient and resource filtering
     record = ukrdc3_session.get(PatientRecord, PID_1)
-    events = audit_session.scalars(select_auditevents_related_to_patientrecord(
-        record,
-        operation=AuditOperation.CREATE,
-    )).all()
+    events = audit_session.scalars(
+        select_auditevents_related_to_patientrecord(
+            record,
+            operation=AuditOperation.CREATE,
+        )
+    ).all()
 
     assert len(events) == 1
 

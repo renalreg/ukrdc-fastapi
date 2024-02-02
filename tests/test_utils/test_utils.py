@@ -13,4 +13,3 @@ def test_build_db_uri_sqlite():
         utils.build_db_uri("sqlite", "host", 5432, "user", "pass", "dbname")
         == "sqlite:///dbname"
     )
-

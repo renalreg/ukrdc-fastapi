@@ -18,7 +18,7 @@ async def test_facility_messages(client_superuser, audit_session):
     assert event.resource == "FACILITY"
     assert event.operation == "READ"
     assert event.resource_id == "TSF01"
-    assert event.parent_id == None
+    assert event.parent_id is None
 
     child_event = event.children[0]
     assert child_event.resource == "MESSAGES"

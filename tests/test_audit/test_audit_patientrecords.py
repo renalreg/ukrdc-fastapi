@@ -22,7 +22,7 @@ async def test_record_read_audit(client_superuser, audit_session):
     assert event.resource == "PATIENT_RECORD"
     assert event.operation == "READ"
     assert event.resource_id == "PYTEST01:PV:00000000A"
-    assert event.parent_id == None
+    assert event.parent_id is None
 
 
 async def test_record_delete_summary_audit(client_superuser, audit_session):
@@ -101,12 +101,12 @@ async def test_record_read_medications(client_superuser, audit_session):
     assert event.resource == "PATIENT_RECORD"
     assert event.operation == "READ"
     assert event.resource_id == "PYTEST01:PV:00000000A"
-    assert event.parent_id == None
+    assert event.parent_id is None
 
     child_event = event.children[0]
     assert child_event.resource == "MEDICATIONS"
     assert child_event.operation == "READ"
-    assert child_event.resource_id == None
+    assert child_event.resource_id is None
     assert child_event.parent_id == event.id
 
 
@@ -125,12 +125,12 @@ async def test_record_read_treatments(client_superuser, audit_session):
     assert event.resource == "PATIENT_RECORD"
     assert event.operation == "READ"
     assert event.resource_id == "PYTEST01:PV:00000000A"
-    assert event.parent_id == None
+    assert event.parent_id is None
 
     child_event = event.children[0]
     assert child_event.resource == "TREATMENTS"
     assert child_event.operation == "READ"
-    assert child_event.resource_id == None
+    assert child_event.resource_id is None
     assert child_event.parent_id == event.id
 
 
@@ -149,12 +149,12 @@ async def test_record_read_surveys(client_superuser, audit_session):
     assert event.resource == "PATIENT_RECORD"
     assert event.operation == "READ"
     assert event.resource_id == "PYTEST01:PV:00000000A"
-    assert event.parent_id == None
+    assert event.parent_id is None
 
     child_event = event.children[0]
     assert child_event.resource == "SURVEYS"
     assert child_event.operation == "READ"
-    assert child_event.resource_id == None
+    assert child_event.resource_id is None
     assert child_event.parent_id == event.id
 
 
@@ -173,12 +173,12 @@ async def test_record_read_observations(client_superuser, audit_session):
     assert event.resource == "PATIENT_RECORD"
     assert event.operation == "READ"
     assert event.resource_id == "PYTEST01:PV:00000000A"
-    assert event.parent_id == None
+    assert event.parent_id is None
 
     child_event = event.children[0]
     assert child_event.resource == "OBSERVATIONS"
     assert child_event.operation == "READ"
-    assert child_event.resource_id == None
+    assert child_event.resource_id is None
     assert child_event.parent_id == event.id
 
 
@@ -197,12 +197,12 @@ async def test_record_read_laborders(client_superuser, audit_session):
     assert event.resource == "PATIENT_RECORD"
     assert event.operation == "READ"
     assert event.resource_id == "PYTEST01:PV:00000000A"
-    assert event.parent_id == None
+    assert event.parent_id is None
 
     child_event = event.children[0]
     assert child_event.resource == "LABORDERS"
     assert child_event.operation == "READ"
-    assert child_event.resource_id == None
+    assert child_event.resource_id is None
     assert child_event.parent_id == event.id
 
 
@@ -221,7 +221,7 @@ async def test_record_read_laborder(client_superuser, audit_session):
     assert event.resource == "PATIENT_RECORD"
     assert event.operation == "READ"
     assert event.resource_id == "PYTEST01:PV:00000000A"
-    assert event.parent_id == None
+    assert event.parent_id is None
 
     child_event = event.children[0]
     assert child_event.resource == "LABORDER"
@@ -270,7 +270,7 @@ async def test_record_delete_laborder(client_superuser, ukrdc3_session, audit_se
     assert record_event.resource == "PATIENT_RECORD"
     assert record_event.operation == "UPDATE"
     assert record_event.resource_id == "PYTEST01:PV:00000000A"
-    assert record_event.parent_id == None
+    assert record_event.parent_id is None
 
     order_event = record_event.children[0]
     assert len(order_event.children) == 1
@@ -304,12 +304,12 @@ async def test_record_read_resultitems(client_superuser, audit_session):
     assert event.resource == "PATIENT_RECORD"
     assert event.operation == "READ"
     assert event.resource_id == "PYTEST01:PV:00000000A"
-    assert event.parent_id == None
+    assert event.parent_id is None
 
     child_event = event.children[0]
     assert child_event.resource == "RESULTITEMS"
     assert child_event.operation == "READ"
-    assert child_event.resource_id == None
+    assert child_event.resource_id is None
     assert child_event.parent_id == event.id
 
 
@@ -328,7 +328,7 @@ async def test_record_read_resultitem(client_superuser, audit_session):
     assert event.resource == "PATIENT_RECORD"
     assert event.operation == "READ"
     assert event.resource_id == "PYTEST01:PV:00000000A"
-    assert event.parent_id == None
+    assert event.parent_id is None
 
     child_event = event.children[0]
     assert child_event.resource == "RESULTITEM"
@@ -352,7 +352,7 @@ async def test_record_delete_resultitem(client_superuser, audit_session):
     assert event.resource == "PATIENT_RECORD"
     assert event.operation == "UPDATE"
     assert event.resource_id == "PYTEST01:PV:00000000A"
-    assert event.parent_id == None
+    assert event.parent_id is None
 
     child_event = event.children[0]
     assert child_event.resource == "RESULTITEM"
@@ -376,12 +376,12 @@ async def test_record_read_documents(client_superuser, audit_session):
     assert event.resource == "PATIENT_RECORD"
     assert event.operation == "READ"
     assert event.resource_id == "PYTEST01:PV:00000000A"
-    assert event.parent_id == None
+    assert event.parent_id is None
 
     child_event = event.children[0]
     assert child_event.resource == "DOCUMENTS"
     assert child_event.operation == "READ"
-    assert child_event.resource_id == None
+    assert child_event.resource_id is None
     assert child_event.parent_id == event.id
 
 
@@ -400,7 +400,7 @@ async def test_record_read_document(client_superuser, audit_session):
     assert event.resource == "PATIENT_RECORD"
     assert event.operation == "READ"
     assert event.resource_id == "PYTEST01:PV:00000000A"
-    assert event.parent_id == None
+    assert event.parent_id is None
 
     child_event = event.children[0]
     assert child_event.resource == "DOCUMENT"
@@ -424,7 +424,7 @@ async def test_record_download_document(client_superuser, audit_session):
     assert event.resource == "PATIENT_RECORD"
     assert event.operation == "READ"
     assert event.resource_id == "PYTEST01:PV:00000000A"
-    assert event.parent_id == None
+    assert event.parent_id is None
 
     child_event = event.children[0]
     assert child_event.resource == "DOCUMENT"
@@ -449,7 +449,7 @@ async def test_record_export_data(client_superuser, audit_session):
     assert event.resource == "PATIENT_RECORD"
     assert event.operation == "EXPORT_PV"
     assert event.resource_id == "PYTEST01:PV:00000000A"
-    assert event.parent_id == None
+    assert event.parent_id is None
 
 
 async def test_record_export_tests(client_superuser, audit_session):
@@ -468,7 +468,7 @@ async def test_record_export_tests(client_superuser, audit_session):
     assert event.resource == "PATIENT_RECORD"
     assert event.operation == "EXPORT_PV_TESTS"
     assert event.resource_id == "PYTEST01:PV:00000000A"
-    assert event.parent_id == None
+    assert event.parent_id is None
 
 
 async def test_record_export_docs(client_superuser, audit_session):
@@ -487,7 +487,7 @@ async def test_record_export_docs(client_superuser, audit_session):
     assert event.resource == "PATIENT_RECORD"
     assert event.operation == "EXPORT_PV_DOCS"
     assert event.resource_id == "PYTEST01:PV:00000000A"
-    assert event.parent_id == None
+    assert event.parent_id is None
 
 
 async def test_record_export_radar(client_superuser, audit_session):
@@ -506,4 +506,4 @@ async def test_record_export_radar(client_superuser, audit_session):
     assert event.resource == "PATIENT_RECORD"
     assert event.operation == "EXPORT_RADAR"
     assert event.resource_id == "PYTEST01:PV:00000000A"
-    assert event.parent_id == None
+    assert event.parent_id is None

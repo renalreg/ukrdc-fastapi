@@ -1,5 +1,4 @@
 from ukrdc_fastapi.utils.mirth.messages import (
-    build_close_workitem_message,
     build_export_all_message,
     build_export_docs_message,
     build_export_radar_message,

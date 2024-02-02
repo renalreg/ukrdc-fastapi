@@ -15,7 +15,7 @@ async def test_access_event(client_superuser, audit_session):
     assert event.resource == "PATIENT_RECORD"
     assert event.operation == "READ"
     assert event.resource_id == "PYTEST01:PV:00000000A"
-    assert event.parent_id == None
+    assert event.parent_id is None
     assert event.children == []
 
     access_event = events[0].access_event

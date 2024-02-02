@@ -16,6 +16,8 @@ async def test_delete_summary(client_superuser, ukrdc3_session, jtrace_session):
     # Assert all expected records exist
     assert ukrdc3_session.get(PatientRecord, "PYTEST03:PV:00000000A")
 
+    assert summary.empi
+
     for person in summary.empi.persons:
         assert jtrace_session.get(Person, person.id)
     for master_record in summary.empi.master_records:
@@ -39,6 +41,7 @@ async def test_delete(client_superuser, ukrdc3_session, jtrace_session):
     # Assert all expected records exist
     assert ukrdc3_session.get(PatientRecord, "PYTEST03:PV:00000000A")
 
+    assert summary.empi
     for person in summary.empi.persons:
         assert jtrace_session.get(Person, person.id)
     for master_record in summary.empi.master_records:
@@ -58,7 +61,7 @@ async def test_delete(client_superuser, ukrdc3_session, jtrace_session):
 
     deleted = DeletePIDResponseSchema(**deleted_response.json())
 
-    assert deleted.committed == True
+    assert deleted.committed is True
     assert deleted.hash == summary.hash
 
     # Assert all expected records have been deleted

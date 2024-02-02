@@ -6,7 +6,6 @@ from ukrdc_sqla.ukrdc import ProgramMembership
 from tests.utils import days_ago
 from ukrdc_fastapi.config import configuration
 from ukrdc_fastapi.exceptions import NoActiveMembershipError
-from ukrdc_fastapi.utils.tasks import TrackableTaskSchema
 
 
 def _last_sent_mirth_message(httpx_mock) -> str:
@@ -30,6 +29,7 @@ async def test_record_export_data(client_authenticated):
     assert response.json().get("status") == "success"
     assert response.json().get("numberOfMessages") == 1
 
+
 @pytest.mark.asyncio
 async def test_record_export_tests(client_authenticated, httpx_mock):
     response = await client_authenticated.post(
@@ -40,6 +40,7 @@ async def test_record_export_tests(client_authenticated, httpx_mock):
     assert response.status_code == 200
     assert response.json().get("status") == "success"
     assert response.json().get("numberOfMessages") == 1
+
 
 @pytest.mark.asyncio
 async def test_record_export_docs(client_authenticated, httpx_mock):
@@ -52,6 +53,7 @@ async def test_record_export_docs(client_authenticated, httpx_mock):
     assert response.json().get("status") == "success"
     assert response.json().get("numberOfMessages") == 1
 
+
 @pytest.mark.asyncio
 async def test_record_export_radar(client_authenticated, httpx_mock):
     response = await client_authenticated.post(
@@ -62,6 +64,7 @@ async def test_record_export_radar(client_authenticated, httpx_mock):
     assert response.status_code == 200
     assert response.json().get("status") == "success"
     assert response.json().get("numberOfMessages") == 1
+
 
 @pytest.mark.asyncio
 async def test_record_export_pkb(client_authenticated, ukrdc3_session):

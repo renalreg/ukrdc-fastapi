@@ -1,5 +1,4 @@
 from ukrdc_fastapi.config import configuration
-from ukrdc_fastapi.schemas.patientrecord.procedure import TransplantSchema
 
 
 async def test_record_transplants(client_superuser):

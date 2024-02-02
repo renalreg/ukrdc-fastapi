@@ -2,7 +2,7 @@ from ukrdc_sqla.ukrdc import LabOrder, ResultItem
 
 from tests.utils import days_ago
 from ukrdc_fastapi.config import configuration
-from ukrdc_fastapi.schemas.patientrecord.laborder import LabOrderSchema, LabOrderShortSchema
+from ukrdc_fastapi.schemas.patientrecord.laborder import LabOrderShortSchema
 
 
 async def test_record_laborders(client_authenticated):
@@ -13,7 +13,8 @@ async def test_record_laborders(client_authenticated):
 
     items = response.json().get("items", [])
     assert len(items) > 0
-    assert([LabOrderShortSchema(**x) for x in items])
+    assert [LabOrderShortSchema(**x) for x in items]
+
 
 async def test_record_laborders_denied(client_authenticated):
     response = await client_authenticated.get(

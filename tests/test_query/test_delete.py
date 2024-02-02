@@ -28,6 +28,8 @@ def test_delete_pid_superuser(ukrdc3_session, jtrace_session):
 
     # Assert all expected records exist
     assert ukrdc3_session.get(PatientRecord, "PYTEST03:PV:00000000A")
+
+    assert summary.empi
     for person in summary.empi.persons:
         assert jtrace_session.get(Person, person.id)
     for master_record in summary.empi.master_records:

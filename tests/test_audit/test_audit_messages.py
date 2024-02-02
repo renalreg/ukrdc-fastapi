@@ -17,8 +17,8 @@ async def test_messages_list(client_superuser, audit_session):
 
     assert event.resource == "MESSAGES"
     assert event.operation == "READ"
-    assert event.resource_id == None
-    assert event.parent_id == None
+    assert event.resource_id is None
+    assert event.parent_id is None
 
 
 async def test_message_detail(client_superuser, audit_session):
@@ -34,7 +34,7 @@ async def test_message_detail(client_superuser, audit_session):
     assert event.resource == "MESSAGE"
     assert event.operation == "READ"
     assert event.resource_id == "1"
-    assert event.parent_id == None
+    assert event.parent_id is None
 
 
 async def test_message_workitems(client_superuser, audit_session):
@@ -52,7 +52,7 @@ async def test_message_workitems(client_superuser, audit_session):
     assert event.resource == "MESSAGE"
     assert event.operation == "READ"
     assert event.resource_id == "3"
-    assert event.parent_id == None
+    assert event.parent_id is None
 
     for i, workitem_event in enumerate(event.children):
         assert workitem_event.resource == "WORKITEM"
@@ -92,7 +92,7 @@ async def test_message_patientrecords(client_superuser, audit_session):
     assert primary_event.resource == "MESSAGE"
     assert primary_event.operation == "READ"
     assert primary_event.resource_id == "1"
-    assert primary_event.parent_id == None
+    assert primary_event.parent_id is None
 
     for child_event in primary_event.children:
         assert child_event.resource == "PATIENT_RECORD"

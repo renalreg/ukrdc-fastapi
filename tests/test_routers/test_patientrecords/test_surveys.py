@@ -9,7 +9,8 @@ async def test_record_surveys(client_superuser):
     assert response.status_code == 200
 
     assert len(response.json()) > 0
-    assert([SurveySchema(**x) for x in response.json()])
+    assert [SurveySchema(**x) for x in response.json()]
+
 
 async def test_record_surveys_denied(client_authenticated):
     response = await client_authenticated.get(

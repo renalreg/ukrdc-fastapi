@@ -100,9 +100,7 @@ def test_get_patientrecords_related_to_masterrecord(ukrdc3_session, jtrace_sessi
 def test_get_patientrecords_related_to_ni(ukrdc3_session, jtrace_session):
     _create_related_records(ukrdc3_session, jtrace_session)
 
-    stmt = patientrecords.select_patientrecords_related_to_ni(
-        "888888885"
-    )
+    stmt = patientrecords.select_patientrecords_related_to_ni("888888885")
     records = ukrdc3_session.scalars(stmt).all()
 
     assert {record.pid for record in records} == {
