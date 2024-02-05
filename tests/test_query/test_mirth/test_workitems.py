@@ -7,7 +7,7 @@ from ukrdc_fastapi.query.mirth import workitems
 @pytest.mark.asyncio
 async def test_update_workitem(jtrace_session, redis_session, mirth_session):
     response = await workitems.update_workitem(
-        jtrace_session.query(WorkItem).get(1),
+        jtrace_session.get(WorkItem, 1),
         mirth_session,
         redis_session,
         "TEST@UKRDC_FASTAPI",

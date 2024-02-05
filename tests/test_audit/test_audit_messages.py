@@ -1,3 +1,4 @@
+from sqlalchemy import select
 from tests.conftest import PID_1
 from ukrdc_fastapi.config import configuration
 from ukrdc_fastapi.models.audit import AuditEvent
@@ -8,7 +9,7 @@ async def test_messages_list(client_superuser, audit_session):
     response = await client_superuser.get(f"{configuration.base_url}/messages")
     assert response.status_code == 200
 
-    events = audit_session.query(AuditEvent).all()
+    events = audit_session.scalars(select(AuditEvent)).all()
     assert len(events) == 1
 
     event = events[0]
@@ -16,15 +17,15 @@ async def test_messages_list(client_superuser, audit_session):
 
     assert event.resource == "MESSAGES"
     assert event.operation == "READ"
-    assert event.resource_id == None
-    assert event.parent_id == None
+    assert event.resource_id is None
+    assert event.parent_id is None
 
 
 async def test_message_detail(client_superuser, audit_session):
     response = await client_superuser.get(f"{configuration.base_url}/messages/1")
     assert response.status_code == 200
 
-    events = audit_session.query(AuditEvent).all()
+    events = audit_session.scalars(select(AuditEvent)).all()
     assert len(events) == 1
 
     event = events[0]
@@ -33,7 +34,7 @@ async def test_message_detail(client_superuser, audit_session):
     assert event.resource == "MESSAGE"
     assert event.operation == "READ"
     assert event.resource_id == "1"
-    assert event.parent_id == None
+    assert event.parent_id is None
 
 
 async def test_message_workitems(client_superuser, audit_session):
@@ -42,7 +43,7 @@ async def test_message_workitems(client_superuser, audit_session):
     )
     workitems = [WorkItemSchema(**item) for item in response.json()]
 
-    events = audit_session.query(AuditEvent).all()
+    events = audit_session.scalars(select(AuditEvent)).all()
     assert len(events) == 4
 
     event = events[0]
@@ -51,7 +52,7 @@ async def test_message_workitems(client_superuser, audit_session):
     assert event.resource == "MESSAGE"
     assert event.operation == "READ"
     assert event.resource_id == "3"
-    assert event.parent_id == None
+    assert event.parent_id is None
 
     for i, workitem_event in enumerate(event.children):
         assert workitem_event.resource == "WORKITEM"
@@ -82,7 +83,7 @@ async def test_message_patientrecords(client_superuser, audit_session):
     returned_pids = {item.get("pid") for item in response.json()}
     assert returned_pids == {PID_1}
 
-    events = audit_session.query(AuditEvent).all()
+    events = audit_session.scalars(select(AuditEvent)).all()
     assert len(events) == 2
 
     primary_event = events[0]
@@ -91,7 +92,7 @@ async def test_message_patientrecords(client_superuser, audit_session):
     assert primary_event.resource == "MESSAGE"
     assert primary_event.operation == "READ"
     assert primary_event.resource_id == "1"
-    assert primary_event.parent_id == None
+    assert primary_event.parent_id is None
 
     for child_event in primary_event.children:
         assert child_event.resource == "PATIENT_RECORD"

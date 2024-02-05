@@ -1,4 +1,4 @@
-from sqlalchemy import exc
+from sqlalchemy import exc, select
 from sqlalchemy.orm.session import Session
 
 from ukrdc_fastapi.dependencies.auth import UKRDCUser
@@ -18,9 +18,8 @@ def get_user_preferences(usersdb: Session, user: UKRDCUser) -> UserPreferences:
     Returns:
         ReadUserPreferences: User preferences
     """
-    all_prefs = (
-        usersdb.query(UserPreference).filter(UserPreference.uid == user.id).all()
-    )
+    stmt = select(UserPreference).where(UserPreference.uid == user.id)
+    all_prefs = usersdb.scalars(stmt).all()
     raw_prefs_dict = {row.key: row.val for row in all_prefs}
     return UserPreferences(**raw_prefs_dict)
 

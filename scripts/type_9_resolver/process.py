@@ -1,7 +1,7 @@
 import asyncio
 from ukrdc_fastapi.dependencies.mirth import mirth_session
 from ukrdc_fastapi.query.workitems import extend_workitem
-from ukrdc_fastapi.query.messages import get_messages
+from ukrdc_fastapi.query.messages import select_messages
 from ukrdc_fastapi.dependencies.database import jtrace_session, errors_session
 from ukrdc_fastapi.schemas.message import MessageSchema
 from ukrdc_sqla.empi import WorkItem
@@ -16,7 +16,7 @@ CHANNEL_IDS = [RDA_INBOUND_FILE, PV_INBOUND]
 async def process_workitem(workitem_id: int):
     # Find workitem and related messages
     with jtrace_session() as jtrace, errors_session() as errorsdb:
-        workitem_obj = extend_workitem(jtrace.query(WorkItem).get(workitem_id), jtrace)
+        workitem_obj = extend_workitem(jtrace.get(WorkItem, workitem_id), jtrace)
 
         assert workitem_obj.type == 9
 
@@ -32,7 +32,7 @@ async def process_workitem(workitem_id: int):
 
         messages = [
             MessageSchema.from_orm(msg)
-            for msg in get_messages(
+            for msg in select_messages(
                 errorsdb,
                 statuses=["ERROR"],
                 nis=workitem_nis,

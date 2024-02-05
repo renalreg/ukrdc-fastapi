@@ -1,7 +1,7 @@
 import datetime
 import json
 
-from sqlalchemy import and_
+from sqlalchemy import and_, select
 from sqlalchemy.orm import Session
 from ukrdc_fastapi.dependencies.audit import AuditOperation, Resource
 from ukrdc_fastapi.dependencies.database import AuditSession
@@ -20,17 +20,15 @@ def json_serial(obj):
 
 session: Session = AuditSession()
 
-membership_creations = (
-    session.query(AuditEvent)
-    .filter(
-        and_(
-            AuditEvent.resource == Resource.MEMBERSHIP.value,
-            AuditEvent.operation == AuditOperation.CREATE.value,
-            AuditEvent.resource_id == "PKB",
-        )
+stmt = select(AuditEvent).where(
+    and_(
+        AuditEvent.resource == Resource.MEMBERSHIP.value,
+        AuditEvent.operation == AuditOperation.CREATE.value,
+        AuditEvent.resource_id == "PKB",
     )
-    .all()
 )
+
+membership_creations = session.scalars(stmt).all()
 
 print(len(membership_creations))
 

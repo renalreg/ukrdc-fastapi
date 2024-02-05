@@ -16,7 +16,7 @@ def _get_patientrecord(
     ukrdc3: Session = Depends(get_ukrdc3),
 ) -> PatientRecord:
     """Simple dependency to turn pid query param and User object into a PatientRecord object."""
-    record = ukrdc3.query(PatientRecord).get(pid)
+    record = ukrdc3.get(PatientRecord, pid)
 
     if not record:
         raise ResourceNotFoundError("Record not found")

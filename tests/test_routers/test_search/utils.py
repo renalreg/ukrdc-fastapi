@@ -1,5 +1,5 @@
 from datetime import datetime
-from ...utils import create_basic_facility, create_basic_patient
+from ...utils import create_basic_patient
 
 TEST_NUMBERS = [
     "9434765870",

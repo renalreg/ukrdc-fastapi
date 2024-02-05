@@ -5,8 +5,8 @@ from ukrdc_fastapi.dependencies import get_ukrdc3
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.permissions.facilities import assert_facility_permission
 from ukrdc_fastapi.query.facilities.reports import (
-    get_facility_report_cc001,
-    get_facility_report_pm001,
+    select_facility_report_cc001,
+    select_facility_report_pm001,
 )
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordSummarySchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
@@ -36,7 +36,7 @@ def facility_reports_cc001(
     """
     assert_facility_permission(code, user)
 
-    return paginate(get_facility_report_cc001(ukrdc3, code))
+    return paginate(ukrdc3, select_facility_report_cc001(ukrdc3, code))
 
 
 # Program memberships
@@ -61,4 +61,4 @@ def facility_reports_pm001(
     """
     assert_facility_permission(code, user)
 
-    return paginate(get_facility_report_pm001(ukrdc3, code))
+    return paginate(ukrdc3, select_facility_report_pm001(ukrdc3, code))

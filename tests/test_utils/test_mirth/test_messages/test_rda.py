@@ -8,7 +8,7 @@ from ukrdc_fastapi.utils.mirth.messages.rda import build_demographic_update_mess
 
 def test_build_demographic_update_message(ukrdc3_session):
     PID_1 = "PYTEST01:PV:00000000A"
-    record = ukrdc3_session.query(PatientRecord).get(PID_1)
+    record = ukrdc3_session.get(PatientRecord, PID_1)
 
     message = build_demographic_update_message(
         record,
@@ -29,7 +29,7 @@ def test_build_demographic_update_message(ukrdc3_session):
 
 def test_build_demographic_update_message_no_changes(ukrdc3_session):
     PID_1 = "PYTEST01:PV:00000000A"
-    record = ukrdc3_session.query(PatientRecord).get(PID_1)
+    record = ukrdc3_session.get(PatientRecord, PID_1)
 
     message = build_demographic_update_message(
         record, name=None, birth_time=None, gender=None, address=None
@@ -46,7 +46,7 @@ def test_build_demographic_update_message_no_changes(ukrdc3_session):
 
 def test_build_demographic_update_message_full_address(ukrdc3_session):
     PID_1 = "PYTEST01:PV:00000000A"
-    record = ukrdc3_session.query(PatientRecord).get(PID_1)
+    record = ukrdc3_session.get(PatientRecord, PID_1)
 
     message = build_demographic_update_message(
         record,

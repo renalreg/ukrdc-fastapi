@@ -4,7 +4,7 @@ from typing import List, Optional
 from pydantic.fields import Field
 from sqlalchemy.orm.session import Session
 from ukrdc_sqla.empi import MasterRecord
-from ukrdc_sqla.ukrdc import PatientRecord, PatientNumber
+from ukrdc_sqla.ukrdc import PatientNumber, PatientRecord
 
 from ukrdc_fastapi.dependencies.audit import Resource
 
@@ -52,7 +52,7 @@ class AuditEventSchema(OrmModel):
         """
         # For PatientRecord items
         if self.resource == Resource.PATIENT_RECORD.value and ukrdc3:
-            record = ukrdc3.query(PatientRecord).get(self.resource_id)
+            record = ukrdc3.get(PatientRecord, self.resource_id)
             if record:
                 # Obtain the first known MRN for the patient
                 first_mrn: Optional[PatientNumber] = None
@@ -79,13 +79,14 @@ class AuditEventSchema(OrmModel):
                         self.identifiers.append(first_mrn.patientid)
         # For MasterRecord items
         elif self.resource == Resource.MASTER_RECORD.value and jtrace:
-            master_record = jtrace.query(MasterRecord).get(self.resource_id)
+            master_record = jtrace.get(MasterRecord, self.resource_id)
             if master_record:
                 self.identifiers = [
                     f"{master_record.givenname} {master_record.surname}",
                     master_record.nationalid_type,
-                    master_record.nationalid.strip(),
                 ]
+                if master_record.nationalid:
+                    self.identifiers.append(master_record.nationalid.strip())
 
         # Recursively populate children
         if self.children:

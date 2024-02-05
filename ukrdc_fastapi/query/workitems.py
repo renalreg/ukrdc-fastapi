@@ -1,30 +1,30 @@
 import datetime
 from typing import Optional
 
-from sqlalchemy.orm.query import Query
+from sqlalchemy import select
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.expression import or_
 from sqlalchemy.sql.functions import func
+from sqlalchemy.sql.selectable import Select
 from ukrdc_sqla.empi import MasterRecord, Person, PidXRef, WorkItem
 from ukrdc_sqla.errorsdb import Message
 from ukrdc_sqla.utils.links import find_related_ids
 
-from ukrdc_fastapi.query.masterrecords import get_masterrecords_related_to_person
-from ukrdc_fastapi.query.persons import get_persons_related_to_masterrecord
+from ukrdc_fastapi.query.masterrecords import select_masterrecords_related_to_person
+from ukrdc_fastapi.query.persons import select_persons_related_to_masterrecord
 from ukrdc_fastapi.schemas.common import HistoryPoint
 from ukrdc_fastapi.schemas.empi import WorkItemExtendedSchema
 from ukrdc_fastapi.utils import daterange
 
 
-def get_workitems(
-    jtrace: Session,
+def select_workitems(
     statuses: Optional[list[int]] = None,
     master_id: Optional[list[int]] = None,
     person_id: Optional[list[int]] = None,
     facility: Optional[str] = None,
     since: Optional[datetime.datetime] = None,
     until: Optional[datetime.datetime] = None,
-):
+) -> Select:
     """Get a list of WorkItems
 
     Args:
@@ -36,17 +36,17 @@ def get_workitems(
         until (Optional[datetime.datetime], optional): Show items until datetime. Defaults to None.
 
     Returns:
-        [type]: [description]
+        Select: SQLAlchemy query
     """
     status_list: list[int] = statuses or [1]
 
-    workitems = jtrace.query(WorkItem)
+    stmt = select(WorkItem)
 
     if facility:
-        workitems = (
-            workitems.outerjoin(Person)
+        stmt = (
+            stmt.outerjoin(Person)
             .outerjoin(PidXRef)
-            .filter(
+            .where(
                 or_(
                     PidXRef.sending_facility == facility,
                     WorkItem.attributes.like(f'%"SF":"{facility}"%'),
@@ -56,11 +56,11 @@ def get_workitems(
 
     # Optionally filter Workitems updated since
     if since:
-        workitems = workitems.filter(WorkItem.last_updated >= since)
+        stmt = stmt.where(WorkItem.last_updated >= since)
 
     # Optionally filter Workitems updated before
     if until:
-        workitems = workitems.filter(WorkItem.last_updated <= until)
+        stmt = stmt.where(WorkItem.last_updated <= until)
 
     filters = []
     if master_id:
@@ -69,10 +69,10 @@ def get_workitems(
         filters.append(WorkItem.person_id.in_(person_id))
 
     if master_id or person_id:
-        workitems = workitems.filter(or_(*filters))
+        stmt = stmt.where(or_(*filters))
 
     # Get a query of open workitems
-    return workitems.filter(WorkItem.status.in_(status_list))
+    return stmt.where(WorkItem.status.in_(status_list))
 
 
 def extend_workitem(workitem: WorkItem, jtrace: Session) -> WorkItemExtendedSchema:
@@ -85,24 +85,25 @@ def extend_workitem(workitem: WorkItem, jtrace: Session) -> WorkItemExtendedSche
     Returns:
         WorkItemExtendedSchema: Extended WorkItem object
     """
+    stmt = select_masterrecords_related_to_person(
+        workitem.person, jtrace, nationalid_type="UKRDC"
+    ).where(MasterRecord.id != workitem.master_id)
+
+    master_records = jtrace.scalars(stmt).all() if workitem.person else []
+
     incoming = {
         "person": workitem.person or None,
-        "master_records": get_masterrecords_related_to_person(
-            workitem.person, jtrace, nationalid_type="UKRDC"
-        )
-        .filter(MasterRecord.id != workitem.master_id)
-        .all()
-        if workitem.person
-        else [],
+        "master_records": master_records,
     }
+
+    stmt = select_persons_related_to_masterrecord(workitem.master_record, jtrace).where(
+        Person.id != workitem.person_id
+    )
+    persons = jtrace.scalars(stmt).all() if workitem.master_record else []
 
     destination = {
         "master_record": workitem.master_record,
-        "persons": get_persons_related_to_masterrecord(workitem.master_record, jtrace)
-        .filter(Person.id != workitem.person_id)
-        .all()
-        if workitem.master_record
-        else [],
+        "persons": persons,
     }
 
     return WorkItemExtendedSchema(
@@ -122,7 +123,7 @@ def extend_workitem(workitem: WorkItem, jtrace: Session) -> WorkItemExtendedSche
     )
 
 
-def get_workitem_collection(workitem: WorkItem, jtrace: Session) -> Query:
+def select_workitem_collection(workitem: WorkItem, jtrace: Session) -> Select:
     """Get a list of WorkItems related via the LinkRecord network to a given WorkItem,
     raised by the same even as the given WorkItem.
 
@@ -131,14 +132,13 @@ def get_workitem_collection(workitem: WorkItem, jtrace: Session) -> Query:
         workitem_id (int): WorkItem ID
 
     Returns:
-        Query: SQLAlchemy query
+        Select: SQLAlchemy query
     """
-    related_workitems = get_workitems_related_to_workitem(workitem, jtrace)
+    stmt = select_workitems_related_to_workitem(workitem, jtrace)
+    return stmt.where(WorkItem.creation_date == workitem.creation_date)
 
-    return related_workitems.filter(WorkItem.creation_date == workitem.creation_date)
 
-
-def get_workitems_related_to_workitem(workitem: WorkItem, jtrace: Session) -> Query:
+def select_workitems_related_to_workitem(workitem: WorkItem, jtrace: Session) -> Select:
     """Get a list of WorkItems related via the LinkRecord network to a given WorkItem
 
     Args:
@@ -146,7 +146,7 @@ def get_workitems_related_to_workitem(workitem: WorkItem, jtrace: Session) -> Qu
         workitem_id (int): WorkItem ID
 
     Returns:
-        Query: SQLAlchemy query
+        Select: SQLAlchemy query
     """
     seen_master_ids: set[int] = set()
     seen_person_ids: set[int] = set()
@@ -160,16 +160,17 @@ def get_workitems_related_to_workitem(workitem: WorkItem, jtrace: Session) -> Qu
         jtrace, seen_master_ids, seen_person_ids
     )
 
-    other_workitems = jtrace.query(WorkItem).filter(
+    stmt = select(WorkItem).where(
         or_(
             WorkItem.master_id.in_(related_master_ids),
             WorkItem.person_id.in_(related_person_ids),
         )
     )
-    return other_workitems.filter(WorkItem.id != workitem.id)
+
+    return stmt.where(WorkItem.id != workitem.id)
 
 
-def get_workitems_related_to_message(message: Message, jtrace: Session) -> Query:
+def select_workitems_related_to_message(message: Message, jtrace: Session) -> Select:
     """Get a list of WorkItems related via the Patient Number to a given Message
 
     Args:
@@ -178,15 +179,16 @@ def get_workitems_related_to_message(message: Message, jtrace: Session) -> Query
         message_id (str): Message ID
 
     Returns:
-        Query: SQLAlchemy query
+        Select: SQLAlchemy query
     """
     # Get masterrecords directly referenced by the error
-    direct_records: list[MasterRecord] = (
-        jtrace.query(MasterRecord).filter(MasterRecord.nationalid == message.ni).all()
+    stmt = select(MasterRecord).where(
+        MasterRecord.nationalid == message.ni,
     )
+    direct_records: list[MasterRecord] = jtrace.scalars(stmt).all()
 
     # Get workitems related to masterrecords directly referenced by the error
-    return jtrace.query(WorkItem).filter(
+    return select(WorkItem).where(
         WorkItem.master_id.in_([record.id for record in direct_records]),
         WorkItem.status == 1,
     )
@@ -216,13 +218,14 @@ def get_full_workitem_history(
 
     # Get history within range
     trunc_func = func.date_trunc("day", WorkItem.creation_date)
-    history = (
-        jtrace.query(trunc_func, func.count(trunc_func))
-        .filter(trunc_func >= range_since)
-        .filter(trunc_func <= range_until)
+    stmt_history = (
+        select(trunc_func, func.count(trunc_func))
+        .where(trunc_func >= range_since)
+        .where(trunc_func <= range_until)
         .group_by(trunc_func)
         .order_by(trunc_func)
     )
+    history = jtrace.execute(stmt_history)
 
     # Create an initially empty full history dictionary
     full_history: dict[datetime.date, int] = {

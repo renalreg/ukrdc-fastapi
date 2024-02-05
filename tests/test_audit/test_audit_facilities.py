@@ -1,3 +1,4 @@
+from sqlalchemy import select
 from ukrdc_fastapi.config import configuration
 from ukrdc_fastapi.models.audit import AuditEvent
 
@@ -8,7 +9,7 @@ async def test_facility_messages(client_superuser, audit_session):
     )
     assert response.status_code == 200
 
-    events = audit_session.query(AuditEvent).all()
+    events = audit_session.scalars(select(AuditEvent)).all()
     assert len(events) == 2
 
     event = events[0]
@@ -17,7 +18,7 @@ async def test_facility_messages(client_superuser, audit_session):
     assert event.resource == "FACILITY"
     assert event.operation == "READ"
     assert event.resource_id == "TSF01"
-    assert event.parent_id == None
+    assert event.parent_id is None
 
     child_event = event.children[0]
     assert child_event.resource == "MESSAGES"

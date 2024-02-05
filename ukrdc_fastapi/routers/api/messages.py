@@ -26,10 +26,10 @@ from ukrdc_fastapi.permissions.workitems import apply_workitem_list_permission
 from ukrdc_fastapi.query.messages import (
     MessageSourceSchema,
     get_message_source,
-    get_messages,
+    select_messages,
 )
-from ukrdc_fastapi.query.patientrecords import get_patientrecords_related_to_message
-from ukrdc_fastapi.query.workitems import get_workitems_related_to_message
+from ukrdc_fastapi.query.patientrecords import select_patientrecords_related_to_message
+from ukrdc_fastapi.query.workitems import select_workitems_related_to_message
 from ukrdc_fastapi.schemas.empi import WorkItemSchema
 from ukrdc_fastapi.schemas.message import MessageSchema
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordSummarySchema
@@ -46,7 +46,7 @@ def _get_message(
     errorsdb: Session = Depends(get_errorsdb),
 ):
     """Simple dependency to turn ID query param and User object into a Message object."""
-    message_obj = errorsdb.query(Message).get(message_id)
+    message_obj = errorsdb.get(Message, message_id)
     if not message_obj:
         raise ResourceNotFoundError("Message record not found")
 
@@ -76,8 +76,7 @@ def messages(
     Retreive a list of error messages, optionally filtered by NI, facility, or date.
     By default returns message created within the last 365 days.
     """
-    query = get_messages(
-        errorsdb,
+    stmt = select_messages(
         statuses=status,
         channels=channel,
         nis=ni,
@@ -85,15 +84,13 @@ def messages(
         since=since,
         until=until,
     )
-
-    # Apply permissions
-    query = apply_message_list_permissions(query, user)
+    stmt = apply_message_list_permissions(stmt, user)
 
     # Add audit events
     audit.add_event(Resource.MESSAGES, None, AuditOperation.READ)
 
     # Sort, paginate, and return
-    return paginate(sorter.sort(query))
+    return paginate(errorsdb, sorter.sort(stmt))
 
 
 @router.get(
@@ -148,10 +145,10 @@ async def message_workitems(
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive WorkItems associated with a specific error message"""
-    workitems = get_workitems_related_to_message(message_obj, jtrace)
+    stmt = select_workitems_related_to_message(message_obj, jtrace)
+    stmt = apply_workitem_list_permission(stmt, user)
 
-    # Apply permissions
-    workitems = apply_workitem_list_permission(workitems, user)
+    workitems = jtrace.scalars(stmt).all()
 
     # Add audit events
     message_audit = audit.add_event(
@@ -160,7 +157,7 @@ async def message_workitems(
     for item in workitems:
         audit.add_workitem(item, parent=message_audit)
 
-    return workitems.all()
+    return workitems
 
 
 @router.get(
@@ -181,10 +178,10 @@ async def message_patientrecords(
     if not message_obj.ni:
         return []
 
-    records = get_patientrecords_related_to_message(message_obj, ukrdc3)
-
-    # Apply permissions
-    records = apply_patientrecord_list_permission(records, user)
+    # Get patientrecords referenced by the messages national identifier
+    stmt = select_patientrecords_related_to_message(message_obj)
+    stmt = apply_patientrecord_list_permission(stmt, user)
+    records = ukrdc3.scalars(stmt).all()
 
     # Add audit events
     message_audit = audit.add_event(
@@ -198,4 +195,4 @@ async def message_patientrecords(
             parent=message_audit,
         )
 
-    return records.all()
+    return records

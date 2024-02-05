@@ -2,7 +2,7 @@ import datetime
 
 from fastapi import APIRouter, Depends, Security
 from pydantic import Field
-from sqlalchemy import func
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import MasterRecord
 from ukrdc_sqla.stats import LastRunTimes
@@ -10,7 +10,7 @@ from ukrdc_sqla.stats import LastRunTimes
 from ukrdc_fastapi.dependencies import get_jtrace, get_statsdb
 from ukrdc_fastapi.dependencies.auth import Permissions, auth
 from ukrdc_fastapi.query.stats import MultipleUKRDCIDGroup, get_multiple_ukrdcids
-from ukrdc_fastapi.query.workitems import get_workitems
+from ukrdc_fastapi.query.workitems import select_workitems
 from ukrdc_fastapi.schemas.base import OrmModel
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema
 from ukrdc_fastapi.utils.paginate import Page, paginate_sequence
@@ -60,7 +60,7 @@ def datahealth_multiple_ukrdcids_last_run(
     statsdb: Session = Depends(get_statsdb),
 ):
     """Retreive the datetime the multiple_ukrdcid table was fully refreshed"""
-    return statsdb.query(LastRunTimes).get(("multiple_ukrdcid", ""))
+    return statsdb.get(LastRunTimes, ("multiple_ukrdcid", ""))
 
 
 @router.get(
@@ -83,21 +83,23 @@ def record_workitem_counts(
     Retreive a list of all master records with open work items, and the number of work items on each.
     Most useful when sorted by descending work item count, to identify records most in need of work item resolution.
     """
-    subq1 = get_workitems(jtrace, statuses=[1]).subquery()
+    subq1 = select_workitems(statuses=[1]).subquery()
 
     subq2 = (
-        jtrace.query(subq1.c.masterid, func.count("*").label("workitem_count"))
+        select(subq1.c.masterid, func.count("*").label("workitem_count"))
         .group_by(subq1.c.masterid)
         .subquery()
     )
 
-    count_query = jtrace.query(MasterRecord, subq2.c.workitem_count).join(
+    count_query = select(MasterRecord, subq2.c.workitem_count).join(
         subq2, MasterRecord.id == subq2.c.masterid
     )
 
+    result = jtrace.execute(count_query)
+
     items = [
         WorkItemGroup(master_record=record, work_item_count=count)
-        for record, count in count_query
+        for record, count in result
     ]
 
     return paginate_sequence(sorter.sort(items))

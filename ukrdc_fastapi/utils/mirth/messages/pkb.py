@@ -190,7 +190,7 @@ def build_pkb_sync_messages(record: PatientRecord, ukrdc3: Session) -> list[str]
 
     # Check facility-level overrides
 
-    facility = ukrdc3.query(Facility).get(record.sendingfacility)
+    facility = ukrdc3.get(Facility, record.sendingfacility)
 
     if not facility:
         raise ResourceNotFoundError(record.sendingfacility or "None")

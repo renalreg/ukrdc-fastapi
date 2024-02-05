@@ -1,7 +1,6 @@
 from ukrdc_fastapi.config import configuration
 from ukrdc_fastapi.schemas.empi import WorkItemSchema
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordSummarySchema
-from ukrdc_fastapi.utils.mirth import MirthMessageResponseSchema
 
 
 async def test_masterrecord_detail(client_authenticated):

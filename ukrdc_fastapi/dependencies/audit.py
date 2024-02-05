@@ -2,9 +2,9 @@ from datetime import datetime
 from enum import Enum
 from typing import AsyncGenerator, Optional, Union
 
-from starlette.requests import ClientDisconnect
 from fastapi import Depends, Request, Security
 from sqlalchemy.orm.session import Session
+from starlette.requests import ClientDisconnect
 from ukrdc_sqla.empi import WorkItem
 
 from ukrdc_fastapi.dependencies import get_auditdb
@@ -160,9 +160,9 @@ class Auditer:
         )
         audited_master_ids: set[int] = set()
         audited_person_ids: set[int] = set()
-        if workitem.master_record:
+        if workitem.master_record and workitem.master_record.id:
             audited_master_ids.add(workitem.master_record.id)
-        if workitem.person:
+        if workitem.person and workitem.person.id:
             audited_person_ids.add(workitem.person.id)
 
         if isinstance(workitem, WorkItemExtendedSchema):

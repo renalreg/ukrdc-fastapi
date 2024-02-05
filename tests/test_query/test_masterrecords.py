@@ -4,8 +4,10 @@ from ukrdc_fastapi.query import masterrecords
 
 
 def test_masterrecord_related(jtrace_session):
-    records = masterrecords.get_masterrecords_related_to_masterrecord(
-        jtrace_session.query(MasterRecord).get(1), jtrace_session
+    records = jtrace_session.scalars(
+        masterrecords.select_masterrecords_related_to_masterrecord(
+            jtrace_session.get(MasterRecord, 1), jtrace_session
+        )
     )
 
     # Check MR3 is identified as related to MR1
@@ -13,8 +15,10 @@ def test_masterrecord_related(jtrace_session):
 
 
 def test_masterrecord_related_exclude_self(jtrace_session):
-    records = masterrecords.get_masterrecords_related_to_masterrecord(
-        jtrace_session.query(MasterRecord).get(1), jtrace_session, exclude_self=True
+    records = jtrace_session.scalars(
+        masterrecords.select_masterrecords_related_to_masterrecord(
+            jtrace_session.get(MasterRecord, 1), jtrace_session, exclude_self=True
+        )
     )
 
     # Check MR3 is identified as related to MR1
@@ -22,10 +26,12 @@ def test_masterrecord_related_exclude_self(jtrace_session):
 
 
 def test_masterrecord_related_filter_nationalid_type(jtrace_session):
-    records = masterrecords.get_masterrecords_related_to_masterrecord(
-        jtrace_session.query(MasterRecord).get(1),
-        jtrace_session,
-        nationalid_type="UKRDC",
+    records = jtrace_session.scalars(
+        masterrecords.select_masterrecords_related_to_masterrecord(
+            jtrace_session.get(MasterRecord, 1),
+            jtrace_session,
+            nationalid_type="UKRDC",
+        )
     )
 
     # Check MR3 is identified as related to MR1
@@ -33,11 +39,13 @@ def test_masterrecord_related_filter_nationalid_type(jtrace_session):
 
 
 def test_masterrecord_related_exclude_self_filter_nationalid_type(jtrace_session):
-    records = masterrecords.get_masterrecords_related_to_masterrecord(
-        jtrace_session.query(MasterRecord).get(1),
-        jtrace_session,
-        exclude_self=True,
-        nationalid_type="UKRDC",
+    records = jtrace_session.scalars(
+        masterrecords.select_masterrecords_related_to_masterrecord(
+            jtrace_session.get(MasterRecord, 1),
+            jtrace_session,
+            exclude_self=True,
+            nationalid_type="UKRDC",
+        )
     )
 
     # Check MR3 is identified as related to MR1

@@ -4,11 +4,7 @@ from redis import Redis
 from sqlalchemy.orm import Session
 from ukrdc_sqla.ukrdc import PatientRecord
 
-from ukrdc_fastapi.dependencies import (
-    get_mirth,
-    get_redis,
-    get_ukrdc3,
-)
+from ukrdc_fastapi.dependencies import get_mirth, get_redis, get_ukrdc3
 from ukrdc_fastapi.dependencies.audit import (
     Auditer,
     AuditOperation,

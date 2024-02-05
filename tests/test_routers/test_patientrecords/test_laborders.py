@@ -2,7 +2,7 @@ from ukrdc_sqla.ukrdc import LabOrder, ResultItem
 
 from tests.utils import days_ago
 from ukrdc_fastapi.config import configuration
-from ukrdc_fastapi.schemas.patientrecord.laborder import LabOrderSchema
+from ukrdc_fastapi.schemas.patientrecord.laborder import LabOrderShortSchema
 
 
 async def test_record_laborders(client_authenticated):
@@ -10,6 +10,10 @@ async def test_record_laborders(client_authenticated):
         f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/laborders"
     )
     assert response.status_code == 200
+
+    items = response.json().get("items", [])
+    assert len(items) > 0
+    assert [LabOrderShortSchema(**x) for x in items]
 
 
 async def test_record_laborders_denied(client_authenticated):
@@ -56,8 +60,8 @@ async def test_laborder_delete(client_authenticated, ukrdc3_session):
     ukrdc3_session.commit()
 
     # Make sure the laborder was created
-    assert ukrdc3_session.query(LabOrder).get("LABORDER_TEMP")
-    assert ukrdc3_session.query(ResultItem).get("RESULTITEM_TEMP")
+    assert ukrdc3_session.get(LabOrder, "LABORDER_TEMP")
+    assert ukrdc3_session.get(ResultItem, "RESULTITEM_TEMP")
     response = await client_authenticated.get(
         f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/laborders/LABORDER_TEMP"
     )
@@ -74,8 +78,8 @@ async def test_laborder_delete(client_authenticated, ukrdc3_session):
         f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/laborders/LABORDER_TEMP"
     )
     assert response.status_code == 404
-    assert not ukrdc3_session.query(LabOrder).get("LABORDER_TEMP")
-    assert not ukrdc3_session.query(ResultItem).get("RESULTITEM_TEMP")
+    assert not ukrdc3_session.get(LabOrder, "LABORDER_TEMP")
+    assert not ukrdc3_session.get(ResultItem, "RESULTITEM_TEMP")
 
 
 async def test_laborder_delete_denied(client_authenticated):

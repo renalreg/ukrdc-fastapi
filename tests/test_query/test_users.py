@@ -29,7 +29,5 @@ def test_update_user_preferences_placeholder(users_session, superuser):
     assert prefs.placeholder is True
 
     # Ensure the update preference has been committed to the database
-    db_placeholder = users_session.query(UserPreference).get(
-        (superuser.id, "placeholder")
-    )
+    db_placeholder = users_session.get(UserPreference, (superuser.id, "placeholder"))
     assert db_placeholder

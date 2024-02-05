@@ -1,8 +1,9 @@
 import datetime
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Security
+from fastapi import APIRouter, Depends
 from fastapi import Query as QueryParam
+from fastapi import Security
 from mirth_client import MirthAPI
 from pydantic.fields import Field
 from redis import Redis
@@ -23,12 +24,12 @@ from ukrdc_fastapi.permissions.workitems import (
     apply_workitem_list_permission,
     assert_workitem_permission,
 )
-from ukrdc_fastapi.query.messages import get_messages
+from ukrdc_fastapi.query.messages import select_messages
 from ukrdc_fastapi.query.mirth.workitems import close_workitem, update_workitem
 from ukrdc_fastapi.query.workitems import (
     extend_workitem,
-    get_workitem_collection,
-    get_workitems_related_to_workitem,
+    select_workitem_collection,
+    select_workitems_related_to_workitem,
 )
 from ukrdc_fastapi.schemas.base import JSONModel
 from ukrdc_fastapi.schemas.empi import WorkItemExtendedSchema, WorkItemSchema
@@ -54,7 +55,7 @@ def _get_workitem(
     jtrace: Session = Depends(get_jtrace),
 ):
     """Retreive a particular work item from the EMPI"""
-    workitem_obj = jtrace.query(WorkItem).get(workitem_id)
+    workitem_obj = jtrace.get(WorkItem, workitem_id)
     if not workitem_obj:
         raise ResourceNotFoundError("Work item not found")
 
@@ -164,16 +165,16 @@ def workitem_collection(
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a list of other work items related to a particular work item"""
-    collection = get_workitem_collection(workitem_obj, jtrace)
+    stmt = select_workitem_collection(workitem_obj, jtrace)
+    stmt = apply_workitem_list_permission(stmt, user)
 
-    # Apply permissions
-    collection = apply_workitem_list_permission(collection, user)
+    collection = jtrace.scalars(stmt).all()
 
     # Add audit events
     for item in collection:
         audit.add_workitem(item)
 
-    return collection.all()
+    return collection
 
 
 @router.get(
@@ -188,16 +189,16 @@ def workitem_related(
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a list of other work items related to a particular work item"""
-    related = get_workitems_related_to_workitem(workitem_obj, jtrace)
+    stmt = select_workitems_related_to_workitem(workitem_obj, jtrace)
+    stmt = apply_workitem_list_permission(stmt, user)
 
-    # Apply permissions
-    related = apply_workitem_list_permission(related, user)
+    related = jtrace.scalars(stmt).all()
 
     # Add audit events
     for item in related:
         audit.add_workitem(item)
 
-    return related.all()
+    return related
 
 
 @router.get(
@@ -238,16 +239,13 @@ def workitem_messages(
     )
 
     # Get messages for NIs related to the work item
-    messages = get_messages(
-        errorsdb,
+    stmt = select_messages(
         statuses=status,
         nis=workitem_nis,
         facility=facility,
         since=since or worktiem_obj.creation_date - datetime.timedelta(hours=12),
         until=until or worktiem_obj.creation_date + datetime.timedelta(hours=12),
     )
+    stmt = apply_message_list_permissions(stmt, user)
 
-    # Apply permissions
-    messages = apply_message_list_permissions(messages, user)
-
-    return paginate(messages)
+    return paginate(errorsdb, stmt)

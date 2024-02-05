@@ -1,14 +1,15 @@
 from typing import Optional
 
 from redis import Redis
-from sqlalchemy import func
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
-from sqlalchemy.orm.query import Query
+from sqlalchemy.sql.selectable import Select
 from ukrdc_sqla.errorsdb import Latest, Message
 from ukrdc_sqla.ukrdc import Code, Facility, PatientRecord
 
 from ukrdc_fastapi.config import settings
 from ukrdc_fastapi.exceptions import MissingFacilityError
+from ukrdc_fastapi.query.utils import count_rows
 from ukrdc_fastapi.schemas.facility import (
     FacilityDataFlowSchema,
     FacilityDetailsSchema,
@@ -35,30 +36,37 @@ def get_facility(
     Returns:
         FacilityDetailsSchema: Matched facility
     """
-    facility = ukrdc3.query(Facility).filter(Facility.code == facility_code).first()
+    stmt = select(Facility).where(Facility.code == facility_code)
+    facility = ukrdc3.scalars(stmt).first()
 
     if not facility:
         raise MissingFacilityError(facility_code)
 
     # Get facility messages
-    messages = (
-        errorsdb.query(Latest)
+    stmt_messages = (
+        select(Latest)
         .join(Message)
-        .filter(Latest.facility == facility.code)
+        .where(Latest.facility == facility.code)
         .order_by(Message.received.desc())
     )
+    messages = errorsdb.scalars(stmt_messages)
 
     latest_message = messages.first()
-    patients_receiving_messages = messages.count()
-    patients_receiving_errors = messages.filter(Message.msg_status == "ERROR").count()
-
-    total_records = (
-        ukrdc3.query(PatientRecord)
-        .filter(PatientRecord.sendingfacility == facility_code)
-        .filter(PatientRecord.sendingextract.notin_(["PVMIG", "HSMIG"]))
-        .count()
+    patients_receiving_messages = count_rows(stmt_messages, errorsdb)
+    patients_receiving_errors = count_rows(
+        stmt_messages.where(Message.msg_status == "ERROR"), errorsdb
     )
 
+    # Get total number of records for this facility
+    stmt_total_records = (
+        select(PatientRecord)
+        .where(PatientRecord.sendingfacility == facility_code)
+        .where(PatientRecord.sendingextract.notin_(["PVMIG", "HSMIG"]))
+    )
+
+    total_records = count_rows(stmt_total_records, ukrdc3)
+
+    # Build statistics
     statistics = FacilityStatisticsSchema(
         total_patients=total_records,
         patients_receiving_messages=patients_receiving_messages,
@@ -99,18 +107,23 @@ def get_facility_extracts(
     Returns:
         FacilityExtractsSchema: Extract counts
     """
-    facility = ukrdc3.query(Facility).filter(Facility.code == facility_code).first()
+    stmt = select(Facility).where(Facility.code == facility_code)
+    facility = ukrdc3.scalars(stmt).first()
 
     if not facility:
         raise MissingFacilityError(facility_code)
 
-    query = (
-        ukrdc3.query(PatientRecord.sendingextract, func.count("*"))
-        .filter(PatientRecord.sendingfacility == facility_code)
+    stmt_extract_counts = (
+        select(PatientRecord.sendingextract, func.count("*"))
+        .where(PatientRecord.sendingfacility == facility_code)
         .group_by(PatientRecord.sendingextract)
     )
 
-    extracts = dict(query.all())
+    extract_counts = ukrdc3.execute(stmt_extract_counts).all()
+
+    extracts: dict[str, int] = {
+        row[0]: row[1] for row in extract_counts if row[0] is not None
+    }
 
     return FacilityExtractsSchema(
         ukrdc=extracts.get("UKRDC", 0),
@@ -127,7 +140,7 @@ def get_facility_extracts(
 
 
 def build_facilities_list(
-    facilities_query: Query, ukrdc3: Session, errorsdb: Session
+    facilities_stmt: Select, ukrdc3: Session, errorsdb: Session
 ) -> list[FacilityDetailsSchema]:
     """Build a list of FacilityDetailsSchema objects from a facilities query.
 
@@ -141,63 +154,69 @@ def build_facilities_list(
     """
 
     # Execute statement to retreive available facilities list for this user
-    available_facilities = facilities_query.all()
+    available_facilities = ukrdc3.scalars(facilities_stmt).all()
 
     # Pre-fetch descriptions for all facilities available to the user
     # We want to avoid using facility.description as this is an associationproxy,
     # meaning that a new query is generated for each access, in this case for each
     # facility in the list. We speed this up by orders of magnitude by fetching ALL
     # descriptions in one query.
-    descriptions = {
-        code.code: code.description
-        for code in ukrdc3.query(Code)
-        .filter(Code.coding_standard == "RR1+")
-        .filter(Code.code.in_([facility.code for facility in available_facilities]))
-    }
+    stmt_facility_codes = (
+        select(Code)
+        .where(Code.coding_standard == "RR1+")
+        .where(Code.code.in_([facility.code for facility in available_facilities]))
+    )
+    facility_codes = ukrdc3.scalars(stmt_facility_codes).all()
+    descriptions = {code.code: code.description for code in facility_codes}
 
     # Build statistics
-    total_records_q = (
-        ukrdc3.query(PatientRecord.sendingfacility, func.count("*"))
-        .filter(PatientRecord.sendingextract.notin_(["PVMIG", "HSMIG"]))
-        .filter(
+    stmt_total_records = (
+        select(PatientRecord.sendingfacility, func.count("*"))
+        .where(PatientRecord.sendingextract.notin_(["PVMIG", "HSMIG"]))
+        .where(
             PatientRecord.sendingfacility.in_(
                 [facility.code for facility in available_facilities]
             )
         )
         .group_by(PatientRecord.sendingfacility)
     )
-    total_records_dict = {row[0].upper(): row[1] for row in total_records_q}
+
+    total_records = ukrdc3.execute(stmt_total_records).all()
+    total_records_dict = {row[0].upper(): row[1] for row in total_records}
 
     # Get a count of each facility-status combination from latest messages
     # We can use these counts to build up all "current status" statistics,
     # e.g. number of patients most recently receiving error messages
-    status_counts_query = (
-        errorsdb.query(
-            Latest.facility, Message.msg_status, func.count(Message.msg_status)
-        )
+    stmt_status_counts = (
+        select(Latest.facility, Message.msg_status, func.count(Message.msg_status))
         .join(Message)
-        .filter(
+        .where(
             Latest.facility.in_([facility.code for facility in available_facilities])
         )
         .group_by(Latest.facility, Message.msg_status)
     )
+
+    status_counts = errorsdb.execute(stmt_status_counts).all()
+
     # Create an empty dict to store facility status counts
     status_counts_dict: dict[str, dict[str, int]] = {}
     # Iterate over each row in the query result
-    for row in status_counts_query:
+    for row in status_counts:
         # Set dict[facility][status] = count
         status_counts_dict.setdefault(row[0].upper(), {})[row[1]] = row[2]
 
     # Get the most recent message received time for each facility
-    most_recent_q = (
-        errorsdb.query(Latest.facility, func.max(Message.received))
+    stmt_most_recent = (
+        select(Latest.facility, func.max(Message.received))
         .join(Message)
-        .filter(
+        .where(
             Latest.facility.in_([facility.code for facility in available_facilities])
         )
         .group_by(Latest.facility)
     )
-    most_recent_dict = {row[0].upper(): row[1] for row in most_recent_q}
+
+    most_recent = errorsdb.execute(stmt_most_recent).all()
+    most_recent_dict = {row[0].upper(): row[1] for row in most_recent}
 
     # Build list of facility details
     facility_list: list[FacilityDetailsSchema] = []
@@ -259,14 +278,9 @@ def get_facilities(
     # Look for a pre-calculated cache of the facilities list (see `ukrdc_fastapi.tasks.repeated`)
     cache = BasicCache(redis, CacheKey.FACILITIES_LIST)
     if not cache.exists:
+        stmt = select(Facility).where(Facility.code.notin_(ABSTRACT_FACILITIES))
         cache.set(
-            build_facilities_list(
-                ukrdc3.query(Facility).filter(
-                    Facility.code.notin_(ABSTRACT_FACILITIES)
-                ),
-                ukrdc3,
-                errorsdb,
-            ),
+            build_facilities_list(stmt, ukrdc3, errorsdb),
             expire=settings.cache_facilities_list_seconds,
         )
 

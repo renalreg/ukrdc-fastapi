@@ -1,6 +1,6 @@
 from urllib.parse import quote
 from ukrdc_fastapi.config import configuration
-from .utils import commit_extra_patients, TEST_NUMBERS, BUMPER
+from .utils import commit_extra_patients, TEST_NUMBERS
 
 # NB: We only need the jtrace session here because our test utility function to create new patients uses it.
 # Long-term (post-JTRACE) it will not be required.
@@ -79,8 +79,11 @@ async def test_search_facility_superuser(
         response = await client_superuser.get(url)
         assert response.status_code == 200
 
-        returned_facilities = {item["sendingfacility"] for item in response.json()["items"]}
+        returned_facilities = {
+            item["sendingfacility"] for item in response.json()["items"]
+        }
         assert returned_facilities == {facility}
+
 
 async def test_search_extract_superuser(
     ukrdc3_session, jtrace_session, client_superuser
@@ -94,8 +97,11 @@ async def test_search_extract_superuser(
         response = await client_superuser.get(url)
         assert response.status_code == 200
 
-        returned_extracts = {item["sendingextract"] for item in response.json()["items"]}
+        returned_extracts = {
+            item["sendingextract"] for item in response.json()["items"]
+        }
         assert returned_extracts == {extract}
+
 
 async def test_search_name(ukrdc3_session, jtrace_session, client_superuser):
     # Add extra test items
@@ -176,7 +182,9 @@ async def test_search_implicit_facility(
         response = await client_superuser.get(url)
         assert response.status_code == 200
 
-        returned_facilities = {item["sendingfacility"] for item in response.json()["items"]}
+        returned_facilities = {
+            item["sendingfacility"] for item in response.json()["items"]
+        }
         assert returned_facilities == {facility}
 
 

@@ -1,13 +1,10 @@
-from typing import Optional
-
 from fastapi import APIRouter, Depends, HTTPException, Security
 from fastapi.responses import Response
-from sqlalchemy.orm import defer
-from ukrdc_sqla.ukrdc import (
-    Document,
-    PatientRecord,
-)
+from sqlalchemy import select
+from sqlalchemy.orm import Session, defer
+from ukrdc_sqla.ukrdc import Document, PatientRecord
 
+from ukrdc_fastapi.dependencies import get_ukrdc3
 from ukrdc_fastapi.dependencies.audit import (
     Auditer,
     AuditOperation,
@@ -34,6 +31,7 @@ router = APIRouter()
 )
 def patient_documents(
     patient_record: PatientRecord = Depends(_get_patientrecord),
+    ukrdc3: Session = Depends(get_ukrdc3),
     sorter: SQLASorter = Depends(
         make_sqla_sorter(
             [Document.documenttime, Document.updatedon],
@@ -43,6 +41,15 @@ def patient_documents(
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's documents"""
+
+    # NOTE: We defer the 'stream' column to avoid sending the full PDF file content
+    # when we're just querying the list of documents.
+    stmt = (
+        select(Document)
+        .where(Document.pid == patient_record.pid)
+        .options(defer("stream"))
+    )
+
     audit.add_event(
         Resource.DOCUMENTS,
         None,
@@ -51,9 +58,8 @@ def patient_documents(
             Resource.PATIENT_RECORD, patient_record.pid, AuditOperation.READ
         ),
     )
-    # NOTE: We defer the 'stream' column to avoid sending the full PDF file content
-    # when we're just querying the list of documents.
-    return paginate(sorter.sort(patient_record.documents.options(defer("stream"))))
+
+    return paginate(ukrdc3, sorter.sort(stmt))
 
 
 @router.get(
@@ -64,10 +70,13 @@ def patient_documents(
 def patient_document(
     document_id: str,
     patient_record: PatientRecord = Depends(_get_patientrecord),
+    ukrdc3: Session = Depends(get_ukrdc3),
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's document information"""
-    document_obj = patient_record.documents.filter(Document.id == document_id).first()
+    stmt = select(Document).where(Document.id == document_id)
+    document_obj = ukrdc3.execute(stmt).scalar_one_or_none()
+
     if not document_obj:
         raise HTTPException(404, detail="Document not found")
 
@@ -90,12 +99,13 @@ def patient_document(
 def patient_document_download(
     document_id: str,
     patient_record: PatientRecord = Depends(_get_patientrecord),
+    ukrdc3: Session = Depends(get_ukrdc3),
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's document file"""
-    document_obj: Optional[Document] = patient_record.documents.filter(
-        Document.id == document_id
-    ).first()
+    stmt = select(Document).where(Document.id == document_id)
+    document_obj = ukrdc3.execute(stmt).scalar_one_or_none()
+
     if not document_obj:
         raise HTTPException(404, detail="Document not found")
 

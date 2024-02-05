@@ -1,4 +1,7 @@
+from typing import Any
+
 from pydantic import Field
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import WorkItem
 from ukrdc_sqla.errorsdb import Latest, Message
@@ -21,6 +24,43 @@ class AdminCountsSchema(OrmModel):
     )
 
 
+def _int_or_zero(value: Any) -> int:
+    """
+    If the value is an int, return it, otherwise return 0.
+
+    Really this is pointless as everywhere we use it we're
+    counting rows, so it will always be an int, but it's
+    here for completeness, and to make mypy happy.
+
+    Args:
+        value (Any): Value to check
+
+    Returns:
+        int: Value or 0
+    """
+    return value if isinstance(value, int) else 0
+
+
+def _open_workitems_count(jtrace: Session) -> int:
+    query = select(func.count()).select_from(WorkItem).where(WorkItem.status == 1)
+    return _int_or_zero(jtrace.execute(query).scalar())
+
+
+def _distinct_patients_count(ukrdc3: Session) -> int:
+    query = select(func.count(PatientRecord.ukrdcid.distinct()))
+    return _int_or_zero(ukrdc3.execute(query).scalar())
+
+
+def _patients_receiving_errors_count(errorsdb: Session) -> int:
+    query = (
+        select(func.count())
+        .select_from(Latest)
+        .join(Message)
+        .where(Message.msg_status == "ERROR")
+    )
+    return _int_or_zero(errorsdb.execute(query).scalar())
+
+
 def get_admin_counts(
     ukrdc3: Session, jtrace: Session, errorsdb: Session
 ) -> AdminCountsSchema:
@@ -34,17 +74,8 @@ def get_admin_counts(
     Returns:
         AdminCountsSchema: Counts of various items
     """
-    open_workitems_count = jtrace.query(WorkItem).filter(WorkItem.status == 1).count()
-    distinct_patients_count = ukrdc3.query(PatientRecord.ukrdcid).distinct().count()
-    patients_receiving_errors_count = (
-        errorsdb.query(Latest)
-        .join(Message)
-        .filter(Message.msg_status == "ERROR")
-        .count()
-    )
-
     return AdminCountsSchema(
-        open_workitems=open_workitems_count,
-        distinct_patients=distinct_patients_count,
-        patients_receiving_errors=patients_receiving_errors_count,
+        open_workitems=_open_workitems_count(jtrace),
+        distinct_patients=_distinct_patients_count(ukrdc3),
+        patients_receiving_errors=_patients_receiving_errors_count(errorsdb),
     )

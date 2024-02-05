@@ -96,9 +96,9 @@ def _add_extra_diagnoses(session):
 
 def test_get_patient_diagnosis(ukrdc3_session):
     _add_extra_diagnoses(ukrdc3_session)
-    record = ukrdc3_session.query(PatientRecord).get(PID_1)
+    record = ukrdc3_session.get(PatientRecord, PID_1)
 
-    diagnoses = get_patient_diagnosis(record)
+    diagnoses = get_patient_diagnosis(record, ukrdc3_session)
 
     # Check all rows are returned
     assert len(diagnoses) == 2
@@ -109,9 +109,9 @@ def test_get_patient_diagnosis(ukrdc3_session):
 
 def test_get_patient_renal_diagnosis(ukrdc3_session):
     _add_extra_diagnoses(ukrdc3_session)
-    record = ukrdc3_session.query(PatientRecord).get(PID_1)
+    record = ukrdc3_session.get(PatientRecord, PID_1)
 
-    renal_diagnoses = get_patient_renal_diagnosis(record)
+    renal_diagnoses = get_patient_renal_diagnosis(record, ukrdc3_session)
 
     # Check all rows are returned
     assert len(renal_diagnoses) == 1
@@ -121,9 +121,9 @@ def test_get_patient_renal_diagnosis(ukrdc3_session):
 
 def test_get_patient_cause_of_death(ukrdc3_session):
     _add_extra_diagnoses(ukrdc3_session)
-    record = ukrdc3_session.query(PatientRecord).get(PID_1)
+    record = ukrdc3_session.get(PatientRecord, PID_1)
 
-    cause_of_death = get_patient_cause_of_death(record)
+    cause_of_death = get_patient_cause_of_death(record, ukrdc3_session)
 
     # Check all rows are returned
     assert len(cause_of_death) == 1

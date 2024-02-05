@@ -1,8 +1,9 @@
 import datetime
 from typing import Optional
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
-from sqlalchemy.orm.query import Query
+from sqlalchemy.sql.selectable import Select
 from ukrdc_sqla.errorsdb import Latest, Message
 from ukrdc_sqla.stats import ErrorHistory
 from ukrdc_sqla.ukrdc import Code, Facility
@@ -12,12 +13,11 @@ from ukrdc_fastapi.schemas.common import HistoryPoint
 from ukrdc_fastapi.utils import daterange
 
 
-def get_patients_latest_errors(
+def query_patients_latest_errors(
     ukrdc3: Session,
-    errorsdb: Session,
     facility_code: str,
     channels: Optional[list[str]] = None,
-) -> Query:
+) -> Select:
     """Retrieve the most recent error messages for each patient currently receiving errors.
 
     Args:
@@ -28,23 +28,24 @@ def get_patients_latest_errors(
     Returns:
         Query: SQLAlchemy query
     """
-    facility = ukrdc3.query(Facility).filter(Facility.code == facility_code).first()
+    stmt = select(Facility).where(Facility.code == facility_code)
+    facility = ukrdc3.scalars(stmt).first()
 
     if not facility:
         raise MissingFacilityError(facility_code)
 
-    query = (
-        errorsdb.query(Message)
+    stmt_errors = (
+        select(Message)
         .join(Latest)
-        .filter(Latest.facility == facility.code)
-        .filter(Message.msg_status == "ERROR")
+        .where(Latest.facility == facility.code)
+        .where(Message.msg_status == "ERROR")
     )
 
     # Optionally filter by channels
     if channels is not None:
-        query = query.filter(Message.channel_id.in_(channels))
+        stmt_errors = stmt_errors.where(Message.channel_id.in_(channels))
 
-    return query
+    return stmt_errors
 
 
 def get_errors_history(
@@ -67,11 +68,12 @@ def get_errors_history(
     Returns:
         list[HistoryPoint]: Time-series error data
     """
-    code = (
-        ukrdc3.query(Code)
-        .filter(Code.coding_standard == "RR1+", Code.code == facility_code)
-        .first()
+    stmt_code = (
+        select(Code)
+        .where(Code.coding_standard == "RR1+")
+        .where(Code.code == facility_code)
     )
+    code = ukrdc3.scalars(stmt_code).first()
 
     if not code:
         raise MissingFacilityError(facility_code)
@@ -83,12 +85,13 @@ def get_errors_history(
     range_until: datetime.date = until or datetime.date.today()
 
     # Get history within range
-    history = (
-        statsdb.query(ErrorHistory)
-        .filter(ErrorHistory.facility == facility_code)
-        .filter(ErrorHistory.date >= range_since)
-        .filter(ErrorHistory.date <= range_until)
+    stmt_history = (
+        select(ErrorHistory)
+        .where(ErrorHistory.facility == facility_code)
+        .where(ErrorHistory.date >= range_since)
+        .where(ErrorHistory.date <= range_until)
     )
+    history = statsdb.scalars(stmt_history).all()
 
     # Create an initially empty full history dictionary
     full_history: dict[datetime.date, int] = {

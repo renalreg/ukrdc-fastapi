@@ -1,9 +1,11 @@
 import datetime
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Security
+from fastapi import APIRouter, Depends
 from fastapi import Query as QueryParam
+from fastapi import Security
 from fastapi.responses import Response
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_204_NO_CONTENT
 from ukrdc_sqla.errorsdb import Message
@@ -13,6 +15,7 @@ from ukrdc_sqla.ukrdc import (
     Observation,
     PatientRecord,
     ResultItem,
+    LabOrder,
     Survey,
     Transplant,
     Treatment,
@@ -30,12 +33,12 @@ from ukrdc_fastapi.permissions.messages import (
     apply_message_list_permissions,
     assert_message_permissions,
 )
-from ukrdc_fastapi.query.audit import get_auditevents_related_to_patientrecord
+from ukrdc_fastapi.query.audit import select_auditevents_related_to_patientrecord
 from ukrdc_fastapi.query.delete import (
     delete_patientrecord,
     summarise_delete_patientrecord,
 )
-from ukrdc_fastapi.query.messages import get_messages_related_to_patientrecord
+from ukrdc_fastapi.query.messages import select_messages_related_to_patientrecord
 from ukrdc_fastapi.schemas.audit import AuditEventSchema
 from ukrdc_fastapi.schemas.delete import DeletePidRequest, DeletePIDResponseSchema
 from ukrdc_fastapi.schemas.message import MessageSchema, MinimalMessageSchema
@@ -43,9 +46,7 @@ from ukrdc_fastapi.schemas.patientrecord import (
     DialysisSessionSchema,
     PatientRecordSchema,
 )
-from ukrdc_fastapi.schemas.patientrecord.laborder import (
-    ResultItemServiceSchema,
-)
+from ukrdc_fastapi.schemas.patientrecord.laborder import ResultItemServiceSchema
 from ukrdc_fastapi.schemas.patientrecord.medication import MedicationSchema
 from ukrdc_fastapi.schemas.patientrecord.observation import ObservationSchema
 from ukrdc_fastapi.schemas.patientrecord.procedure import TransplantSchema
@@ -110,16 +111,16 @@ def patient_audit(
     Retreive a page of audit events related to a particular master record.
     """
     page = paginate(
+        auditdb,
         sorter.sort(
-            get_auditevents_related_to_patientrecord(
+            select_auditevents_related_to_patientrecord(
                 patient_record,
-                auditdb,
                 resource=resource,
                 operation=operation,
                 since=since,
                 until=until,
             )
-        )
+        ),
     )
 
     for item in page.items:  # type: ignore
@@ -148,17 +149,14 @@ def patient_messages(
     Retreive a list of messages related to a particular patient record.
     By default returns message created within the last 365 days.
     """
-    messages = get_messages_related_to_patientrecord(
+    stmt = select_messages_related_to_patientrecord(
         patient_record,
-        errorsdb,
         statuses=status,
         channels=channel,
         since=since,
         until=until,
     )
-
-    # Apply permissions
-    messages = apply_message_list_permissions(messages, user)
+    stmt = apply_message_list_permissions(stmt, user)
 
     # Add audit events
     audit.add_event(
@@ -169,7 +167,7 @@ def patient_messages(
             Resource.PATIENT_RECORD, patient_record.pid, AuditOperation.READ
         ),
     )
-    return paginate(sorter.sort(messages))
+    return paginate(errorsdb, sorter.sort(stmt))
 
 
 @router.get(
@@ -188,21 +186,21 @@ def patient_record_latest_message(
     if received within the last year."""
 
     # Get messages related to the master record
-    msgs = (
-        get_messages_related_to_patientrecord(
+    stmt = (
+        select_messages_related_to_patientrecord(
             patient_record,
-            errorsdb,
             since=datetime.datetime.utcnow() - datetime.timedelta(days=365),
         )
-        .filter(Message.facility != "TRACING")
-        .filter(Message.filename.isnot(None))
+        .where(Message.facility != "TRACING")
+        .where(Message.filename.isnot(None))
     )
+    stmt = apply_message_list_permissions(stmt, user)
 
-    # Apply permissions
-    msgs = apply_message_list_permissions(msgs, user)
+    # Sort by received date
+    stmt = stmt.order_by(Message.received.desc())
 
     # Get latest message
-    latest = msgs.order_by(Message.received.desc()).first()
+    latest = errorsdb.scalars(stmt).first()
 
     if not latest:
         return Response(status_code=HTTP_204_NO_CONTENT)
@@ -262,6 +260,7 @@ def patient_delete(
 )
 def patient_medications(
     patient_record: PatientRecord = Depends(_get_patientrecord),
+    ukrdc3: Session = Depends(get_ukrdc3),
     sorter: SQLASorter = Depends(
         make_sqla_sorter(
             [Medication.fromtime, Medication.totime],
@@ -271,6 +270,8 @@ def patient_medications(
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's medications"""
+    stmt = select(Medication).where(Medication.pid == patient_record.pid)
+
     audit.add_event(
         Resource.MEDICATIONS,
         None,
@@ -279,7 +280,8 @@ def patient_medications(
             Resource.PATIENT_RECORD, patient_record.pid, AuditOperation.READ
         ),
     )
-    return sorter.sort(patient_record.medications).all()
+
+    return ukrdc3.scalars(sorter.sort(stmt)).all()
 
 
 # Treatments
@@ -292,6 +294,7 @@ def patient_medications(
 )
 def patient_treatments(
     patient_record: PatientRecord = Depends(_get_patientrecord),
+    ukrdc3: Session = Depends(get_ukrdc3),
     sorter: SQLASorter = Depends(
         make_sqla_sorter(
             [Treatment.fromtime, Treatment.totime],
@@ -301,6 +304,8 @@ def patient_treatments(
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's treatments"""
+    stmt = select(Treatment).where(Treatment.pid == patient_record.pid)
+
     audit.add_event(
         Resource.TREATMENTS,
         None,
@@ -309,7 +314,8 @@ def patient_treatments(
             Resource.PATIENT_RECORD, patient_record.pid, AuditOperation.READ
         ),
     )
-    return sorter.sort(patient_record.treatments).all()
+
+    return ukrdc3.scalars(sorter.sort(stmt)).all()
 
 
 @router.get(
@@ -319,6 +325,7 @@ def patient_treatments(
 )
 def patient_transplants(
     patient_record: PatientRecord = Depends(_get_patientrecord),
+    ukrdc3: Session = Depends(get_ukrdc3),
     sorter: SQLASorter = Depends(
         make_sqla_sorter(
             [Transplant.proceduretime, Transplant.creation_date],
@@ -328,6 +335,8 @@ def patient_transplants(
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's transplant procedures"""
+    stmt = select(Transplant).where(Transplant.pid == patient_record.pid)
+
     audit.add_event(
         Resource.TRANSPLANTS,
         None,
@@ -337,7 +346,7 @@ def patient_transplants(
         ),
     )
 
-    return sorter.sort(patient_record.transplants).all()
+    return ukrdc3.scalars(sorter.sort(stmt)).all()
 
 
 @router.get(
@@ -347,6 +356,7 @@ def patient_transplants(
 )
 def patient_surveys(
     patient_record: PatientRecord = Depends(_get_patientrecord),
+    ukrdc3: Session = Depends(get_ukrdc3),
     sorter: SQLASorter = Depends(
         make_sqla_sorter(
             [Survey.surveytime, Survey.updatedon],
@@ -356,6 +366,8 @@ def patient_surveys(
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's surveys"""
+    stmt = select(Survey).where(Survey.pid == patient_record.pid)
+
     audit.add_event(
         Resource.SURVEYS,
         None,
@@ -364,7 +376,8 @@ def patient_surveys(
             Resource.PATIENT_RECORD, patient_record.pid, AuditOperation.READ
         ),
     )
-    return sorter.sort(patient_record.surveys).all()
+
+    return ukrdc3.scalars(sorter.sort(stmt)).all()
 
 
 @router.get(
@@ -374,6 +387,7 @@ def patient_surveys(
 )
 def patient_observations(
     patient_record: PatientRecord = Depends(_get_patientrecord),
+    ukrdc3: Session = Depends(get_ukrdc3),
     code: Optional[list[str]] = QueryParam([]),
     sorter: SQLASorter = Depends(
         make_sqla_sorter(
@@ -384,9 +398,10 @@ def patient_observations(
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's lab orders"""
-    observations = patient_record.observations
+    stmt = select(Observation).where(Observation.pid == patient_record.pid)
+
     if code:
-        observations = observations.filter(Observation.observation_code.in_(code))
+        stmt = stmt.where(Observation.observation_code.in_(code))
 
     audit.add_event(
         Resource.OBSERVATIONS,
@@ -397,7 +412,7 @@ def patient_observations(
         ),
     )
 
-    return paginate(sorter.sort(observations))
+    return paginate(ukrdc3, sorter.sort(stmt))
 
 
 @router.get(
@@ -407,6 +422,7 @@ def patient_observations(
 )
 def patient_dialysis_sessions(
     patient_record: PatientRecord = Depends(_get_patientrecord),
+    ukrdc3: Session = Depends(get_ukrdc3),
     sorter: SQLASorter = Depends(
         make_sqla_sorter(
             [DialysisSession.proceduretime, DialysisSession.creation_date],
@@ -416,7 +432,7 @@ def patient_dialysis_sessions(
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's lab orders"""
-    sessions = patient_record.dialysis_sessions
+    stmt = select(DialysisSession).where(DialysisSession.pid == patient_record.pid)
 
     audit.add_event(
         Resource.DIALYSISSESSIONS,
@@ -427,7 +443,7 @@ def patient_dialysis_sessions(
         ),
     )
 
-    return paginate(sorter.sort(sessions))
+    return paginate(ukrdc3, sorter.sort(stmt))
 
 
 # Available codes used to filter other resources
@@ -440,10 +456,15 @@ def patient_dialysis_sessions(
 )
 def patient_observation_codes(
     patient_record: PatientRecord = Depends(_get_patientrecord),
+    ukrdc3: Session = Depends(get_ukrdc3),
 ):
     """Retreive a list of observation codes available for a specific patient"""
-    codes = patient_record.observations.distinct(Observation.observation_code)
-    return {item.observation_code for item in codes.all()}
+    stmt = (
+        select(Observation.observation_code)
+        .where(Observation.pid == patient_record.pid)
+        .distinct()
+    )
+    return ukrdc3.scalars(stmt).all()
 
 
 @router.get(
@@ -453,14 +474,23 @@ def patient_observation_codes(
 )
 def patient_result_services(
     patient_record: PatientRecord = Depends(_get_patientrecord),
+    ukrdc3: Session = Depends(get_ukrdc3),
 ):
     """Retreive a list of resultitem services available for a specific patient"""
-    services = patient_record.result_items.distinct(ResultItem.service_id)
+    stmt = (
+        select(ResultItem)
+        .join(LabOrder)
+        .where(LabOrder.pid == patient_record.pid)
+        .distinct(ResultItem.service_id)
+    )
+
+    services = ukrdc3.scalars(stmt).all()
+
     return [
         ResultItemServiceSchema(
             id=item.service_id,
             description=item.service_id_description,
             standard=item.service_id_std,
         )
-        for item in services.all()
+        for item in services
     ]

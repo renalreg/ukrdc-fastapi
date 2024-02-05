@@ -2,6 +2,7 @@ import hashlib
 from dataclasses import dataclass
 
 from fastapi.exceptions import HTTPException
+from sqlalchemy import select
 from sqlalchemy.orm.session import Session
 from ukrdc_sqla.empi import LinkRecord, MasterRecord, Person, PidXRef, WorkItem
 from ukrdc_sqla.ukrdc import PatientRecord
@@ -41,21 +42,20 @@ def _find_empi_items_to_delete(jtrace: Session, pid: str) -> EMPIDeleteItems:
     to_delete = EMPIDeleteItems(
         persons=[], master_records=[], pidxrefs=[], work_items=[], link_records=[]
     )
-    to_delete.pidxrefs = jtrace.query(PidXRef).filter(PidXRef.pid == pid).all()
-    to_delete.persons = jtrace.query(Person).filter(Person.localid == pid).all()
+
+    to_delete.pidxrefs = jtrace.scalars(select(PidXRef).where(PidXRef.pid == pid)).all()
+    to_delete.persons = jtrace.scalars(
+        select(Person).where(Person.localid == pid)
+    ).all()
 
     for person_record in to_delete.persons:
         # Find work items related to person
-        to_delete.work_items.extend(
-            jtrace.query(WorkItem).filter(WorkItem.person_id == person_record.id).all()
-        )
+        stmt = select(WorkItem).where(WorkItem.person_id == person_record.id)
+        to_delete.work_items.extend(jtrace.scalars(stmt).all())
 
         # Find link records related to person
-        link_records_related_to_person = (
-            jtrace.query(LinkRecord)
-            .filter(LinkRecord.person_id == person_record.id)
-            .all()
-        )
+        stmt = select(LinkRecord).where(LinkRecord.person_id == person_record.id)
+        link_records_related_to_person = jtrace.scalars(stmt).all()
         to_delete.link_records.extend(link_records_related_to_person)
 
         # Find master IDs directly related to Person
@@ -64,30 +64,24 @@ def _find_empi_items_to_delete(jtrace: Session, pid: str) -> EMPIDeleteItems:
         ]
 
         for master_id in master_ids:
-            # Find link records related to the Master Record but NOT the Person
-            # currently being deleted
-            link_records_related_to_other_persons = (
-                jtrace.query(LinkRecord)
-                .filter(
-                    LinkRecord.master_id == master_id,
-                    LinkRecord.person_id != person_record.id,
-                )
-                .all()
+            # Find link records related to the Master Record but NOT the Person currently being deleted
+            stmt = select(LinkRecord).where(
+                LinkRecord.master_id == master_id,
+                LinkRecord.person_id != person_record.id,
             )
+            link_records_related_to_other_persons = jtrace.scalars(stmt).all()
 
-            # If the above query comes back empty, the Master Record is ONLY
-            # linked to the Person being deleted, and so can itself be deleted
+            # If the above query comes back empty, the Master Record is ONLY linked to the Person being deleted, and so can itself be deleted
             if not link_records_related_to_other_persons:
-                master_record = jtrace.query(MasterRecord).get(master_id)
+                master_record = jtrace.get(MasterRecord, master_id)
                 if master_record:
                     # Add the Master Record to be deleted
                     to_delete.master_records.append(master_record)
                     # Find work items related to master record
-                    to_delete.work_items.extend(
-                        jtrace.query(WorkItem)
-                        .filter(WorkItem.master_id == master_record.id)
-                        .all()
+                    stmt = select(WorkItem).where(
+                        WorkItem.master_id == master_record.id
                     )
+                    to_delete.work_items.extend(jtrace.scalars(stmt).all())
 
     open_work_items: list[WorkItem] = [
         work_item for work_item in to_delete.work_items if work_item.status == 1
@@ -135,6 +129,9 @@ def summarise_delete_patientrecord(
     Returns:
         DeletePIDResponseSchema: Summary of database items to be deleted
     """
+    if not record_to_delete.pid:
+        raise ValueError("Target PatientRecord does not have a PID")  # pragma: no cover
+
     empi_to_delete = _find_empi_items_to_delete(jtrace, record_to_delete.pid)
 
     return _create_delete_patientrecord_summary(record_to_delete, empi_to_delete)
@@ -160,6 +157,9 @@ def delete_patientrecord(
     Returns:
         DeletePIDResponseSchema:  Summary of database items deleted
     """
+    if not record_to_delete.pid:
+        raise ValueError("Target PatientRecord does not have a PID")  # pragma: no cover
+
     empi_to_delete = _find_empi_items_to_delete(jtrace, record_to_delete.pid)
 
     summary = _create_delete_patientrecord_summary(

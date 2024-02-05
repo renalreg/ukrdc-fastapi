@@ -1,3 +1,4 @@
+from sqlalchemy import select
 from ukrdc_fastapi.config import configuration
 from ukrdc_fastapi.models.audit import AuditEvent
 from ukrdc_fastapi.schemas.empi import WorkItemExtendedSchema, WorkItemSchema
@@ -17,6 +18,8 @@ def _verify_workitem_audit(workitem: WorkItemSchema, workitem_event: AuditEvent)
         child for child in workitem_event.children if child.resource == "PERSON"
     ][0]
 
+    assert workitem.master_record
+    assert workitem.person
     assert master_record_event.resource_id == str(workitem.master_record.id)
     assert person_event.resource_id == str(workitem.person.id)
 
@@ -37,6 +40,9 @@ def _verify_extended_workitem_audit(
 
     expected_master_ids = set()
     expected_person_ids = set()
+
+    assert workitem.destination.master_record
+    assert workitem.incoming.person
 
     for master_record in workitem.incoming.master_records:
         expected_master_ids.add(str(master_record.id))
@@ -59,7 +65,7 @@ async def test_workitems_list(client_superuser, audit_session):
     assert response.status_code == 200
     workitems = [WorkItemSchema(**wi) for wi in response.json().get("items")]
 
-    events = audit_session.query(AuditEvent).all()
+    events = audit_session.scalars(select(AuditEvent)).all()
 
     workitem_events = [event for event in events if event.resource == "WORKITEM"]
     assert len(workitem_events) == len(workitems)
@@ -73,7 +79,7 @@ async def test_workitem_detail(client_superuser, audit_session):
     assert response.status_code == 200
     wi = WorkItemExtendedSchema(**response.json())
 
-    events = audit_session.query(AuditEvent).all()
+    events = audit_session.scalars(select(AuditEvent)).all()
     assert len(events) == 6
 
     primary_event = events[0]
@@ -90,7 +96,7 @@ async def test_workitem_update(client_superuser, audit_session):
     assert response.status_code == 200
     assert response.json().get("status") == "success"
 
-    events = audit_session.query(AuditEvent).all()
+    events = audit_session.scalars(select(AuditEvent)).all()
     assert len(events) == 1
 
     event = events[0]
@@ -106,7 +112,7 @@ async def test_workitem_close(client_superuser, audit_session):
     )
     assert response.status_code == 200
 
-    events = audit_session.query(AuditEvent).all()
+    events = audit_session.scalars(select(AuditEvent)).all()
     assert len(events) == 1
 
     event = events[0]
@@ -125,7 +131,7 @@ async def test_workitems_related(client_superuser, audit_session):
     returned_ids = {item.id for item in workitems}
     assert returned_ids == {2, 3, 4}
 
-    events = audit_session.query(AuditEvent).all()
+    events = audit_session.scalars(select(AuditEvent)).all()
 
     workitem_events = [event for event in events if event.resource == "WORKITEM"]
     assert len(workitem_events) == len(workitems)
@@ -140,7 +146,7 @@ async def test_workitem_messages(client_superuser, audit_session):
     )
     assert response.status_code == 200
 
-    events = audit_session.query(AuditEvent).all()
+    events = audit_session.scalars(select(AuditEvent)).all()
     assert len(events) == 2
 
     event = events[0]
@@ -149,7 +155,7 @@ async def test_workitem_messages(client_superuser, audit_session):
     assert event.resource == "WORKITEM"
     assert event.operation == "READ"
     assert event.resource_id == "1"
-    assert event.parent_id == None
+    assert event.parent_id is None
 
     child_event = event.children[0]
     assert child_event.resource == "MESSAGES"

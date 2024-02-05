@@ -8,6 +8,10 @@ async def test_record_resultitems(client_superuser):
     )
     assert response.status_code == 200
 
+    items = response.json().get("items", [])
+    assert len(items) > 0
+    assert [ResultItemSchema(**x) for x in items]
+
 
 async def test_resultitems_list_filtered_serviceId(client_superuser):
     # Filter by NI
@@ -62,3 +66,12 @@ async def test_resultitem_delete_denied(client_authenticated):
         f"{configuration.base_url}/patientrecords/PYTEST03:PV:00000000A/results/RESULTITEM1"
     )
     assert response.status_code == 403
+
+
+async def test_record_resultitem_services(client_superuser):
+    response = await client_superuser.get(
+        f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/result_services"
+    )
+    assert response.status_code == 200
+    item_ids = {item.get("id") for item in response.json()}
+    assert item_ids == {"SERVICE_ID_1", "SERVICE_ID_2"}

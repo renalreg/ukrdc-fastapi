@@ -33,11 +33,19 @@ async def update_workitem(
     Returns:
         MirthMessageResponseSchema: Mirth API response object
     """
+    if not workitem.id:
+        raise ValueError("WorkItem has no ID")  # pragma: no cover
+
+    target_status: Optional[int] = status or workitem.status
+
+    if not target_status:
+        raise ValueError("WorkItem status is not valid")  # pragma: no cover
+
     return await safe_send_mirth_message_to_name(
         "WorkItemUpdate",
         build_update_workitem_message(
             workitem.id,
-            status or workitem.status,
+            target_status,
             comment or workitem.description,
             user_id,
         ),
@@ -65,6 +73,9 @@ async def close_workitem(
     Returns:
         MirthMessageResponseSchema: Mirth API response object
     """
+    if not workitem.id:
+        raise ValueError("WorkItem has no ID")  # pragma: no cover
+
     return await safe_send_mirth_message_to_name(
         "WorkItemUpdate",
         build_close_workitem_message(workitem.id, comment or "", user_id),

@@ -6,7 +6,7 @@ from ukrdc_fastapi.query.mirth import export
 
 async def test_export_all_to_pv(ukrdc3_session, redis_session, mirth_session):
     response = await export.export_all_to_pv(
-        ukrdc3_session.query(PatientRecord).get("PYTEST01:PV:00000000A"),
+        ukrdc3_session.get(PatientRecord, "PYTEST01:PV:00000000A"),
         mirth_session,
         redis_session,
     )
@@ -19,7 +19,7 @@ async def test_export_all_to_pv(ukrdc3_session, redis_session, mirth_session):
 
 async def test_record_export_tests(ukrdc3_session, redis_session, mirth_session):
     response = await export.export_tests_to_pv(
-        ukrdc3_session.query(PatientRecord).get("PYTEST01:PV:00000000A"),
+        ukrdc3_session.get(PatientRecord, "PYTEST01:PV:00000000A"),
         mirth_session,
         redis_session,
     )
@@ -32,7 +32,7 @@ async def test_record_export_tests(ukrdc3_session, redis_session, mirth_session)
 
 async def test_record_export_docs(ukrdc3_session, redis_session, mirth_session):
     response = await export.export_docs_to_pv(
-        ukrdc3_session.query(PatientRecord).get("PYTEST01:PV:00000000A"),
+        ukrdc3_session.get(PatientRecord, "PYTEST01:PV:00000000A"),
         mirth_session,
         redis_session,
     )
@@ -45,7 +45,7 @@ async def test_record_export_docs(ukrdc3_session, redis_session, mirth_session):
 
 async def test_record_export_radar(ukrdc3_session, redis_session, mirth_session):
     response = await export.export_all_to_radar(
-        ukrdc3_session.query(PatientRecord).get("PYTEST01:PV:00000000A"),
+        ukrdc3_session.get(PatientRecord, "PYTEST01:PV:00000000A"),
         mirth_session,
         redis_session,
     )
@@ -71,7 +71,7 @@ async def test_record_export_pkb(ukrdc3_session, redis_session, mirth_session):
 
     # Iterate over each message response
     for response in await export.export_all_to_pkb(
-        ukrdc3_session.query(PatientRecord).get(PID_1),
+        ukrdc3_session.get(PatientRecord, PID_1),
         ukrdc3_session,
         mirth_session,
         redis_session,

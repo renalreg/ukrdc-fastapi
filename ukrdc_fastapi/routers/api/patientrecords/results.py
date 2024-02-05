@@ -1,15 +1,13 @@
 import datetime
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Security
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi import Query as QueryParam
+from fastapi import Security
 from fastapi.responses import Response
+from sqlalchemy import select
 from sqlalchemy.orm import Session
-from ukrdc_sqla.ukrdc import (
-    LabOrder,
-    PatientRecord,
-    ResultItem,
-)
+from ukrdc_sqla.ukrdc import LabOrder, PatientRecord, ResultItem
 
 from ukrdc_fastapi.dependencies import get_ukrdc3
 from ukrdc_fastapi.dependencies.audit import (
@@ -19,9 +17,7 @@ from ukrdc_fastapi.dependencies.audit import (
     get_auditer,
 )
 from ukrdc_fastapi.dependencies.auth import Permissions, auth
-from ukrdc_fastapi.schemas.patientrecord.laborder import (
-    ResultItemSchema,
-)
+from ukrdc_fastapi.schemas.patientrecord.laborder import ResultItemSchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
 from ukrdc_fastapi.utils.sort import SQLASorter, make_sqla_sorter
 
@@ -37,6 +33,7 @@ router = APIRouter()
 )
 def patient_results(
     patient_record: PatientRecord = Depends(_get_patientrecord),
+    ukrdc3: Session = Depends(get_ukrdc3),
     service_id: Optional[list[str]] = QueryParam([]),
     order_id: Optional[list[str]] = QueryParam([]),
     since: Optional[datetime.datetime] = None,
@@ -50,17 +47,16 @@ def patient_results(
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's lab orders"""
-
-    query = patient_record.result_items
+    stmt = select(ResultItem).join(LabOrder).where(LabOrder.pid == patient_record.pid)
 
     if service_id:
-        query = query.filter(ResultItem.service_id.in_(service_id))
+        stmt = stmt.where(ResultItem.service_id.in_(service_id))
     if order_id:
-        query = query.filter(ResultItem.order_id.in_(order_id))
+        stmt = stmt.where(ResultItem.order_id.in_(order_id))
     if since:
-        query = query.filter(ResultItem.observation_time >= since)
+        stmt = stmt.where(ResultItem.observation_time >= since)
     if until:
-        query = query.filter(ResultItem.observation_time <= until)
+        stmt = stmt.where(ResultItem.observation_time <= until)
 
     audit.add_event(
         Resource.RESULTITEMS,
@@ -71,7 +67,7 @@ def patient_results(
         ),
     )
 
-    return paginate(sorter.sort(query))
+    return paginate(ukrdc3, sorter.sort(stmt))
 
 
 @router.get(
@@ -82,10 +78,13 @@ def patient_results(
 def patient_result(
     resultitem_id: str,
     patient_record: PatientRecord = Depends(_get_patientrecord),
+    ukrdc3: Session = Depends(get_ukrdc3),
     audit: Auditer = Depends(get_auditer),
 ) -> ResultItem:
     """Retreive a particular lab result"""
-    item = patient_record.result_items.filter(ResultItem.id == resultitem_id).first()
+    stmt = select(ResultItem).where(ResultItem.id == resultitem_id)
+    item = ukrdc3.execute(stmt).scalar_one_or_none()
+
     if not item:
         raise HTTPException(404, detail="Result item not found")
 
@@ -112,7 +111,9 @@ def patient_result_delete(
     audit: Auditer = Depends(get_auditer),
 ):
     """Mark a particular lab result for deletion"""
-    item = patient_record.result_items.filter(ResultItem.id == resultitem_id).first()
+    stmt = select(ResultItem).where(ResultItem.id == resultitem_id)
+    item = ukrdc3.execute(stmt).scalar_one_or_none()
+
     if not item:
         raise HTTPException(404, detail="Result item not found")
 
@@ -121,9 +122,13 @@ def patient_result_delete(
     ukrdc3.delete(item)
     ukrdc3.commit()
 
-    if order and order.result_items.count() == 0:
-        ukrdc3.delete(order)
-    ukrdc3.commit()
+    # If the parent order has no more items, delete it too
+    if order:
+        stmt_other_items = select(ResultItem).where(ResultItem.order_id == order.id)
+        first_item = ukrdc3.execute(stmt_other_items).scalar_one_or_none()
+        if not first_item:
+            ukrdc3.delete(order)
+            ukrdc3.commit()
 
     audit.add_event(
         Resource.RESULTITEM,

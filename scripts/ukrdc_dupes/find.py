@@ -1,12 +1,15 @@
 import json
 import os
+from sqlalchemy import select
 
 from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import MasterRecord
 
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser
 from ukrdc_fastapi.dependencies.database import JtraceSession
-from ukrdc_fastapi.query.masterrecords import get_masterrecords_related_to_masterrecord
+from ukrdc_fastapi.query.masterrecords import (
+    select_masterrecords_related_to_masterrecord,
+)
 
 USER = UKRDCUser(id="", email="", scopes=[], permissions=Permissions.all())
 
@@ -23,13 +26,13 @@ def find_ukrdc_dupes(jtrace: Session):
         results = {"cleared": [], "failed": {}}
 
     print("Fetching records")
-    records: MasterRecord = jtrace.query(MasterRecord).filter(
-        MasterRecord.id.notin_(results["cleared"])
-    )
+
+    stmt = select(MasterRecord).where(MasterRecord.id.not_in_(results["cleared"]))
+    records = jtrace.scalars(stmt).all()
 
     for record in records:
         print(f"Processing record {record.id}")
-        related_ukrdc_records = get_masterrecords_related_to_masterrecord(
+        related_ukrdc_records = select_masterrecords_related_to_masterrecord(
             jtrace,
             record.id,
         ).filter(MasterRecord.nationalid_type == "UKRDC")

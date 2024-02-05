@@ -2,6 +2,7 @@ import datetime
 from typing import Optional
 
 from pydantic import Field
+from sqlalchemy import select
 from sqlalchemy.orm.session import Session
 from ukrdc_sqla.empi import MasterRecord
 from ukrdc_sqla.stats import ErrorHistory, MultipleUKRDCID
@@ -53,11 +54,12 @@ def get_full_errors_history(
     range_until: datetime.date = until or datetime.date.today()
 
     # Get history within range
-    history = (
-        statsdb.query(ErrorHistory)
-        .filter(ErrorHistory.date >= range_since)
-        .filter(ErrorHistory.date <= range_until)
+    stmt_history = (
+        select(ErrorHistory)
+        .where(ErrorHistory.date >= range_since)
+        .where(ErrorHistory.date <= range_until)
     )
+    history = statsdb.scalars(stmt_history).all()
 
     # Create an initially empty full history dictionary
     combined_history: dict[datetime.date, int] = {
@@ -95,22 +97,20 @@ def get_multiple_ukrdcids(
         list[list[MasterRecord]]: List of groups of records.
     """
     # Fetch all unresolved rows
-    record_groups = {
-        item.master_id: item
-        for item in statsdb.query(MultipleUKRDCID).filter(
-            MultipleUKRDCID.resolved == False  # noqa: E712
-        )
-    }
+    stmt_multiple_ids = select(MultipleUKRDCID).where(
+        MultipleUKRDCID.resolved == False  # noqa: E712
+    )
+    multiple_ids = statsdb.scalars(stmt_multiple_ids).all()
+    record_groups = {item.master_id: item for item in multiple_ids}
 
     # Fetch MasterRecord objects for each row, and key with record ID
     # This is another case of sacrificing memory for speed. We assume
     # that the number of records is small enough to fit in memory, meaning
     # that we can avoid many small JTRACE queries.
+    stmt_records = select(MasterRecord).where(MasterRecord.id.in_(record_groups.keys()))
+    records_in_groups = jtrace.scalars(stmt_records).all()
     records: dict[int, MasterRecord] = {
-        record.id: record
-        for record in jtrace.query(MasterRecord).filter(
-            MasterRecord.id.in_(record_groups.keys())
-        )
+        record.id: record for record in records_in_groups
     }
 
     # Sort each fetched MasterRecord into groups

@@ -3,8 +3,6 @@ from contextlib import suppress
 from time import time
 from typing import Generator, Optional, Union
 
-from sqlalchemy.orm.query import Query
-
 
 class Timer:
     def __init__(self, description):
@@ -86,22 +84,3 @@ def daterange(
     # Add one day to end date to include it in the range
     for day_offset in range(int((end_date - start_date).days)):
         yield start_date + datetime.timedelta(day_offset)
-
-
-def query_union(queries: list[Query]) -> Query:
-    """Create an SQL UNION query from 1 or more queries
-
-    Args:
-        queries (list[Query]): List of queries
-
-    Raises:
-        ValueError: Union must include at least 1 query
-
-    Returns:
-        Query: Unionised query
-    """
-    if len(queries) < 1:
-        raise ValueError("Union must include at least 1 query")
-    if len(queries) < 2:
-        return queries[0]
-    return queries[0].union(*queries[1:])

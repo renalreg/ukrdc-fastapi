@@ -29,7 +29,7 @@ from ukrdc_fastapi.query.facilities import (
 )
 from ukrdc_fastapi.query.facilities.errors import (
     get_errors_history,
-    get_patients_latest_errors,
+    query_patients_latest_errors,
 )
 from ukrdc_fastapi.schemas.common import HistoryPoint
 from ukrdc_fastapi.schemas.message import MessageSchema
@@ -121,7 +121,7 @@ def facility_patients_latest_errors(
     """Retreive time-series new error counts for the last year for a particular facility"""
     assert_facility_permission(code, user)
 
-    query = get_patients_latest_errors(ukrdc3, errorsdb, code, channels=channel)
+    stmt = query_patients_latest_errors(ukrdc3, code, channels=channel)
 
     audit.add_event(
         Resource.MESSAGES,
@@ -130,7 +130,7 @@ def facility_patients_latest_errors(
         parent=audit.add_event(Resource.FACILITY, code, AuditOperation.READ),
     )
 
-    return paginate(sorter.sort(query))
+    return paginate(errorsdb, sorter.sort(stmt))
 
 
 @router.get("/{code}/error_history", response_model=list[HistoryPoint])
