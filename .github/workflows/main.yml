@@ -55,6 +55,12 @@ jobs:
           name: codecov-umbrella
           fail_ci_if_error: false
 
+      - name: Pytest coverage comment
+        uses: MishaKav/pytest-coverage-comment@main
+        with:
+          pytest-xml-coverage-path: ./coverage.xml
+          report-only-changed-files: true
+
   publish:
     name: Publish container image
 
