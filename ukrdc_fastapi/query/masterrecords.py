@@ -47,31 +47,34 @@ def select_masterrecords_related_to_masterrecord(
 
 
 def select_masterrecords_related_to_person(
-    person: Person,
+    person: Optional[Person],
     jtrace: Session,
     nationalid_type: Optional[str] = None,
 ) -> Select:
     """Get a query of MasterRecords related via the LinkRecord network to a given Person
 
     Args:
+        person (Optional[Person]): Person object
         jtrace (Session): JTRACE SQLAlchemy session
-        person_id (int): Person ID
         nationalid_type (str, optional): National ID type to filter by. E.g. "UKRDC"
 
     Returns:
         Query: SQLAlchemy query
     """
-    # Get a set of related link record (id, person_id, master_id) tuples
-    related_person_master_links: set[PersonMasterLink] = find_related_link_records(
-        jtrace, person_id=person.id
-    )
+    related_person_master_links: set[PersonMasterLink] = set()
+
+    if person:
+        # Get a set of related link record (id, person_id, master_id) tuples
+        related_person_master_links = find_related_link_records(
+            jtrace, person_id=person.id
+        )
 
     # Find all related master records within the UKRDC
-    records = select(MasterRecord).where(
+    stmt = select(MasterRecord).where(
         MasterRecord.id.in_([link.master_id for link in related_person_master_links])
     )
 
     if nationalid_type:
-        records = records.where(MasterRecord.nationalid_type == nationalid_type)
+        stmt = stmt.where(MasterRecord.nationalid_type == nationalid_type)
 
-    return records
+    return stmt
