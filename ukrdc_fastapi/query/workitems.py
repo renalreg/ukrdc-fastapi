@@ -85,27 +85,36 @@ def extend_workitem(workitem: WorkItem, jtrace: Session) -> WorkItemExtendedSche
     Returns:
         WorkItemExtendedSchema: Extended WorkItem object
     """
-    stmt = select_masterrecords_related_to_person(
-        workitem.person, jtrace, nationalid_type="UKRDC"
-    ).where(MasterRecord.id != workitem.master_id)
+    # Expand incoming master records (if incoming person exists)
+    if workitem.person:
+        stmt = select_masterrecords_related_to_person(
+            workitem.person, jtrace, nationalid_type="UKRDC"
+        ).where(MasterRecord.id != workitem.master_id)
 
-    master_records = jtrace.scalars(stmt).all() if workitem.person else []
+        master_records = jtrace.scalars(stmt).all()
+    else:
+        master_records = []
 
     incoming = {
         "person": workitem.person or None,
         "master_records": master_records,
     }
 
-    stmt = select_persons_related_to_masterrecord(workitem.master_record, jtrace).where(
-        Person.id != workitem.person_id
-    )
-    persons = jtrace.scalars(stmt).all() if workitem.master_record else []
+    # Expand destination persons (if destination master record exists)
+    if workitem.master_record:
+        stmt = select_persons_related_to_masterrecord(
+            workitem.master_record, jtrace
+        ).where(Person.id != workitem.person_id)
+        persons = jtrace.scalars(stmt).all()
+    else:
+        persons = []
 
     destination = {
-        "master_record": workitem.master_record,
+        "master_record": workitem.master_record or None,
         "persons": persons,
     }
 
+    # Return extended workitem
     return WorkItemExtendedSchema(
         id=workitem.id,
         type=workitem.type,
