@@ -1,6 +1,7 @@
 """
 Query code snippets that are useful in more than one type of resource query
 """
+
 from ukrdc_sqla.empi import Person, PidXRef
 
 
