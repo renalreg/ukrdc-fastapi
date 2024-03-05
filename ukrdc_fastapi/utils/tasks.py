@@ -124,7 +124,7 @@ class TrackableTask:
         Acquire the tasks lock prior to running.
         The lock will automatically release after 60 seconds if the task is not started.
         """
-        if self.lock:
+        if self.lock and self._lock_key:
             self._acquire()
             self.lock_redis.expire(self._lock_key, settings.redis_tasks_expire_lock)
 
@@ -137,7 +137,7 @@ class TrackableTask:
         patient multiple times simultaneously.
         """
         # If we're working with a lockable function
-        if self.lock:
+        if self.lock and self._lock_key:
             # Check if the lock is already acquired
             active_lock = self.lock_redis.get(self._lock_key)
             if active_lock:
@@ -147,7 +147,7 @@ class TrackableTask:
             self.lock_redis.set(self._lock_key, self._key)
 
     def _release(self):
-        if self.lock:
+        if self.lock and self._lock_key:
             # Release the lock
             self.lock_redis.delete(self._lock_key)
 
@@ -174,7 +174,7 @@ class TrackableTask:
             self._sync()
 
             # Remove the lock expiry now the task is running
-            if self.lock:
+            if self.lock and self._lock_key:
                 self.lock_redis.persist(self._lock_key)
 
             try:
@@ -220,7 +220,7 @@ class TaskTracker:
         tasks: list[TrackableTaskSchema] = []
         for key in self.task_redis.scan_iter():
             # Convert Redis map to TrackableTaskSchema
-            task = TrackableTaskSchema.from_redis(self.task_redis.hgetall(key))
+            task = TrackableTaskSchema.from_redis(self.task_redis.hgetall(key))  # type: ignore
             # Only show public tasks or those owned by the current user
             if task.visibility == "public" or task.owner == self.user.email:
                 tasks.append(task)
@@ -244,7 +244,7 @@ class TaskTracker:
         """
         if not self.task_redis.exists(key):
             raise TaskNotFoundError(f"Task {key} does not exist")
-        return TrackableTaskSchema.from_redis(self.task_redis.hgetall(key))
+        return TrackableTaskSchema.from_redis(self.task_redis.hgetall(key))  # type: ignore
 
     def create(
         self,
