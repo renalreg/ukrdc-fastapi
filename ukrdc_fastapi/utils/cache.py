@@ -119,7 +119,7 @@ class BasicCache:
         # Pre-fetch the cached value
         if self.redis.exists(self.key):
             # Get the value string from Redis
-            value_str = self.redis.get(self.key)
+            value_str = str(self.redis.get(self.key))
             # Store the cached value string
             self._cached_value_str = value_str
             # Convert to JSON if the value is not None, then store the value in self._cached_value
