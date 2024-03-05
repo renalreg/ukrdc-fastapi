@@ -19,7 +19,7 @@ pydantic = {extras = ["dotenv"], version = "^1.10.1"}
 python = "^3.9" 
 python-dateutil = "^2.9.0" 
 python-stdnum = "^1.19" 
-redis = "^4.6.0" 
+redis = "^5.0.2" 
 sentry-sdk = {extras = ["fastapi"], version = "^1.40.0"} 
 single-source = "^0.3.0" 
 ukrdc-sqla = "^2.3.0" 
