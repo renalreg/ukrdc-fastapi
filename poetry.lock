@@ -1530,13 +1530,13 @@ pycryptodome = ["pyasn1", "pycryptodome (>=3.3.1,<4.0.0)"]
 
 [[package]]
 name = "python-stdnum"
-version = "1.19"
+version = "1.20"
 description = "Python module to handle standardized numbers and codes"
 optional = false
 python-versions = "*"
 files = [
-    {file = "python-stdnum-1.19.tar.gz", hash = "sha256:133ec82f56390ea74c190569e98f2fb14b869808b1d54785708f22d0fead8b3f"},
-    {file = "python_stdnum-1.19-py2.py3-none-any.whl", hash = "sha256:1b5b401ad3f45b798b0317313b781a433f5d7a5ff2c9feb8054664f76f78644e"},
+    {file = "python-stdnum-1.20.tar.gz", hash = "sha256:ad2a2cf2eb025de408210235f36b4ae31252de3186240ccaa8126e117cb82690"},
+    {file = "python_stdnum-1.20-py2.py3-none-any.whl", hash = "sha256:111008e10391d54fb2afad2a10df70d5cb0c6c0a7ec82fec6f022cb8712961d3"},
 ]
 
 [package.extras]
@@ -2282,4 +2282,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "9d2d03dbe3c5e2faf70f9b3f622f60a03156b0ebb25a0d5886b0edb6b165303c"
+content-hash = "984857bda6823019b79084e9a3783c0fa4cefad17539e9064e4f188b7a2693cf"
