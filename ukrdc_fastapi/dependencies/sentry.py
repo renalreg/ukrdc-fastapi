@@ -9,6 +9,13 @@ from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 from sentry_sdk.integrations.starlette import StarletteIntegration
 
 from ukrdc_fastapi.config import configuration
+from ukrdc_fastapi.exceptions import (
+    NoActiveMembershipError,
+    PKBOutboundDisabledError,
+    PermissionsError,
+    RecordTypeError,
+    ResourceNotFoundError,
+)
 
 
 def add_sentry(app: FastAPI):
@@ -31,6 +38,13 @@ def add_sentry(app: FastAPI):
             environment=configuration.deployment_env,
             release=configuration.github_sha,
             profiles_sample_rate=1.0,
+            ignore_errors=[
+                PermissionsError,
+                ResourceNotFoundError,  # Ignore _all_ ResourceNotFoundError exceptions
+                NoActiveMembershipError,
+                PKBOutboundDisabledError,
+                RecordTypeError,
+            ],
         )
         app.add_middleware(SentryAsgiMiddleware)
     else:
