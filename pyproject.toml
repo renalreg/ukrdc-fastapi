@@ -29,7 +29,7 @@ uvicorn = "^0.29.0"
 
 [tool.poetry.group.dev.dependencies]
 bandit = "^1.7.4"
-coverage = {extras = ["toml"], version = "^7.4"}
+coverage = {extras = ["toml"], version = "^7.5"}
 fakeredis = "2.21.0"
 mypy = "^1.9.0"
 pre-commit = "^3.7.0"
