@@ -2060,13 +2060,13 @@ SQLAlchemy = ">=1.4.25,<2.0.0"
 
 [[package]]
 name = "ukrdc-stats"
-version = "1.1.0"
+version = "1.1.1"
 description = "A package to produce stats from the ukrdc database to be displayed on the dashboard"
 optional = false
-python-versions = ">=3.8,<4.0"
+python-versions = "<4.0,>=3.8"
 files = [
-    {file = "ukrdc_stats-1.1.0-py3-none-any.whl", hash = "sha256:4346121f83c33e7d38cefd7f7536116b54912187f91a8265066cd929ebbec58b"},
-    {file = "ukrdc_stats-1.1.0.tar.gz", hash = "sha256:69980de9282fae18382695590e8067af00c8104e58d813dd1bf10e73b2c787bd"},
+    {file = "ukrdc_stats-1.1.1-py3-none-any.whl", hash = "sha256:0e7077665deb15519ed9ab5909ce885c59587b83f1480fe93fb4879a526280bf"},
+    {file = "ukrdc_stats-1.1.1.tar.gz", hash = "sha256:013bd8daa822fd65350f080278c8ea304cf5abbf88555a3031e4d00f19f7b3a3"},
 ]
 
 [package.dependencies]
