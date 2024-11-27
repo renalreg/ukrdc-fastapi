@@ -9,7 +9,7 @@ version = "5.3.4"
 
 [tool.poetry.dependencies]
 SQLAlchemy = {version = "<2.0", extras = ["mypy"]} 
-fastapi = "^0.110.0" 
+fastapi = "^0.115.5" 
 fastapi-pagination = {extras = ["sqlalchemy"], version = "^0.12.1"} 
 httpx = "^0.23.0" 
 mirth-client = "^3.0.0" 
