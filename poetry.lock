@@ -2471,8 +2471,8 @@ SQLAlchemy = ">=1.4.25,<3.0.0"
 [package.source]
 type = "git"
 url = "https://github.com/renalreg/ukrdc-sqla.git"
-reference = "HEAD"
-resolved_reference = "776271d8b80db04fac694fcb671b688a9b050cf4"
+reference = "typo-fix"
+resolved_reference = "918083c1a9f550e123ac2339c7b5068428514901"
 
 [[package]]
 name = "ukrdc-stats"
@@ -2694,4 +2694,4 @@ propcache = ">=0.2.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "1a64b9b39f6d1a5ff6902ed0f1ef1ece1d0083fc8e358852eb60e2ce55310935"
+content-hash = "594810f9dd69e10eb7ab87c02cf71143143b11a789ba6e80160e94a7ba883015"
