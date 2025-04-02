@@ -2470,7 +2470,7 @@ SQLAlchemy = ">=1.4.25,<3.0.0"
 
 [package.source]
 type = "git"
-url = "ssh://git@github.com/renalreg/ukrdc-sqla.git"
+url = "https://github.com/renalreg/ukrdc-sqla.git"
 reference = "HEAD"
 resolved_reference = "776271d8b80db04fac694fcb671b688a9b050cf4"
 
@@ -2694,4 +2694,4 @@ propcache = ">=0.2.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "cbf7b591f4d2113c217d06834b808d9896d8651d306f9c5f4865147fbc9a828d"
+content-hash = "1a64b9b39f6d1a5ff6902ed0f1ef1ece1d0083fc8e358852eb60e2ce55310935"
