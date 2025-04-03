@@ -47,7 +47,7 @@ def patient_documents(
     stmt = (
         select(Document)
         .where(Document.pid == patient_record.pid)
-        .options(defer("stream"))
+        .options(defer(Document.stream))
     )
 
     audit.add_event(
