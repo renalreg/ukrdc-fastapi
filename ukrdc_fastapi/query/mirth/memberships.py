@@ -4,7 +4,7 @@ from redis import Redis
 from ukrdc_fastapi.query.mirth.base import safe_send_mirth_message_to_name
 from ukrdc_fastapi.utils.mirth import MirthMessageResponseSchema
 
-from ukrdc_fastapi.utils.mirth.messages import build_create_partner_membership
+from ukrdc_fastapi.utils.mirth.messages import build_create_partner_membership_message
 
 
 async def create_partner_membership_for_ukrdcid(
@@ -17,7 +17,7 @@ async def create_partner_membership_for_ukrdcid(
 
     return await safe_send_mirth_message_to_name(
         "Partner - New Patients",
-        build_create_partner_membership(ukrdcid, partner),
+        build_create_partner_membership_message(ukrdcid, partner),
         mirth,
         redis,
     )

@@ -186,7 +186,7 @@ def build_export_radar_message(pid: str) -> str:
     return tostring(root, encoding="unicode")
 
 
-def build_create_partner_membership(ukrdcid: str, partner: str) -> str:
+def build_create_partner_membership_message(ukrdcid: str, partner: str) -> str:
     """Build rawData to create a new partner membership for a given UKRDCID
 
     Args:
