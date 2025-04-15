@@ -13,7 +13,7 @@ from ukrdc_fastapi.dependencies.audit import (
 from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
 from ukrdc_fastapi.exceptions import PermissionsError
 from ukrdc_fastapi.permissions.patientrecords import apply_patientrecord_list_permission
-from ukrdc_fastapi.query.mirth.memberships import create_pkb_membership_for_ukrdcid
+from ukrdc_fastapi.query.mirth.memberships import create_partner_membership_for_ukrdcid
 from ukrdc_fastapi.query.patientrecords import select_patientrecords_related_to_ukrdcid
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordSummarySchema
 from ukrdc_fastapi.utils.mirth import MirthMessageResponseSchema
@@ -64,7 +64,56 @@ async def ukrdcid_memberships_create_pkb(
     redis: Redis = Depends(get_redis),
 ):
     """
-    Create a new PKB membership for a master record.
+    Create a new membership for a master record.
+    """
+
+    return await create_partner_membership(
+        ukrdcid=ukrdcid,
+        user=user,
+        ukrdc3=ukrdc3,
+        mirth=mirth,
+        audit=audit,
+        redis=redis,
+        partner="PKB",
+    )
+
+
+@router.post(
+    "/{ukrdcid}/memberships/create/mrc",
+    response_model=MirthMessageResponseSchema,
+    dependencies=[Security(auth.permission(Permissions.CREATE_MEMBERSHIPS))],
+)
+async def ukrdcid_memberships_create_mrc(
+    ukrdcid: str,
+    user: UKRDCUser = Security(auth.get_user()),
+    ukrdc3: Session = Depends(get_ukrdc3),
+    mirth: MirthAPI = Depends(get_mirth),
+    audit: Auditer = Depends(get_auditer),
+    redis: Redis = Depends(get_redis),
+):
+    return await create_partner_membership(
+        ukrdcid=ukrdcid,
+        user=user,
+        ukrdc3=ukrdc3,
+        mirth=mirth,
+        audit=audit,
+        redis=redis,
+        partner="MRC",
+    )
+
+
+# TODO: Move this to a separate file
+async def create_partner_membership(
+    ukrdcid: str,
+    user: UKRDCUser,
+    ukrdc3: Session,
+    mirth: MirthAPI,
+    audit: Auditer,
+    redis: Redis,
+    partner: str,
+) -> MirthMessageResponseSchema:
+    """
+    Create a new membership for a master record.
     """
 
     # Find related records the user has permission to access
@@ -78,9 +127,9 @@ async def ukrdcid_memberships_create_pkb(
 
     audit.add_event(
         Resource.MEMBERSHIP,
-        "PKB",
+        partner,
         AuditOperation.CREATE,
         parent=audit.add_event(Resource.UKRDCID, ukrdcid, AuditOperation.READ),
     )
 
-    return await create_pkb_membership_for_ukrdcid(ukrdcid, mirth, redis)
+    return await create_partner_membership_for_ukrdcid(ukrdcid, mirth, redis, partner)
