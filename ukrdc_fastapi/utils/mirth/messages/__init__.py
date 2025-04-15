@@ -184,3 +184,24 @@ def build_export_radar_message(pid: str) -> str:
     pid_element.text = pid
 
     return tostring(root, encoding="unicode")
+
+
+def build_create_partner_membership_message(ukrdcid: str, partner: str) -> str:
+    """Build rawData to create a new partner membership for a given UKRDCID
+
+    Args:
+        ukrdcid (str): Patients UKRDC ID
+        partner (str): Partner name
+
+    Returns:
+        str: XML rawData for Mirth message
+    """
+    root = Element("request")
+
+    ukrdcid_element = SubElement(root, "ukrdcid")
+    ukrdcid_element.text = ukrdcid
+
+    partner_element = SubElement(root, "partner")
+    partner_element.text = partner
+
+    return tostring(root, encoding="unicode")
