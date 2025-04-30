@@ -1,7 +1,7 @@
 from ukrdc_sqla.ukrdc import PatientRecord
 
 MIGRATED_EXTRACTS = ("PVMIG", "HSMIG")
-MEMBERSHIP_FACILITIES = ("UKRR", "PV", "PKB")
+MEMBERSHIP_FACILITIES = ("UKRR", "PV", "PKB", "MRC")
 INFORMATIONAL_FACILITIES = ("TRACING", "NHSBT")
 
 # Facilities that do not correspond to real hospitals, i.e. membership or informational only
