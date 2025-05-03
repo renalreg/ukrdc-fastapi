@@ -13,19 +13,16 @@ from ukrdc_fastapi.query.memberships import record_has_active_membership
 EXCLUDED_EXTRACTS = ["RADAR", "SURVEY", "HSMIG"]
 
 
-def build_mrc_sync_message(record: PatientRecord, ukrdc3: Session) -> list[str]:
+def build_mrc_sync_message(record: PatientRecord, ukrdc3: Session) -> str:
     """
     Build rawData messages to sync a PatientRecord with MRC
-    Each message type and resource ID generates a separate message,
-    and each should be sent to Mirth in turn to effectively sync the
-    entire record
 
     Args:
         record (PatientRecord): Patient record to sync
         ukrdc3 (Session): UKRDC3 session
 
     Returns:
-        list[str]: XML rawData for Mirth messages
+        str: XML rawData for Mirth messages
     """
     # Check memberships
 
@@ -54,7 +51,7 @@ def build_mrc_sync_message(record: PatientRecord, ukrdc3: Session) -> list[str]:
             f"MRC outbound sending disabled for {record.sendingextract}"
         )
 
-    return build_rda_sync_message(record.pid)
+    return build_rda_sync_message(str(record.pid))
 
 
 def build_rda_sync_message(pid: str) -> str:

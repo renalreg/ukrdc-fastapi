@@ -136,7 +136,7 @@ async def export_all_to_mrc(
     ukrdc3: Session,
     mirth: MirthAPI,
     redis: Redis,
-) -> list[MirthMessageResponseSchema]:
+) -> MirthMessageResponseSchema:
     """
     Export a specific patient's data to MRC.
     """
