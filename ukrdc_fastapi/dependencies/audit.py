@@ -61,6 +61,7 @@ class AuditOperation(Enum):
     EXPORT_PV_DOCS = "EXPORT_PV_DOCS"
     EXPORT_RADAR = "EXPORT_RADAR"
     EXPORT_PKB = "EXPORT_PKB"
+    EXPORT_MRC = "EXPORT_MRC"
 
     # Message-specific
     READ_SOURCE = "READ_SOURCE"

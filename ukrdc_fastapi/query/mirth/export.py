@@ -13,6 +13,7 @@ from ukrdc_fastapi.utils.mirth.messages import (
     build_export_tests_message,
 )
 from ukrdc_fastapi.utils.mirth.messages.pkb import build_pkb_sync_messages
+from ukrdc_fastapi.utils.mirth.messages.mrc import build_mrc_sync_message
 from ukrdc_fastapi.utils.records import record_is_data
 
 
@@ -128,3 +129,24 @@ async def export_all_to_pkb(
         )
 
     return responses
+
+
+async def export_all_to_mrc(
+    record: PatientRecord,
+    ukrdc3: Session,
+    mirth: MirthAPI,
+    redis: Redis,
+) -> list[MirthMessageResponseSchema]:
+    """
+    Export a specific patient's data to MRC.
+    """
+    if not record_is_data(record):
+        raise RecordTypeError(
+            f"Cannot export a {record.sendingfacility}/{record.sendingextract} record to MRC"
+        )
+
+    message = build_mrc_sync_message(record, ukrdc3)
+
+    return await safe_send_mirth_message_to_name(
+        "MRC Outbound - Data - RDA", message, mirth, redis
+    )

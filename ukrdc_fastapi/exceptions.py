@@ -46,6 +46,13 @@ class PKBOutboundDisabledError(RuntimeError):
     """PKB outbound sending disabled for this facility"""
 
 
+# MRC
+
+
+class MRCOutboundDisabledError(RuntimeError):
+    """MRC outbound sending disabled for this facility"""
+
+
 # Record types
 
 
