@@ -13,7 +13,7 @@ async def test_record_resultitems(client_superuser):
     assert [ResultItemSchema(**x) for x in items]
 
 
-async def test_resultitems_list_filtered_serviceId(client_superuser):
+async def test_resultitems_list_filtered_service_id(client_superuser):
     # Filter by NI
     response = await client_superuser.get(
         f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/results?service_id=SERVICE_ID_2"

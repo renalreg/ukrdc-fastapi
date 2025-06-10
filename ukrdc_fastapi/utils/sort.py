@@ -154,7 +154,7 @@ class ObjectSorter:
         def keyfunc(item: Any) -> Any:
             """Sort key function, see https://stackoverflow.com/a/48235298"""
             value = rgetattr(item, sort_attr)
-            return (value is not None, value)
+            return value is not None, value
 
         return sorted(
             items,
@@ -172,6 +172,7 @@ def make_object_sorter(
     """Generate a sorter FastAPI dependency function
 
     Args:
+        name (str): Name
         columns (list[str]): Attribute names to allow sorting by
         default_sort_by (Optional[str]): Default sort attribute. Defaults to None.
         default_order_by (OrderBy, optional): Default sort direction. Defaults to OrderBy.DESC.

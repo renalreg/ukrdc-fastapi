@@ -51,7 +51,8 @@ def get_facility_dialysis_stats(
     Args:
         ukrdc3 (Session): SQLAlchemy session
         facility_code (str): Facility/unit code
-
+        since (datetime.datetime, optional): Date from which to extract dialysis statistics/ from time
+        until (datetime.datetime, optional): Date from which to extract dialysis statistics/ to time
     Returns:
         DialysisStats: Facility demographic distribution statistics
     """

@@ -55,13 +55,13 @@ async def test_record_export_radar(ukrdc3_session, redis_session, mirth_session)
 
 async def test_record_export_pkb(ukrdc3_session, redis_session, mirth_session):
     # Ensure PKB membership
-    PID_1 = "PYTEST01:PV:00000000A"
+    pid_1 = "PYTEST01:PV:00000000A"
     membership = ProgramMembership(
         id="MEMBERSHIP_PKB",
-        pid=PID_1,
-        program_name="PKB",
-        from_time=days_ago(365),
-        to_time=None,
+        pid=pid_1,
+        programname="PKB",
+        fromtime=days_ago(365),
+        totime=None,
     )
     ukrdc3_session.add(membership)
     ukrdc3_session.commit()
@@ -71,7 +71,7 @@ async def test_record_export_pkb(ukrdc3_session, redis_session, mirth_session):
 
     # Iterate over each message response
     for response in await export.export_all_to_pkb(
-        ukrdc3_session.get(PatientRecord, PID_1),
+        ukrdc3_session.get(PatientRecord, pid_1),
         ukrdc3_session,
         mirth_session,
         redis_session,

@@ -735,13 +735,13 @@ def ukrdc3_sessionmaker(postgresql_my):
         return postgresql_my.cursor().connection
 
     engine = create_engine("postgresql+psycopg2://", creator=dbcreator)
-    UKRDCTestSession = sessionmaker(
+    ukrdc_test_session = sessionmaker(
         autocommit=False,
         autoflush=False,
         bind=engine,
     )
     UKRDC3Base.metadata.create_all(bind=engine)
-    return UKRDCTestSession
+    return ukrdc_test_session
 
 
 @pytest.fixture(scope="function")
@@ -754,13 +754,13 @@ def errorsdb_sessionmaker(postgresql_my):
         return postgresql_my.cursor().connection
 
     engine = create_engine("postgresql+psycopg2://", creator=dbcreator)
-    ErrorsTestSession = sessionmaker(
+    errors_test_session = sessionmaker(
         autocommit=False,
         autoflush=False,
         bind=engine,
     )
     ErrorsBase.metadata.create_all(bind=engine)
-    return ErrorsTestSession
+    return errors_test_session
 
 
 @pytest.fixture(scope="function")
@@ -773,13 +773,13 @@ def statsdb_sessionmaker(postgresql_my):
         return postgresql_my.cursor().connection
 
     engine = create_engine("postgresql+psycopg2://", creator=dbcreator)
-    StatsTestSession = sessionmaker(
+    stats_test_session = sessionmaker(
         autocommit=False,
         autoflush=False,
         bind=engine,
     )
     StatsBase.metadata.create_all(bind=engine)
-    return StatsTestSession
+    return stats_test_session
 
 
 @pytest.fixture(scope="function")
@@ -792,13 +792,13 @@ def auditdb_sessionmaker(postgresql_my):
         return postgresql_my.cursor().connection
 
     engine = create_engine("postgresql+psycopg2://", creator=dbcreator)
-    StatsTestSession = sessionmaker(
+    stats_test_session = sessionmaker(
         autocommit=False,
         autoflush=False,
         bind=engine,
     )
     AuditBase.metadata.create_all(bind=engine)
-    return StatsTestSession
+    return stats_test_session
 
 
 @pytest.fixture(scope="function")
@@ -810,9 +810,9 @@ def usersdb_sessionmaker():
     engine = create_engine(
         "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
     )
-    UsersTestSession = sessionmaker(bind=engine)
+    users_test_session = sessionmaker(bind=engine)
     UsersBase.metadata.create_all(bind=engine)
-    return UsersTestSession
+    return users_test_session
 
 
 @pytest.fixture(scope="function")
@@ -942,10 +942,9 @@ def app(
     def _get_task_tracker(
         user: auth.UKRDCUser = Security(auth.auth.get_user()),
     ):
-        return TaskTracker(*task_redis_sessions, user)
-
+        return TaskTracker(*task_redis_sessions, user=user)
     def _get_root_task_tracker():
-        return TaskTracker(*task_redis_sessions, auth.auth.superuser)
+        return TaskTracker(*task_redis_sessions, user=auth.auth.superuser)
 
     # Override FastAPI dependencies to point to function-scoped sessions
     app.dependency_overrides[get_mirth] = _get_mirth

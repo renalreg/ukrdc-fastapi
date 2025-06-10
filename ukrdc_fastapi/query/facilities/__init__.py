@@ -31,6 +31,7 @@ def get_facility(
 
     Args:
         ukrdc3 (Session): SQLAlchemy session
+        errorsdb (Session): Errors database session
         facility_code (str): Facility/unit code
 
     Returns:
