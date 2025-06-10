@@ -239,9 +239,9 @@ def test_get_facility_report_pm001(ukrdc3_session, jtrace_session):
     membership_1 = ProgramMembership(
         id="MEMBERSHIP_101",
         pid=membership_test_pid,
-        program_name="PKB",
-        from_time=days_ago(365),
-        to_time=None,
+        programname="PKB",
+        fromtime=days_ago(365),
+        totime=None,
     )
     ukrdc3_session.add(membership_1)
     ukrdc3_session.commit()

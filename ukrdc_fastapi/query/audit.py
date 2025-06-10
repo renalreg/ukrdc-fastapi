@@ -20,7 +20,6 @@ def select_auditevents_related_to_patientrecord(
 
     Args:
         record (PatientRecord): Patient Record to audit
-        audit (Session): Audit session
         resource (Optional[Resource]): Resource type value
         operation (Optional[Operation]): Operation type value
         since (Optional[datetime.datetime], optional): Since time. Defaults to None.

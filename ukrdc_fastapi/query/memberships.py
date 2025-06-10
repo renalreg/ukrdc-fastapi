@@ -10,7 +10,6 @@ def get_active_memberships_for_patientrecord(record: PatientRecord) -> Select:
     related to a given PatientRecord.
 
     Args:
-        ukrdc3 (Session): UKRDC3 database session
         record (PatientRecord): PatientRecord to find memberships for
 
     Returns:

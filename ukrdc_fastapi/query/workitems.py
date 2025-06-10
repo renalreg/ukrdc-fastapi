@@ -28,9 +28,9 @@ def select_workitems(
     """Get a list of WorkItems
 
     Args:
-        jtrace (Session): SQLAlchemy session
         statuses (list[int], optional): WorkItem statuses to filter by. Defaults to None.
         master_id (Optional[int], optional): WorkItem MasterRecord ID to filter by. Defaults to None.
+        person_id (Optional[int], optional): WorkItem person ID to filter by. Defaults to None.
         facility (Optional[str], optional): Associated Person sending facility to filter by. Defaults to None.
         since (Optional[datetime.datetime], optional): Show items since datetime. Defaults to None.
         until (Optional[datetime.datetime], optional): Show items until datetime. Defaults to None.
@@ -80,7 +80,7 @@ def extend_workitem(workitem: WorkItem, jtrace: Session) -> WorkItemExtendedSche
 
     Args:
         jtrace (Session): JTRACE SQLAlchemy session
-        workitem_id (int): WorkItem ID
+        workitem (WorkItem): WorkItem
 
     Returns:
         WorkItemExtendedSchema: Extended WorkItem object
@@ -138,7 +138,7 @@ def select_workitem_collection(workitem: WorkItem, jtrace: Session) -> Select:
 
     Args:
         jtrace (Session): JTRACE SQLAlchemy session
-        workitem_id (int): WorkItem ID
+        workitem (WorkItem): WorkItem ID
 
     Returns:
         Select: SQLAlchemy query
@@ -152,7 +152,7 @@ def select_workitems_related_to_workitem(workitem: WorkItem, jtrace: Session) ->
 
     Args:
         jtrace (Session): JTRACE SQLAlchemy session
-        workitem_id (int): WorkItem ID
+        workitem (WorkItem): WorkItem ID
 
     Returns:
         Select: SQLAlchemy query
@@ -184,8 +184,7 @@ def select_workitems_related_to_message(message: Message, jtrace: Session) -> Se
 
     Args:
         jtrace (Session): JTRACE SQLAlchemy session
-        errorsdb (Session): ERRORSDB SQLAlchemy session
-        message_id (str): Message ID
+        message (Message): Message ID
 
     Returns:
         Select: SQLAlchemy query

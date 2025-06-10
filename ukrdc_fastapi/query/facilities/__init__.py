@@ -31,6 +31,7 @@ def get_facility(
 
     Args:
         ukrdc3 (Session): SQLAlchemy session
+        errorsdb (Session): Errors database session
         facility_code (str): Facility/unit code
 
     Returns:
@@ -145,7 +146,7 @@ def build_facilities_list(
     """Build a list of FacilityDetailsSchema objects from a facilities query.
 
     Args:
-        facilities_query (Query): _description_
+        facilities_stmt (Select): _description_
         ukrdc3 (Session): _description_
         errorsdb (Session): _description_
 
@@ -269,8 +270,10 @@ def get_facilities(
 
     Args:
         ukrdc3 (Session): SQLALchemy session
-        statsdb (Session): SQLALchemy session
-
+        errorsdb (Session): SQLALchemy session
+        redis (Redis): Redis session
+        include_inactive (bool, optional): Include inactive facilities (default: False)
+        include_empty (bool, optional): Include empty facilities (default: False)
     Returns:
         list[FacilityDetailsSchema]: List of units/facilities
     """

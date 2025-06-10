@@ -30,7 +30,7 @@ async def update_patient_demographics(
     Args:
         record (PatientRecord): Base patient record to update
         name (Optional[NameSchema]): New name to set
-        dob (Optional[datetime.date]): New date of birth to set
+        birth_time (Optional[datetime.date]): New date of birth to set
         gender (Optional[GenderType]): New gender code to set
         address (Optional[AddressSchema]): New address to set
         mirth (MirthAPI): Mirth API session

@@ -12,7 +12,7 @@ def select_persons_related_to_masterrecord(
 
     Args:
         jtrace (Session): SQLAlchemy session
-        record_id (int): Master Record ID
+        record (MasterRecord): Master Record ID
 
     Returns:
         Select: SQLAlchemy select of Person records

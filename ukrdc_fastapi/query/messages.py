@@ -136,9 +136,8 @@ def select_messages_related_to_masterrecord(
     """Get a list of error messages from the errorsdb
 
     Args:
-        errorsdb (Session): SQLAlchemy session
         jtrace (Session): JTRACE SQLAlchemy session
-        record_id (int): MasterRecord ID
+        record (MasterRecord): MasterRecord ID
         statuses (str, optional): Status codes to filter by. Defaults to all.
         channels (Optional[list[str]], optional: Channel ID to filter by. Defaults to all channels.
         facility (Optional[str], optional): Unit/facility code to filter by. Defaults to None.

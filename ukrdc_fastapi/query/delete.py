@@ -122,10 +122,8 @@ def summarise_delete_patientrecord(
     """Create a summary of the records to be deleted.
 
     Args:
-        ukrdc3 (Session): UKRDC SQLAlchemy session
+        record_to_delete (PatientRecord): PatientRecord to delete
         jtrace (Session): JTRACE SQLAlchemy session
-        pid (str): PatientRecord PID
-
     Returns:
         DeletePIDResponseSchema: Summary of database items to be deleted
     """
@@ -146,9 +144,9 @@ def delete_patientrecord(
     """Delete a patient record and related records from the database.
 
     Args:
+        record_to_delete (PatientRecord): PatientRecord to delete
         ukrdc3 (Session): UKRDC SQLAlchemy session
         jtrace (Session): JTRACE SQLAlchemy session
-        pid (str): PatientRecord PID
         hash_ (str): MD5 hash of the JSON summary of the records to be deleted
 
     Raises:

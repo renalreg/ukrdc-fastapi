@@ -8,9 +8,9 @@ from ukrdc_stats.calculators.demographics import (
     DemographicsStats,
     DemographicStatsCalculator,
 )
-from ukrdc_stats.calculators.dialysis import (
-    DialysisStatsCalculator,
-    UnitLevelDialysisStats,
+from ukrdc_stats.calculators.krt import (
+    KRTStatsCalculator,
+    UnitLevelKRTStats,
 )
 
 from ukrdc_fastapi.exceptions import MissingFacilityError
@@ -45,13 +45,14 @@ def get_facility_dialysis_stats(
     facility_code: str,
     since: Optional[datetime.datetime] = None,
     until: Optional[datetime.datetime] = None,
-) -> UnitLevelDialysisStats:
+) -> UnitLevelKRTStats:
     """Extract dialysis statistics for all UKRDC/RDA records in a given facility
 
     Args:
         ukrdc3 (Session): SQLAlchemy session
         facility_code (str): Facility/unit code
-
+        since (datetime.datetime, optional): Date from which to extract dialysis statistics/ from time
+        until (datetime.datetime, optional): Date from which to extract dialysis statistics/ to time
     Returns:
         DialysisStats: Facility demographic distribution statistics
     """
@@ -69,6 +70,6 @@ def get_facility_dialysis_stats(
     to_time: datetime.datetime = until or datetime.datetime.now()
 
     # Calculate all demographic stats
-    return DialysisStatsCalculator(
+    return KRTStatsCalculator(
         ukrdc3, facility.code, from_time=from_time, to_time=to_time
     ).extract_stats()

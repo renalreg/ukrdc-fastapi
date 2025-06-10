@@ -20,11 +20,11 @@ def _add_extra_diagnoses(session):
     diagnosis_1 = Diagnosis(
         id="DIAGNOSIS1",
         pid=PID_1,
-        diagnosis_code="DIAGNOSIS_CODE",
-        diagnosis_code_std="DIAGNOSIS_CODE_STD",
-        diagnosis_desc="DIAGNOSIS_DESCRIPTION",
-        identification_time=days_ago(365),
-        onset_time=days_ago(730),
+        diagnosiscode="DIAGNOSIS_CODE",
+        diagnosiscodestd="DIAGNOSIS_CODE_STD",
+        diagnosisdesc="DIAGNOSIS_DESCRIPTION",
+        identificationtime=days_ago(365),
+        onsettime=days_ago(730),
         comments="DIAGNOSIS_COMMENTS",
     )
 
@@ -38,10 +38,10 @@ def _add_extra_diagnoses(session):
     diagnosis_2 = Diagnosis(
         id="DIAGNOSIS2",
         pid=PID_1,
-        diagnosis_code="DIAGNOSIS_CODE_2",
-        diagnosis_code_std="DIAGNOSIS_CODE_STD_2",
-        identification_time=days_ago(365),
-        onset_time=days_ago(730),
+        diagnosiscode="DIAGNOSIS_CODE_2",
+        diagnosiscodestd="DIAGNOSIS_CODE_STD_2",
+        identificationtime=days_ago(365),
+        onsettime=days_ago(730),
         comments="DIAGNOSIS_COMMENTS_2",
     )
     code_2 = Code(
@@ -58,10 +58,10 @@ def _add_extra_diagnoses(session):
 
     renal_diagnosis_1 = RenalDiagnosis(
         pid=PID_1,
-        diagnosis_code="R_DIAGNOSIS_CODE",
-        diagnosis_code_std="R_DIAGNOSIS_CODE_STD",
-        diagnosis_desc="R_DIAGNOSIS_DESCRIPTION",
-        identification_time=days_ago(365),
+        diagnosiscode="R_DIAGNOSIS_CODE",
+        diagnosiscodestd="R_DIAGNOSIS_CODE_STD",
+        diagnosisdesc="R_DIAGNOSIS_DESCRIPTION",
+        identificationtime=days_ago(365),
         comments="R_DIAGNOSIS_COMMENTS",
     )
     code_3 = Code(
@@ -76,9 +76,9 @@ def _add_extra_diagnoses(session):
 
     cause_of_death_1 = CauseOfDeath(
         pid=PID_1,
-        diagnosis_code="D_DIAGNOSIS_CODE",
-        diagnosis_code_std="D_DIAGNOSIS_CODE_STD",
-        diagnosis_desc="D_DIAGNOSIS_DESCRIPTION",
+        diagnosiscode="D_DIAGNOSIS_CODE",
+        diagnosiscodestd="D_DIAGNOSIS_CODE_STD",
+        diagnosisdesc="D_DIAGNOSIS_DESCRIPTION",
         comments="D_DIAGNOSIS_COMMENTS",
     )
     code_4 = Code(

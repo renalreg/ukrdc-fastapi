@@ -9,8 +9,8 @@ from ukrdc_fastapi.schemas.patientrecord.patient import AddressSchema, NameSchem
 
 @pytest.mark.asyncio
 async def test_create_pkb_membership(ukrdc3_session, redis_session, mirth_session):
-    PID_1 = "PYTEST01:PV:00000000A"
-    record = ukrdc3_session.get(PatientRecord, PID_1)
+    pid_1 = "PYTEST01:PV:00000000A"
+    record = ukrdc3_session.get(PatientRecord, pid_1)
 
     response = await rda.update_patient_demographics(
         record,
