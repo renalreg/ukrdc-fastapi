@@ -8,24 +8,24 @@ packages = [
 version = "5.5.0"
 
 [tool.poetry.dependencies]
-SQLAlchemy = {version = "<2.0", extras = ["mypy"]} 
-fastapi = "^0.110.0" 
-fastapi-pagination = {extras = ["sqlalchemy"], version = "^0.12.1"} 
-httpx = "^0.23.0" 
-mirth-client = "^3.0.0" 
-okta-jwt-verifier = "^0.2.3" 
+SQLAlchemy = {version = ">=2.0,<3"}
+fastapi = "^0.110.0"
+fastapi-pagination = {extras = ["sqlalchemy"], version = "^0.12.1"}
+httpx = "^0.23.0"
+mirth-client = "^3.0.0"
+okta-jwt-verifier = "^0.2.3"
 psycopg2-binary = "^2.9.5" # Needed for postgres
-pydantic = {extras = ["dotenv"], version = "^1.10.22"} 
-python = "^3.9" 
-python-dateutil = "^2.9.0" 
-python-stdnum = "^1.20" 
-redis = "^5.0.2" 
-sentry-sdk = {extras = ["fastapi"], version = "^1.43.0"} 
-single-source = "^0.3.0" 
-ukrdc-sqla = "^2.3.0" 
-ukrdc-stats = "^1.1.0" 
-ukrdc-xsdata = "^3.4.5" 
-uvicorn = "^0.34.2" 
+pydantic = {extras = ["dotenv"], version = "^1.10.22"}
+python = "^3.9"
+python-dateutil = "^2.9.0"
+python-stdnum = "^1.20"
+redis = "^5.0.2"
+sentry-sdk = {extras = ["fastapi"], version = "^1.43.0"}
+single-source = "^0.4.0"
+ukrdc-sqla =  "^2.6.0"
+ukrdc-stats = "2.0.0"
+ukrdc-xsdata = "^3.4.5"
+uvicorn = "^0.34.3"
 
 [tool.poetry.group.dev.dependencies]
 bandit = "^1.7.4"
