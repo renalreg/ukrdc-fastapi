@@ -1,5 +1,6 @@
 import datetime
 import json
+from typing import List
 
 from sqlalchemy import and_, select
 from sqlalchemy.orm import Session
@@ -32,7 +33,7 @@ membership_creations = session.scalars(stmt).all()
 
 print(len(membership_creations))
 
-creation_events: dict[str, datetime.datetime] = {}
+creation_events: dict[str, List[datetime.datetime]] = {}
 uid_email_map: dict[str, set[str]] = {}
 
 i = 0

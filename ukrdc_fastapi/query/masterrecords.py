@@ -21,7 +21,7 @@ def select_masterrecords_related_to_masterrecord(
 
     Args:
         jtrace (Session): JTRACE SQLAlchemy session
-        record_id (int): MasterRecord ID
+        record (MasterRecord): MasterRecord
         nationalid_type (str, optional): National ID type to filter by. E.g. "UKRDC"
         exclude_self (bool, optional): Exclude the given MasterRecord from the results
 

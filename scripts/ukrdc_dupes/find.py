@@ -1,5 +1,7 @@
 import json
 import os
+from typing import List
+
 from sqlalchemy import select
 
 from sqlalchemy.orm import Session
@@ -28,15 +30,16 @@ def find_ukrdc_dupes(jtrace: Session):
     print("Fetching records")
 
     stmt = select(MasterRecord).where(MasterRecord.id.not_in_(results["cleared"]))
-    records = jtrace.scalars(stmt).all()
+    records: List[MasterRecord] = jtrace.scalars(stmt).all()
 
     for record in records:
         print(f"Processing record {record.id}")
-        related_ukrdc_records = select_masterrecords_related_to_masterrecord(
-            jtrace,
-            record.id,
-        ).filter(MasterRecord.nationalid_type == "UKRDC")
-        if related_ukrdc_records.count() > 1:
+        related_ukrdc_records = jtrace.scalars(select_masterrecords_related_to_masterrecord(
+            record=record,
+            jtrace=jtrace,
+        ).filter(MasterRecord.nationalid_type == "UKRDC")).all()
+
+        if len(related_ukrdc_records) > 1:
             print(f"Multiple UKRDC IDs found for {record.id}")
 
             matched_ids = [r.id for r in related_ukrdc_records]

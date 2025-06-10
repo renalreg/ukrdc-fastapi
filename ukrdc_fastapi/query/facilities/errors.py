@@ -22,9 +22,8 @@ def query_patients_latest_errors(
 
     Args:
         ukrdc3 (Session): SQLAlchemy session
-        errorsdb (Session): SQLAlchemy session
         facility_code (str): Facility/unit code
-
+        channels (Optional[list[str]]): List of channels to retrieve errors for
     Returns:
         Query: SQLAlchemy query
     """
@@ -60,7 +59,6 @@ def get_errors_history(
     Args:
         ukrdc3 (Session): SQLAlchemy session
         statsdb (Session): SQLAlchemy session
-        errorsdb (Session): SQLAlchemy session
         facility_code (str): Facility/unit code
         since (Optional[datetime.date]): Filter start date. Defaults to None.
         until (Optional[datetime.date]): Filter end date. Defaults to None.

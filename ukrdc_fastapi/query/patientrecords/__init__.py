@@ -71,9 +71,8 @@ def select_patientrecords_related_to_masterrecord(
     UKRDC ID in that list.
 
     Args:
-        ukrdc3 (Session): UKRDC SQLAlchemy session
+        record (MasterRecord): Master Record
         jtrace (Session): JTRACE SQLAlchemy session
-        record_id (str): MasterRecord ID
 
     Returns:
         Query: SQLAlchemy query

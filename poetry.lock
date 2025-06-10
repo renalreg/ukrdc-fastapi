@@ -2916,14 +2916,18 @@ name = "ukrdc-sqla"
 version = "2.6.0"
 description = "SQLAlchemy models for the UKRDC"
 optional = false
-python-versions = "<4.0,>=3.8.0"
-files = [
-    {file = "ukrdc_sqla-2.6.0-py3-none-any.whl", hash = "sha256:37ba11ebc6084c035ffcb5d7c85bd60c38e6896e8a754fb0dc977cfb816cd3d9"},
-    {file = "ukrdc_sqla-2.6.0.tar.gz", hash = "sha256:4a3173c461cc81aad806781a15e5e465933f9642815dcecf6a41f7112bcc4584"},
-]
+python-versions = ">=3.8.0,<4.0"
+files = []
+develop = false
 
 [package.dependencies]
 SQLAlchemy = ">=1.4.25,<3.0.0"
+
+[package.source]
+type = "git"
+url = "https://github.com/renalreg/ukrdc-sqla.git"
+reference = "fast_api_related"
+resolved_reference = "a32e99d6901f3dbee36889f9fc7925040da20276"
 
 [[package]]
 name = "ukrdc-stats"
@@ -3186,4 +3190,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "57bf532d45eaf7358fb74d695af6cc5b38c4c3b22a310d0ea7dbace5b7778d72"
+content-hash = "35bb103b8cbba2c7a12787094bd5c3f3dd8e4b17332a0784e31f3aaeade4405c"

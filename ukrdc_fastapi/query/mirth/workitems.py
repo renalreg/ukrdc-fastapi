@@ -23,10 +23,10 @@ async def update_workitem(
     """Update a WorkItem by ID if it exists and the user has permission
 
     Args:
-        jtrace (Session): JTRACE SQLAlchemy session
-        workitem_id (int): WorkItem ID
+        workitem (WorkItem): WorkItem Object
         mirth (MirthAPI): Mirth API instance
         redis (Redis): Redis session
+        user_id (str): User ID
         status (int, optional): New WorkItem status
         comment (str, optional): User comment to add to WorkItem
 
@@ -64,10 +64,10 @@ async def close_workitem(
     """Close a WorkItem by ID if it exists and the user has permission
 
     Args:
-        jtrace (Session): JTRACE SQLAlchemy session
-        workitem_id (int): WorkItem ID
+        workitem (WorkItem): WorkItem ID
         mirth (MirthAPI): Mirth API instance
         redis (Redis): Redis session
+        user_id (str): User ID
         comment (str, optional): User comment to add to WorkItem
 
     Returns:

@@ -265,16 +265,16 @@ def populate_patient_1_extra(session):
     membership_1 = ProgramMembership(
         id="MEMBERSHIP_1",
         pid=PID_1,
-        program_name="PROGRAM_NAME_1",
-        from_time=days_ago(365),
-        to_time=None,
+        programname="PROGRAM_NAME_1",
+        fromtime=days_ago(365),
+        totime=None,
     )
     membership_2 = ProgramMembership(
         id="MEMBERSHIP_2",
         pid=PID_1,
-        program_name="PROGRAM_NAME_2",
-        from_time=days_ago(365),
-        to_time=days_ago(1),
+        programname="PROGRAM_NAME_2",
+        fromtime=days_ago(365),
+        totime=days_ago(1),
     )
     session.add(membership_1)
     session.add(membership_2)
@@ -283,27 +283,27 @@ def populate_patient_1_extra(session):
         id="MEDICATION1",
         pid=PID_1,
         frequency="FREQUENCY",
-        from_time=days_ago(730),
-        to_time=None,
-        drug_product_generic="DRUG_PRODUCT_GENERIC",
-        dose_quantity=1,
-        dose_uom_code="DOSE_UOM_CODE",
-        dose_uom_description="DOSE_UOM_DESCRIPTION",
-        dose_uom_code_std="DOSE_UOM_CODE_STD",
-        repository_update_date=datetime(2020, 3, 16),
+        fromtime=days_ago(730),
+        totime=None,
+        drugproductgeneric="DRUG_PRODUCT_GENERIC",
+        dosequantity=1,
+        doseuomcode="DOSE_UOM_CODE",
+        doseuomdesc="DOSE_UOM_DESCRIPTION",
+        doseuomcodestd="DOSE_UOM_CODE_STD",
+        repositoryupdatedate=datetime(2020, 3, 16),
     )
     medication_2 = Medication(
         id="MEDICATION2",
         pid=PID_1,
         frequency="FREQUENCY_2",
-        from_time=days_ago(730),
-        to_time=days_ago(-999),
-        drug_product_generic="DRUG_PRODUCT_GENERIC_2",
-        dose_quantity=2,
-        dose_uom_code="DOSE_UOM_CODE_2",
-        dose_uom_description="DOSE_UOM_DESCRIPTION_2",
-        dose_uom_code_std="DOSE_UOM_CODE_STD_2",
-        repository_update_date=datetime(2020, 3, 16),
+        fromtime=days_ago(730),
+        totime=days_ago(-999),
+        drugproductgeneric="DRUG_PRODUCT_GENERIC_2",
+        dosequantity=2,
+        doseuomcode="DOSE_UOM_CODE_2",
+        doseuomdesc="DOSE_UOM_DESCRIPTION_2",
+        doseuomcodestd="DOSE_UOM_CODE_STD_2",
+        repositoryupdatedate=datetime(2020, 3, 16),
     )
 
     session.add(medication_1)
@@ -312,22 +312,22 @@ def populate_patient_1_extra(session):
     treatment_1 = Treatment(
         id="TREATMENT1",
         pid=PID_1,
-        from_time=days_ago(730),
-        to_time=None,
-        admit_reason_code=1,
-        admission_source_code_std="CF_RR7_TREATMENT",
-        health_care_facility_code="TSF01",
-        health_care_facility_code_std="ODS",
+        fromtime=days_ago(730),
+        totime=None,
+        admitreasoncode=1,
+        admissionsourcecodestd="CF_RR7_TREATMENT",
+        healthcarefacilitycode="TSF01",
+        healthcarefacilitycodestd="ODS",
     )
     treatment_2 = Treatment(
         id="TREATMENT2",
         pid=PID_1,
-        from_time=days_ago(730),
-        to_time=days_ago(-999),
-        admit_reason_code=1,
-        admission_source_code_std="CF_RR7_TREATMENT",
-        health_care_facility_code="TSF01",
-        health_care_facility_code_std="ODS",
+        fromtime=days_ago(730),
+        totime=days_ago(-999),
+        admitreasoncode=1,
+        admissionsourcecodestd="CF_RR7_TREATMENT",
+        healthcarefacilitycode="TSF01",
+        healthcarefacilitycodestd="ODS",
     )
 
     session.add(treatment_1)
@@ -335,40 +335,40 @@ def populate_patient_1_extra(session):
 
     laborder_1 = LabOrder(
         id="LABORDER1",
-        entered_at="TSF01",
+        enteredatcode="TSF01",
         pid=PID_1,
-        external_id="EXTERNAL_ID_1",
-        order_category="ORDER_CATEGORY",
-        specimen_collected_time=days_ago(365),
+        externalid="EXTERNAL_ID_1",
+        ordercategorycode="ORDER_CATEGORY",
+        specimencollectedtime=days_ago(365),
     )
     resultitem_1 = ResultItem(
         id="RESULTITEM1",
         order_id="LABORDER1",
-        service_id_std="SERVICE_ID_STD",
-        service_id="SERVICE_ID_1",
-        service_id_description="SERVICE_ID_DESCRIPTION",
-        value="VALUE",
-        value_units="VALUE_UNITS",
-        observation_time=days_ago(365),
-        pre_post="PRE",
+        serviceidcodestd="SERVICE_ID_STD",
+        serviceidcode="SERVICE_ID_1",
+        serviceiddesc="SERVICE_ID_DESCRIPTION",
+        resultvalue="VALUE",
+        resultvalueunits="VALUE_UNITS",
+        observationtime=days_ago(365),
+        prepost="PRE",
     )
     laborder_2 = LabOrder(
         id="LABORDER2",
-        entered_at="TSF02",
+        enteredatcode="TSF02",
         pid=PID_1,
-        external_id="EXTERNAL_ID_2",
-        order_category="ORDER_CATEGORY",
-        specimen_collected_time=days_ago(0),
+        externalid="EXTERNAL_ID_2",
+        ordercategorycode="ORDER_CATEGORY",
+        specimencollectedtime=days_ago(0),
     )
     resultitem_2 = ResultItem(
         id="RESULTITEM2",
         order_id="LABORDER2",
-        service_id_std="SERVICE_ID_STD",
-        service_id="SERVICE_ID_2",
-        service_id_description="SERVICE_ID_DESCRIPTION",
-        value="VALUE",
-        value_units="VALUE_UNITS",
-        observation_time=days_ago(0),
+        serviceidcodestd="SERVICE_ID_STD",
+        serviceidcode="SERVICE_ID_2",
+        serviceiddesc="SERVICE_ID_DESCRIPTION",
+        resultvalue="VALUE",
+        resultvalueunits="VALUE_UNITS",
+        observationtime=days_ago(0),
     )
     session.add(laborder_1)
     session.add(resultitem_1)
@@ -378,13 +378,13 @@ def populate_patient_1_extra(session):
     observation_1 = Observation(
         id="OBSERVATION1",
         pid=PID_1,
-        observation_code_std="OBSERVATION_CODE_STD",
-        observation_code="OBSERVATION_CODE",
-        observation_desc="OBSERVATION_DESC",
-        observation_value="OBSERVATION_VALUE",
-        observation_units="OBSERVATION_UNITS",
-        observation_time=days_ago(365),
-        pre_post="PRE",
+        observationcodestd="OBSERVATION_CODE_STD",
+        observationcode="OBSERVATION_CODE",
+        observationdesc="OBSERVATION_DESC",
+        observationvalue="OBSERVATION_VALUE",
+        observationunits="OBSERVATION_UNITS",
+        observationtime=days_ago(365),
+        prepost="PRE",
     )
 
     session.add(observation_1)
@@ -392,22 +392,22 @@ def populate_patient_1_extra(session):
     observation_dia = Observation(
         id="OBSERVATION_DIA_1",
         pid=PID_1,
-        observation_code_std="PV",
-        observation_code="bpdia",
-        observation_desc="OBSERVATION_DIA_1_DESC",
-        observation_value="OBSERVATION_DIA_1_VALUE",
-        observation_units="OBSERVATION_DIA_1_UNITS",
-        observation_time=days_ago(730),
+        observationcodestd="PV",
+        observationcode="bpdia",
+        observationdesc="OBSERVATION_DIA_1_DESC",
+        observationvalue="OBSERVATION_DIA_1_VALUE",
+        observationunits="OBSERVATION_DIA_1_UNITS",
+        observationtime=days_ago(730),
     )
     observation_sys = Observation(
         id="OBSERVATION_SYS_1",
         pid=PID_1,
-        observation_code_std="PV",
-        observation_code="bpsys",
-        observation_desc="OBSERVATION_SYS_1_DESC",
-        observation_value="OBSERVATION_SYS_1_VALUE",
-        observation_units="OBSERVATION_SYS_1_UNITS",
-        observation_time=days_ago(730),
+        observationcodestd="PV",
+        observationcode="bpsys",
+        observationdesc="OBSERVATION_SYS_1_DESC",
+        observationvalue="OBSERVATION_SYS_1_VALUE",
+        observationunits="OBSERVATION_SYS_1_UNITS",
+        observationtime=days_ago(730),
     )
     session.add(observation_dia)
     session.add(observation_sys)
@@ -479,10 +479,10 @@ def populate_patient_1_extra(session):
         response="RESPONSE2",
     )
     score = Score(
-        id="SCORE1", surveyid="SURVEY1", value="SCORE_VALUE", scoretypecode="TYPECODE"
+        id="SCORE1", surveyid="SURVEY1", scorevalue="SCORE_VALUE", scoretypecode="TYPECODE"
     )
     level = Level(
-        id="LEVEL1", surveyid="SURVEY1", value="LEVEL_VALUE", leveltypecode="TYPECODE"
+        id="LEVEL1", surveyid="SURVEY1", levelvalue="LEVEL_VALUE", leveltypecode="TYPECODE"
     )
     session.add(survey_1)
 
@@ -497,7 +497,7 @@ def populate_patient_1_extra(session):
         filename="DOCUMENT_PDF_FILENAME.pdf",
         pid=PID_1,
         documenttime=days_ago(365),
-        repository_update_date=datetime(2020, 3, 16),
+        repositoryupdatedate=datetime(2020, 3, 16),
     )
     document_pdf.stream = MINIMAL_PDF_BYTES
     document_pdf.filetype = "application/pdf"
@@ -506,7 +506,7 @@ def populate_patient_1_extra(session):
         documentname="DOCUMENT_TXT_NAME",
         pid=PID_1,
         documenttime=days_ago(365),
-        repository_update_date=datetime(2020, 3, 16),
+        repositoryupdatedate=datetime(2020, 3, 16),
         notetext="DOCUMENT_TXT_NOTETEXT",
     )
     session.add(document_pdf)
@@ -520,14 +520,14 @@ def populate_patient_2_extra(session):
         id="MEDICATION3",
         pid=PID_2,
         frequency="FREQUENCY_3",
-        from_time=days_ago(730),
-        to_time=days_ago(-999),
-        drug_product_generic="DRUG_PRODUCT_GENERIC_3",
-        dose_quantity=3,
-        dose_uom_code="DOSE_UOM_CODE_3",
-        dose_uom_description="DOSE_UOM_DESCRIPTION_3",
-        dose_uom_code_std="DOSE_UOM_CODE_STD_3",
-        repository_update_date=datetime(2020, 3, 16),
+        fromtime=days_ago(730),
+        totime=days_ago(-999),
+        drugproductgeneric="DRUG_PRODUCT_GENERIC_3",
+        dosequantity=3,
+        doseuomcode="DOSE_UOM_CODE_3",
+        doseuomdesc="DOSE_UOM_DESCRIPTION_3",
+        doseuomcodestd="DOSE_UOM_CODE_STD_3",
+        repositoryupdatedate=datetime(2020, 3, 16),
     )
 
     session.add(medication_3)
@@ -535,12 +535,12 @@ def populate_patient_2_extra(session):
     treatment_3 = Treatment(
         id="TREATMENT3",
         pid=PID_2,
-        from_time=days_ago(730),
-        to_time=days_ago(-999),
-        admit_reason_code=1,
-        admission_source_code_std="CF_RR7_TREATMENT",
-        health_care_facility_code="TSF02",
-        health_care_facility_code_std="ODS",
+        fromtime=days_ago(730),
+        totime=days_ago(-999),
+        admitreasoncode=1,
+        admissionsourcecodestd="CF_RR7_TREATMENT",
+        healthcarefacilitycode="TSF02",
+        healthcarefacilitycodestd="ODS",
     )
 
     session.add(treatment_3)
@@ -548,12 +548,12 @@ def populate_patient_2_extra(session):
     observation_2 = Observation(
         id="OBSERVATION2",
         pid=PID_2,
-        observation_code_std="OBSERVATION_CODE_STD",
-        observation_code="OBSERVATION_CODE",
-        observation_desc="OBSERVATION_DESC",
-        observation_value="OBSERVATION_VALUE",
-        observation_units="OBSERVATION_UNITS",
-        observation_time=days_ago(365),
+        observationcodestd="OBSERVATION_CODE_STD",
+        observationcode="OBSERVATION_CODE",
+        observationdesc="OBSERVATION_DESC",
+        observationvalue="OBSERVATION_VALUE",
+        observationunits="OBSERVATION_UNITS",
+        observationtime=days_ago(365),
     )
 
     session.add(observation_2)
@@ -575,46 +575,46 @@ def populate_patient_2_extra(session):
 def populate_workitems(session: Session):
     work_item_1 = WorkItem(
         id=1,
-        person_id=1,
-        master_id=104,
+        personid=1,
+        masterid=104,
         type=9,
         description="DESCRIPTION_1",
         status=1,
-        creation_date=days_ago(365),
-        last_updated=days_ago(365),
+        creationdate=days_ago(365),
+        lastupdated=days_ago(365),
     )
 
     work_item_2 = WorkItem(
         id=2,
-        person_id=2,
-        master_id=104,
+        personid=2,
+        masterid=104,
         type=9,
         description="DESCRIPTION_2",
         status=1,
-        creation_date=days_ago(1),
-        last_updated=days_ago(1),
+        creationdate=days_ago(1),
+        lastupdated=days_ago(1),
     )
 
     work_item_3 = WorkItem(
         id=3,
-        person_id=4,
-        master_id=102,
+        personid=4,
+        masterid=102,
         type=9,
         description="DESCRIPTION_3",
         status=1,
-        creation_date=days_ago(1),
-        last_updated=days_ago(1),
+        creationdate=days_ago(1),
+        lastupdated=days_ago(1),
     )
 
     work_item_closed = WorkItem(
         id=4,
-        person_id=4,
-        master_id=101,
+        personid=4,
+        masterid=101,
         type=9,
         description="DESCRIPTION_CLOSED",
         status=3,
-        creation_date=days_ago(1),
-        last_updated=days_ago(1),
+        creationdate=days_ago(1),
+        lastupdated=days_ago(1),
     )
 
     session.add(work_item_1)
@@ -689,11 +689,11 @@ def populate_all(ukrdc3: Session, jtrace: Session, errorsdb: Session, statsdb: S
     # Link patients 1 and 4
     link_record = LinkRecord(
         id=401,
-        person_id=4,
-        master_id=1,
-        link_type=0,
-        link_code=0,
-        last_updated=days_ago(365),
+        personid=4,
+        masterid=1,
+        linktype=0,
+        linkcode=0,
+        lastupdated=days_ago(365),
     )
     jtrace.add(link_record)
     jtrace.commit()
