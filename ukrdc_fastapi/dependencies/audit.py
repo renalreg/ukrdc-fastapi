@@ -94,7 +94,7 @@ class Auditer:
             client_host=request.client.host if request.client else None,
             path=str(request.url),
             method=request.method,
-            body=None,
+            body="",
         )
 
     async def add_request(self):

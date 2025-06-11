@@ -1,6 +1,6 @@
 import json
 from enum import Enum
-from typing import Any, Optional, Type
+from typing import Any, Optional, Type, Union
 
 from redis import Redis
 from starlette.requests import Request
@@ -102,7 +102,7 @@ class BasicCache:
     def __init__(
         self,
         redis: Redis,
-        key: CacheKey | DynamicCacheKey,
+        key: Union[CacheKey, DynamicCacheKey],
         encoder: Type[json.JSONEncoder] = JsonEncoder,
         prefix: str = "response-cache:",
     ) -> None:
@@ -179,7 +179,7 @@ class ResponseCache(BasicCache):
     def __init__(
         self,
         redis: Redis,
-        key: CacheKey | DynamicCacheKey,
+        key: Union[CacheKey, DynamicCacheKey],
         request: Request,
         response: Response,
         encoder: Type[json.JSONEncoder] = JsonEncoder,
