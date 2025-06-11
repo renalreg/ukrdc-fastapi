@@ -18,7 +18,7 @@ psycopg2-binary = "^2.9.5" # Needed for postgres
 pydantic = {extras = ["dotenv"], version = "^1.10.22"} 
 python = "^3.9" 
 python-dateutil = "^2.9.0" 
-python-stdnum = "^1.20" 
+python-stdnum = "^2.1" 
 redis = "^5.0.2" 
 sentry-sdk = {extras = ["fastapi"], version = "^1.43.0"} 
 single-source = "^0.3.0" 
