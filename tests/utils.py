@@ -33,6 +33,7 @@ def create_basic_patient(
     birth_time: datetime.datetime,
     ukrdc3: Session,
     jtrace: Session,
+    death_time: Optional[datetime.datetime]=None,
 ):
     record = PatientRecord(
         pid=pid,
@@ -45,6 +46,7 @@ def create_basic_patient(
         patient=Patient(
             pid=pid,
             birth_time=birth_time,
+            deathtime=death_time,
             gender=f"{id_%2 + 1}",
             ethnic_group_code="G",
             ethnic_group_description="ETHNICITY_GROUP",

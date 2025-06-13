@@ -12,8 +12,8 @@ async def test_user_info(client_superuser):
 async def test_info(client_superuser):
     response = await client_superuser.get(f"{configuration.base_url}/system/info")
     assert response.json() == {
-        "githubSha": '',
-        "githubRef": '',
+        "githubSha": "",
+        "githubRef": "",
         "deploymentEnv": "development",
         "version": configuration.version,
     }

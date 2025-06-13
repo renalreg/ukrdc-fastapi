@@ -39,6 +39,8 @@ from ukrdc_sqla.ukrdc import (
     Survey,
     Treatment,
     DialysisSession,
+    ModalityCodes,
+    SatelliteMap
 )
 
 from ukrdc_fastapi.dependencies import (
@@ -217,6 +219,18 @@ def populate_codes(ukrdc3):
         description="DESCRIPTION_3",
         creation_date=days_ago(365),
     )
+    code6 = Code(
+        coding_standard="URTS_ETHNIC_GROUPING",
+        code="eth1",
+        description="DESCRIPTION_3",
+        creation_date=days_ago(365),
+    )
+    code7 = Code(
+        coding_standard="NHS_DATA_DICTIONARY",
+        code="eth2",
+        description="DESCRIPTION_3",
+        creation_date=days_ago(365),
+    )
     codemap1 = CodeMap(
         source_coding_standard="CODING_STANDARD_1",
         destination_coding_standard="CODING_STANDARD_2",
@@ -231,6 +245,14 @@ def populate_codes(ukrdc3):
         destination_code="CODE_1",
         creation_date=days_ago(365),
     )
+    codemap3 = CodeMap(
+        source_coding_standard = "NHS_DATA_DICTIONARY",
+        destination_coding_standard = "URTS_ETHNIC_GROUPING",
+        source_code="eth2",
+        destination_code="eth1",
+        creation_date=days_ago(365),
+    )
+
     codeexc1 = CodeExclusion(
         coding_standard="CODING_STANDARD_1", code="CODE_1", system="SYSTEM_1"
     )
@@ -257,6 +279,9 @@ def populate_codes(ukrdc3):
     ukrdc3.add(codeexc2)
     ukrdc3.add(codeexc3)
     ukrdc3.add(code_eth_1)
+    ukrdc3.add(code6)
+    ukrdc3.add(code7)
+    ukrdc3.add(codemap3)
 
     ukrdc3.commit()
 
@@ -314,7 +339,7 @@ def populate_patient_1_extra(session):
         pid=PID_1,
         fromtime=days_ago(730),
         totime=None,
-        admitreasoncode=1,
+        admitreasoncode="1",
         admissionsourcecodestd="CF_RR7_TREATMENT",
         healthcarefacilitycode="TSF01",
         healthcarefacilitycodestd="ODS",
@@ -324,7 +349,7 @@ def populate_patient_1_extra(session):
         pid=PID_1,
         fromtime=days_ago(730),
         totime=days_ago(-999),
-        admitreasoncode=1,
+        admitreasoncode="1",
         admissionsourcecodestd="CF_RR7_TREATMENT",
         healthcarefacilitycode="TSF01",
         healthcarefacilitycodestd="ODS",
@@ -479,10 +504,16 @@ def populate_patient_1_extra(session):
         response="RESPONSE2",
     )
     score = Score(
-        id="SCORE1", surveyid="SURVEY1", scorevalue="SCORE_VALUE", scoretypecode="TYPECODE"
+        id="SCORE1",
+        surveyid="SURVEY1",
+        scorevalue="SCORE_VALUE",
+        scoretypecode="TYPECODE",
     )
     level = Level(
-        id="LEVEL1", surveyid="SURVEY1", levelvalue="LEVEL_VALUE", leveltypecode="TYPECODE"
+        id="LEVEL1",
+        surveyid="SURVEY1",
+        levelvalue="LEVEL_VALUE",
+        leveltypecode="TYPECODE",
     )
     session.add(survey_1)
 
@@ -512,6 +543,26 @@ def populate_patient_1_extra(session):
     session.add(document_pdf)
     session.add(document_txt)
 
+
+    modality_code_1 = ModalityCodes(
+        registry_code="1",
+        registry_code_desc="Haemodialysis - Acute",
+        registry_code_type="HD",
+        acute='0',              # BIT(1) field
+        transfer_in='0',        # or use False
+        ckd='0',
+        cons='0',
+        rrt='0',  # optional field
+        end_of_care='0',
+        is_imprecise='0',
+        transfer_out='0'        # nullable=True in your model, so None is allowed too
+    )
+    session.add(modality_code_1)
+
+
+
+    satellite_map_1 = SatelliteMap(satellite_code="TSF01",main_unit_code="TSF01")
+    session.add(satellite_map_1)
     session.commit()
 
 
@@ -537,7 +588,7 @@ def populate_patient_2_extra(session):
         pid=PID_2,
         fromtime=days_ago(730),
         totime=days_ago(-999),
-        admitreasoncode=1,
+        admitreasoncode="1",
         admissionsourcecodestd="CF_RR7_TREATMENT",
         healthcarefacilitycode="TSF02",
         healthcarefacilitycodestd="ODS",
@@ -643,6 +694,7 @@ def populate_all(ukrdc3: Session, jtrace: Session, errorsdb: Session, statsdb: S
         datetime(1984, 3, 17),
         ukrdc3,
         jtrace,
+        datetime(2025, 3, 17),
     )
     create_basic_patient(
         2,
@@ -657,6 +709,7 @@ def populate_all(ukrdc3: Session, jtrace: Session, errorsdb: Session, statsdb: S
         datetime(1975, 10, 9),
         ukrdc3,
         jtrace,
+        datetime(2025, 3, 17),
     )
     create_basic_patient(
         3,
@@ -671,6 +724,7 @@ def populate_all(ukrdc3: Session, jtrace: Session, errorsdb: Session, statsdb: S
         datetime(1984, 3, 17),
         ukrdc3,
         jtrace,
+        datetime(2025, 3, 17),
     )
     create_basic_patient(
         4,
@@ -685,6 +739,7 @@ def populate_all(ukrdc3: Session, jtrace: Session, errorsdb: Session, statsdb: S
         datetime(1975, 10, 9),
         ukrdc3,
         jtrace,
+        datetime(2025, 3, 17),
     )
     # Link patients 1 and 4
     link_record = LinkRecord(
