@@ -33,7 +33,7 @@ def create_basic_patient(
     birth_time: datetime.datetime,
     ukrdc3: Session,
     jtrace: Session,
-    death_time: Optional[datetime.datetime]=None,
+    death_time: Optional[datetime.datetime] = None,
 ):
     record = PatientRecord(
         pid=pid,

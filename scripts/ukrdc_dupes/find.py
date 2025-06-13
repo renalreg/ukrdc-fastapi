@@ -34,10 +34,12 @@ def find_ukrdc_dupes(jtrace: Session):
 
     for record in records:
         print(f"Processing record {record.id}")
-        related_ukrdc_records = jtrace.scalars(select_masterrecords_related_to_masterrecord(
-            record=record,
-            jtrace=jtrace,
-        ).filter(MasterRecord.nationalid_type == "UKRDC")).all()
+        related_ukrdc_records = jtrace.scalars(
+            select_masterrecords_related_to_masterrecord(
+                record=record,
+                jtrace=jtrace,
+            ).filter(MasterRecord.nationalid_type == "UKRDC")
+        ).all()
 
         if len(related_ukrdc_records) > 1:
             print(f"Multiple UKRDC IDs found for {record.id}")

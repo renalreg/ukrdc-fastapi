@@ -40,7 +40,7 @@ from ukrdc_sqla.ukrdc import (
     Treatment,
     DialysisSession,
     ModalityCodes,
-    SatelliteMap
+    SatelliteMap,
 )
 
 from ukrdc_fastapi.dependencies import (
@@ -246,8 +246,8 @@ def populate_codes(ukrdc3):
         creation_date=days_ago(365),
     )
     codemap3 = CodeMap(
-        source_coding_standard = "NHS_DATA_DICTIONARY",
-        destination_coding_standard = "URTS_ETHNIC_GROUPING",
+        source_coding_standard="NHS_DATA_DICTIONARY",
+        destination_coding_standard="URTS_ETHNIC_GROUPING",
         source_code="eth2",
         destination_code="eth1",
         creation_date=days_ago(365),
@@ -543,25 +543,22 @@ def populate_patient_1_extra(session):
     session.add(document_pdf)
     session.add(document_txt)
 
-
     modality_code_1 = ModalityCodes(
         registry_code="1",
         registry_code_desc="Haemodialysis - Acute",
         registry_code_type="HD",
-        acute='0',              # BIT(1) field
-        transfer_in='0',        # or use False
-        ckd='0',
-        cons='0',
-        rrt='0',  # optional field
-        end_of_care='0',
-        is_imprecise='0',
-        transfer_out='0'        # nullable=True in your model, so None is allowed too
+        acute="0",  # BIT(1) field
+        transfer_in="0",  # or use False
+        ckd="0",
+        cons="0",
+        rrt="0",  # optional field
+        end_of_care="0",
+        is_imprecise="0",
+        transfer_out="0",  # nullable=True in your model, so None is allowed too
     )
     session.add(modality_code_1)
 
-
-
-    satellite_map_1 = SatelliteMap(satellite_code="TSF01",main_unit_code="TSF01")
+    satellite_map_1 = SatelliteMap(satellite_code="TSF01", main_unit_code="TSF01")
     session.add(satellite_map_1)
     session.commit()
 
@@ -998,6 +995,7 @@ def app(
         user: auth.UKRDCUser = Security(auth.auth.get_user()),
     ):
         return TaskTracker(*task_redis_sessions, user=user)
+
     def _get_root_task_tracker():
         return TaskTracker(*task_redis_sessions, user=auth.auth.superuser)
 

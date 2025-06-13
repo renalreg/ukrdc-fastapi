@@ -84,7 +84,7 @@ class Permissions:
 
 class UKRDCUser(BaseModel):
     id: str
-    cid: Optional[str] = None #TODO:REVIEW  is this allowed
+    cid: Optional[str] = None  # TODO:REVIEW  is this allowed
     email: str
     scopes: list[str]
     permissions: list[str]

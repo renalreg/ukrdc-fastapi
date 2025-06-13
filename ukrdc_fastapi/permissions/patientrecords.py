@@ -46,7 +46,9 @@ def apply_patientrecord_list_permission(stmt: Select, user: UKRDCUser):
     stmt_explicit_permissions = stmt.where(PatientRecord.sendingfacility.in_(units))
 
     # Create a subquery to check if there are any rows that match the first condition
-    subquery = select(literal(1)).select_from(stmt_explicit_permissions.alias()).limit(1)
+    subquery = (
+        select(literal(1)).select_from(stmt_explicit_permissions.alias()).limit(1)
+    )
 
     # Add the second condition if there are any rows that match the first condition
     return stmt.where(

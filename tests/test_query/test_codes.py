@@ -14,7 +14,7 @@ def test_get_codes(ukrdc3_session):
         "CODE_3",
         "G",
         "eth1",
-        "eth2"
+        "eth2",
     }
 
 
@@ -73,7 +73,7 @@ def test_get_coding_standards(ukrdc3_session):
         "CODING_STANDARD_1",
         "CODING_STANDARD_2",
         "RR1+",
-        "URTS_ETHNIC_GROUPING"
+        "URTS_ETHNIC_GROUPING",
     }
 
 
