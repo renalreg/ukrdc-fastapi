@@ -691,7 +691,7 @@ def populate_all(ukrdc3: Session, jtrace: Session, errorsdb: Session, statsdb: S
         datetime(1984, 3, 17),
         ukrdc3,
         jtrace,
-        datetime(2025, 3, 17),
+        datetime.now(),
     )
     create_basic_patient(
         2,
@@ -706,7 +706,7 @@ def populate_all(ukrdc3: Session, jtrace: Session, errorsdb: Session, statsdb: S
         datetime(1975, 10, 9),
         ukrdc3,
         jtrace,
-        datetime(2025, 3, 17),
+        datetime.now(),
     )
     create_basic_patient(
         3,
@@ -721,7 +721,7 @@ def populate_all(ukrdc3: Session, jtrace: Session, errorsdb: Session, statsdb: S
         datetime(1984, 3, 17),
         ukrdc3,
         jtrace,
-        datetime(2025, 3, 17),
+        datetime.now(),
     )
     create_basic_patient(
         4,
@@ -736,7 +736,7 @@ def populate_all(ukrdc3: Session, jtrace: Session, errorsdb: Session, statsdb: S
         datetime(1975, 10, 9),
         ukrdc3,
         jtrace,
-        datetime(2025, 3, 17),
+        datetime.now(),
     )
     # Link patients 1 and 4
     link_record = LinkRecord(
