@@ -22,7 +22,7 @@ python-stdnum = "^1.20"
 redis = "^5.0.2" 
 sentry-sdk = {extras = ["fastapi"], version = "^1.43.0"} 
 single-source = "^0.3.0" 
-ukrdc-sqla = "^2.3.0" 
+ukrdc-sqla = "^2.6.2" 
 ukrdc-stats = "^1.1.0" 
 ukrdc-xsdata = "^3.4.5" 
 uvicorn = "^0.34.2" 
