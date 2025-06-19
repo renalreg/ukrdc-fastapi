@@ -1,7 +1,7 @@
 from typing import Optional
 
-from sqlalchemy import JSON, Column, String
-from sqlalchemy.orm import DeclarativeBase, MappedAsDataclass, Mapped, mapped_column  # type: ignore
+from sqlalchemy import JSON, String
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column  # type: ignore
 
 
 class Base(DeclarativeBase):

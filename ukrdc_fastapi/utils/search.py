@@ -1,8 +1,8 @@
 import datetime
 import re
-from typing import Iterable, Optional, Union, Any, Sequence
+from typing import Iterable, Optional, Union, Sequence
 
-from sqlalchemy import select, Row, RowMapping
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import or_
 from sqlalchemy.sql.functions import concat
