@@ -22,7 +22,9 @@ def get_user_preferences(usersdb: Session, user: UKRDCUser) -> UserPreferences:
     """
     stmt = select(UserPreference).where(UserPreference.uid == user.id)
     all_prefs = usersdb.scalars(stmt).all()
-    raw_prefs_dict:dict[str,Any] = {row.key: row.val for row in all_prefs if row.key is not None}
+    raw_prefs_dict: dict[str, Any] = {
+        row.key: row.val for row in all_prefs if row.key is not None
+    }
     return UserPreferences(**raw_prefs_dict)
 
 

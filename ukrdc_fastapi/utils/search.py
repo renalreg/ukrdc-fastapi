@@ -135,7 +135,9 @@ def _convert_query_to_pg_like(item: str) -> str:
     return f"{item}%"
 
 
-def records_from_mrn_no(ukrdc3: Session, mrn_nos: Iterable[str]) -> Sequence[PatientRecord]:
+def records_from_mrn_no(
+    ukrdc3: Session, mrn_nos: Iterable[str]
+) -> Sequence[PatientRecord]:
     """
     Patient Records from MRN/NHS/HSC/CHI/RADAR number.
     """
@@ -147,7 +149,9 @@ def records_from_mrn_no(ukrdc3: Session, mrn_nos: Iterable[str]) -> Sequence[Pat
     ).all()
 
 
-def records_from_pid(ukrdc3: Session, pid_nos: Iterable[str]) -> Sequence[PatientRecord]:
+def records_from_pid(
+    ukrdc3: Session, pid_nos: Iterable[str]
+) -> Sequence[PatientRecord]:
     """
     Finds Patient Records from PIDs
     """

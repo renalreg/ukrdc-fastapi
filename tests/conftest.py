@@ -994,10 +994,12 @@ def app(
     def _get_task_tracker(
         user: auth.UKRDCUser = Security(auth.auth.get_user()),
     ):
-        return TaskTracker(task_redis_sessions[0],task_redis_sessions[1], user=user)
+        return TaskTracker(task_redis_sessions[0], task_redis_sessions[1], user=user)
 
     def _get_root_task_tracker():
-        return TaskTracker(task_redis_sessions[0],task_redis_sessions[1], user=auth.auth.superuser)
+        return TaskTracker(
+            task_redis_sessions[0], task_redis_sessions[1], user=auth.auth.superuser
+        )
 
     # Override FastAPI dependencies to point to function-scoped sessions
     app.dependency_overrides[get_mirth] = _get_mirth

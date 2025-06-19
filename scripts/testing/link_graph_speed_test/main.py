@@ -54,25 +54,19 @@ def sql(jtrace: Session, seen_master_ids: set[int], seen_person_ids: set[int]):
     pr_set = set()
 
     # Base CTE
-    base = (
-        select(LinkRecord.master_id, LinkRecord.person_id)
-        .where(
-            LinkRecord.master_id.in_(seen_master_ids)
-            | LinkRecord.person_id.in_(seen_person_ids)
-        )
+    base = select(LinkRecord.master_id, LinkRecord.person_id).where(
+        LinkRecord.master_id.in_(seen_master_ids)
+        | LinkRecord.person_id.in_(seen_person_ids)
     )
     cte = base.cte(name="cte", recursive=True)
 
     # Recursive part
-    recursive = (
-        select(LinkRecord.master_id, LinkRecord.person_id)
-        .join(
-            cte,
-            or_(
-                LinkRecord.master_id == cte.c.master_id,
-                LinkRecord.person_id == cte.c.person_id,
-            )
-        )
+    recursive = select(LinkRecord.master_id, LinkRecord.person_id).join(
+        cte,
+        or_(
+            LinkRecord.master_id == cte.c.master_id,
+            LinkRecord.person_id == cte.c.person_id,
+        ),
     )
 
     # Union the base and recursive parts
@@ -120,19 +114,19 @@ def native_recursive(
 
 
 if __name__ == "__main__":
-    results:dict[Any, Any] = {}
+    results: dict[Any, Any] = {}
 
-    def _check_results(actual:tuple, masterrecord:MasterRecord):
-        if actual[0] != results[ masterrecord.id]:
+    def _check_results(actual: tuple, masterrecord: MasterRecord):
+        if actual[0] != results[masterrecord.id]:
             print(f"WARNING: Different results for { masterrecord.id}")
             print("Expected:")
-            print(results[ masterrecord.id])
+            print(results[masterrecord.id])
             print("Got:")
             print(actual[0])
 
     print("Setting up...")
     session = JtraceSession()
-    records:List[MasterRecord] = session.query(MasterRecord).limit(100).all()
+    records: List[MasterRecord] = session.query(MasterRecord).limit(100).all()
     print("Starting test...")
 
     for record in records:
@@ -146,9 +140,9 @@ if __name__ == "__main__":
     with Timer("Native Recursive"):
         for record in records:
             r = native_recursive(session, {record.id}, set())
-            _check_results(r,record)
+            _check_results(r, record)
 
     with Timer("SQL"):
         for record in records:
             r = sql(session, {record.id}, set())
-            _check_results(r,record)
+            _check_results(r, record)

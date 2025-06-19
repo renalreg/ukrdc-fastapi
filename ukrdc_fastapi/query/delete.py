@@ -44,15 +44,17 @@ def _find_empi_items_to_delete(jtrace: Session, pid: str) -> EMPIDeleteItems:
         persons=[], master_records=[], pidxrefs=[], work_items=[], link_records=[]
     )
 
-    to_delete.pidxrefs = list(jtrace.scalars(select(PidXRef).where(PidXRef.pid == pid)).all())
-    to_delete.persons = list(jtrace.scalars(
-        select(Person).where(Person.localid == pid)
-    ).all())
+    to_delete.pidxrefs = list(
+        jtrace.scalars(select(PidXRef).where(PidXRef.pid == pid)).all()
+    )
+    to_delete.persons = list(
+        jtrace.scalars(select(Person).where(Person.localid == pid)).all()
+    )
 
     for person_record in to_delete.persons:
         # Find work items related to person
         work_stmt = select(WorkItem).where(WorkItem.person_id == person_record.id)
-        work_items_related_to_person=list(jtrace.scalars(work_stmt).all())
+        work_items_related_to_person = list(jtrace.scalars(work_stmt).all())
         to_delete.work_items.extend(work_items_related_to_person)
 
         # Find link records related to person
@@ -75,7 +77,9 @@ def _find_empi_items_to_delete(jtrace: Session, pid: str) -> EMPIDeleteItems:
 
             # If the above query comes back empty, the Master Record is ONLY linked to the Person being deleted, and so can itself be deleted
             if not link_records_related_to_other_persons:
-                master_record:Optional[MasterRecord] = jtrace.get(MasterRecord, master_id)
+                master_record: Optional[MasterRecord] = jtrace.get(
+                    MasterRecord, master_id
+                )
                 if master_record:
                     # Add the Master Record to be deleted
                     to_delete.master_records.append(master_record)
@@ -83,7 +87,9 @@ def _find_empi_items_to_delete(jtrace: Session, pid: str) -> EMPIDeleteItems:
                     workitem_stmt = select(WorkItem).where(
                         WorkItem.master_id == master_record.id
                     )
-                    work_items_related_to_master_record = list(jtrace.scalars(workitem_stmt).all())
+                    work_items_related_to_master_record = list(
+                        jtrace.scalars(workitem_stmt).all()
+                    )
                     to_delete.work_items.extend(work_items_related_to_master_record)
 
     open_work_items: list[WorkItem] = [

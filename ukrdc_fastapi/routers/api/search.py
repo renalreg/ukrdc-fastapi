@@ -81,7 +81,9 @@ def search_masterrecords(
     # If a number type filter is explicitly given
     if number_type:
         # Filter by number types
-        matched_query = matched_query.where(MasterRecord.nationalid_type.in_(number_type))
+        matched_query = matched_query.where(
+            MasterRecord.nationalid_type.in_(number_type)
+        )
 
     # Apply permissions
     matched_query = apply_masterrecord_list_permissions(matched_query, user)

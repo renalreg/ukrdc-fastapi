@@ -12,7 +12,7 @@ ukrdc3 = Ukrdc3Session()
 session = ErrorsSession()
 
 stmt = select(Code).where(Code.coding_standard == "RR1+")
-codes:Sequence[Code] = ukrdc3.scalars(stmt).all()
+codes: Sequence[Code] = ukrdc3.scalars(stmt).all()
 
 t0 = time()
 
@@ -29,7 +29,7 @@ for code in codes:
 
     messages = session.scalars(message_stmt).all()
 
-    err:Sequence[Message] = [m for m in messages if m.msg_status == "ERROR"]
+    err: Sequence[Message] = [m for m in messages if m.msg_status == "ERROR"]
 
     print(f"{len(err)} patients failing:")
     print([m.ni for m in err])

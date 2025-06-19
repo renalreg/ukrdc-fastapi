@@ -39,8 +39,8 @@ uid_email_map: dict[str, set[str]] = {}
 i = 0
 
 for event in membership_creations:
-    even:AuditEvent
-    uid:str = event.access_event.uid
+    even: AuditEvent
+    uid: str = event.access_event.uid
 
     if uid not in creation_events:
         creation_events[uid] = []
