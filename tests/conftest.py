@@ -994,10 +994,10 @@ def app(
     def _get_task_tracker(
         user: auth.UKRDCUser = Security(auth.auth.get_user()),
     ):
-        return TaskTracker(*task_redis_sessions, user=user)
+        return TaskTracker(task_redis_sessions[0],task_redis_sessions[1], user=user)
 
     def _get_root_task_tracker():
-        return TaskTracker(*task_redis_sessions, user=auth.auth.superuser)
+        return TaskTracker(task_redis_sessions[0],task_redis_sessions[1], user=auth.auth.superuser)
 
     # Override FastAPI dependencies to point to function-scoped sessions
     app.dependency_overrides[get_mirth] = _get_mirth
@@ -1078,7 +1078,7 @@ def httpx_session(httpx_mock: HTTPXMock):
     def reset_override(*args):
         pass
 
-    httpx_mock.reset = reset_override
+    httpx_mock.reset = reset_override  #  type:ignore
 
     # Load a minimal channel response to mock a Mirth server
     responses_path = Path(__file__).resolve().parent.joinpath("responses")
@@ -1093,28 +1093,28 @@ def httpx_session(httpx_mock: HTTPXMock):
 
     httpx_mock.add_response(
         method="GET",
-        content=message_999_response,
+        text=message_999_response,
         url=re.compile(r"mock:\/\/mirth.url\/channels\/.*\/messages\/.*"),
     )
 
     httpx_mock.add_response(
         method="POST",
-        content="<long>999</long>",
+        text="<long>999</long>",
         url=re.compile(r"mock:\/\/mirth.url\/channels\/.*\/messages"),
     )
 
     httpx_mock.add_response(
         url=re.compile(r"mock:\/\/mirth.url\/channels\/statistics"),
-        content=channel_statistics_response,
+        text=channel_statistics_response,
     )
 
     httpx_mock.add_response(
-        url=re.compile(r"mock:\/\/mirth.url\/channels"), content=channels_response
+        url=re.compile(r"mock:\/\/mirth.url\/channels"), text=channels_response
     )
 
     httpx_mock.add_response(
         url=re.compile(r"mock:\/\/mirth.url\/channelgroups"),
-        content=channel_groups_response,
+        text=channel_groups_response,
     )
 
     httpx_mock.add_response(

@@ -2,9 +2,7 @@ import datetime
 from typing import Optional
 
 from ukrdc_sqla.ukrdc import PatientRecord
-from ukrdc_xsdata.ukrdc import Patient as RDAPatient
-from ukrdc_xsdata.ukrdc import PatientRecord as RDAPatientRecord
-from ukrdc_xsdata.ukrdc import types
+from ukrdc_xsdata.ukrdc import Patient as RDAPatient,PatientRecord as RDAPatientRecord,types  #type: ignore
 from xsdata.formats.dataclass.serializers.xml import XmlSerializer
 from xsdata.models.datatype import XmlDate, XmlDateTime
 

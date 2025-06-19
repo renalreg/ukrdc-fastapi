@@ -193,7 +193,7 @@ def select_workitems_related_to_message(message: Message, jtrace: Session) -> Se
     stmt = select(MasterRecord).where(
         MasterRecord.nationalid == message.ni,
     )
-    direct_records: list[MasterRecord] = jtrace.scalars(stmt).all()
+    direct_records = jtrace.scalars(stmt).all()
 
     # Get workitems related to masterrecords directly referenced by the error
     return select(WorkItem).where(

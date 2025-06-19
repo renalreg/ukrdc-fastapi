@@ -39,14 +39,15 @@ uid_email_map: dict[str, set[str]] = {}
 i = 0
 
 for event in membership_creations:
-    uid = event.access_event.uid
+    even:AuditEvent
+    uid:str = event.access_event.uid
 
     if uid not in creation_events:
         creation_events[uid] = []
     if uid not in uid_email_map:
         uid_email_map[uid] = set()
-
-    uid_email_map[uid].add(event.access_event.sub)
+    if event.access_event.sub:
+        uid_email_map[uid].add(event.access_event.sub)
     creation_events[uid].append(event.access_event.time)
 
     i += 1

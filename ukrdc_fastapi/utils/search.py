@@ -1,13 +1,13 @@
 import datetime
 import re
-from typing import Iterable, Optional, Union
+from typing import Iterable, Optional, Union, Any, Sequence
 
-from sqlalchemy import select
+from sqlalchemy import select, Row, RowMapping
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import or_
 from sqlalchemy.sql.functions import concat
-from stdnum.gb import nhs
-from stdnum.util import isdigits
+from stdnum.gb import nhs  # type:ignore
+from stdnum.util import isdigits  # type:ignore
 from ukrdc_sqla.ukrdc import Facility, Name, Patient, PatientNumber, PatientRecord
 
 from ukrdc_fastapi.utils import parse_date
@@ -135,7 +135,7 @@ def _convert_query_to_pg_like(item: str) -> str:
     return f"{item}%"
 
 
-def records_from_mrn_no(ukrdc3: Session, mrn_nos: Iterable[str]) -> list[PatientRecord]:
+def records_from_mrn_no(ukrdc3: Session, mrn_nos: Iterable[str]) -> Sequence[PatientRecord]:
     """
     Patient Records from MRN/NHS/HSC/CHI/RADAR number.
     """
@@ -147,7 +147,7 @@ def records_from_mrn_no(ukrdc3: Session, mrn_nos: Iterable[str]) -> list[Patient
     ).all()
 
 
-def records_from_pid(ukrdc3: Session, pid_nos: Iterable[str]) -> list[PatientRecord]:
+def records_from_pid(ukrdc3: Session, pid_nos: Iterable[str]) -> Sequence[PatientRecord]:
     """
     Finds Patient Records from PIDs
     """
@@ -158,7 +158,7 @@ def records_from_pid(ukrdc3: Session, pid_nos: Iterable[str]) -> list[PatientRec
 
 def records_from_ukrdcid(
     ukrdc3: Session, ukrdcids: Iterable[str]
-) -> list[PatientRecord]:
+) -> Sequence[PatientRecord]:
     """
     Finds Patient Records from UKRDC IDs
     """
@@ -169,7 +169,7 @@ def records_from_ukrdcid(
 
 def records_from_facility(
     ukrdc3: Session, facilities: Iterable[str]
-) -> list[PatientRecord]:
+) -> Sequence[PatientRecord]:
     """
     Finds Patient Records from facilities
     """
@@ -183,7 +183,7 @@ def records_from_facility(
 
 def records_from_full_name(
     ukrdc3: Session, names: Iterable[str]
-) -> list[PatientRecord]:
+) -> Sequence[PatientRecord]:
     """Finds Ids from full name"""
     conditions = []
 
@@ -206,7 +206,7 @@ def records_from_full_name(
 
 def records_from_dob(
     ukrdc3: Session, dobs: Iterable[Union[str, datetime.date]]
-) -> list[PatientRecord]:
+) -> Sequence[PatientRecord]:
     """Finds Ids from date of birth"""
     conditions = [Patient.birth_time == dob for dob in dobs]
     return ukrdc3.scalars(

@@ -22,11 +22,11 @@ python-stdnum = "^1.20"
 redis = "^5.0.2"
 sentry-sdk = {extras = ["fastapi"], version = "^1.43.0"}
 single-source = "^0.4.0"
-ukrdc-sqla = {git = "https://github.com/renalreg/ukrdc-sqla.git"}
 ukrdc-stats = "2.0.0"
 ukrdc-xsdata = "^3.4.5"
 uvicorn = "^0.34.3"
 matplotlib = "3.9"
+ukrdc-sqla = "2.6.2"
 
 [tool.poetry.group.dev.dependencies]
 bandit = "^1.7.4"
@@ -41,7 +41,6 @@ pytest-httpx = "^0.21"
 pytest-mock = "^3.14.0"
 pytest-postgresql = "^3.1.1"
 ruff = "^0.8.3"
-sqlalchemy2-stubs = "*"
 tox = "^4.26.0"
 types-python-dateutil = "^2.9.0.20240315"
 
@@ -56,10 +55,6 @@ requires = ["poetry-core>=1.0.0"]
 [tool.ruff.lint.isort]
 
 [tool.mypy]
-plugins = [
-  "sqlalchemy.ext.mypy.plugin",
-  "pydantic.mypy",
-]
 exclude = ["tests/", "scripts/"]
 
 [[tool.mypy.overrides]]

@@ -2805,21 +2805,6 @@ pymysql = ["pymysql"]
 sqlcipher = ["sqlcipher3_binary"]
 
 [[package]]
-name = "sqlalchemy2-stubs"
-version = "0.0.2a38"
-description = "Typing Stubs for SQLAlchemy 1.4"
-optional = false
-python-versions = ">=3.6"
-groups = ["dev"]
-files = [
-    {file = "sqlalchemy2-stubs-0.0.2a38.tar.gz", hash = "sha256:861d722abeb12f13eacd775a9f09379b11a5a9076f469ccd4099961b95800f9e"},
-    {file = "sqlalchemy2_stubs-0.0.2a38-py3-none-any.whl", hash = "sha256:b62aa46943807287550e2033dafe07564b33b6a815fbaa3c144e396f9cc53bcb"},
-]
-
-[package.dependencies]
-typing-extensions = ">=3.7.4"
-
-[[package]]
 name = "starlette"
 version = "0.46.2"
 description = "The little ASGI library that shines."
@@ -2916,22 +2901,18 @@ files = [
 
 [[package]]
 name = "ukrdc-sqla"
-version = "2.6.0"
+version = "2.6.2"
 description = "SQLAlchemy models for the UKRDC"
 optional = false
-python-versions = ">=3.8.0,<4.0"
+python-versions = "<4.0,>=3.8.0"
 groups = ["main"]
-files = []
-develop = false
+files = [
+    {file = "ukrdc_sqla-2.6.2-py3-none-any.whl", hash = "sha256:8132015a41269184f117c9ca5b53f1d6e456dc3d4fa6dc6eef5b5a499d211d7c"},
+    {file = "ukrdc_sqla-2.6.2.tar.gz", hash = "sha256:258cb56a55e177eeb719f44ab6d728126ee7c08b6e95fc10bbc674b7945191cc"},
+]
 
 [package.dependencies]
 SQLAlchemy = ">=1.4.25,<3.0.0"
-
-[package.source]
-type = "git"
-url = "https://github.com/renalreg/ukrdc-sqla.git"
-reference = "HEAD"
-resolved_reference = "3396d24e0b7bd5c07a2bb474ee98dd895c851e3d"
 
 [[package]]
 name = "ukrdc-stats"
@@ -3182,4 +3163,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<4.0"
-content-hash = "9822493a23f0d62772db428405b5ca71099e94de5cb16f58ebcb3ce9de3c533d"
+content-hash = "79b14df975bc8aad86a45c66b4624e55b5b7225766b97b4f2e3b6f64d9bd698c"

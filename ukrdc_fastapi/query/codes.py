@@ -151,7 +151,7 @@ def select_code_exclusions(
     return query
 
 
-def get_coding_standards(ukrdc3: Session) -> list[str]:
+def get_coding_standards(ukrdc3: Session) -> list[Optional[str]]:
     """Get a list of available coding standards
 
     Args:
@@ -161,4 +161,4 @@ def get_coding_standards(ukrdc3: Session) -> list[str]:
         list[str]: List of coding standards
     """
     query = select(Code.coding_standard).distinct().order_by(Code.coding_standard)
-    return ukrdc3.scalars(query).all()
+    return list(ukrdc3.scalars(query).all())

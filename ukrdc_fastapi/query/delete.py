@@ -1,5 +1,6 @@
 import hashlib
 from dataclasses import dataclass
+from typing import Optional
 
 from fastapi.exceptions import HTTPException
 from sqlalchemy import select
@@ -43,19 +44,20 @@ def _find_empi_items_to_delete(jtrace: Session, pid: str) -> EMPIDeleteItems:
         persons=[], master_records=[], pidxrefs=[], work_items=[], link_records=[]
     )
 
-    to_delete.pidxrefs = jtrace.scalars(select(PidXRef).where(PidXRef.pid == pid)).all()
-    to_delete.persons = jtrace.scalars(
+    to_delete.pidxrefs = list(jtrace.scalars(select(PidXRef).where(PidXRef.pid == pid)).all())
+    to_delete.persons = list(jtrace.scalars(
         select(Person).where(Person.localid == pid)
-    ).all()
+    ).all())
 
     for person_record in to_delete.persons:
         # Find work items related to person
-        stmt = select(WorkItem).where(WorkItem.person_id == person_record.id)
-        to_delete.work_items.extend(jtrace.scalars(stmt).all())
+        work_stmt = select(WorkItem).where(WorkItem.person_id == person_record.id)
+        work_items_related_to_person=list(jtrace.scalars(work_stmt).all())
+        to_delete.work_items.extend(work_items_related_to_person)
 
         # Find link records related to person
-        stmt = select(LinkRecord).where(LinkRecord.person_id == person_record.id)
-        link_records_related_to_person = jtrace.scalars(stmt).all()
+        link_stmt = select(LinkRecord).where(LinkRecord.person_id == person_record.id)
+        link_records_related_to_person = list(jtrace.scalars(link_stmt).all())
         to_delete.link_records.extend(link_records_related_to_person)
 
         # Find master IDs directly related to Person
@@ -73,15 +75,16 @@ def _find_empi_items_to_delete(jtrace: Session, pid: str) -> EMPIDeleteItems:
 
             # If the above query comes back empty, the Master Record is ONLY linked to the Person being deleted, and so can itself be deleted
             if not link_records_related_to_other_persons:
-                master_record = jtrace.get(MasterRecord, master_id)
+                master_record:Optional[MasterRecord] = jtrace.get(MasterRecord, master_id)
                 if master_record:
                     # Add the Master Record to be deleted
                     to_delete.master_records.append(master_record)
                     # Find work items related to master record
-                    stmt = select(WorkItem).where(
+                    workitem_stmt = select(WorkItem).where(
                         WorkItem.master_id == master_record.id
                     )
-                    to_delete.work_items.extend(jtrace.scalars(stmt).all())
+                    work_items_related_to_master_record = list(jtrace.scalars(workitem_stmt).all())
+                    to_delete.work_items.extend(work_items_related_to_master_record)
 
     open_work_items: list[WorkItem] = [
         work_item for work_item in to_delete.work_items if work_item.status == 1

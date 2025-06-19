@@ -30,7 +30,7 @@ def find_ukrdc_dupes(jtrace: Session):
     print("Fetching records")
 
     stmt = select(MasterRecord).where(MasterRecord.id.not_in_(results["cleared"]))
-    records: List[MasterRecord] = jtrace.scalars(stmt).all()
+    records: List[MasterRecord] = list(jtrace.scalars(stmt).all())
 
     for record in records:
         print(f"Processing record {record.id}")
