@@ -117,7 +117,7 @@ def get_multiple_ukrdcids(
     # Sort each fetched MasterRecord into groups
     item_groups: dict[int, list[MultipleUKRDCIDGroupItem]] = {}
     for master_id, item in record_groups.items():
-        record = records.get(master_id)
+        record = records.get(master_id)  #type: ignore
         if record:
             group_item = MultipleUKRDCIDGroupItem(
                 last_updated=item.last_updated, master_record=record
@@ -125,7 +125,7 @@ def get_multiple_ukrdcids(
             if item.group_id in item_groups:
                 item_groups[item.group_id].append(group_item)
             else:
-                item_groups[item.group_id] = [group_item]
+                item_groups[item.group_id] = [group_item]  #type: ignore
 
     return [
         MultipleUKRDCIDGroup(group_id=group_id, records=records)
