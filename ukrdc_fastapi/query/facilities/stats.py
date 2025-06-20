@@ -37,7 +37,7 @@ def get_facility_demographic_stats(
         raise MissingFacilityError(facility_code)
 
     # Calculate all demographic stats
-    return DemographicStatsCalculator(ukrdc3, facility.code).extract_stats()
+    return DemographicStatsCalculator(ukrdc3, facility.code).extract_stats()  #  type:ignore
 
 
 def get_facility_dialysis_stats(
@@ -71,5 +71,5 @@ def get_facility_dialysis_stats(
 
     # Calculate all demographic stats
     return KRTStatsCalculator(
-        ukrdc3, facility.code, from_time=from_time, to_time=to_time
+        ukrdc3, facility.code, from_time=from_time, to_time=to_time # type:ignore
     ).extract_stats()

@@ -98,7 +98,7 @@ def get_errors_history(
 
     # For each non-zero history point, add it to the full history
     for history_point in history:
-        full_history[history_point.date] = history_point.count or 0
+        full_history[history_point.date] = history_point.count or 0  # type: ignore
 
     points = [
         HistoryPoint(time=date, count=count) for date, count in full_history.items()
