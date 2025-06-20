@@ -71,8 +71,8 @@ def get_facility_dialysis_stats(
 
     # Calculate all demographic stats
     return KRTStatsCalculator(
-        ukrdc3,
-        facility.code,
-        from_time=from_time,
+        ukrdc3,  # type:ignore
+        facility.code,  # type:ignore
+        from_time=from_time,  # type:ignore
         to_time=to_time,  # type:ignore
     ).extract_stats()
