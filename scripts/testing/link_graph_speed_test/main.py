@@ -118,7 +118,7 @@ if __name__ == "__main__":
 
     def _check_results(actual: tuple, masterrecord: MasterRecord):
         if actual[0] != results[masterrecord.id]:
-            print(f"WARNING: Different results for { masterrecord.id}")
+            print(f"WARNING: Different results for {masterrecord.id}")
             print("Expected:")
             print(results[masterrecord.id])
             print("Got:")

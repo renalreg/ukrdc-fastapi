@@ -47,7 +47,7 @@ def create_basic_patient(
             pid=pid,
             birth_time=birth_time,
             deathtime=death_time,
-            gender=f"{id_%2 + 1}",
+            gender=f"{id_ % 2 + 1}",
             ethnic_group_code="G",
             ethnic_group_description="ETHNICITY_GROUP",
             names=[
@@ -114,7 +114,7 @@ def create_basic_patient(
         localid=pid,
         localidtype="CLPID",
         dateofbirth=birth_time,
-        gender=f"{id_%2 + 1}",
+        gender=f"{id_ % 2 + 1}",
     )
 
     xref = PidXRef(
