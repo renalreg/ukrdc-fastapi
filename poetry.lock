@@ -1169,25 +1169,25 @@ psutil = {version = ">=4.0.0", markers = "sys_platform != \"cygwin\""}
 
 [[package]]
 name = "mirth-client"
-version = "3.2.0"
+version = "4.1.0"
 description = "Basic Python interface for Mirth Connect"
 optional = false
-python-versions = ">=3.7,<4.0"
+python-versions = "<4.0,>=3.9"
 groups = ["main"]
 files = [
-    {file = "mirth-client-3.2.0.tar.gz", hash = "sha256:0f6a3e2400a9f855c7f0c6797c659416af2f1618499ea904c543a1f23dec82bc"},
-    {file = "mirth_client-3.2.0-py3-none-any.whl", hash = "sha256:1ad6cbb96187ee0fbd3604c03515f3de0c69f623ff1507c461626f492932bccf"},
+    {file = "mirth_client-4.1.0-py3-none-any.whl", hash = "sha256:ecdf1c5fc8c5c35f50ffbc8d621ac07d73d6a741eb503c04ff692e2b9d2d98c6"},
+    {file = "mirth_client-4.1.0.tar.gz", hash = "sha256:2a1e74c8992d1e98362fdae14a90f6ddedb66a191a23cdea96c66f4f01f5eb8b"},
 ]
 
 [package.dependencies]
-httpx = ">=0.23.0,<0.24.0"
-pydantic = ">=1.8.2,<2.0.0"
-semver = ">=2.13.0,<3.0.0"
+httpx = ">=0.23,<0.28.1"
+pydantic = ">=1.8.2,<3.0.0"
+semver = ">=2.13,<4.0"
 typing-extensions = ">=3.10,<5.0"
 xmltodict = ">=0.12,<0.14"
 
 [package.extras]
-docs = ["Sphinx (>=3.5.3,<6.0.0)", "sphinx-rtd-theme (>=0.5.1,<1.1.0)"]
+docs = ["Sphinx (>=3.5.3,<6.0.0)", "sphinx-rtd-theme (>=0.5.1,<2.1.0)"]
 
 [[package]]
 name = "multidict"
@@ -3148,4 +3148,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<4.0"
-content-hash = "9e13d972f27dc6224a33dcb470783cf8fda92117d3a1ebd7979e366fa6733895"
+content-hash = "32d0c325dfb9a6db17ad43f7243997eb3a7f2cefc8e7f87dfe64f441862c32cc"
