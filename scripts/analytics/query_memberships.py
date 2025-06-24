@@ -1,5 +1,6 @@
 import datetime
 import json
+from typing import List
 
 from sqlalchemy import and_, select
 from sqlalchemy.orm import Session
@@ -32,20 +33,21 @@ membership_creations = session.scalars(stmt).all()
 
 print(len(membership_creations))
 
-creation_events: dict[str, datetime.datetime] = {}
+creation_events: dict[str, List[datetime.datetime]] = {}
 uid_email_map: dict[str, set[str]] = {}
 
 i = 0
 
 for event in membership_creations:
-    uid = event.access_event.uid
+    even: AuditEvent
+    uid: str = event.access_event.uid
 
     if uid not in creation_events:
         creation_events[uid] = []
     if uid not in uid_email_map:
         uid_email_map[uid] = set()
-
-    uid_email_map[uid].add(event.access_event.sub)
+    if event.access_event.sub:
+        uid_email_map[uid].add(event.access_event.sub)
     creation_events[uid].append(event.access_event.time)
 
     i += 1

@@ -1,4 +1,6 @@
 from time import time
+from typing import Sequence
+
 from sqlalchemy import and_, desc, select
 
 from ukrdc_sqla.errorsdb import Message
@@ -10,7 +12,7 @@ ukrdc3 = Ukrdc3Session()
 session = ErrorsSession()
 
 stmt = select(Code).where(Code.coding_standard == "RR1+")
-codes = ukrdc3.scalars(stmt).all()
+codes: Sequence[Code] = ukrdc3.scalars(stmt).all()
 
 t0 = time()
 
@@ -18,16 +20,16 @@ for code in codes:
     facility = code.code
     print(f"Scanning facility {facility}...")
 
-    stmt = (
+    message_stmt = (
         select(Message.ni, Message.received, Message.msg_status)
         .where(and_(Message.facility == facility, Message.ni.isnot(None)))
         .order_by(Message.ni, desc(Message.received))
         .distinct(Message.ni)
     )
 
-    all = session.scalars(stmt).all()
+    messages = session.scalars(message_stmt).all()
 
-    err = [m for m in all if m.msg_status == "ERROR"]
+    err: Sequence[Message] = [m for m in messages if m.msg_status == "ERROR"]
 
     print(f"{len(err)} patients failing:")
     print([m.ni for m in err])

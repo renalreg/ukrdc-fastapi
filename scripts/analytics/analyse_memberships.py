@@ -27,7 +27,7 @@ for uid, events in creation_events.items():
         counts_per_day[date] += 1
 
     plt.figure()
-    plt.scatter(counts_per_day.keys(), counts_per_day.values())
+    plt.scatter(list(counts_per_day.keys()), list(counts_per_day.values()))
     plt.title(friendly_id)
 
     plt.xlabel("Date")

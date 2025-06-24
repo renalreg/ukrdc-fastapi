@@ -69,13 +69,13 @@ async def test_record_export_radar(client_authenticated, httpx_mock):
 @pytest.mark.asyncio
 async def test_record_export_pkb(client_authenticated, ukrdc3_session):
     # Ensure PKB membership
-    PID_1 = "PYTEST01:PV:00000000A"
+    pid_1 = "PYTEST01:PV:00000000A"
     membership = ProgramMembership(
         id="MEMBERSHIP_PKB",
-        pid=PID_1,
-        program_name="PKB",
-        from_time=days_ago(365),
-        to_time=None,
+        pid=pid_1,
+        programname="PKB",
+        fromtime=days_ago(365),
+        totime=None,
     )
     ukrdc3_session.add(membership)
     ukrdc3_session.commit()

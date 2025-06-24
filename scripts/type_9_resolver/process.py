@@ -16,7 +16,9 @@ CHANNEL_IDS = [RDA_INBOUND_FILE, PV_INBOUND]
 async def process_workitem(workitem_id: int):
     # Find workitem and related messages
     with jtrace_session() as jtrace, errors_session() as errorsdb:
-        workitem_obj = extend_workitem(jtrace.get(WorkItem, workitem_id), jtrace)
+        workitem = jtrace.get(WorkItem, workitem_id)
+        assert workitem
+        workitem_obj = extend_workitem(workitem, jtrace)
 
         assert workitem_obj.type == 9
 
@@ -32,11 +34,12 @@ async def process_workitem(workitem_id: int):
 
         messages = [
             MessageSchema.from_orm(msg)
-            for msg in select_messages(
-                errorsdb,
-                statuses=["ERROR"],
-                nis=workitem_nis,
-            )
+            for msg in errorsdb.scalars(
+                select_messages(
+                    statuses=["ERROR"],
+                    nis=workitem_nis,
+                )
+            ).all()
         ]
 
     for CHANNEL_ID in CHANNEL_IDS:

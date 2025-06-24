@@ -1,0 +1,17 @@
+version: "3.9"
+services:
+  app:
+    build:
+      context: .
+      dockerfile: /dev/Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./ukrdc_fastapi:/app/ukrdc_fastapi:ro  # Mount current directory to /app in container
+      - ./tests:/app/tests:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+    stdin_open: true
+    tty: true
+
+

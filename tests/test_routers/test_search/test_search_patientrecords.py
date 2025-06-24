@@ -92,7 +92,7 @@ async def test_search_extract_superuser(
     commit_extra_patients(ukrdc3_session, jtrace_session)
 
     for i, extract in enumerate(["PV", "UKRDC"]):
-        url = f"{configuration.base_url}/search/records?facility=TSF0{i+1}&extract={extract}"
+        url = f"{configuration.base_url}/search/records?facility=TSF0{i + 1}&extract={extract}"
 
         response = await client_superuser.get(url)
         assert response.status_code == 200

@@ -56,7 +56,7 @@ METADATA: MetadataTypeAlias = {
             "5": "N/A",
         },
         "group": "Patient Activation",
-        "question": "I understand my health problems and what causes " "them.",
+        "question": "I understand my health problems and what causes them.",
     },
     "MYHQ13": {
         "answers": {
@@ -163,7 +163,7 @@ METADATA: MetadataTypeAlias = {
             "5": "N/A",
         },
         "group": "Patient Activation",
-        "question": "I know what treatments are available for my health " "problems.",
+        "question": "I know what treatments are available for my health problems.",
     },
     "YOHQ1": {
         "answers": {
@@ -180,7 +180,7 @@ METADATA: MetadataTypeAlias = {
         "answers": {
             "1": "I have no problems washing or dressing myself",
             "2": "I have slight problems washing or dressing myself",
-            "3": "I have moderate problems washing or dressing " "myself",
+            "3": "I have moderate problems washing or dressing myself",
             "4": "I have severe problems washing or dressing myself",
             "5": "I am unable to wash or dress myself",
         },
@@ -191,7 +191,7 @@ METADATA: MetadataTypeAlias = {
         "answers": {
             "1": "I have no problems doing my usual activities",
             "2": "I have slight problems doing my usual activities",
-            "3": "I have moderate problems doing my usual " "activities",
+            "3": "I have moderate problems doing my usual activities",
             "4": "I have severe problems doing my usual activities",
             "5": "I am unable to do my usual activities",
         },
@@ -306,7 +306,7 @@ METADATA: MetadataTypeAlias = {
             "5": "Overwhelmingly",
         },
         "group": "Patient Reported Outcome Measures",
-        "question": "Feeling anxious or worried about your illness or " "treatment",
+        "question": "Feeling anxious or worried about your illness or treatment",
     },
     "YSQ17": {
         "answers": {

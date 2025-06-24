@@ -2,9 +2,11 @@ import datetime
 from typing import Optional
 
 from ukrdc_sqla.ukrdc import PatientRecord
-from ukrdc_xsdata.ukrdc import Patient as RDAPatient
-from ukrdc_xsdata.ukrdc import PatientRecord as RDAPatientRecord
-from ukrdc_xsdata.ukrdc import types
+from ukrdc_xsdata.ukrdc import (  # type: ignore
+    Patient as RDAPatient,
+    PatientRecord as RDAPatientRecord,
+    types,
+)
 from xsdata.formats.dataclass.serializers.xml import XmlSerializer
 from xsdata.models.datatype import XmlDate, XmlDateTime
 
@@ -28,7 +30,7 @@ def build_demographic_update_message(
     Args:
         record (PatientRecord): Base patient record to update
         name (Optional[NameSchema]): New name to set
-        dob (Optional[datetime.date]): New date of birth to set
+        birth_time (Optional[datetime.date]): New date of birth to set
         gender (Optional[GenderType]): New gender code to set
         address (Optional[AddressSchema]): New address to set
 

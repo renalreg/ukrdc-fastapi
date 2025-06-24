@@ -41,19 +41,19 @@ async def test_laborder_delete(client_authenticated, ukrdc3_session):
     laborder = LabOrder(
         id="LABORDER_TEMP",
         pid="PYTEST01:PV:00000000A",
-        external_id="EXTERNAL_ID_TEMP",
-        order_category="ORDER_CATEGORY_TEMP",
-        specimen_collected_time=days_ago(365),
+        externalid="EXTERNAL_ID_TEMP",
+        ordercategorycode="ORDER_CATEGORY_TEMP",
+        specimencollectedtime=days_ago(365),
     )
     resultitem = ResultItem(
         id="RESULTITEM_TEMP",
         order_id="LABORDER_TEMP",
-        service_id_std="SERVICE_ID_STD_TEMP",
-        service_id="SERVICE_ID_TEMP",
-        service_id_description="SERVICE_ID_DESCRIPTION_TEMP",
-        value="VALUE_TEMP",
-        value_units="VALUE_UNITS_TEMP",
-        observation_time=days_ago(365),
+        serviceidcodestd="SERVICE_ID_STD_TEMP",
+        serviceidcode="SERVICE_ID_TEMP",
+        serviceiddesc="SERVICE_ID_DESCRIPTION_TEMP",
+        resultvalue="VALUE_TEMP",
+        resultvalueunits="VALUE_UNITS_TEMP",
+        observationtime=days_ago(365),
     )
     ukrdc3_session.add(laborder)
     ukrdc3_session.add(resultitem)

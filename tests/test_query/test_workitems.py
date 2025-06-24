@@ -66,21 +66,21 @@ def test_get_extended_workitem_superuser(jtrace_session):
     master_record_999 = MasterRecord(
         id=999,
         status=0,
-        last_updated=days_ago(0),
-        date_of_birth=datetime(1980, 12, 12),
+        lastupdated=days_ago(0),
+        dateofbirth=datetime(1980, 12, 12),
         nationalid="119999999",
-        nationalid_type="UKRDC",
-        effective_date=days_ago(0),
+        nationalidtype="UKRDC",
+        effectivedate=days_ago(0),
     )
 
     # Link the new master record to an existing person
     link_record_999 = LinkRecord(
         id=999,
-        person_id=1,
-        master_id=999,
-        link_type=0,
-        link_code=0,
-        last_updated=days_ago(0),
+        personid=1,
+        masterid=999,
+        linktype=0,
+        linkcode=0,
+        lastupdated=days_ago(0),
     )
 
     # Person 3 now has 2 master records we want to merge

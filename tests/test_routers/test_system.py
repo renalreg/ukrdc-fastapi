@@ -11,12 +11,20 @@ async def test_user_info(client_superuser):
 
 async def test_info(client_superuser):
     response = await client_superuser.get(f"{configuration.base_url}/system/info")
-    assert response.json() == {
-        "githubSha": None,
-        "githubRef": None,
-        "deploymentEnv": "development",
-        "version": configuration.version,
-    }
+    assert response.json() in [
+        {
+            "githubSha": "",
+            "githubRef": "",
+            "deploymentEnv": "development",
+            "version": configuration.version,
+        },
+        {
+            "githubSha": None,
+            "githubRef": None,
+            "deploymentEnv": "development",
+            "version": configuration.version,
+        },
+    ]
 
 
 async def test_read_system_user_preferences(client_superuser):

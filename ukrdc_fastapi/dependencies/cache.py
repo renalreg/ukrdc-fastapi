@@ -18,7 +18,7 @@ def cache_factory(cachekey: CacheKey):
     can be used as a FastAPI dependency.
 
     Args:
-        key (CacheKey): Key describing the cached data
+        cachekey (CacheKey): Key describing the cached data
     """
 
     def cache_factory_dependency(

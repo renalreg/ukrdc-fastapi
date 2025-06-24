@@ -9,7 +9,7 @@ from fastapi import HTTPException
 from fastapi.openapi.models import OAuth2, OAuthFlowAuthorizationCode, OAuthFlows
 from fastapi.security.base import SecurityBase
 from fastapi.security.utils import get_authorization_scheme_param
-from okta_jwt_verifier import BaseJWTVerifier
+from okta_jwt_verifier import BaseJWTVerifier  # type: ignore
 from starlette.requests import Request
 from starlette.status import HTTP_401_UNAUTHORIZED
 

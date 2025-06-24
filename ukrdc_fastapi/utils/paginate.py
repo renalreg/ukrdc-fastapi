@@ -4,10 +4,10 @@ from fastapi import Query
 from fastapi_pagination import paginate as paginate_sequence
 from fastapi_pagination.default import Page as BasePage
 from fastapi_pagination.default import Params as BaseParams
-from fastapi_pagination.ext.sqlalchemy import paginate, paginate_query
+from fastapi_pagination.ext.sqlalchemy import paginate
 from fastapi_pagination.utils import disable_installed_extensions_check
 
-__all__ = ["Page", "Params", "paginate", "paginate_sequence", "paginate_query"]
+__all__ = ["Page", "Params", "paginate", "paginate_sequence"]
 
 T = TypeVar("T")  # pylint: disable=invalid-name
 

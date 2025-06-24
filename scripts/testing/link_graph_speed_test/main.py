@@ -1,6 +1,7 @@
 from time import time
+from typing import Any, List
 
-from sqlalchemy import or_
+from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.query import Query
 from ukrdc_sqla.empi import LinkRecord, MasterRecord
@@ -40,7 +41,7 @@ def native(jtrace: Session, seen_master_ids: set[int], seen_person_ids: set[int]
             found_new = False
         seen_master_ids |= master_ids
         seen_person_ids |= person_ids
-    return (seen_master_ids, seen_person_ids)
+    return seen_master_ids, seen_person_ids
 
 
 def sql(jtrace: Session, seen_master_ids: set[int], seen_person_ids: set[int]):
@@ -51,31 +52,34 @@ def sql(jtrace: Session, seen_master_ids: set[int], seen_person_ids: set[int]):
     """
     mr_set = set()
     pr_set = set()
-    top = (
-        jtrace.query(LinkRecord.master_id, LinkRecord.person_id)
-        .filter(
-            LinkRecord.master_id.in_(seen_master_ids)
-            | LinkRecord.person_id.in_(seen_person_ids)
-        )
-        .cte(name="cte", recursive=True)
-    )
 
-    bottom = jtrace.query(LinkRecord.master_id, LinkRecord.person_id).join(
-        top,
+    # Base CTE
+    base = select(LinkRecord.master_id, LinkRecord.person_id).where(
+        LinkRecord.master_id.in_(seen_master_ids)
+        | LinkRecord.person_id.in_(seen_person_ids)
+    )
+    cte = base.cte(name="cte", recursive=True)
+
+    # Recursive part
+    recursive = select(LinkRecord.master_id, LinkRecord.person_id).join(
+        cte,
         or_(
-            LinkRecord.master_id == top.c.master_id,
-            LinkRecord.person_id == top.c.person_id,
+            LinkRecord.master_id == cte.c.master_id,
+            LinkRecord.person_id == cte.c.person_id,
         ),
     )
 
-    recursive = top.union(bottom)
+    # Union the base and recursive parts
+    cte = cte.union_all(recursive)
 
-    q = jtrace.query(recursive)
-    for item in q.all():
-        mr_set.add(item.master_id)
-        pr_set.add(item.person_id)
+    # Execute the recursive query
+    results = jtrace.execute(select(cte)).all()
 
-    return (mr_set, pr_set)
+    for master_id, person_id in results:
+        mr_set.add(master_id)
+        pr_set.add(person_id)
+
+    return mr_set, pr_set
 
 
 def _find_related_links(jtrace: Session, link_records: Query):
@@ -106,23 +110,23 @@ def native_recursive(
         mr_set.add(item.master_id)
         pr_set.add(item.person_id)
 
-    return (mr_set, pr_set)
+    return mr_set, pr_set
 
 
 if __name__ == "__main__":
-    results = {}
+    results: dict[Any, Any] = {}
 
-    def _check_results(r):
-        if r[0] != results[record.id]:
-            print(f"WARNING: Different results for {record.id}")
+    def _check_results(actual: tuple, masterrecord: MasterRecord):
+        if actual[0] != results[masterrecord.id]:
+            print(f"WARNING: Different results for {masterrecord.id}")
             print("Expected:")
-            print(results[record.id])
+            print(results[masterrecord.id])
             print("Got:")
-            print(r[0])
+            print(actual[0])
 
     print("Setting up...")
     session = JtraceSession()
-    records = session.query(MasterRecord).limit(100).all()
+    records: List[MasterRecord] = session.query(MasterRecord).limit(100).all()
     print("Starting test...")
 
     for record in records:
@@ -136,9 +140,9 @@ if __name__ == "__main__":
     with Timer("Native Recursive"):
         for record in records:
             r = native_recursive(session, {record.id}, set())
-            _check_results(r)
+            _check_results(r, record)
 
     with Timer("SQL"):
         for record in records:
             r = sql(session, {record.id}, set())
-            _check_results(r)
+            _check_results(r, record)

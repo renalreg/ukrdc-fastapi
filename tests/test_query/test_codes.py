@@ -13,6 +13,8 @@ def test_get_codes(ukrdc3_session):
         "CODE_2",
         "CODE_3",
         "G",
+        "eth1",
+        "eth2",
     }
 
 
@@ -50,6 +52,8 @@ def test_get_codes_search_description(ukrdc3_session):
         "CODE_1",
         "CODE_2",
         "CODE_3",
+        "eth1",
+        "eth2",
     }
 
 
@@ -69,12 +73,13 @@ def test_get_coding_standards(ukrdc3_session):
         "CODING_STANDARD_1",
         "CODING_STANDARD_2",
         "RR1+",
+        "URTS_ETHNIC_GROUPING",
     }
 
 
 def test_get_code_maps(ukrdc3_session):
     code_maps = ukrdc3_session.scalars(codes.select_code_maps()).all()
-    assert len(code_maps) == 2
+    assert len(code_maps) == 3
 
 
 def test_get_code_maps_filter_standard(ukrdc3_session):

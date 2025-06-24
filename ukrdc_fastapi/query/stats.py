@@ -70,7 +70,7 @@ def get_full_errors_history(
     for point in history:
         if point.count:
             if point.date not in combined_history:
-                combined_history[point.date] = point.count
+                combined_history[point.date] = point.count  # type:ignore
             else:
                 combined_history[point.date] += point.count
 
@@ -110,13 +110,14 @@ def get_multiple_ukrdcids(
     stmt_records = select(MasterRecord).where(MasterRecord.id.in_(record_groups.keys()))
     records_in_groups = jtrace.scalars(stmt_records).all()
     records: dict[int, MasterRecord] = {
-        record.id: record for record in records_in_groups
+        record.id: record  # type:ignore
+        for record in records_in_groups
     }
 
     # Sort each fetched MasterRecord into groups
     item_groups: dict[int, list[MultipleUKRDCIDGroupItem]] = {}
     for master_id, item in record_groups.items():
-        record = records.get(master_id)
+        record = records.get(master_id)  # type: ignore
         if record:
             group_item = MultipleUKRDCIDGroupItem(
                 last_updated=item.last_updated, master_record=record
@@ -124,7 +125,7 @@ def get_multiple_ukrdcids(
             if item.group_id in item_groups:
                 item_groups[item.group_id].append(group_item)
             else:
-                item_groups[item.group_id] = [group_item]
+                item_groups[item.group_id] = [group_item]  # type: ignore
 
     return [
         MultipleUKRDCIDGroup(group_id=group_id, records=records)

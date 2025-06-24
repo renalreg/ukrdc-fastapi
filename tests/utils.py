@@ -33,6 +33,7 @@ def create_basic_patient(
     birth_time: datetime.datetime,
     ukrdc3: Session,
     jtrace: Session,
+    death_time: Optional[datetime.datetime] = None,
 ):
     record = PatientRecord(
         pid=pid,
@@ -40,12 +41,13 @@ def create_basic_patient(
         sendingextract=sendingextract,
         localpatientid=localpatientid,
         ukrdcid=ukrdcid,
-        repository_update_date=datetime.datetime(2020, 3, 16),
-        repository_creation_date=datetime.datetime(2020, 3, 16),
+        repositoryupdatedate=datetime.datetime(2020, 3, 16),
+        repositorycreationdate=datetime.datetime(2020, 3, 16),
         patient=Patient(
             pid=pid,
             birth_time=birth_time,
-            gender=f"{id_%2 + 1}",
+            deathtime=death_time,
+            gender=f"{id_ % 2 + 1}",
             ethnic_group_code="G",
             ethnic_group_description="ETHNICITY_GROUP",
             names=[
@@ -85,60 +87,60 @@ def create_basic_patient(
     master_record_ukrdc = MasterRecord(
         id=id_,
         status=0,
-        last_updated=datetime.datetime(2020, 3, 16),
+        lastupdated=datetime.datetime(2020, 3, 16),
         givenname=given_name,
         surname=family_name,
-        date_of_birth=birth_time,
+        dateofbirth=birth_time,
         nationalid=ukrdcid,
-        nationalid_type="UKRDC",
-        effective_date=datetime.datetime(2020, 3, 16),
+        nationalidtype="UKRDC",
+        effectivedate=datetime.datetime(2020, 3, 16),
     )
 
     master_record_nhs = MasterRecord(
         id=id_ + 100,
         status=0,
-        last_updated=datetime.datetime(2020, 3, 16),
+        lastupdated=datetime.datetime(2020, 3, 16),
         givenname=given_name,
         surname=family_name,
-        date_of_birth=birth_time,
+        dateofbirth=birth_time,
         nationalid=nhs_number,
-        nationalid_type="NHS",
-        effective_date=datetime.datetime(2020, 3, 16),
+        nationalidtype="NHS",
+        effectivedate=datetime.datetime(2020, 3, 16),
     )
 
     person = Person(
         id=id_,
         originator="UKRDC",
         localid=pid,
-        localid_type="CLPID",
-        date_of_birth=birth_time,
-        gender=f"{id_%2 + 1}",
+        localidtype="CLPID",
+        dateofbirth=birth_time,
+        gender=f"{id_ % 2 + 1}",
     )
 
     xref = PidXRef(
         id=id_,
         pid=pid,
-        sending_facility=sendingfacility,
-        sending_extract=sendingextract,
+        sendingfacility=sendingfacility,
+        sendingextract=sendingextract,
         localid=f"XREF_LOCALID_{id_}",
     )
 
     link_record_ukrdc = LinkRecord(
         id=id_,
-        person_id=id_,
-        master_id=id_,
-        link_type=0,
-        link_code=0,
-        last_updated=datetime.datetime(2019, 1, 1),
+        personid=id_,
+        masterid=id_,
+        linktype=0,
+        linkcode=0,
+        lastupdated=datetime.datetime(2019, 1, 1),
     )
 
     link_record_nhs = LinkRecord(
         id=id_ + 100,
-        person_id=id_,
-        master_id=id_ + 100,
-        link_type=0,
-        link_code=0,
-        last_updated=datetime.datetime(2019, 1, 1),
+        personid=id_,
+        masterid=id_ + 100,
+        linktype=0,
+        linkcode=0,
+        lastupdated=datetime.datetime(2019, 1, 1),
     )
 
     jtrace.add(master_record_ukrdc)

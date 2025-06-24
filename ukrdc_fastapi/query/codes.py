@@ -21,8 +21,8 @@ def select_codes(
     """Get the list of codes from the code list
 
     Args:
-        ukrdc3 (Session): SQLAlchemy session
         coding_standard (Optional[list[str]]): Coding standards to filter by. Defaults to None.
+        search (Optional[str]): Search terms to filter by. Defaults to None.
 
     Returns:
         Query: Codes
@@ -91,7 +91,6 @@ def select_code_maps(
     """Get the list of codes from the code map
 
     Args:
-        ukrdc3 (Session): SQLAlchemy session
         source_coding_standard (Optional[list[str]]): Coding standards to filter by. Defaults to None.
         destination_coding_standard (Optional[list[str]]): Coding standards to filter by. Defaults to None.
         source_code (Optional[str]): Source code to filter by. Defaults to None.
@@ -129,7 +128,6 @@ def select_code_exclusions(
     """Get the list of code exclusions
 
     Args:
-        ukrdc3 (Session): SQLAlchemy session
         coding_standard (Optional[list[str]]): Coding standards to filter by. Defaults to None.
         code (Optional[list[str]]): Source code to filter by. Defaults to None.
         system (Optional[list[str]]): Excluded systems to filter by. Defaults to None.
@@ -153,7 +151,7 @@ def select_code_exclusions(
     return query
 
 
-def get_coding_standards(ukrdc3: Session) -> list[str]:
+def get_coding_standards(ukrdc3: Session) -> list[Optional[str]]:
     """Get a list of available coding standards
 
     Args:
@@ -163,4 +161,4 @@ def get_coding_standards(ukrdc3: Session) -> list[str]:
         list[str]: List of coding standards
     """
     query = select(Code.coding_standard).distinct().order_by(Code.coding_standard)
-    return ukrdc3.scalars(query).all()
+    return list(ukrdc3.scalars(query).all())
