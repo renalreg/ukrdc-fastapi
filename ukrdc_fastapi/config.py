@@ -123,7 +123,7 @@ class Settings(BaseSettings):
 
     # CORS settings
 
-    allow_origins: list[str] = []
+    allow_origins: list[str] = ["http://host.docker.internal:3000", "http://localhost:3000", "http://ukrdc-nuxt-3:3000"]
 
     class Config:
         env_file = ".env"
