@@ -2,25 +2,24 @@
 authors = ["Joel Collins <joel.collins@renalregistry.nhs.uk>"]
 description = ""
 name = "ukrdc-fastapi"
-packages = [
-  {include = "ukrdc_fastapi"},
-]
+packages = [{ include = "ukrdc_fastapi" }]
 version = "6.0.0"
 
 [tool.poetry.dependencies]
-SQLAlchemy = {version = ">=2.0,<3"}
+SQLAlchemy = { version = ">=2.0,<3" }
 fastapi = "^0.115.13"
-fastapi-pagination = {extras = ["sqlalchemy"], version = "^ 0.13.2"}
+fastapi-pagination = { extras = ["sqlalchemy"], version = "^ 0.13.2" }
 httpx = "^0.23"
 mirth-client = "^4.1.0"
 okta-jwt-verifier = "^0.2.3"
+cryptography = "^42.0.5" # Needed to get round this issue https://github.com/okta/okta-jwt-verifier-python/issues/72
 psycopg2-binary = "^2.9.5" # Needed for postgres
-pydantic = {extras = ["dotenv"], version = "^1.10.22"}
+pydantic = { extras = ["dotenv"], version = "^1.10.22" }
 python = ">=3.11,<4.0"
 python-dateutil = "^2.9.0"
 python-stdnum = "^2.1"
 redis = "^6.2.0"
-sentry-sdk = {extras = ["fastapi"], version = "^2.30.0"}
+sentry-sdk = { extras = ["fastapi"], version = "^2.30.0" }
 single-source = "^0.4.0"
 ukrdc-stats = "2.0.0"
 ukrdc-xsdata = "^3.4.5"
@@ -30,7 +29,7 @@ ukrdc-sqla = "2.6.2"
 
 [tool.poetry.group.dev.dependencies]
 bandit = "^1.8.3"
-coverage = {extras = ["toml"], version = "^7.8"}
+coverage = { extras = ["toml"], version = "^7.8" }
 fakeredis = "2.29.0"
 mypy = "^1.16.0"
 pre-commit = "^4.2.0"
@@ -84,9 +83,7 @@ omit = [
 addopts = "--cov=ukrdc_fastapi"
 asyncio_mode = "auto"
 minversion = "6.0"
-testpaths = [
-  "tests",
-]
+testpaths = ["tests"]
 
 [tool.coverage.report]
 exclude_lines = ["raise HTTPException"]
