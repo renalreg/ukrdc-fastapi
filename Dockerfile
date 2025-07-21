@@ -1,4 +1,4 @@
-FROM python:3.11-slim-buster
+FROM python:3.11-slim-bookworm
 
 ARG GITHUB_SHA
 ARG GITHUB_REF
