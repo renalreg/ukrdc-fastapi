@@ -19,7 +19,7 @@ python = ">=3.11,<4.0"
 python-dateutil = "^2.9.0"
 python-stdnum = "^2.1"
 redis = "^6.2.0"
-sentry-sdk = { extras = ["fastapi"], version = "^2.30.0" }
+sentry-sdk = { extras = ["fastapi"], version = "^2.34.0" }
 single-source = "^0.4.0"
 ukrdc-stats = "2.0.0"
 ukrdc-xsdata = "^3.4.5"
