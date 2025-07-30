@@ -14,8 +14,9 @@ ENV PYTHONUNBUFFERED=1 \
 
 # Required to build some wheels on newer Python versions
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends build-essential && \
-    rm -rf /var/lib/apt/lists/*
+    apt-get install -y --no-install-recommends build-essential libpq-dev libpq-dev postgresql postgresql-contrib && \
+    useradd -m appuser && mkdir -p /tmp/pgdata && chown appuser:appuser /tmp/pgdata && \
+    rm -rf /var/lib/apt/lists/* 
 
 WORKDIR /app
 
@@ -23,6 +24,10 @@ RUN python -m pip install -U pip wheel && pip install poetry
 
 COPY . ./
 
-RUN poetry install --only main --no-interaction
+RUN chown -R appuser:appuser /app
+
+USER appuser
+
+RUN poetry install --with dev --no-interaction
 
 CMD ["poetry", "run", "uvicorn", "ukrdc_fastapi.main:app", "--host", "0.0.0.0", "--port", "8000"]

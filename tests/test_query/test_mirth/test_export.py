@@ -53,6 +53,30 @@ async def test_record_export_radar(ukrdc3_session, redis_session, mirth_session)
     assert response.message == "<result><pid>PYTEST01:PV:00000000A</pid></result>"
 
 
+async def test_export_all_to_mrc(ukrdc3_session, redis_session, mirth_session):
+    # Ensure MRC membership
+    pid_1 = "PYTEST01:PV:00000000A"
+    membership = ProgramMembership(
+        id="MEMBERSHIP_MRC",
+        pid=pid_1,
+        programname="MRC",
+        fromtime=days_ago(365),
+        totime=None,
+    )
+    ukrdc3_session.add(membership)
+    ukrdc3_session.commit()
+
+    response = await export.export_all_to_mrc(
+        ukrdc3_session.get(PatientRecord, "PYTEST01:PV:00000000A"),
+        ukrdc3_session,
+        mirth_session,
+        redis_session,
+    )
+
+    assert response.status == "success"
+    assert response.message == "<result><pid>PYTEST01:PV:00000000A</pid></result>"
+
+
 async def test_record_export_pkb(ukrdc3_session, redis_session, mirth_session):
     # Ensure PKB membership
     pid_1 = "PYTEST01:PV:00000000A"

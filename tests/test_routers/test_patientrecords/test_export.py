@@ -66,6 +66,30 @@ async def test_record_export_radar(client_authenticated, httpx_mock):
     assert response.json().get("numberOfMessages") == 1
 
 
+@pytest.mark.asynccio
+async def test_patient_export_mrc(client_authenticated, ukrdc3_session):
+    pid_1 = "PYTEST01:PV:00000000A"
+    membership = ProgramMembership(
+        id="MEMBERSHIP_MRC",
+        pid=pid_1,
+        programname="MRC",
+        fromtime=days_ago(365),
+        totime=None,
+    )
+
+    ukrdc3_session.add(membership)
+    ukrdc3_session.commit()
+
+    response = await client_authenticated.post(
+        f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/export/mrc",
+        json={},
+    )
+
+    assert response.status_code == 200
+    assert response.json().get("status") == "success"
+    assert response.json().get("numberOfMessages") == 1
+
+
 @pytest.mark.asyncio
 async def test_record_export_pkb(client_authenticated, ukrdc3_session):
     # Ensure PKB membership

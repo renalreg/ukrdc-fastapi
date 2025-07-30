@@ -37,6 +37,12 @@
         <revision>9</revision>
     </channel>
     <channel>
+        <id>a9d1f31d-1293-43c8-9c6e-ef1a057a82b0</id>
+        <name>MRC Outbound - Data - RDA</name>
+        <description>Channel description</description>
+        <revision>9</revision>
+    </channel>
+    <channel>
         <id>8062f518-7e86-4af6-8283-1e95e6ab65bd</id>
         <name>PKB Outbound - Partner</name>
         <description>Channel description</description>
