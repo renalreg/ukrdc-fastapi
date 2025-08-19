@@ -113,7 +113,10 @@ def _create_delete_patientrecord_summary(
         patient_record=record_to_delete_summary, empi=empi_to_delete_summary
     )
 
-    to_delete_json = to_delete_summary.json()
+    to_delete_json = to_delete_summary.json(
+        exclude_unset=True,
+        sort_keys=True
+    )
     # We ignore Bandit warnings here as MD5 is not being used for security purposes
     to_delete_hash = hashlib.md5(to_delete_json.encode()).hexdigest()  # nosec
 
