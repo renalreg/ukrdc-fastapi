@@ -46,34 +46,50 @@ def _find_empi_items_to_delete(jtrace: Session, pid: str) -> EMPIDeleteItems:
     )
 
     to_delete.pidxrefs = list(
-        jtrace.scalars(select(PidXRef).where(PidXRef.pid == pid).order_by(PidXRef.id)).all()
+        jtrace.scalars(
+            select(PidXRef).where(PidXRef.pid == pid).order_by(PidXRef.id)
+        ).all()
     )
     to_delete.persons = list(
-        jtrace.scalars(select(Person).where(Person.localid == pid).order_by(Person.id)).all()
+        jtrace.scalars(
+            select(Person).where(Person.localid == pid).order_by(Person.id)
+        ).all()
     )
 
     for person_record in to_delete.persons:
         # Find work items related to person
-        work_stmt = select(WorkItem).where(WorkItem.person_id == person_record.id).order_by(WorkItem.id)
+        work_stmt = (
+            select(WorkItem)
+            .where(WorkItem.person_id == person_record.id)
+            .order_by(WorkItem.id)
+        )
         work_items_related_to_person = list(jtrace.scalars(work_stmt).all())
         to_delete.work_items.extend(work_items_related_to_person)
 
         # Find link records related to person
-        link_stmt = select(LinkRecord).where(LinkRecord.person_id == person_record.id).order_by(LinkRecord.id)
+        link_stmt = (
+            select(LinkRecord)
+            .where(LinkRecord.person_id == person_record.id)
+            .order_by(LinkRecord.id)
+        )
         link_records_related_to_person = list(jtrace.scalars(link_stmt).all())
         to_delete.link_records.extend(link_records_related_to_person)
 
         # Find master IDs directly related to Person
-        master_ids = sorted([
-            link_record.master_id for link_record in link_records_related_to_person
-        ])
+        master_ids = sorted(
+            [link_record.master_id for link_record in link_records_related_to_person]
+        )
 
         for master_id in master_ids:
             # Find link records related to the Master Record but NOT the Person currently being deleted
-            stmt = select(LinkRecord).where(
-                LinkRecord.master_id == master_id,
-                LinkRecord.person_id != person_record.id,
-            ).order_by(LinkRecord.id)
+            stmt = (
+                select(LinkRecord)
+                .where(
+                    LinkRecord.master_id == master_id,
+                    LinkRecord.person_id != person_record.id,
+                )
+                .order_by(LinkRecord.id)
+            )
             link_records_related_to_other_persons = jtrace.scalars(stmt).all()
 
             # If the above query comes back empty, the Master Record is ONLY linked to the Person being deleted, and so can itself be deleted
@@ -85,9 +101,11 @@ def _find_empi_items_to_delete(jtrace: Session, pid: str) -> EMPIDeleteItems:
                     # Add the Master Record to be deleted
                     to_delete.master_records.append(master_record)
                     # Find work items related to master record
-                    workitem_stmt = select(WorkItem).where(
-                        WorkItem.master_id == master_record.id
-                    ).order_by(WorkItem.id)
+                    workitem_stmt = (
+                        select(WorkItem)
+                        .where(WorkItem.master_id == master_record.id)
+                        .order_by(WorkItem.id)
+                    )
                     work_items_related_to_master_record = list(
                         jtrace.scalars(workitem_stmt).all()
                     )
@@ -101,7 +119,10 @@ def _find_empi_items_to_delete(jtrace: Session, pid: str) -> EMPIDeleteItems:
 
     return to_delete
 
-def normalize_delete_pid_preview(model: DeletePIDPreviewSchema) -> DeletePIDPreviewSchema:
+
+def normalize_delete_pid_preview(
+    model: DeletePIDPreviewSchema,
+) -> DeletePIDPreviewSchema:
     """
     Return a new DeletePIDPreviewSchema where all nested lists in 'empi' and
     'patient_record' are sorted deterministically by 'id'.
@@ -116,7 +137,9 @@ def normalize_delete_pid_preview(model: DeletePIDPreviewSchema) -> DeletePIDPrev
         elif isinstance(obj, dict):
             return {k: normalize_obj(v) for k, v in obj.items()}
         elif isinstance(obj, BaseModel):
-            return obj.__class__(**{k: normalize_obj(v) for k, v in obj.dict(exclude_unset=True).items()})
+            return obj.__class__(
+                **{k: normalize_obj(v) for k, v in obj.dict(exclude_unset=True).items()}
+            )
         return obj
 
     normalized_dict = model.dict(exclude_unset=True)
@@ -125,6 +148,7 @@ def normalize_delete_pid_preview(model: DeletePIDPreviewSchema) -> DeletePIDPrev
             normalized_dict[field] = normalize_obj(normalized_dict[field])
 
     return DeletePIDPreviewSchema(**normalized_dict)
+
 
 def _create_delete_patientrecord_summary(
     record_to_delete: PatientRecord,
