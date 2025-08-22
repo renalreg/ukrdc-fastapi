@@ -10,6 +10,10 @@ async def test_record_observations(client_superuser):
 
     items = response.json().get("items", [])
     assert len(items) > 0
+    
+    # UI-261 - Allow null values in the ukrdc observation schema.
+    items[0]["observationValue"] = None 
+    
     assert [ObservationSchema(**x) for x in items]
 
 
