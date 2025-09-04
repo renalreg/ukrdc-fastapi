@@ -1,8 +1,9 @@
 import hashlib
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Any
 
 from fastapi.exceptions import HTTPException
+from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm.session import Session
 from ukrdc_sqla.empi import LinkRecord, MasterRecord, Person, PidXRef, WorkItem
@@ -45,33 +46,49 @@ def _find_empi_items_to_delete(jtrace: Session, pid: str) -> EMPIDeleteItems:
     )
 
     to_delete.pidxrefs = list(
-        jtrace.scalars(select(PidXRef).where(PidXRef.pid == pid)).all()
+        jtrace.scalars(
+            select(PidXRef).where(PidXRef.pid == pid).order_by(PidXRef.id)
+        ).all()
     )
     to_delete.persons = list(
-        jtrace.scalars(select(Person).where(Person.localid == pid)).all()
+        jtrace.scalars(
+            select(Person).where(Person.localid == pid).order_by(Person.id)
+        ).all()
     )
 
     for person_record in to_delete.persons:
         # Find work items related to person
-        work_stmt = select(WorkItem).where(WorkItem.person_id == person_record.id)
+        work_stmt = (
+            select(WorkItem)
+            .where(WorkItem.person_id == person_record.id)
+            .order_by(WorkItem.id)
+        )
         work_items_related_to_person = list(jtrace.scalars(work_stmt).all())
         to_delete.work_items.extend(work_items_related_to_person)
 
         # Find link records related to person
-        link_stmt = select(LinkRecord).where(LinkRecord.person_id == person_record.id)
+        link_stmt = (
+            select(LinkRecord)
+            .where(LinkRecord.person_id == person_record.id)
+            .order_by(LinkRecord.id)
+        )
         link_records_related_to_person = list(jtrace.scalars(link_stmt).all())
         to_delete.link_records.extend(link_records_related_to_person)
 
         # Find master IDs directly related to Person
-        master_ids = [
-            link_record.master_id for link_record in link_records_related_to_person
-        ]
+        master_ids = sorted(
+            [link_record.master_id for link_record in link_records_related_to_person]
+        )
 
         for master_id in master_ids:
             # Find link records related to the Master Record but NOT the Person currently being deleted
-            stmt = select(LinkRecord).where(
-                LinkRecord.master_id == master_id,
-                LinkRecord.person_id != person_record.id,
+            stmt = (
+                select(LinkRecord)
+                .where(
+                    LinkRecord.master_id == master_id,
+                    LinkRecord.person_id != person_record.id,
+                )
+                .order_by(LinkRecord.id)
             )
             link_records_related_to_other_persons = jtrace.scalars(stmt).all()
 
@@ -84,8 +101,10 @@ def _find_empi_items_to_delete(jtrace: Session, pid: str) -> EMPIDeleteItems:
                     # Add the Master Record to be deleted
                     to_delete.master_records.append(master_record)
                     # Find work items related to master record
-                    workitem_stmt = select(WorkItem).where(
-                        WorkItem.master_id == master_record.id
+                    workitem_stmt = (
+                        select(WorkItem)
+                        .where(WorkItem.master_id == master_record.id)
+                        .order_by(WorkItem.id)
                     )
                     work_items_related_to_master_record = list(
                         jtrace.scalars(workitem_stmt).all()
@@ -101,6 +120,36 @@ def _find_empi_items_to_delete(jtrace: Session, pid: str) -> EMPIDeleteItems:
     return to_delete
 
 
+def normalize_delete_pid_preview(
+    model: DeletePIDPreviewSchema,
+) -> DeletePIDPreviewSchema:
+    """
+    Return a new DeletePIDPreviewSchema where all nested lists in 'empi' and
+    'patient_record' are sorted deterministically by 'id'.
+    """
+
+    def normalize_obj(obj: Any) -> Any:
+        if isinstance(obj, list):
+            # if list of dict-like objects with 'id', sort by 'id'
+            if obj and isinstance(obj[0], dict) and "id" in obj[0]:
+                return sorted((normalize_obj(x) for x in obj), key=lambda d: d["id"])
+            return [normalize_obj(x) for x in obj]
+        elif isinstance(obj, dict):
+            return {k: normalize_obj(v) for k, v in obj.items()}
+        elif isinstance(obj, BaseModel):
+            return obj.__class__(
+                **{k: normalize_obj(v) for k, v in obj.dict(exclude_unset=True).items()}
+            )
+        return obj
+
+    normalized_dict = model.dict(exclude_unset=True)
+    for field in ["patient_record", "empi"]:
+        if normalized_dict.get(field) is not None:
+            normalized_dict[field] = normalize_obj(normalized_dict[field])
+
+    return DeletePIDPreviewSchema(**normalized_dict)
+
+
 def _create_delete_patientrecord_summary(
     record_to_delete: PatientRecord,
     empi_to_delete: EMPIDeleteItems,
@@ -112,8 +161,10 @@ def _create_delete_patientrecord_summary(
     to_delete_summary = DeletePIDPreviewSchema(
         patient_record=record_to_delete_summary, empi=empi_to_delete_summary
     )
+    # we must normalize the pid preview as patientrecord, is dynamically fetched
+    normalized = normalize_delete_pid_preview(to_delete_summary)
+    to_delete_json = normalized.json(exclude_unset=True, sort_keys=True)
 
-    to_delete_json = to_delete_summary.json()
     # We ignore Bandit warnings here as MD5 is not being used for security purposes
     to_delete_hash = hashlib.md5(to_delete_json.encode()).hexdigest()  # nosec
 
