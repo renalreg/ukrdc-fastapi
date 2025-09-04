@@ -3125,14 +3125,14 @@ files = [
 
 [[package]]
 name = "ukrdc-sqla"
-version = "2.6.2"
+version = "2.8.1"
 description = "SQLAlchemy models for the UKRDC"
 optional = false
 python-versions = "<4.0,>=3.8.0"
 groups = ["main"]
 files = [
-    {file = "ukrdc_sqla-2.6.2-py3-none-any.whl", hash = "sha256:8132015a41269184f117c9ca5b53f1d6e456dc3d4fa6dc6eef5b5a499d211d7c"},
-    {file = "ukrdc_sqla-2.6.2.tar.gz", hash = "sha256:258cb56a55e177eeb719f44ab6d728126ee7c08b6e95fc10bbc674b7945191cc"},
+    {file = "ukrdc_sqla-2.8.1-py3-none-any.whl", hash = "sha256:c504023bb2ddca3997955edb7ecdc5f70863923a0297127455f71ce82885905a"},
+    {file = "ukrdc_sqla-2.8.1.tar.gz", hash = "sha256:9c3a8c32cb81ea0c0ccfa1087dfc025740adc9b4cba05829ce921b42fea4edde"},
 ]
 
 [package.dependencies]
@@ -3387,4 +3387,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<4.0"
-content-hash = "f9f0092d2ad6205e5a730e86cab99820dabb213ffa632b324b3439e98f97548d"
+content-hash = "d831c78fe1e04260ccd6c931bc3eb0327bf359da785dfd992f2c688e3d5e5fa7"
