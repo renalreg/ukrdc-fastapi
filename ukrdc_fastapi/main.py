@@ -1,14 +1,14 @@
 import re
 from contextlib import asynccontextmanager
 
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 from fastapi.routing import APIRoute
 from fastapi_pagination import add_pagination
 
 from ukrdc_fastapi.config import configuration, settings
-from ukrdc_fastapi.dependencies.auth import auth
+from ukrdc_fastapi.dependencies.auth import auth, Permissions
 from ukrdc_fastapi.dependencies.sentry import add_sentry
 from ukrdc_fastapi.exceptions import ResourceNotFoundError
 from ukrdc_fastapi.routers import api
@@ -25,6 +25,11 @@ def _custom_generate_unique_id(route: APIRoute):
     operation_id = re.sub("[^0-9a-zA-Z_]", "_", operation_id)
     operation_id = list(route.methods)[0].lower() + "_" + operation_id
     return operation_id
+
+def _dev_token_override():
+    return {
+        "org.ukrdc.permissions": Permissions.all()
+    }
 
 
 @asynccontextmanager
@@ -59,15 +64,19 @@ app = FastAPI(
 app.openapi_version = "3.0.2"
 
 # Add routes
-
 app.include_router(
     api.router,
     prefix=configuration.base_url,
     dependencies=[Depends(auth.okta_jwt_scheme)],
 )
 
-# Add middlewares
+# Dev okta override
+if settings.disable_auth:
+    print(":)")
+    app.dependency_overrides[auth.okta_jwt_scheme] = _dev_token_override
 
+
+# Add middlewares
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.allow_origins,

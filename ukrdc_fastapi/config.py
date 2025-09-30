@@ -1,3 +1,4 @@
+from gc import disable
 from typing import Optional
 
 from pydantic import BaseSettings
@@ -32,6 +33,9 @@ class Settings(BaseSettings):
     # Optional debug mode
     debug: bool = False
 
+    # Optional disable Oauth for local development
+    disable_auth: bool = False 
+
     # Messages to display on user dashboards
     motd: list[str] = []
     # Warnings to display on user dashboards
@@ -54,7 +58,7 @@ class Settings(BaseSettings):
 
     swagger_client_id: str = ""
     app_client_id: str = ""
-    oauth_issuer: str = "https://sso.ukkidney.org/oauth2/ausn7fa9zfh1DC2La5d6"
+    oauth_issuer: str = "https://sso.ukkidney.o rg/oauth2/ausn7fa9zfh1DC2La5d6"
     oauth_audience: str = "api://ukrdc"
 
     # Mirth settings
