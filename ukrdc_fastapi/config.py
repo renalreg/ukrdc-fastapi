@@ -33,7 +33,7 @@ class Settings(BaseSettings):
     debug: bool = False
 
     # Optional disable Oauth for local development
-    disable_auth: bool = False 
+    disable_auth: bool = False
 
     # Messages to display on user dashboards
     motd: list[str] = []

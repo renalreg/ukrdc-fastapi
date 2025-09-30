@@ -26,10 +26,9 @@ def _custom_generate_unique_id(route: APIRoute):
     operation_id = list(route.methods)[0].lower() + "_" + operation_id
     return operation_id
 
+
 def _dev_token_override():
-    return {
-        "org.ukrdc.permissions": Permissions.all()
-    }
+    return {"org.ukrdc.permissions": Permissions.all()}
 
 
 @asynccontextmanager
