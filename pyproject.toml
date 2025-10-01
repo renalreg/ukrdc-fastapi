@@ -25,7 +25,8 @@ ukrdc-stats = "2.0.0"
 ukrdc-xsdata = "^3.4.5"
 uvicorn = "^0.35.0"
 matplotlib = "3.10.3"
-ukrdc-sqla = "2.6.2"
+ukrdc-sqla = "^2.9.1"
+pandas = "^2.3.3"
 
 [tool.poetry.group.dev.dependencies]
 bandit = "^1.8.3"

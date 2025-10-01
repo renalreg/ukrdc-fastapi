@@ -160,6 +160,7 @@ def create_basic_facility(
     ukrdc3: Session,
     pkb_in: bool = False,
     pkb_out: bool = False,
+    ukrdc_out_pkb: bool = False,
     pkb_msg_exclusions: Optional[list[str]] = None,
 ):
     code_obj = Code(
@@ -173,6 +174,7 @@ def create_basic_facility(
         code=code,
         pkb_in=pkb_in,
         pkb_out=pkb_out,
+        ukrdc_out_pkb=ukrdc_out_pkb,
         pkb_msg_exclusions=pkb_msg_exclusions if pkb_msg_exclusions else [],
     )
 

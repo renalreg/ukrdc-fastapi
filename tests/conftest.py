@@ -67,7 +67,8 @@ from .utils import create_basic_facility, create_basic_patient, days_ago
 
 # Using the factory to create a postgresql instance
 socket_dir = tempfile.TemporaryDirectory()
-postgresql_my_proc = factories.postgresql_proc(port=None, unixsocketdir=socket_dir.name)
+#postgresql_my_proc = factories.postgresql_proc(port=None, unixsocketdir=socket_dir.name)
+postgresql_my_proc = factories.postgresql_noproc(port=5432, user = "postgres", password = "postgres")
 postgresql_my = factories.postgresql("postgresql_my_proc")
 
 MINIMAL_PDF_BYTES = (
@@ -122,6 +123,7 @@ def populate_facilities_and_messages(ukrdc3, statsdb, errorsdb):
         ukrdc3,
         pkb_in=False,
         pkb_out=True,
+        ukrdc_out_pkb = True,
         pkb_msg_exclusions=None,
     )
 
@@ -134,14 +136,29 @@ def populate_facilities_and_messages(ukrdc3, statsdb, errorsdb):
         pkb_msg_exclusions=None,
     )
 
+
+    # add channel to satisfy foreign key constraint added in v3.7.1 of the sqla
+    # models
+    channel_fk = Channel(
+        id="00000000-0000-0000-0000-222222222222",
+        name="MIRTH-CHANNEL-NAME-FK",
+        resolved_by = "00000000-0000-0000-0000-222222222222"
+    )
+
     channel_1 = Channel(
-        id="00000000-0000-0000-0000-000000000000", name="MIRTH-CHANNEL-NAME-1"
+        id="00000000-0000-0000-0000-000000000000", 
+        name="MIRTH-CHANNEL-NAME-1",
+        resolved_by = "00000000-0000-0000-0000-222222222222"
     )
     channel_2 = Channel(
-        id="00000000-0000-0000-0000-111111111111", name="MIRTH-CHANNEL-NAME-2"
+        id="00000000-0000-0000-0000-111111111111",
+        name="MIRTH-CHANNEL-NAME-2",
+        resolved_by = "00000000-0000-0000-0000-222222222222"
     )
+
     errorsdb.add(channel_1)
     errorsdb.add(channel_2)
+    errorsdb.add(channel_fk)
 
     facility_1_message_1 = ErrorMessage(
         id=1,
