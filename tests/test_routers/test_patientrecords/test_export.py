@@ -123,8 +123,9 @@ async def test_record_export_pkb_no_memberships(client_authenticated):
 
 
 @pytest.mark.asyncio
-async def test_record_ukrdc_to_pkb_export_disabled(client_authenticated, ukrdc3_session):
-
+async def test_record_ukrdc_to_pkb_export_disabled(
+    client_authenticated, ukrdc3_session
+):
     # Add PKB membership
     pid_1 = "PYTEST01:PV:00000000A"
     membership = ProgramMembership(
@@ -148,8 +149,6 @@ async def test_record_ukrdc_to_pkb_export_disabled(client_authenticated, ukrdc3_
         )
 
 
-
-
 @pytest.mark.parametrize("route", ["pv", "pv-tests", "pv-docs", "radar", "pkb"])
 async def test_record_export_denied(client_authenticated, route):
     response = await client_authenticated.post(
@@ -158,5 +157,3 @@ async def test_record_export_denied(client_authenticated, route):
     )
 
     assert response.status_code == 403
-
-
