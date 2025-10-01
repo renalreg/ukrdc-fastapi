@@ -32,6 +32,9 @@ class Settings(BaseSettings):
     # Optional debug mode
     debug: bool = False
 
+    # Optional disable Oauth for local development
+    disable_auth: bool = False
+
     # Messages to display on user dashboards
     motd: list[str] = []
     # Warnings to display on user dashboards

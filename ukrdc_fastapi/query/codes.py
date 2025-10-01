@@ -1,6 +1,6 @@
 from typing import Optional
 
-from sqlalchemy import or_, select
+from sqlalchemy import or_, select, func
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.selectable import Select
 from ukrdc_sqla.ukrdc import Code, CodeExclusion, CodeMap
@@ -37,7 +37,10 @@ def select_codes(
             or_(Code.code.ilike(f"%{search}%"), Code.description.ilike(f"%{search}%"))
         )
 
-    query = query.order_by(Code.coding_standard, Code.code)
+    query = query.order_by(
+        func.upper(Code.coding_standard),
+        func.upper(Code.code),
+    )
 
     return query
 
@@ -115,7 +118,12 @@ def select_code_maps(
     if destination_code:
         query = query.where(CodeMap.destination_code == destination_code)
 
-    query = query.order_by(CodeMap.source_code)
+    query = query.order_by(
+        CodeMap.source_code,
+        CodeMap.destination_code,
+        CodeMap.source_coding_standard,
+        CodeMap.destination_coding_standard,
+    )
 
     return query
 
