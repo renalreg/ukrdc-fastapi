@@ -68,6 +68,8 @@ from .utils import create_basic_facility, create_basic_patient, days_ago
 # Using the factory to create a postgresql instance
 socket_dir = tempfile.TemporaryDirectory()
 #postgresql_my_proc = factories.postgresql_proc(port=None, unixsocketdir=socket_dir.name)
+
+# Uncomment for local development with docker
 postgresql_my_proc = factories.postgresql_noproc(port=5432, user = "postgres", password = "postgres")
 postgresql_my = factories.postgresql("postgresql_my_proc")
 
