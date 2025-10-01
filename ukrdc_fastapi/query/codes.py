@@ -115,7 +115,12 @@ def select_code_maps(
     if destination_code:
         query = query.where(CodeMap.destination_code == destination_code)
 
-    query = query.order_by(CodeMap.source_code)
+    query = query.order_by(
+        CodeMap.source_code,
+        CodeMap.destination_code,
+        CodeMap.source_coding_standard,
+        CodeMap.destination_coding_standard,
+    )
 
     return query
 
