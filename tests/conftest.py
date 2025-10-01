@@ -70,7 +70,7 @@ socket_dir = tempfile.TemporaryDirectory()
 postgresql_my_proc = factories.postgresql_proc(port=None, unixsocketdir=socket_dir.name)
 
 # Uncomment for local development with external postgres instance
-# postgresql_my_proc = factories.postgresql_noproc(port=5432, user = "postgres", password = "postgres")
+#postgresql_my_proc = factories.postgresql_noproc(port=5432, user = "postgres", password = "postgres")
 postgresql_my = factories.postgresql("postgresql_my_proc")
 
 MINIMAL_PDF_BYTES = (
@@ -249,6 +249,14 @@ def populate_codes(ukrdc3):
         description="DESCRIPTION_3",
         creation_date=days_ago(365),
     )
+    code_eth_1 = Code(
+        coding_standard="NHS_DATA_DICTIONARY",
+        code="G",
+        description="ETHNICITY_GROUP_DESCRIPTION",
+        creation_date=days_ago(365),
+    )
+
+
     codemap1 = CodeMap(
         source_coding_standard="CODING_STANDARD_1",
         destination_coding_standard="CODING_STANDARD_2",
@@ -279,13 +287,6 @@ def populate_codes(ukrdc3):
     )
     codeexc3 = CodeExclusion(
         coding_standard="CODING_STANDARD_2", code="CODE_2", system="SYSTEM_2"
-    )
-
-    code_eth_1 = Code(
-        coding_standard="NHS_DATA_DICTIONARY",
-        code="G",
-        description="ETHNICITY_GROUP_DESCRIPTION",
-        creation_date=days_ago(365),
     )
 
     ukrdc3.add(code3)
