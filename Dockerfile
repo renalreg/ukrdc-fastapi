@@ -1,4 +1,4 @@
-FROM python:3.11-slim-bookworm
+FROM python:3.12-slim-bookworm
 
 ARG GITHUB_SHA
 ARG GITHUB_REF
@@ -13,8 +13,8 @@ ENV PYTHONUNBUFFERED=1 \
     SENTRY_DSN=$SENTRY_DSN
 
 # Required to build some wheels on newer Python versions
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends build-essential libpq-dev libpq-dev postgresql postgresql-contrib && \
+RUN apt update && \
+    apt install -y --no-install-recommends build-essential libpq-dev libpq-dev postgresql postgresql-contrib && \
     useradd -m appuser && mkdir -p /tmp/pgdata && chown appuser:appuser /tmp/pgdata && \
     rm -rf /var/lib/apt/lists/* 
 
