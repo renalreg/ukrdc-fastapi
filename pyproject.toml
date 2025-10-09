@@ -3,7 +3,7 @@ authors = ["Joel Collins <joel.collins@renalregistry.nhs.uk>"]
 description = ""
 name = "ukrdc-fastapi"
 packages = [{ include = "ukrdc_fastapi" }]
-version = "6.0.0"
+version = "6.1.0"
 
 [tool.poetry.dependencies]
 SQLAlchemy = { version = ">=2.0,<3" }
@@ -15,7 +15,7 @@ okta-jwt-verifier = "^0.2.3"
 cryptography = "^44.0.1" # Needed to get round this issue https://github.com/okta/okta-jwt-verifier-python/issues/72
 psycopg2-binary = "^2.9.5" # Needed for postgres
 pydantic = { extras = ["dotenv"], version = "^1.10.22" }
-python = ">=3.11,<4.0"
+python = ">=3.12,<4.0"
 python-dateutil = "^2.9.0"
 python-stdnum = "^2.1"
 redis = "^6.2.0"
@@ -25,7 +25,7 @@ ukrdc-stats = "2.0.0"
 ukrdc-xsdata = "^3.4.5"
 uvicorn = "^0.35.0"
 matplotlib = "3.10.3"
-ukrdc-sqla = "2.6.2"
+ukrdc-sqla = "^2.6.2"
 
 [tool.poetry.group.dev.dependencies]
 bandit = "^1.8.3"
