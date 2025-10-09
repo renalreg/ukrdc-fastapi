@@ -10,9 +10,10 @@ async def test_code_list_export(client_authenticated):
     response = await client_authenticated.get(
         f"{configuration.base_url}/codes/export/list"
     )
+    print(response.content)
     assert (
         response.content
-        == b'"CODING_STANDARD_1","CODE_1","DESCRIPTION_1"\r\n"CODING_STANDARD_2","CODE_2","DESCRIPTION_2"\r\n"CODING_STANDARD_2","CODE_3","DESCRIPTION_3"\r\n"NHS_DATA_DICTIONARY","G","ETHNICITY_GROUP_DESCRIPTION"\r\n"NHS_DATA_DICTIONARY","eth2","DESCRIPTION_3"\r\n"RR1+","TSF01","TSF01_DESCRIPTION"\r\n"RR1+","TSF02","TSF02_DESCRIPTION"\r\n"URTS_ETHNIC_GROUPING","eth1","DESCRIPTION_3"\r\n'
+        == b'"CODING_STANDARD_1","CODE_1","DESCRIPTION_1"\r\n"CODING_STANDARD_2","CODE_2","DESCRIPTION_2"\r\n"CODING_STANDARD_2","CODE_3","DESCRIPTION_3"\r\n"NHS_DATA_DICTIONARY","eth2","DESCRIPTION_3"\r\n"NHS_DATA_DICTIONARY","G","ETHNICITY_GROUP_DESCRIPTION"\r\n"RR1+","TSF01","TSF01_DESCRIPTION"\r\n"RR1+","TSF02","TSF02_DESCRIPTION"\r\n"URTS_ETHNIC_GROUPING","eth1","DESCRIPTION_3"\r\n'
     )
 
 

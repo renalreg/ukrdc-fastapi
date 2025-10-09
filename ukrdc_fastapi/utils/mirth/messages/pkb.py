@@ -202,6 +202,16 @@ def build_pkb_sync_messages(record: PatientRecord, ukrdc3: Session) -> list[str]
             f"PKB outbound sending disabled for {facility.code}"
         )
 
+    if not facility.ukrdc_out_pkb and record.sendingextract == "UKRDC":
+        raise PKBOutboundDisabledError(
+            f"UKRDC to PKB outbound sending disabled for {facility.code}"
+        )
+
+    if not facility.pv_out_pkb and record.sendingextract == "PV":
+        raise PKBOutboundDisabledError(
+            f"PV to PKB outbound sending disabled for {facility.code}"
+        )
+
     msg_type_exclusions = _get_facility_exclusions(facility)
     includes_message_types: list[str] = [
         t for t in ALL_MSG_TYPES if t not in msg_type_exclusions

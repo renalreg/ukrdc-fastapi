@@ -1,11 +1,11 @@
 import re
 
 import pytest
-from ukrdc_sqla.ukrdc import ProgramMembership
+from ukrdc_sqla.ukrdc import ProgramMembership, Facility
 
 from tests.utils import days_ago
 from ukrdc_fastapi.config import configuration
-from ukrdc_fastapi.exceptions import NoActiveMembershipError
+from ukrdc_fastapi.exceptions import NoActiveMembershipError, PKBOutboundDisabledError
 
 
 def _last_sent_mirth_message(httpx_mock) -> str:
@@ -116,6 +116,33 @@ async def test_record_export_pkb(client_authenticated, ukrdc3_session):
 @pytest.mark.asyncio
 async def test_record_export_pkb_no_memberships(client_authenticated):
     with pytest.raises(NoActiveMembershipError):
+        await client_authenticated.post(
+            f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/export/pkb",
+            json={},
+        )
+
+
+@pytest.mark.asyncio
+async def test_record_ukrdc_to_pkb_export_disabled(
+    client_authenticated, ukrdc3_session
+):
+    # Add PKB membership
+    pid_1 = "PYTEST01:PV:00000000A"
+    membership = ProgramMembership(
+        id="MEMBERSHIP_PKB",
+        pid=pid_1,
+        programname="PKB",
+        fromtime=days_ago(365),
+        totime=None,
+    )
+    ukrdc3_session.add(membership)
+
+    # Disable UKRDC to PKB outbound
+    facility = ukrdc3_session.query(Facility).filter_by(code="TSF01").first()
+    facility.ukrdc_out_pkb = False
+    ukrdc3_session.commit()
+
+    with pytest.raises(PKBOutboundDisabledError):
         await client_authenticated.post(
             f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/export/pkb",
             json={},
