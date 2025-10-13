@@ -3315,14 +3315,14 @@ SQLAlchemy = ">=1.4.25,<3.0.0"
 
 [[package]]
 name = "ukrdc-stats"
-version = "2.0.0"
+version = "2.7.0"
 description = "A package to produce stats from the ukrdc database to be displayed on the dashboard"
 optional = false
-python-versions = "<4.0,>=3.9"
+python-versions = "<4.0,>=3.12"
 groups = ["main"]
 files = [
-    {file = "ukrdc_stats-2.0.0-py3-none-any.whl", hash = "sha256:cc79054c550cddce96a40a0770b51b31527a32682aad89e2133d6ec9b93660a2"},
-    {file = "ukrdc_stats-2.0.0.tar.gz", hash = "sha256:c59476f74b234223dda3ea41f1ed3e5ab641e945dc2e0b8502d80e7b8a81b273"},
+    {file = "ukrdc_stats-2.7.0-py3-none-any.whl", hash = "sha256:1c6d8052f1a8c92a1ea6273a0550c19cc6f938798e4ec4f27ef492fc26305885"},
+    {file = "ukrdc_stats-2.7.0.tar.gz", hash = "sha256:047da1f234a6c9c8ae15f693f9de73390a1302215d4950857b15cedbc02d2537"},
 ]
 
 [package.dependencies]
@@ -3332,7 +3332,7 @@ psycopg = {version = ">=3.2.3,<4.0.0", extras = ["binary"]}
 pydantic = ">=1.10.1,<2.0.0"
 setuptools = ">=75.8.0,<76.0.0"
 SQLAlchemy = ">=2.0.0,<3.0.0"
-ukrdc-sqla = ">=2.0.0,<3.0.0"
+ukrdc-sqla = ">=2.6.0,<3.0.0"
 
 [[package]]
 name = "ukrdc-xsdata"
@@ -3588,4 +3588,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<4.0"
-content-hash = "2e9aec54e6b56c5474fb7e3e4576c6183204501bb57f6d11488ea1299c0b6dba"
+content-hash = "5f1c1f19c31e2a47eab4814b459a6293911bfd27e67dbff4b0338d23285e191d"
