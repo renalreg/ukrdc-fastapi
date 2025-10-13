@@ -8,7 +8,7 @@ version = "6.2.0"
 [tool.poetry.dependencies]
 SQLAlchemy = { version = ">=2.0,<3" }
 fastapi = "^0.116.1"
-fastapi-pagination = { extras = ["sqlalchemy"], version = "^ 0.13.2" }
+fastapi-pagination = { extras = ["sqlalchemy"], version = "^ 0.14.3" }
 httpx = "^0.23"
 mirth-client = "^4.1.0"
 okta-jwt-verifier = "^0.2.3"
