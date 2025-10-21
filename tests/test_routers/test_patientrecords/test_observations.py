@@ -28,10 +28,17 @@ async def test_record_observation_codes(client_superuser):
     assert response.status_code == 200
     assert set(response.json()) == {"bpdia", "OBSERVATION_CODE", "bpsys"}
 
+
 async def test_ui_261(client_superuser, ukrdc3_session):
     # Update to the pydantic schema to allow null values
 
-    obs = ukrdc3_session.query(PatientRecord).join(Observation).where(PatientRecord.pid == "PYTEST01:PV:00000000A").first().observations[0]
+    obs = (
+        ukrdc3_session.query(PatientRecord)
+        .join(Observation)
+        .where(PatientRecord.pid == "PYTEST01:PV:00000000A")
+        .first()
+        .observations[0]
+    )
     obs.observationvalue = None
     ukrdc3_session.commit()
 
