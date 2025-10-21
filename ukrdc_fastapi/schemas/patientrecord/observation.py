@@ -18,7 +18,7 @@ class ObservationSchema(OrmModel):
         ..., description="Observation timestamp"
     )
     observation_desc: Optional[str] = Field(None, description="Observation description")
-    observation_value: str = Field(..., description="Observation value")
+    observation_value: Optional[str] = Field(None, description="Observation value")
     observation_units: Optional[str] = Field(
         None, description="Observation units of measurement"
     )
