@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi import Query as QueryParam
 from fastapi import Security
 from fastapi.responses import Response
-from sqlalchemy import select
+from sqlalchemy import select, exists
 from sqlalchemy.orm import Session
 from ukrdc_sqla.ukrdc import LabOrder, PatientRecord, ResultItem
 
@@ -124,9 +124,9 @@ def patient_result_delete(
 
     # If the parent order has no more items, delete it too
     if order:
-        stmt_other_items = select(ResultItem).where(ResultItem.order_id == order.id)
-        first_item = ukrdc3.execute(stmt_other_items).scalar_one_or_none()
-        if not first_item:
+        stmt = select(exists().where(ResultItem.order_id == order.id))
+        other_results = ukrdc3.execute(stmt).scalar()
+        if not other_results:
             ukrdc3.delete(order)
             ukrdc3.commit()
 
