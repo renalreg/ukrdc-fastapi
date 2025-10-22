@@ -1,4 +1,3 @@
-from ukrdc_xsdata.ukrdc.types import service_id
 from ukrdc_fastapi.config import configuration
 from ukrdc_fastapi.schemas.patientrecord.laborder import ResultItemSchema
 from ukrdc_sqla.ukrdc import ResultItem
@@ -91,6 +90,7 @@ async def test_resultitem_delete(client_superuser, ukrdc3_session):
     )
     assert response.status_code == 204
 
+    # This time the orphaned lab order should have been removed
     response = await client_superuser.get(
         f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/laborders/LABORDER1"
     )
