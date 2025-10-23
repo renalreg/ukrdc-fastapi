@@ -2,6 +2,7 @@ from ukrdc_fastapi.config import configuration
 from ukrdc_fastapi.schemas.patientrecord.laborder import ResultItemSchema
 from ukrdc_sqla.ukrdc import ResultItem
 
+
 async def test_record_resultitems(client_superuser):
     response = await client_superuser.get(
         f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/results"
@@ -44,20 +45,19 @@ async def test_resultitem_detail_denied(client_authenticated):
 
 async def test_resultitem_delete(client_superuser, ukrdc3_session):
     # UI-288 : We add some extra result items to test orphaned laborder
-    # behaviour 
+    # behaviour
     ukrdc3_session.add(
         ResultItem(
-            id = "RESULTITEM1-1",
+            id="RESULTITEM1-1",
             order_id="LABORDER1",
-            service_id = "Table",
-
+            service_id="Table",
         )
     )
     ukrdc3_session.add(
         ResultItem(
-            id = "RESULTITEM1-2",
+            id="RESULTITEM1-2",
             order_id="LABORDER1",
-            service_id = "Door-to-door",
+            service_id="Door-to-door",
         )
     )
     ukrdc3_session.commit()
@@ -73,8 +73,7 @@ async def test_resultitem_delete(client_superuser, ukrdc3_session):
     )
     assert response.status_code == 404
 
-
-    # Check parent lab order wasn't deleted 
+    # Check parent lab order wasn't deleted
     response = await client_superuser.get(
         f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/laborders/LABORDER1"
     )
