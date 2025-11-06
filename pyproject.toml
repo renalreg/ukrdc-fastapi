@@ -3,7 +3,7 @@ authors = ["Joel Collins <joel.collins@renalregistry.nhs.uk>"]
 description = ""
 name = "ukrdc-fastapi"
 packages = [{ include = "ukrdc_fastapi" }]
-version = "6.2.0"
+version = "6.3.0"
 
 [tool.poetry.dependencies]
 SQLAlchemy = { version = ">=2.0,<3" }
