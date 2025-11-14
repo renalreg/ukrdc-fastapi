@@ -12,7 +12,7 @@ fastapi-pagination = { extras = ["sqlalchemy"], version = "^ 0.13.2" }
 httpx = "^0.23"
 mirth-client = "^4.1.0"
 okta-jwt-verifier = "^0.2.3"
-cryptography = "^44.0.1" # Needed to get round this issue https://github.com/okta/okta-jwt-verifier-python/issues/72
+cryptography = "^46.0.3" # Needed to get round this issue https://github.com/okta/okta-jwt-verifier-python/issues/72
 psycopg2-binary = "^2.9.5" # Needed for postgres
 pydantic = { extras = ["dotenv"], version = "^1.10.22" }
 python = ">=3.12,<4.0"
