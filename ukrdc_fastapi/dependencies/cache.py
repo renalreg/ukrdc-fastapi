@@ -1,4 +1,5 @@
 from fastapi import Depends
+from typing import Union
 from redis import Redis
 from starlette.requests import Request
 from starlette.responses import Response
@@ -12,13 +13,13 @@ from ukrdc_fastapi.utils.cache import (
 )
 
 
-def cache_factory(cachekey: CacheKey):
+def cache_factory(cachekey: Union[CacheKey, DynamicCacheKey]):
     """
     Build a cache dependency function. The returned function
     can be used as a FastAPI dependency.
 
     Args:
-        cachekey (CacheKey): Key describing the cached data
+        cachekey (Union[CacheKey, DynamicCacheKey]): Key describing the cached data
     """
 
     def cache_factory_dependency(
