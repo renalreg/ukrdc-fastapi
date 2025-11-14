@@ -19,6 +19,8 @@ from ukrdc_fastapi.exceptions import MissingFacilityError
 def get_facility_demographic_stats(
     ukrdc3: Session,
     facility_code: str,
+    since: Optional[datetime.datetime] = None,
+    until: Optional[datetime.datetime] = None,
 ) -> DemographicsStats:
     """Extract demographic distributions for all UKRDC/RDA records in a given facility
 
@@ -37,7 +39,7 @@ def get_facility_demographic_stats(
         raise MissingFacilityError(facility_code)
 
     # Calculate all demographic stats
-    return DemographicStatsCalculator(ukrdc3, facility.code).extract_stats()  #  type:ignore
+    return DemographicStatsCalculator(ukrdc3, facility.code, ).extract_stats()  #  type:ignore
 
 
 def get_facility_dialysis_stats(

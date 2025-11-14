@@ -95,7 +95,7 @@ async def precalculate_facility_stats_dialysis() -> None:
                 for row in facilities
                 if row[2] > settings.cache_facilities_stats_dialysis_min
             )
-
+           
             # Cache the stats for each facility
             for facility_code in facilities_to_cache:
                 cache = BasicCache(

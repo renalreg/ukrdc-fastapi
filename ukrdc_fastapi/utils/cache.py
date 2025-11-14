@@ -80,7 +80,8 @@ class DynamicCacheKey:
     @property
     def value(self) -> str:
         """Return the cache key as a string"""
-        return f"{self.prefix}:{':'.join(self.args)}"
+        filtered_args = [str(arg) for arg in self.args if arg is not None]
+        return f"{self.prefix}:{':'.join(filtered_args)}"
 
     def __str__(self) -> str:
         """Return the cache key as a string"""

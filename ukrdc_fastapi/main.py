@@ -28,7 +28,12 @@ def _custom_generate_unique_id(route: APIRoute):
 
 
 def _dev_token_override():
-    return {"org.ukrdc.permissions": Permissions.all()}
+    return {
+        "uid": "dev_id",
+        "sub": "dev@development.dev",
+        "org.ukrdc.permissions": Permissions.all(),
+        #"scopes": ["openid", "profile", "email", "offline_access"],
+    }
 
 
 @asynccontextmanager
