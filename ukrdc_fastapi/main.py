@@ -32,7 +32,7 @@ def _dev_token_override():
         "uid": "dev_id",
         "sub": "dev@development.dev",
         "org.ukrdc.permissions": Permissions.all(),
-        #"scopes": ["openid", "profile", "email", "offline_access"],
+        # "scopes": ["openid", "profile", "email", "offline_access"],
     }
 
 

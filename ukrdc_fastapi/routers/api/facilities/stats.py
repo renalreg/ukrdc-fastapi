@@ -17,7 +17,10 @@ from ukrdc_fastapi.query.facilities.stats import (
     get_facility_demographic_stats,
     get_facility_dialysis_stats,
 )
-from ukrdc_fastapi.utils.cache import DynamicCacheKey, FacilityCachePrefix, ResponseCache
+from ukrdc_fastapi.utils.cache import (
+    DynamicCacheKey,
+    FacilityCachePrefix,
+)
 
 router = APIRouter(tags=["Facilities/Stats"], prefix="/{code}/stats")
 
@@ -31,24 +34,41 @@ def facility_stats_demographics(
     ukrdc3: Session = Depends(get_ukrdc3),
     user: UKRDCUser = Security(auth.get_user()),
     since: Optional[str] = None,
-    until: Optional[str] = None
+    until: Optional[str] = None,
 ):
     """Retreive demographic statistics for a given facility"""
     assert_facility_permission(code, user)
-    cache_key = DynamicCacheKey(FacilityCachePrefix.DEMOGRAPHICS, code, since, until)
-    cache = cache_factory(cache_key)(
-        request = request,
-        response=response,
-        redis=redis
-    )
+
+    if since and until:
+        cache_key = DynamicCacheKey(
+            FacilityCachePrefix.DEMOGRAPHICS, code, since, until
+        )
+    elif since:
+        cache_key = DynamicCacheKey(FacilityCachePrefix.DEMOGRAPHICS, code, since)
+    elif until:
+        cache_key = DynamicCacheKey(FacilityCachePrefix.DEMOGRAPHICS, code, until)
+    else:
+        cache_key = DynamicCacheKey(FacilityCachePrefix.KRT, code)
+
+    cache = cache_factory(cache_key)(request=request, response=response, redis=redis)
 
     # If no cached value exists, or the cached value has expired
     if not cache.exists:
-        from_time = datetime.strptime(since + " 00:00:00", "%Y-%m-%d %H:%M:%S") if since else None
-        to_time = datetime.strptime(until + " 23:59:59", "%Y-%m-%d %H:%M:%S") if until else None
+        from_time = (
+            datetime.strptime(since + " 00:00:00", "%Y-%m-%d %H:%M:%S")
+            if since
+            else None
+        )
+        to_time = (
+            datetime.strptime(until + " 23:59:59", "%Y-%m-%d %H:%M:%S")
+            if until
+            else None
+        )
         # Cache a computed value, and expire after 8 hours
         cache.set(
-            get_facility_demographic_stats(ukrdc3, code, since=from_time, until=to_time),
+            get_facility_demographic_stats(
+                ukrdc3, code, since=from_time, until=to_time
+            ),
             expire=settings.cache_facilities_stats_demographics_seconds,
         )
 
@@ -67,23 +87,34 @@ def facility_stats_krt(
     ukrdc3: Session = Depends(get_ukrdc3),
     user: UKRDCUser = Security(auth.get_user()),
     since: Optional[str] = None,
-    until: Optional[str] = None
+    until: Optional[str] = None,
 ):
     """Retreive KRT statistics for a given facility"""
     assert_facility_permission(code, user)
 
+    if since and until:
+        cache_key = DynamicCacheKey(FacilityCachePrefix.KRT, code, since, until)
+    elif since:
+        cache_key = DynamicCacheKey(FacilityCachePrefix.KRT, code, since)
+    elif until:
+        cache_key = DynamicCacheKey(FacilityCachePrefix.KRT, code, until)
+    else:
+        cache_key = DynamicCacheKey(FacilityCachePrefix.KRT, code)
 
-    cache_key = DynamicCacheKey(FacilityCachePrefix.KRT, code, since, until)
-    cache = cache_factory(cache_key)(
-        request = request,
-        response=response,
-        redis=redis
-    )
+    cache = cache_factory(cache_key)(request=request, response=response, redis=redis)
 
     # If no cached value exists, or the cached value has expired
     if not cache.exists:
-        from_time = datetime.strptime(since + " 00:00:00", "%Y-%m-%d %H:%M:%S") if since else None
-        to_time = datetime.strptime(until + " 23:59:59", "%Y-%m-%d %H:%M:%S") if until else None
+        from_time = (
+            datetime.strptime(since + " 00:00:00", "%Y-%m-%d %H:%M:%S")
+            if since
+            else None
+        )
+        to_time = (
+            datetime.strptime(until + " 23:59:59", "%Y-%m-%d %H:%M:%S")
+            if until
+            else None
+        )
         # Cache a computed value, and expire after 8 hours
         cache.set(
             get_facility_dialysis_stats(ukrdc3, code, since=from_time, until=to_time),
