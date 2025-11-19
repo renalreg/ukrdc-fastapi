@@ -48,7 +48,7 @@ def facility_stats_demographics(
     elif until:
         cache_key = DynamicCacheKey(FacilityCachePrefix.DEMOGRAPHICS, code, until)
     else:
-        cache_key = DynamicCacheKey(FacilityCachePrefix.KRT, code)
+        cache_key = DynamicCacheKey(FacilityCachePrefix.DEMOGRAPHICS, code)
 
     cache = cache_factory(cache_key)(request=request, response=response, redis=redis)
 

@@ -76,7 +76,6 @@ app.include_router(
 
 # Dev okta override
 if settings.disable_auth:
-    print(":)")
     app.dependency_overrides[auth.okta_jwt_scheme] = _dev_token_override
 
 
