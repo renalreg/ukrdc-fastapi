@@ -1,5 +1,5 @@
 import logging
-
+from datetime import datetime, time, date, timedelta
 from sqlalchemy import select
 from sqlalchemy.sql.functions import func
 from ukrdc_sqla.ukrdc import PatientRecord
@@ -96,20 +96,29 @@ async def precalculate_facility_stats_dialysis() -> None:
                 if row[2] > settings.cache_facilities_stats_dialysis_min
             )
 
-            # Cache the stats for each facility
+            # List of start and stop dates to cache
+            today_date = datetime.now().date()
+            quarter_start_month = (today_date.month - 1) // 3 * 3 + 1
+            quarter_start_date = date(year = today_date.year, month = quarter_start_month, day = 1)
+            #quarter_end_date = quarter_start_date + datetime.timedelta(days=90)
+
+            # Cache the stats for each facility, date and period
             for facility_code in facilities_to_cache:
-                cache = BasicCache(
-                    get_redis(),
-                    DynamicCacheKey(FacilityCachePrefix.KRT, facility_code),
-                )
-                if not cache.exists:
-                    try:
-                        cache.set(
-                            get_facility_dialysis_stats(ukrdc3, facility_code),
-                            expire=settings.cache_facilities_stats_dialysis_seconds,
+                for end_date in [today_date, quarter_start_date]:
+                    for period in [30,90,365]:
+                        start_date = end_date - timedelta(days = period)
+                        cache = BasicCache(
+                            get_redis(),
+                            DynamicCacheKey(FacilityCachePrefix.KRT, facility_code, start_date.strftime("%Y-%m-%d"), end_date.strftime("%Y-%m-%d")),
                         )
-                    except MissingFacilityError as e:
-                        logging.error(e)
+                        if not cache.exists:
+                            try:
+                                cache.set(
+                                    get_facility_dialysis_stats(ukrdc3, facility_code, since = datetime.combine(start_date, time.min), until = datetime.combine(end_date, time.max)),
+                                    expire=settings.cache_facilities_stats_dialysis_seconds,
+                                )
+                            except MissingFacilityError as e:
+                                logging.error(e)
 
     task = get_root_task_tracker().create(
         innerfunc, name="Pre-calculate per-facility dialysis stats"
