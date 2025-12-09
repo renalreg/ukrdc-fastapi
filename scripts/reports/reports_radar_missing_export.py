@@ -16,7 +16,9 @@ BASE_URL: str = "http://localhost:8000"
 FACILITY_CODE: str = "RCSLB"
 PAGE_SIZE: int = 100
 OUTPUT_FILENAME: str = "radar_missing_RCSLB.csv"
-AUTH_TOKEN: Optional[str] = None  # Set to a bearer token string if your API requires auth
+AUTH_TOKEN: Optional[str] = (
+    None  # Set to a bearer token string if your API requires auth
+)
 
 
 @dataclass
@@ -89,7 +91,9 @@ def write_csv(rows: List[Dict[str, Any]], filename: str) -> None:
 
 
 def main() -> None:
-    print(f"Fetching RADAR-missing patients for facility {FACILITY_CODE} from {BASE_URL}...")
+    print(
+        f"Fetching RADAR-missing patients for facility {FACILITY_CODE} from {BASE_URL}..."
+    )
     rows = fetch_all_results()
     write_csv(rows, OUTPUT_FILENAME)
 
