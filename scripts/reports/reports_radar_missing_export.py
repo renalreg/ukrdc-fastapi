@@ -1,21 +1,21 @@
 """Simple script to export RADAR-missing patients for a facility to an Excel-friendly CSV file.
 
 Run with the app running locally. Adjust BASE_URL and FACILITY_CODE as needed.
+If required this could easily be generalized for all the reports.
 """
 
 from __future__ import annotations
 
-import csv
+import pandas as pd
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
 import httpx
-import pandas as pd
 
 
 BASE_URL: str = "http://localhost:8000"
 FACILITY_CODE: str = "RCSLB"
-PAGE_SIZE: int = 100
+PAGE_SIZE: int = 100_000
 OUTPUT_FILENAME: str = "radar_missing_RCSLB.xlsx"
 AUTH_TOKEN: Optional[str] = (
     None  # Set to a bearer token string if your API requires auth
@@ -57,21 +57,49 @@ def fetch_all_results() -> List[Dict[str, Any]]:
     results: List[Dict[str, Any]] = []
 
     with httpx.Client(headers=build_headers(), timeout=30.0) as client:
-        page = 1
-        while True:
-            current = fetch_page(client, page)
+        # Fetch everything in a single request by using a very large page size.
+        current = fetch_page(client, page=1)
 
-            if not current.items:
-                break
-
+        if current.items:
             results.extend(current.items)
 
-            if current.page * current.size >= current.total:
-                break
-
-            page += 1
-
     return results
+
+
+def results_to_dataframe(results: List[Dict[str, Any]]) -> pd.DataFrame:
+    rows_for_df: List[Dict[str, Any]] = []
+
+    for item in results:
+        pid = item.get("pid")
+        sending_facility = item.get("sendingfacility")
+        sending_extract = item.get("sendingextract")
+        local_patient_id = item.get("localpatientid")
+        ukrdcid = item.get("ukrdcid")
+
+        program_memberships = item.get("programMemberships", [])
+        if program_memberships:
+            for membership in program_memberships:
+                row: Dict[str, Any] = {
+                    "pid": pid,
+                    "sendingfacility": sending_facility,
+                    "sendingextract": sending_extract,
+                    "localpatientid": local_patient_id,
+                    "ukrdcid": ukrdcid,
+                    **membership,
+                }
+                rows_for_df.append(row)
+        else:
+            rows_for_df.append(
+                {
+                    "pid": pid,
+                    "sendingfacility": sending_facility,
+                    "sendingextract": sending_extract,
+                    "localpatientid": local_patient_id,
+                    "ukrdcid": ukrdcid,
+                }
+            )
+
+    return pd.DataFrame(rows_for_df)
 
 
 def main() -> None:
@@ -79,7 +107,8 @@ def main() -> None:
         f"Fetching RADAR-missing patients for facility {FACILITY_CODE} from {BASE_URL}..."
     )
     rows = fetch_all_results()
-    write_excel(rows, OUTPUT_FILENAME)
+    df = results_to_dataframe(rows)
+    df.to_excel(OUTPUT_FILENAME, index=False)
 
 
 if __name__ == "__main__":
