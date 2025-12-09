@@ -10,12 +10,13 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
 import httpx
+import pandas as pd
 
 
 BASE_URL: str = "http://localhost:8000"
 FACILITY_CODE: str = "RCSLB"
 PAGE_SIZE: int = 100
-OUTPUT_FILENAME: str = "radar_missing_RCSLB.csv"
+OUTPUT_FILENAME: str = "radar_missing_RCSLB.xlsx"
 AUTH_TOKEN: Optional[str] = (
     None  # Set to a bearer token string if your API requires auth
 )
@@ -90,12 +91,23 @@ def write_csv(rows: List[Dict[str, Any]], filename: str) -> None:
     print(f"Wrote {len(rows)} rows to {filename}")
 
 
+def write_excel(rows: List[Dict[str, Any]], filename: str) -> None:
+    if not rows:
+        print("No rows returned from API; nothing to write.")
+        return
+
+    df = pd.DataFrame(rows)
+    df.to_excel(filename, index=False)
+
+    print(f"Wrote {len(rows)} rows to {filename}")
+
+
 def main() -> None:
     print(
         f"Fetching RADAR-missing patients for facility {FACILITY_CODE} from {BASE_URL}..."
     )
     rows = fetch_all_results()
-    write_csv(rows, OUTPUT_FILENAME)
+    write_excel(rows, OUTPUT_FILENAME)
 
 
 if __name__ == "__main__":

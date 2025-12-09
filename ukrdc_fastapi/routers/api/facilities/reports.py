@@ -10,7 +10,7 @@ from ukrdc_fastapi.query.facilities.reports import (
     select_missing_radar_patients,
 )
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordSummarySchema
-from ukrdc_fastapi.utils.paginate import Page, paginate
+from ukrdc_fastapi.utils.paginate import Page, paginate, RadarMissingPage
 
 router = APIRouter(tags=["Facilities/Reports"], prefix="/{code}/reports")
 
@@ -67,7 +67,7 @@ def facility_reports_pm001(
 
 @router.get(
     "/radar_missing",
-    response_model=Page[PatientRecordSummarySchema],
+    response_model=RadarMissingPage[PatientRecordSummarySchema],
     dependencies=[
         Security(auth.permission(Permissions.READ_RECORDS)),
         Security(auth.permission(Permissions.READ_REPORTS)),
