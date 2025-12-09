@@ -74,34 +74,6 @@ def fetch_all_results() -> List[Dict[str, Any]]:
     return results
 
 
-def write_csv(rows: List[Dict[str, Any]], filename: str) -> None:
-    if not rows:
-        print("No rows returned from API; nothing to write.")
-        return
-
-    # Use all keys from the first row as columns; Excel will happily open the CSV
-    fieldnames = sorted(rows[0].keys())
-
-    with open(filename, mode="w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
-        writer.writeheader()
-        for row in rows:
-            writer.writerow(row)
-
-    print(f"Wrote {len(rows)} rows to {filename}")
-
-
-def write_excel(rows: List[Dict[str, Any]], filename: str) -> None:
-    if not rows:
-        print("No rows returned from API; nothing to write.")
-        return
-
-    df = pd.DataFrame(rows)
-    df.to_excel(filename, index=False)
-
-    print(f"Wrote {len(rows)} rows to {filename}")
-
-
 def main() -> None:
     print(
         f"Fetching RADAR-missing patients for facility {FACILITY_CODE} from {BASE_URL}..."
