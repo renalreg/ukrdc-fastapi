@@ -22,5 +22,13 @@ class Params(BaseParams):
     size: int = Query(20, gt=0, le=50, description="Page size")
 
 
+class RadarMissingParams(BaseParams):
+    size: int = Query(20, gt=0, description="Page size")  # no le=50
+
+
 class Page(BasePage[T], Generic[T]):
     __params_type__ = Params
+
+
+class RadarMissingPage(BasePage[T], Generic[T]):
+    __params_type__ = RadarMissingParams

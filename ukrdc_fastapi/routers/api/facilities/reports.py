@@ -7,9 +7,10 @@ from ukrdc_fastapi.permissions.facilities import assert_facility_permission
 from ukrdc_fastapi.query.facilities.reports import (
     select_facility_report_cc001,
     select_facility_report_pm001,
+    select_missing_radar_patients,
 )
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordSummarySchema
-from ukrdc_fastapi.utils.paginate import Page, paginate
+from ukrdc_fastapi.utils.paginate import Page, paginate, RadarMissingPage
 
 router = APIRouter(tags=["Facilities/Reports"], prefix="/{code}/reports")
 
@@ -62,3 +63,25 @@ def facility_reports_pm001(
     assert_facility_permission(code, user)
 
     return paginate(ukrdc3, select_facility_report_pm001(ukrdc3, code))
+
+
+@router.get(
+    "/radar_missing",
+    response_model=RadarMissingPage[PatientRecordSummarySchema],
+    dependencies=[
+        Security(auth.permission(Permissions.READ_RECORDS)),
+        Security(auth.permission(Permissions.READ_REPORTS)),
+    ],
+)
+def facility_radar_missing(
+    code: str,
+    ukrdc3: Session = Depends(get_ukrdc3),
+    user: UKRDCUser = Security(auth.get_user()),
+):
+    """
+    Program Membership Report 001:
+        Patients with no *active* PKB membership record
+    """
+    assert_facility_permission(code, user)
+
+    return paginate(ukrdc3, select_missing_radar_patients(ukrdc3, code))

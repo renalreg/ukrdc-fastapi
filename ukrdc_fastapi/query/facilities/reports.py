@@ -2,7 +2,7 @@ import datetime
 
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import or_, select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, aliased
 from sqlalchemy.sql.selectable import Select
 from ukrdc_sqla.ukrdc import Facility, Patient, PatientRecord, ProgramMembership
 
@@ -105,4 +105,44 @@ def select_facility_report_pm001(
         .where(PatientRecord.sendingfacility == facility.code)
         .where(PatientRecord.sendingextract == "UKRDC")
         .where(PatientRecord.ukrdcid.notin_(q2))  # No related program memberships
+    )
+
+
+def select_missing_radar_patients(
+    ukrdc3: Session,
+    facility_code: str,
+) -> Select:
+    """
+    This report returns a list of patient with radar program memberships in
+    the ukrdc.
+
+    See tng-1333
+
+    Args:
+        ukrdc3 (Session): _description_
+        facility_code (str): facility to report on
+
+    Returns:
+        Select: ****
+    """
+    # Assert the facility exists
+    stmt = select(Facility).where(Facility.code == facility_code)
+    facility = ukrdc3.execute(stmt).scalar_one()
+
+    if not facility:
+        raise MissingFacilityError(facility_code)
+
+    B = aliased(PatientRecord)
+
+    return (
+        select(PatientRecord)
+        .outerjoin(
+            B,
+            (B.ukrdcid == PatientRecord.ukrdcid)
+            & (B.sendingfacility == facility.code)
+            & (B.sendingextract.in_(("PV", "UKRDC"))),
+        )
+        .where(PatientRecord.sendingfacility == facility.code)
+        .where(PatientRecord.sendingextract == "RADAR")
+        .where(B.ukrdcid == None)  # noqa: E711
     )

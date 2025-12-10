@@ -139,3 +139,17 @@ async def test_facility_reports_pm001_denied(client_authenticated):
         f"{configuration.base_url}/facilities/TSF02/reports/pm001"
     )
     assert response.status_code == 403
+
+
+async def test_facility_reports_radar_missing(client_superuser):
+    response = await client_superuser.get(
+        f"{configuration.base_url}/facilities/TSF01/reports/radar_missing"
+    )
+    assert response.status_code == 200
+
+
+async def test_facility_reports_radar_missing_denied(client_authenticated):
+    response = await client_authenticated.get(
+        f"{configuration.base_url}/facilities/TSF02/reports/radar_missing"
+    )
+    assert response.status_code == 403
