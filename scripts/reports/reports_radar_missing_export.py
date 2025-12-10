@@ -9,14 +9,16 @@ from __future__ import annotations
 import pandas as pd
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
-
+from pathlib import Path
 import httpx
 
 
 BASE_URL: str = "http://localhost:8000"
 FACILITY_CODE: str = "RCSLB"
 PAGE_SIZE: int = 100_000
-OUTPUT_FILENAME: str = "radar_missing_RCSLB.xlsx"
+OUTPUT_PATH: Path = (
+    Path("scripts") / "analytics" / "output/" / "radar_missing_RCSLB.xlsx"
+)
 AUTH_TOKEN: Optional[str] = (
     None  # Set to a bearer token string if your API requires auth
 )
@@ -108,7 +110,7 @@ def main() -> None:
     )
     rows = fetch_all_results()
     df = results_to_dataframe(rows)
-    df.to_excel(OUTPUT_FILENAME, index=False)
+    df.to_excel(OUTPUT_PATH, index=False)
 
 
 if __name__ == "__main__":
