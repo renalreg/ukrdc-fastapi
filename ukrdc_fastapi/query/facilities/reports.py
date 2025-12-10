@@ -1,7 +1,7 @@
 import datetime
 
 from dateutil.relativedelta import relativedelta
-from sqlalchemy import or_, select
+from sqlalchemy import and_, or_, select
 from sqlalchemy.orm import Session, aliased
 from sqlalchemy.sql.selectable import Select
 from ukrdc_sqla.ukrdc import Facility, Patient, PatientRecord, ProgramMembership
@@ -98,6 +98,7 @@ def select_facility_report_pm001(
         .join(ProgramMembership, ProgramMembership.pid == PatientRecord.pid)
         .where(ProgramMembership.program_name == "PKB")
         .where(ProgramMembership.totime == None)  # noqa: E711 # No end time
+        .where()
     )
 
     return (
@@ -143,6 +144,15 @@ def select_missing_radar_patients(
             & (B.sendingextract.in_(("PV", "UKRDC"))),
         )
         .where(PatientRecord.sendingfacility == facility.code)
-        .where(PatientRecord.sendingextract == "RADAR")
-        .where(B.ukrdcid == None)  # noqa: E711
+        .where(
+            and_(
+                PatientRecord.sendingextract == "RADAR",
+                not_(
+                    or_(
+                        B.program_name == "RADAR.COHORT.NOCON",
+                        B.program_name == "RADAR.COHORT.CONS_WTDWN"
+                    ),
+                ),
+            )
+        ).where(B.ukrdcid == None)  # noqa: E711
     )
