@@ -1,7 +1,7 @@
 import datetime
 
 from dateutil.relativedelta import relativedelta
-from sqlalchemy import or_, select
+from sqlalchemy import and_, or_, not_, select
 from sqlalchemy.orm import Session, aliased
 from sqlalchemy.sql.selectable import Select
 from ukrdc_sqla.ukrdc import Facility, Patient, PatientRecord, ProgramMembership
@@ -113,14 +113,14 @@ def select_missing_radar_patients(
     facility_code: str,
 ) -> Select:
     """
-    This report returns a list of patient with radar program memberships in
-    the ukrdc.
+    This report returns a list of patient which do not have PV/UKRDC data from
+    the unit that recruited them to RADAR.
 
     See tng-1333
 
     Args:
-        ukrdc3 (Session): _description_
-        facility_code (str): facility to report on
+        ukrdc3 (Session): SQLAlchemy session
+        facility_code (str): Facility/unit code
 
     Returns:
         Select: ****
@@ -142,7 +142,18 @@ def select_missing_radar_patients(
             & (B.sendingfacility == facility.code)
             & (B.sendingextract.in_(("PV", "UKRDC"))),
         )
+        .join(ProgramMembership, ProgramMembership.pid == PatientRecord.pid)
         .where(PatientRecord.sendingfacility == facility.code)
-        .where(PatientRecord.sendingextract == "RADAR")
+        .where(
+            and_(
+                PatientRecord.sendingextract == "RADAR",
+                not_(
+                    or_(
+                        ProgramMembership.programname == "RADAR.COHORT.NOCON",
+                        ProgramMembership.programname == "RADAR.COHORT.CONS_WTDWN",
+                    ),
+                ),
+            )
+        )
         .where(B.ukrdcid == None)  # noqa: E711
     )
