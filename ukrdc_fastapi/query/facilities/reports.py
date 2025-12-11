@@ -98,7 +98,6 @@ def select_facility_report_pm001(
         .join(ProgramMembership, ProgramMembership.pid == PatientRecord.pid)
         .where(ProgramMembership.program_name == "PKB")
         .where(ProgramMembership.totime == None)  # noqa: E711 # No end time
-        .where()
     )
 
     return (
@@ -114,14 +113,14 @@ def select_missing_radar_patients(
     facility_code: str,
 ) -> Select:
     """
-    This report returns a list of patient with radar program memberships in
-    the ukrdc.
+    This report returns a list of patient which do not have PV/UKRDC data from
+    the unit that recruited them to RADAR.
 
     See tng-1333
 
     Args:
-        ukrdc3 (Session): _description_
-        facility_code (str): facility to report on
+        ukrdc3 (Session): SQLAlchemy session
+        facility_code (str): Facility/unit code
 
     Returns:
         Select: ****
