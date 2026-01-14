@@ -42,7 +42,7 @@ async def lifespan(_: FastAPI):
     startup.clear_task_tracker()
     # Start repeated tasks
     await repeated.update_channel_id_name_map()
-    await repeated.update_facilities_list()
+    await repeated.update_facilities_cache()
     await repeated.precalculate_facility_stats_dialysis()
     yield
     # Anything here will be executed on app shutdown
