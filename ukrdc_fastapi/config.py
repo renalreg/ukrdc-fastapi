@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseSettings, Field
+from pydantic import BaseSettings
 
 from . import __version__ as package_ver
 
