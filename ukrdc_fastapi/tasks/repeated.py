@@ -21,9 +21,9 @@ from ukrdc_fastapi.utils.records import ABSTRACT_FACILITIES
 
 from .utils import repeat_every
 
-# Shared threadpool for CPU-intensive operations (4 workers)
+# Shared threadpool for CPU-intensive operations
 task_executor = ThreadPoolExecutor(
-    max_workers=4,
+    max_workers=settings.background_threads,
     thread_name_prefix="bg_task_"
 )
 
