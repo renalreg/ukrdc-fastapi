@@ -23,17 +23,15 @@ from .utils import repeat_every
 
 # Shared threadpool for CPU-intensive operations
 task_executor = ThreadPoolExecutor(
-    max_workers=settings.background_threads,
-    thread_name_prefix="bg_task_"
+    max_workers=settings.background_threads, thread_name_prefix="bg_task_"
 )
+
 
 async def _run_in_threadpool(sync_func, *args):
     """Helper to run sync code in threadpool"""
     loop = asyncio.get_event_loop()
-    return await loop.run_in_executor(
-        task_executor,
-        lambda: sync_func(*args)
-    )
+    return await loop.run_in_executor(task_executor, lambda: sync_func(*args))
+
 
 @repeat_every(seconds=settings.cache_mirth_channel_seconds)
 async def update_channel_id_name_map() -> None:
@@ -50,12 +48,10 @@ async def update_channel_id_name_map() -> None:
         async with mirth_session() as mirth:
             channel_map = await _run_in_threadpool(get_channel_map, mirth, get_redis())
             MessageSchema.channel_id_name_map = channel_map
-    
-    task = get_root_task_tracker().create(
-        innerfunc, 
-        name="Update Mirth Channel Map"
-    )
+
+    task = get_root_task_tracker().create(innerfunc, name="Update Mirth Channel Map")
     return await task.tracked()
+
 
 @repeat_every(seconds=settings.cache_facilities_list_seconds)
 async def update_facilities_cache() -> None:
@@ -74,14 +70,12 @@ async def update_facilities_cache() -> None:
             errors_session(),
             get_redis(),
             True,  # include_inactive
-            True   # include_empty
+            True,  # include_empty
         )
-    
-    task = get_root_task_tracker().create(
-        innerfunc,
-        name="Update Facilities Cache"
-    )
+
+    task = get_root_task_tracker().create(innerfunc, name="Update Facilities Cache")
     return await task.tracked()
+
 
 @repeat_every(seconds=settings.cache_facilities_stats_dialysis_seconds)
 async def precalculate_facility_stats_dialysis() -> None:
@@ -92,26 +86,26 @@ async def precalculate_facility_stats_dialysis() -> None:
 
     async def innerfunc():
         stats = await _run_in_threadpool(_calculate_stats_sync)
-        
+
         # Main thread handles Redis
         for facility, data in stats.items():
             cache = BasicCache(
                 get_redis(),
                 DynamicCacheKey(
-                    FacilityCachePrefix.KRT,
-                    facility,
-                    data['start'],
-                    data['end']
-                )
+                    FacilityCachePrefix.KRT, facility, data["start"], data["end"]
+                ),
             )
             if not cache.exists:
-                cache.set(data['stats'], expire=settings.cache_facilities_stats_dialysis_seconds)
-    
+                cache.set(
+                    data["stats"],
+                    expire=settings.cache_facilities_stats_dialysis_seconds,
+                )
+
     task = get_root_task_tracker().create(
-        innerfunc,
-        name="Pre-calculate Dialysis Stats"
+        innerfunc, name="Pre-calculate Dialysis Stats"
     )
     return await task.tracked()
+
 
 def _calculate_stats_sync() -> Dict[str, Dict[str, Any]]:
     """Sync stats calculation (runs in threadpool)"""
@@ -128,16 +122,16 @@ def _calculate_stats_sync() -> Dict[str, Dict[str, Any]]:
             .group_by(PatientRecord.sendingfacility, PatientRecord.sendingextract)
             .order_by(func.count(PatientRecord.sendingfacility).desc())
         )
-        
+
         facilities = ukrdc3.execute(stmt).all()
-        
+
         today = datetime.now().date()
         q_start = date(today.year, ((today.month - 1) // 3) * 3 + 1, 1)
-        
+
         for row in facilities:
             if row[2] <= settings.cache_facilities_stats_dialysis_min:
                 continue
-                
+
             facility = row[0]
             for end_date in [today, q_start]:
                 start_date = end_date - timedelta(days=90)
@@ -149,11 +143,11 @@ def _calculate_stats_sync() -> Dict[str, Dict[str, Any]]:
                         until=datetime.combine(end_date, time.max),
                     )
                     results[f"{facility}_{end_date}"] = {
-                        'stats': stats,
-                        'start': start_date.strftime("%Y-%m-%d"),
-                        'end': end_date.strftime("%Y-%m-%d")
+                        "stats": stats,
+                        "start": start_date.strftime("%Y-%m-%d"),
+                        "end": end_date.strftime("%Y-%m-%d"),
                     }
                 except MissingFacilityError as e:
                     logging.error(f"Stats failed for {facility}: {e}")
-    
+
     return results

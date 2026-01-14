@@ -1,5 +1,5 @@
 import datetime
-from typing import Optional
+from typing import Optional, ClassVar
 
 from pydantic import Field, validator
 
@@ -38,6 +38,8 @@ class MinimalMessageSchema(OrmModel):
 
 class MessageSchema(MinimalMessageSchema):
     """A full representation of a single message"""
+
+    channel_id_name_map: ClassVar[dict[str, str]] = {}
 
     error: Optional[str] = Field(None, description="Error message, if any")
     status: Optional[str] = Field(None, description="Message status code")
