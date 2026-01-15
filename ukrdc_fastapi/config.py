@@ -124,8 +124,10 @@ class Settings(BaseSettings):
     audit_name: str = "auditdb"
     audit_driver: str = "postgresql+psycopg2"
 
-    # CORS settings
+    # Threading
+    background_threads: int = 2
 
+    # CORS settings
     allow_origins: list[str] = [
         "http://host.docker.internal:3000",
         "http://localhost:3000",
