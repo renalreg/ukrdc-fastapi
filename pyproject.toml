@@ -3,7 +3,7 @@ authors = ["Joel Collins <joel.collins@renalregistry.nhs.uk>"]
 description = ""
 name = "ukrdc-fastapi"
 packages = [{ include = "ukrdc_fastapi" }]
-version = "6.4.2"
+version = "6.5.0"
 
 [tool.poetry.dependencies]
 python = ">=3.12,<4.0"
