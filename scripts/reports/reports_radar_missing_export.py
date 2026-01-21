@@ -14,15 +14,15 @@ import httpx
 
 
 BASE_URL: str = "http://localhost:8000"
-FACILITY_CODES: List[str] =  [
+FACILITY_CODES: List[str] = [
     "RAJ",
     "RAQ01",
     "RCSLB",
     "RH8",
     "RHW01",
-#    "RJZ", Kings
+    #    "RJZ", Kings
     "RK7CC",
-    "RL403", 
+    "RL403",
     "RNJ00",
 ]
 
@@ -35,6 +35,7 @@ AUTH_TOKEN: Optional[str] = (
 )
 
 FACILITY_CODE: str = ""
+
 
 @dataclass
 class Page:
@@ -55,7 +56,9 @@ def fetch_page(client: httpx.Client, page: int) -> Page:
     url = f"{BASE_URL}/api/facilities/{FACILITY_CODE}/reports/radar_missing"
 
     try:
-        response = client.get(url, params={"page": page, "size": PAGE_SIZE}, timeout=60.0)
+        response = client.get(
+            url, params={"page": page, "size": PAGE_SIZE}, timeout=60.0
+        )
         response.raise_for_status()
     except httpx.RequestError as e:
         print(f"Error fetching data for {FACILITY_CODE}: {str(e)}")
@@ -131,7 +134,9 @@ def main() -> None:
             rows = fetch_all_results()
             if rows:
                 df = results_to_dataframe(rows)
-                df.to_excel(str(OUTPUT_PATH).format(facility_code=facility_code), index=False)
+                df.to_excel(
+                    str(OUTPUT_PATH).format(facility_code=facility_code), index=False
+                )
         except Exception as e:
             print(f"Failed to process {facility_code}: {str(e)}")
             continue
