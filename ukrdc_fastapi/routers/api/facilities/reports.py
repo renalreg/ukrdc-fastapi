@@ -79,7 +79,7 @@ def facility_radar_missing(
     user: UKRDCUser = Security(auth.get_user()),
 ):
     """
-    Program Membership Report radar missing:
+    Radar missing:
     returns the membership records of patients known to radar but not the ukrdc
     """
     assert_facility_permission(code, user)

@@ -125,7 +125,7 @@ class Settings(BaseSettings):
     audit_driver: str = "postgresql+psycopg2"
 
     # Threading
-    background_threads: int = 2
+    background_threads: int = 4
 
     # CORS settings
     allow_origins: list[str] = [

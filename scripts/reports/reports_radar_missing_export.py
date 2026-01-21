@@ -1,6 +1,6 @@
 """Simple script to export RADAR-missing patients for a facility to an Excel-friendly CSV file.
 
-Run with the app running locally. Adjust BASE_URL and FACILITY_CODE as needed.
+Run with the app running locally. Adjust BASE_URL and FACILITY_CODES as needed.
 If required this could easily be generalized for all the reports.
 """
 
@@ -14,15 +14,27 @@ import httpx
 
 
 BASE_URL: str = "http://localhost:8000"
-FACILITY_CODE: str = "RCSLB"
+FACILITY_CODES: List[str] =  [
+    "RAJ",
+    "RAQ01",
+    "RCSLB",
+    "RH8",
+    "RHW01",
+#    "RJZ", Kings
+    "RK7CC",
+    "RL403", 
+    "RNJ00",
+]
+
 PAGE_SIZE: int = 100_000
 OUTPUT_PATH: Path = (
-    Path("scripts") / "analytics" / "output/" / "radar_missing_RCSLB.xlsx"
+    Path("scripts") / "analytics" / "output/" / "radar_missing_{facility_code}.xlsx"
 )
 AUTH_TOKEN: Optional[str] = (
     None  # Set to a bearer token string if your API requires auth
 )
 
+FACILITY_CODE: str = ""
 
 @dataclass
 class Page:
@@ -42,8 +54,12 @@ def build_headers() -> Dict[str, str]:
 def fetch_page(client: httpx.Client, page: int) -> Page:
     url = f"{BASE_URL}/api/facilities/{FACILITY_CODE}/reports/radar_missing"
 
-    response = client.get(url, params={"page": page, "size": PAGE_SIZE})
-    response.raise_for_status()
+    try:
+        response = client.get(url, params={"page": page, "size": PAGE_SIZE}, timeout=60.0)
+        response.raise_for_status()
+    except httpx.RequestError as e:
+        print(f"Error fetching data for {FACILITY_CODE}: {str(e)}")
+        return Page(items=[], total=0, page=page, size=PAGE_SIZE)
 
     data = response.json()
 
@@ -105,12 +121,20 @@ def results_to_dataframe(results: List[Dict[str, Any]]) -> pd.DataFrame:
 
 
 def main() -> None:
-    print(
-        f"Fetching RADAR-missing patients for facility {FACILITY_CODE} from {BASE_URL}..."
-    )
-    rows = fetch_all_results()
-    df = results_to_dataframe(rows)
-    df.to_excel(OUTPUT_PATH, index=False)
+    for facility_code in FACILITY_CODES:
+        global FACILITY_CODE
+        FACILITY_CODE = facility_code
+        print(
+            f"Fetching RADAR-missing patients for facility {FACILITY_CODE} from {BASE_URL}..."
+        )
+        try:
+            rows = fetch_all_results()
+            if rows:
+                df = results_to_dataframe(rows)
+                df.to_excel(str(OUTPUT_PATH).format(facility_code=facility_code), index=False)
+        except Exception as e:
+            print(f"Failed to process {facility_code}: {str(e)}")
+            continue
 
 
 if __name__ == "__main__":
