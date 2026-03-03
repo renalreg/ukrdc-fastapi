@@ -192,7 +192,7 @@ def build_pkb_sync_messages(record: PatientRecord, ukrdc3: Session) -> list[str]
 
     # Check facility-level overrides
 
-    facility = ukrdc3.get(Facility, record.sendingfacility)
+    facility = ukrdc3.query(Facility).filter_by(facilitycode=record.sendingfacility).one_or_none()
 
     if not facility:
         raise ResourceNotFoundError(record.sendingfacility or "None")
@@ -202,14 +202,20 @@ def build_pkb_sync_messages(record: PatientRecord, ukrdc3: Session) -> list[str]
             f"PKB outbound sending disabled for {facility.code}"
         )
 
-    if not facility.ukrdc_out_pkb and record.sendingextract == "UKRDC":
+    if not facility.ukrdcoutpkb and record.sendingextract == "UKRDC":
         raise PKBOutboundDisabledError(
             f"UKRDC to PKB outbound sending disabled for {facility.code}"
         )
 
-    if not facility.pv_out_pkb and record.sendingextract == "PV":
+    if not facility.pvoutpkb and record.sendingextract == "PV":
         raise PKBOutboundDisabledError(
             f"PV to PKB outbound sending disabled for {facility.code}"
+        )
+
+    if facility.ukrdcoutpkb and record.sendingextract != "UKRDC":
+        # Review if this in necessary if condition above is set correctly
+        raise PKBOutboundDisabledError(
+            f" PKB outbound disabled by for {facility.code} sendingextract {record.sendingextract}"
         )
 
     msg_type_exclusions = _get_facility_exclusions(facility)

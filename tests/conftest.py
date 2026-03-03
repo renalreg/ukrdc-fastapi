@@ -67,10 +67,10 @@ from .utils import create_basic_facility, create_basic_patient, days_ago
 
 # Using the factory to create a postgresql instance
 socket_dir = tempfile.TemporaryDirectory()
-postgresql_my_proc = factories.postgresql_proc(port=None, unixsocketdir=socket_dir.name)
+#postgresql_my_proc = factories.postgresql_proc(port=None, unixsocketdir=socket_dir.name)
 
 # Uncomment for local development with external postgres instance
-# postgresql_my_proc = factories.postgresql_noproc(port=5432, user = "postgres", password = "postgres")
+postgresql_my_proc = factories.postgresql_noproc(port=8000, user = "postgres", password = "postgres")
 postgresql_my = factories.postgresql("postgresql_my_proc")
 
 MINIMAL_PDF_BYTES = (
@@ -123,7 +123,6 @@ def populate_facilities_and_messages(ukrdc3, statsdb, errorsdb):
         "TSF01",
         "TSF01_DESCRIPTION",
         ukrdc3,
-        pkb_in=False,
         pkb_out=True,
         ukrdc_out_pkb=True,
         pkb_msg_exclusions=None,
@@ -133,7 +132,6 @@ def populate_facilities_and_messages(ukrdc3, statsdb, errorsdb):
         "TSF02",
         "TSF02_DESCRIPTION",
         ukrdc3,
-        pkb_in=False,
         pkb_out=False,
         pkb_msg_exclusions=None,
     )

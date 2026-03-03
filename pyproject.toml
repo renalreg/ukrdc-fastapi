@@ -25,7 +25,7 @@ uvicorn = "^0.35.0"
 mirth-client = "^4.1.0"
 ukrdc-stats = "^2.11.0"
 ukrdc-xsdata = "^3.4.5"
-ukrdc-sqla = "^2.6.2"
+ukrdc-sqla = "^3.0.0"
 
 [tool.poetry.group.dev.dependencies]
 bandit = "^1.8.3"

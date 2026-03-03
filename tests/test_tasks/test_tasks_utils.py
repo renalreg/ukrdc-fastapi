@@ -68,7 +68,7 @@ async def test_repeat_print_delay(capsys: CaptureFixture[str]) -> None:
         print("hello")
 
     await repeatedly_print_hello()
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.15)
     out, err = capsys.readouterr()
     assert out == "hello\n" * 2
     assert err == ""

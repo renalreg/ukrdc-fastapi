@@ -1,9 +1,11 @@
 import re
 
 import pytest
-from ukrdc_sqla.ukrdc import ProgramMembership, Facility
+from datetime import datetime
+from ukrdc_sqla.ukrdc import ProgramMembership, Facility, PatientRecord
 
 from tests.utils import days_ago
+from tests.utils import create_basic_patient
 from ukrdc_fastapi.config import configuration
 from ukrdc_fastapi.exceptions import NoActiveMembershipError, PKBOutboundDisabledError
 
@@ -112,6 +114,64 @@ async def test_record_export_pkb(client_authenticated, ukrdc3_session):
     assert response.json().get("status") == "success"
     assert response.json().get("numberOfMessages") == 9
 
+@pytest.mark.asyncio
+async def test_record_export_pkb_rda_only(
+    client_authenticated, ukrdc3_session, jtrace_session
+):
+    """
+    In the instance where pkb_rda_out is set to be true only the the rda data
+    should be included in the pkb sync.
+
+    See TNG-1219 for more information 
+
+    """
+
+    pid_1 = "PYTEST01:PV:00000000A"
+    membership = ProgramMembership(
+        id="MEMBERSHIP_PKB",
+        pid=pid_1,
+        programname="PKB",
+        fromtime=days_ago(365),
+        totime=None,
+    )
+    ukrdc3_session.add(membership)
+    ukrdc3_session.commit()
+
+    facility = ukrdc3_session.query(Facility).filter_by(code="TSF01").first()
+    facility.pvoutpkb = True
+    ukrdc3_session.commit()
+
+    # add rda record
+    response = await client_authenticated.post(
+        f"{configuration.base_url}/patientrecords/{pid_1}/export/pkb",
+        json={},
+    )
+
+    
+    assert response.status_code == 200
+    assert response.json().get("status") == "success"
+    assert response.json().get("numberOfMessages") == 9
+
+    pid_2 = "PYTEST01:PV:00000000B"
+    # add a pv record
+    ukrdc3_session.add( 
+        PatientRecord(
+            pid = pid_2, 
+            ukrdcid = "999999999",
+            sendingfacility = "TSF01", 
+            sendingextract = "PV", 
+            localpatientid = "1729",
+            repositorycreationdate = days_ago(365),
+            repositoryupdatedate = days_ago(365),
+        )
+    )
+    ukrdc3_session.commit()
+
+    with pytest.raises(PKBOutboundDisabledError):
+        await client_authenticated.post(
+            f"{configuration.base_url}/patientrecords/{pid_2}/export/pkb",
+            json={},
+        )
 
 @pytest.mark.asyncio
 async def test_record_export_pkb_no_memberships(client_authenticated):
@@ -139,7 +199,7 @@ async def test_record_ukrdc_to_pkb_export_disabled(
 
     # Disable UKRDC to PKB outbound
     facility = ukrdc3_session.query(Facility).filter_by(code="TSF01").first()
-    facility.ukrdc_out_pkb = False
+    facility.ukrdcoutpkb = False
     ukrdc3_session.commit()
 
     with pytest.raises(PKBOutboundDisabledError):
