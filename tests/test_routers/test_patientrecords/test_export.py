@@ -1,11 +1,9 @@
 import re
 
 import pytest
-from datetime import datetime
 from ukrdc_sqla.ukrdc import ProgramMembership, Facility, PatientRecord
 
 from tests.utils import days_ago
-from tests.utils import create_basic_patient
 from ukrdc_fastapi.config import configuration
 from ukrdc_fastapi.exceptions import NoActiveMembershipError, PKBOutboundDisabledError
 
@@ -114,6 +112,7 @@ async def test_record_export_pkb(client_authenticated, ukrdc3_session):
     assert response.json().get("status") == "success"
     assert response.json().get("numberOfMessages") == 9
 
+
 @pytest.mark.asyncio
 async def test_record_export_pkb_rda_only(
     client_authenticated, ukrdc3_session, jtrace_session
@@ -122,7 +121,7 @@ async def test_record_export_pkb_rda_only(
     In the instance where pkb_rda_out is set to be true only the the rda data
     should be included in the pkb sync.
 
-    See TNG-1219 for more information 
+    See TNG-1219 for more information
 
     """
 
@@ -147,22 +146,21 @@ async def test_record_export_pkb_rda_only(
         json={},
     )
 
-    
     assert response.status_code == 200
     assert response.json().get("status") == "success"
     assert response.json().get("numberOfMessages") == 9
 
     pid_2 = "PYTEST01:PV:00000000B"
     # add a pv record
-    ukrdc3_session.add( 
+    ukrdc3_session.add(
         PatientRecord(
-            pid = pid_2, 
-            ukrdcid = "999999999",
-            sendingfacility = "TSF01", 
-            sendingextract = "PV", 
-            localpatientid = "1729",
-            repositorycreationdate = days_ago(365),
-            repositoryupdatedate = days_ago(365),
+            pid=pid_2,
+            ukrdcid="999999999",
+            sendingfacility="TSF01",
+            sendingextract="PV",
+            localpatientid="1729",
+            repositorycreationdate=days_ago(365),
+            repositoryupdatedate=days_ago(365),
         )
     )
     ukrdc3_session.commit()
@@ -172,6 +170,7 @@ async def test_record_export_pkb_rda_only(
             f"{configuration.base_url}/patientrecords/{pid_2}/export/pkb",
             json={},
         )
+
 
 @pytest.mark.asyncio
 async def test_record_export_pkb_no_memberships(client_authenticated):
