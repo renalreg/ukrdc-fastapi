@@ -3347,14 +3347,14 @@ files = [
 
 [[package]]
 name = "ukrdc-sqla"
-version = "2.9.2"
+version = "3.0.3"
 description = "SQLAlchemy models for the UKRDC"
 optional = false
 python-versions = "<4.0,>=3.8.0"
 groups = ["main"]
 files = [
-    {file = "ukrdc_sqla-2.9.2-py3-none-any.whl", hash = "sha256:f370e7350f04f6ebdfafaaf1c34d2960e8517b694bee6fb1abc6167a9967a0b5"},
-    {file = "ukrdc_sqla-2.9.2.tar.gz", hash = "sha256:46f64a4a27d1f59ff3f27c08202f054e8e6de3ccd9908407b82e5bd77da2ff04"},
+    {file = "ukrdc_sqla-3.0.3-py3-none-any.whl", hash = "sha256:43ebded71bf34701fead62e96bf01878ffa80e28ac3a28089f491da0b1833293"},
+    {file = "ukrdc_sqla-3.0.3.tar.gz", hash = "sha256:2d0ead80c8bd285bcb4e747ed5130098d3f4aa897b43f487644534a973f84e89"},
 ]
 
 [package.dependencies]
@@ -3362,14 +3362,14 @@ SQLAlchemy = ">=1.4.25,<3.0.0"
 
 [[package]]
 name = "ukrdc-stats"
-version = "2.13.1"
+version = "2.13.2"
 description = "A package to produce stats from the ukrdc database to be displayed on the dashboard"
 optional = false
 python-versions = "<4.0,>=3.12"
 groups = ["main"]
 files = [
-    {file = "ukrdc_stats-2.13.1-py3-none-any.whl", hash = "sha256:4e07e6c5f943d00e481f9aa920b125ec9636ed6a6ac6fb5199a3fc75a107d40e"},
-    {file = "ukrdc_stats-2.13.1.tar.gz", hash = "sha256:0b82bab1c041bd354ee7bc6d75456b85c89eb3964bcfd67f1b507e2abedbdcfd"},
+    {file = "ukrdc_stats-2.13.2-py3-none-any.whl", hash = "sha256:b37180ffe743951011dd782d8a40b356919539beb52d3b23f6fd82f6c6e3ef3b"},
+    {file = "ukrdc_stats-2.13.2.tar.gz", hash = "sha256:0189399703d5d62d1f69ca48f3016f2b02012aee8961a9d6ee6bc2ea46ec49d6"},
 ]
 
 [package.dependencies]
@@ -3379,7 +3379,7 @@ psycopg = {version = ">=3.2.3,<4.0.0", extras = ["binary"]}
 pydantic = ">=1.10.1,<2.0.0"
 setuptools = ">=75.8.0,<76.0.0"
 SQLAlchemy = ">=2.0.0,<3.0.0"
-ukrdc-sqla = ">=2.6.0,<3.0.0"
+ukrdc-sqla = ">=3.0.0,<4.0.0"
 
 [[package]]
 name = "ukrdc-xsdata"
@@ -3635,4 +3635,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<4.0"
-content-hash = "7e440708e6a6e9c72177e327ccd0cd7bbcd14130edba06a7fc4dab2a6520cdd4"
+content-hash = "8b1f6eacd44049f0fdedd82db630607a931aeb4e8c998f4d3391e14cc4edcf4b"
