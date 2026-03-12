@@ -62,16 +62,29 @@ async def test_repeat_print(capsys: CaptureFixture[str]) -> None:
 
 
 @pytest.mark.asyncio
-async def test_repeat_print_delay(capsys: CaptureFixture[str]) -> None:
-    @repeat_every(seconds=0.07, max_repetitions=3)
-    def repeatedly_print_hello() -> None:
-        print("hello")
+async def test_repeat_print_delay() -> None:
+    call_times: list[float] = []
 
-    await repeatedly_print_hello()
-    await asyncio.sleep(0.15)
-    out, err = capsys.readouterr()
-    assert out == "hello\n" * 2
-    assert err == ""
+    time_period = 0.5
+    uncertainty = 0.02
+
+    @repeat_every(seconds=time_period, max_repetitions=3)
+    def repeatedly_record_call() -> None:
+        call_times.append(time.monotonic())
+
+    start_time = time.monotonic()
+    await repeatedly_record_call()
+
+    while len(call_times) < 2:
+        if time.monotonic() - start_time > 1:
+            assert False, "Test timed out"
+        await asyncio.sleep(0.01)
+
+    time_diff = call_times[1] - call_times[0]
+
+
+    assert time_diff >= time_period - uncertainty
+    assert time_diff <= time_period + uncertainty
 
 
 @pytest.mark.asyncio
