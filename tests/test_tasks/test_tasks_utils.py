@@ -50,12 +50,12 @@ def setup_event_loop(event_loop: AbstractEventLoop) -> None:
 
 @pytest.mark.asyncio
 async def test_repeat_print(capsys: CaptureFixture[str]) -> None:
-    @repeat_every(seconds=0.01, max_repetitions=3)
+    @repeat_every(seconds=0.1, max_repetitions=3)
     async def repeatedly_print_hello() -> None:
         print("hello")
 
     await repeatedly_print_hello()
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.25)
     out, err = capsys.readouterr()
     assert out == "hello\n" * 3
     assert err == ""
