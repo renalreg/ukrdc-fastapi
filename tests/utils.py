@@ -158,7 +158,6 @@ def create_basic_facility(
     code: str,
     description: str,
     ukrdc3: Session,
-    pkb_in: bool = False,
     pkb_out: bool = False,
     ukrdc_out_pkb: bool = False,
     pkb_msg_exclusions: Optional[list[str]] = None,
@@ -172,10 +171,11 @@ def create_basic_facility(
 
     facility_obj = Facility(
         code=code,
-        pkb_in=pkb_in,
-        pkb_out=pkb_out,
-        ukrdc_out_pkb=ukrdc_out_pkb,
-        pkb_msg_exclusions=pkb_msg_exclusions if pkb_msg_exclusions else [],
+        facilitycodestd="RR1+",
+        facilitytype="Adult Renal Centre",
+        pkbout=pkb_out,
+        ukrdcoutpkb=ukrdc_out_pkb,
+        pkbmsgexclusions=pkb_msg_exclusions if pkb_msg_exclusions else [],
     )
 
     ukrdc3.add(code_obj)

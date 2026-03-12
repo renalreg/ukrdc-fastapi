@@ -70,7 +70,9 @@ def test_get_facility(facility_code, ukrdc3_session, errorsdb_session):
 
 
 def test_get_facility_data_flow(ukrdc3_session, errorsdb_session):
-    facility_object = ukrdc3_session.get(Facility, "TSF01")
+    facility_object = (
+        ukrdc3_session.query(Facility).filter_by(code="TSF01").one_or_none()
+    )
     facility_object.pkb_msg_exclusions = ["MDM_T02_CP", "MDM_T02_DOC"]
     ukrdc3_session.commit()
 
