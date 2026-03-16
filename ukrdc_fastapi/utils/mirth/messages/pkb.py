@@ -1,4 +1,4 @@
-from typing import Literal, Optional, get_args
+from typing import Any, Iterable, Literal, Optional, cast, get_args
 
 # Override Bandit warnings, since we use this to generate XML, not parse
 from xml.etree.ElementTree import Element, SubElement, tostring  # nosec
@@ -56,7 +56,9 @@ def _get_facility_exclusions(facility: Facility) -> list[str]:
         [type]: [description]
     """
     excl: Optional[list[str]] = (
-        list(facility.pkb_msg_exclusions) if facility.pkb_msg_exclusions else None
+        list(cast(Iterable[str], facility.pkb_msg_exclusions))
+        if facility.pkb_msg_exclusions
+        else None
     )
     return excl or []
 
@@ -96,7 +98,7 @@ def _build_pkb_sync_messages_mdm_t02_doc(record: PatientRecord) -> list[str]:
     """
     messages = []
 
-    for document in record.documents:
+    for document in cast(Any, record.documents).all():
         root = _build_pkb_sync_base_xml(record, "MDM_T02_DOC")
         id_element = SubElement(root, "id")
         id_element.text = str(document.id)
@@ -119,7 +121,7 @@ def _build_pkb_sync_messages_oru_r01_lab(record: PatientRecord) -> list[str]:
     """
     messages = []
 
-    for order in record.lab_orders:
+    for order in cast(Any, record.lab_orders).all():
         root = _build_pkb_sync_base_xml(record, "ORU_R01_LAB")
         id_element = SubElement(root, "id")
         id_element.text = str(order.id)
@@ -142,7 +144,7 @@ def _build_pkb_sync_messages_oru_r01_obs(record: PatientRecord) -> list[str]:
     """
     messages = []
 
-    for observation in record.observations:
+    for observation in cast(Any, record.observations).all():
         root = _build_pkb_sync_base_xml(record, "ORU_R01_OBS")
         id_element = SubElement(root, "id")
         id_element.text = str(observation.id)

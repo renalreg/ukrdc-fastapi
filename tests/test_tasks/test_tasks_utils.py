@@ -62,7 +62,7 @@ async def test_repeat_print(capsys: CaptureFixture[str]) -> None:
 
 
 @pytest.mark.asyncio
-async def test_repeat_print_delay() -> None:
+async def test_repeat_interval() -> None:
     call_times: list[float] = []
 
     time_period = 0.5
@@ -81,7 +81,6 @@ async def test_repeat_print_delay() -> None:
         await asyncio.sleep(0.01)
 
     time_diff = call_times[1] - call_times[0]
-
 
     assert time_diff >= time_period - uncertainty
     assert time_diff <= time_period + uncertainty

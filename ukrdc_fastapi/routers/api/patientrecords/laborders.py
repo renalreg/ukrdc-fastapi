@@ -18,6 +18,8 @@ from ukrdc_fastapi.schemas.patientrecord.laborder import (
 )
 from ukrdc_fastapi.utils.paginate import Page, paginate
 
+from typing import Any
+
 from .dependencies import _get_patientrecord
 
 router = APIRouter()
@@ -99,11 +101,13 @@ def patient_laborder_delete(
     if not order:
         raise HTTPException(404, detail="Lab Order not found")
 
+    pv_delete_cls: Any = PVDelete
+
     deletes = [
-        PVDelete(
+        pv_delete_cls(
             pid=item.pid,
-            observationtime=item.observation_time,
-            serviceidcode=item.service_id,
+            observationtime=item.observationtime,
+            serviceidcode=item.serviceidcode,
         )
         for item in order.result_items
     ]

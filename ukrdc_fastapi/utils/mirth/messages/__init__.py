@@ -1,5 +1,7 @@
 from typing import Optional
 
+from ukrdc_fastapi.types import StrOrColumn
+
 # Override Bandit warnings, since we use this to generate XML, not parse
 from xml.etree.ElementTree import Element, SubElement, tostring  # nosec
 
@@ -30,7 +32,7 @@ def build_merge_message(superseding: int, superseded: int) -> str:
 def build_unlink_message(
     master_record: int,
     person_id: int,
-    user: str,
+    user: StrOrColumn,
     description: Optional[str] = None,
 ) -> str:
     """Build rawData for a Person record be unlinked from a MasterRecord
@@ -56,13 +58,13 @@ def build_unlink_message(
     ud_element.text = str(description or "")
 
     ub_element = SubElement(root, "updatedBy")
-    ub_element.text = user[:20]
+    ub_element.text = str(user)[:20]
 
     return tostring(root, encoding="unicode")
 
 
 def build_update_workitem_message(
-    workitem_id: int, status: int, description: Optional[str], user: str
+    workitem_id: int, status: int, description: Optional[str], user: StrOrColumn
 ) -> str:
     """Build rawData to update a WorkItem record
 
@@ -87,12 +89,14 @@ def build_update_workitem_message(
     ud_element.text = str(description or "")[:100]
 
     ub_element = SubElement(root, "updatedBy")
-    ub_element.text = user[:20]
+    ub_element.text = str(user)[:20]
 
     return tostring(root, encoding="unicode")
 
 
-def build_close_workitem_message(workitem_id: int, description: str, user: str) -> str:
+def build_close_workitem_message(
+    workitem_id: int, description: str, user: StrOrColumn
+) -> str:
     """Build rawData to close a WorkItem without merging
 
     Args:
@@ -106,7 +110,7 @@ def build_close_workitem_message(workitem_id: int, description: str, user: str) 
     return build_update_workitem_message(workitem_id, 3, description, user)
 
 
-def build_export_tests_message(pid: str) -> str:
+def build_export_tests_message(pid: StrOrColumn) -> str:
     """Build rawData to export PatientRecord test results to PV
 
     Args:
@@ -118,7 +122,7 @@ def build_export_tests_message(pid: str) -> str:
     root = Element("result")
 
     pid_element = SubElement(root, "pid")
-    pid_element.text = pid
+    pid_element.text = str(pid)
 
     tst_element = SubElement(root, "tests")
     tst_element.text = "FULL"
@@ -126,7 +130,7 @@ def build_export_tests_message(pid: str) -> str:
     return tostring(root, encoding="unicode")
 
 
-def build_export_docs_message(pid: str) -> str:
+def build_export_docs_message(pid: StrOrColumn) -> str:
     """Build rawData to export PatientRecord documents to PV
 
     Args:
@@ -138,7 +142,7 @@ def build_export_docs_message(pid: str) -> str:
     root = Element("result")
 
     pid_element = SubElement(root, "pid")
-    pid_element.text = pid
+    pid_element.text = str(pid)
 
     doc_element = SubElement(root, "documents")
     doc_element.text = "FULL"
@@ -146,7 +150,7 @@ def build_export_docs_message(pid: str) -> str:
     return tostring(root, encoding="unicode")
 
 
-def build_export_all_message(pid: str) -> str:
+def build_export_all_message(pid: StrOrColumn) -> str:
     """Buold rawData to export PatientRecord test results and documents to PV
 
     Args:
@@ -158,7 +162,7 @@ def build_export_all_message(pid: str) -> str:
     root = Element("result")
 
     pid_element = SubElement(root, "pid")
-    pid_element.text = pid
+    pid_element.text = str(pid)
 
     tst_element = SubElement(root, "tests")
     tst_element.text = "FULL"
@@ -169,7 +173,7 @@ def build_export_all_message(pid: str) -> str:
     return tostring(root, encoding="unicode")
 
 
-def build_export_radar_message(pid: str) -> str:
+def build_export_radar_message(pid: StrOrColumn) -> str:
     """Build rawData to export a PatientRecord to RaDaR
 
     Args:
@@ -181,12 +185,14 @@ def build_export_radar_message(pid: str) -> str:
     root = Element("result")
 
     pid_element = SubElement(root, "pid")
-    pid_element.text = pid
+    pid_element.text = str(pid)
 
     return tostring(root, encoding="unicode")
 
 
-def build_create_partner_membership_message(ukrdcid: str, partner: str) -> str:
+def build_create_partner_membership_message(
+    ukrdcid: StrOrColumn, partner: StrOrColumn
+) -> str:
     """Build rawData to create a new partner membership for a given UKRDCID
 
     Args:
@@ -199,9 +205,9 @@ def build_create_partner_membership_message(ukrdcid: str, partner: str) -> str:
     root = Element("request")
 
     ukrdcid_element = SubElement(root, "ukrdcid")
-    ukrdcid_element.text = ukrdcid
+    ukrdcid_element.text = str(ukrdcid)
 
     partner_element = SubElement(root, "partner")
-    partner_element.text = partner
+    partner_element.text = str(partner)
 
     return tostring(root, encoding="unicode")
