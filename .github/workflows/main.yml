@@ -134,7 +134,7 @@ jobs:
         run: poetry run python clients/generate_spec.py
 
       - name: Store API specification
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: openapi-spec
           path: clients/openapi.json
@@ -166,7 +166,7 @@ jobs:
         run: npx redoc-cli build clients/openapi.json --output docs/redoc/index.html
 
       - name: Store Redoc documentation
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: redoc-docs
           path: docs/redoc
@@ -200,7 +200,7 @@ jobs:
           command-args: --additional-properties=snapshot=${SNAPSHOT}
 
       - name: Store typescript-axios-client
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: typescript-axios-client
           path: typescript-axios-client
@@ -227,7 +227,7 @@ jobs:
         run: npx typedoc ./index.ts --out ../docs/typescript-axios-client
 
       - name: Store typescript-axios-client documentation
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: typescript-axios-client-docs
           path: docs/typescript-axios-client
