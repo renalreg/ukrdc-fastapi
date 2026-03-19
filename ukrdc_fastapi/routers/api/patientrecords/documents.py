@@ -1,10 +1,7 @@
-from typing import Any, cast
-
 from fastapi import APIRouter, Depends, HTTPException, Security
 from fastapi.responses import Response
 from sqlalchemy import select
 from sqlalchemy.orm import Session, defer
-from sqlalchemy.orm.attributes import QueryableAttribute
 from ukrdc_sqla.ukrdc import Document, PatientRecord
 
 from ukrdc_fastapi.dependencies import get_ukrdc3
@@ -50,7 +47,7 @@ def patient_documents(
     stmt = (
         select(Document)
         .where(Document.pid == patient_record.pid)
-        .options(defer(cast(QueryableAttribute[Any], Document.stream)))
+        .options(defer(Document.stream))
     )
 
     audit.add_event(
@@ -129,11 +126,9 @@ def patient_document_download(
         stream = (document_obj.notetext or "").encode()
         filename = f"{document_obj.documentname}.txt"
     else:
-        media_type = str(document_obj.filetype)
-        stream = bytes(document_obj.stream or b"")
-        filename = str(
-            document_obj.filename or document_obj.documentname or "NoFileName"
-        )
+        media_type = document_obj.filetype
+        stream = document_obj.stream or b""
+        filename = document_obj.filename or document_obj.documentname or "NoFileName"
 
     response = Response(content=stream, media_type=media_type)
     response.headers["Content-Disposition"] = f"attachment; filename={filename}"

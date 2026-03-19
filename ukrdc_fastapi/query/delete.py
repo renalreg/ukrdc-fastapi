@@ -16,8 +16,6 @@ from ukrdc_fastapi.schemas.delete import (
 )
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordFullSchema
 
-from ukrdc_fastapi.types import StrOrColumn
-
 
 class ConfirmationError(HTTPException):
     def __init__(self) -> None:
@@ -42,7 +40,7 @@ class EMPIDeleteItems:
     link_records: list[LinkRecord]
 
 
-def _find_empi_items_to_delete(jtrace: Session, pid: StrOrColumn) -> EMPIDeleteItems:
+def _find_empi_items_to_delete(jtrace: Session, pid: str) -> EMPIDeleteItems:
     to_delete = EMPIDeleteItems(
         persons=[], master_records=[], pidxrefs=[], work_items=[], link_records=[]
     )

@@ -152,7 +152,7 @@ def select_messages_related_to_masterrecord(
     ).all()
 
     related_national_ids: list[str] = [
-        str(record.nationalid) for record in related_master_records
+        record.nationalid for record in related_master_records
     ]
 
     return select_messages(
@@ -173,7 +173,7 @@ def select_messages_related_to_patientrecord(
     until: Optional[datetime.datetime] = None,
 ) -> Select:
     national_ids: list[str] = [
-        str(number.patientid)
+        number.patientid
         for number in record.patient.numbers
         if number.numbertype == "NI" and number.patientid is not None
     ]

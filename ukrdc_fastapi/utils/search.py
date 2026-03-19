@@ -11,7 +11,6 @@ from stdnum.util import isdigits  # type:ignore
 from ukrdc_sqla.ukrdc import Facility, Name, Patient, PatientNumber, PatientRecord
 
 from ukrdc_fastapi.utils import parse_date
-from ukrdc_fastapi.types import StrOrColumn
 
 
 class SearchSet:
@@ -228,9 +227,9 @@ def search_ukrdcids(  # pylint: disable=too-many-branches
     facility: list[str],
     search: list[str],
     ukrdc3: Session,
-) -> set[StrOrColumn]:
+) -> set[str]:
     """Search the UKRDC for a set of search items, and return a set of matching UKRDC IDs"""
-    match_sets: list[set[StrOrColumn]] = []
+    match_sets: list[set[str]] = []
 
     searchset = SearchSet()
 
@@ -275,11 +274,11 @@ def search_ukrdcids(  # pylint: disable=too-many-branches
         query = records_from_facility(ukrdc3, searchset.facilities)
         match_sets.append({record.ukrdcid for record in query if record.ukrdcid})
 
-    non_empty_sets: list[set[StrOrColumn]] = [
+    non_empty_sets: list[set[str]] = [
         match_set for match_set in match_sets if match_set
     ]
 
-    matched_ids: set[StrOrColumn]
+    matched_ids: set[str]
     if non_empty_sets:
         matched_ids = set.intersection(*non_empty_sets)
     else:

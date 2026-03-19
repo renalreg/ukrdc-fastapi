@@ -70,9 +70,9 @@ socket_dir = tempfile.TemporaryDirectory()
 postgresql_my_proc = factories.postgresql_proc(port=None, unixsocketdir=socket_dir.name)
 
 # Uncomment for local development with external postgres instance
-# postgresql_my_proc = factories.postgresql_noproc(
+#postgresql_my_proc = factories.postgresql_noproc(
 #    port=8000, user="postgres", password="postgres"
-# )
+#)
 postgresql_my = factories.postgresql("postgresql_my_proc")
 
 MINIMAL_PDF_BYTES = (

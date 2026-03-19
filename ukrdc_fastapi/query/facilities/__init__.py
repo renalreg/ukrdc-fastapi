@@ -228,8 +228,7 @@ def build_facilities_list(
         last_message_received_at = most_recent_dict.get(facility.code.upper())
 
         # Find pre-fetched description for this facility
-        _desc = descriptions.get(facility.code.upper())
-        description: Optional[str] = str(_desc) if _desc is not None else None
+        description: Optional[str] = descriptions.get(facility.code.upper())
 
         # Find pre-fetched status counts for this facility
         status_stats: dict[str, int] = status_counts_dict.get(facility.code.upper(), {})
