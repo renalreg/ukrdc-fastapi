@@ -13,6 +13,7 @@ from ukrdc_fastapi.models.audit import AccessEvent, AuditEvent
 from ukrdc_fastapi.schemas.empi import WorkItemExtendedSchema, WorkItemSchema
 
 from .auth import auth
+from ukrdc_fastapi.types import StrIntOrColumn
 
 
 class Resource(Enum):
@@ -112,7 +113,7 @@ class Auditer:
     def add_event(
         self,
         resource: Resource,
-        resource_id: Optional[Union[str, int]],
+        resource_id: Optional[StrIntOrColumn],
         operation: Optional[
             Union[AuditOperation, AuditOperation, AuditOperation, AuditOperation]
         ],
