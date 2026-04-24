@@ -3,5 +3,10 @@
   "gitHost": "github.com",
   "gitUserId": "renalreg",
   "gitRepoId": "ukrdc-fastapi",
-  "useSingleRequestParameter": true
+  "useSingleRequestParameter": true,
+
+  "supportsES6": true,
+  "typescriptThreePlus": true,
+  "withInterfaces": true,
+  "enumPropertyNaming": "original"
 }

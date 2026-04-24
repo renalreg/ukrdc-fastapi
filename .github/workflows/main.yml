@@ -197,7 +197,7 @@ jobs:
           generator: typescript-axios
           config-file: clients/typescript-axios-client/config.json
           openapi-file: clients/openapi.json
-          command-args: --additional-properties=snapshot=${SNAPSHOT}
+          command-args: --additional-properties=supportsES6=true
 
       - name: Store typescript-axios-client
         uses: actions/upload-artifact@v7
