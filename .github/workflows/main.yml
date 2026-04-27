@@ -199,22 +199,15 @@ jobs:
           openapi-file: clients/openapi.json
           command-args: --additional-properties=supportsES6=true
 
-      - name: Patch tsconfig for NodeNext compatibility
+      - name: Pretty print tsconfig files
         working-directory: typescript-axios-client
         run: |
-          node -e "
-          const fs = require('fs');
-          const cfg = JSON.parse(fs.readFileSync('tsconfig.json','utf8'));
-      
-          cfg.compilerOptions = cfg.compilerOptions || {};
-      
-          // MUST be paired in modern TS
-          cfg.compilerOptions.module = 'NodeNext';
-          cfg.compilerOptions.moduleResolution = 'NodeNext';
-      
-          fs.writeFileSync('tsconfig.json', JSON.stringify(cfg, null, 2));
-          console.log('tsconfig patched for NodeNext');
-          "
+          echo "===== tsconfig.json ====="
+          npx json tsconfig.json || cat tsconfig.json
+
+          echo ""
+          echo "===== tsconfig.esm.json ====="
+          npx json tsconfig.esm.json || cat tsconfig.esm.json
 
       - name: Store typescript-axios-client
         uses: actions/upload-artifact@v7
