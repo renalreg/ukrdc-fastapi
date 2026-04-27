@@ -199,14 +199,21 @@ jobs:
           openapi-file: clients/openapi.json
           command-args: --additional-properties=supportsES6=true
 
-      - name: Patch tsconfig for modern TypeScript
+      - name: Patch tsconfig for NodeNext compatibility
         working-directory: typescript-axios-client
         run: |
           node -e "
           const fs = require('fs');
           const cfg = JSON.parse(fs.readFileSync('tsconfig.json','utf8'));
+      
+          cfg.compilerOptions = cfg.compilerOptions || {};
+      
+          // MUST be paired in modern TS
+          cfg.compilerOptions.module = 'NodeNext';
           cfg.compilerOptions.moduleResolution = 'NodeNext';
+      
           fs.writeFileSync('tsconfig.json', JSON.stringify(cfg, null, 2));
+          console.log('tsconfig patched for NodeNext');
           "
 
       - name: Store typescript-axios-client
