@@ -199,6 +199,22 @@ jobs:
           openapi-file: clients/openapi.json
           command-args: --additional-properties=supportsES6=true
 
+      - name: Patch generated tsconfig
+        working-directory: typescript-axios-client
+        run: |
+          node -e "
+          const fs = require('fs');
+          const cfg = JSON.parse(fs.readFileSync('tsconfig.json', 'utf8'));
+
+          cfg.compilerOptions = cfg.compilerOptions || {};
+
+          cfg.compilerOptions.module = 'NodeNext';
+          cfg.compilerOptions.moduleResolution = 'NodeNext';
+
+          fs.writeFileSync('tsconfig.json', JSON.stringify(cfg, null, 2));
+          console.log('Patched generated tsconfig');
+          "
+
       - name: Debug generated tsconfig files
         working-directory: typescript-axios-client
         run: |
