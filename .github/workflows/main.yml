@@ -199,6 +199,16 @@ jobs:
           openapi-file: clients/openapi.json
           command-args: --additional-properties=supportsES6=true
 
+      - name: Patch tsconfig for modern TypeScript
+        working-directory: typescript-axios-client
+        run: |
+          node -e "
+          const fs = require('fs');
+          const cfg = JSON.parse(fs.readFileSync('tsconfig.json','utf8'));
+          cfg.compilerOptions.moduleResolution = 'NodeNext';
+          fs.writeFileSync('tsconfig.json', JSON.stringify(cfg, null, 2));
+          "
+
       - name: Store typescript-axios-client
         uses: actions/upload-artifact@v7
         with:
