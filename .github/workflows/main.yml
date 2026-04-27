@@ -111,49 +111,6 @@ jobs:
           openapi-file: clients/openapi.json
           command-args: --additional-properties=supportsES6=true
 
-      - name: Patch generated tsconfig
-        working-directory: typescript-axios-client
-        run: |
-          node -e "
-          const fs = require('fs');
-          const cfg = JSON.parse(fs.readFileSync('tsconfig.json', 'utf8'));
-
-          cfg.compilerOptions = cfg.compilerOptions || {};
-
-          cfg.compilerOptions.module = 'NodeNext';
-          cfg.compilerOptions.moduleResolution = 'NodeNext';
-
-          fs.writeFileSync('tsconfig.json', JSON.stringify(cfg, null, 2));
-          console.log('Patched generated tsconfig');
-          "
-
-      - name: Debug generated tsconfig files
-        working-directory: typescript-axios-client
-        run: |
-          echo "===== WORKING DIRECTORY ====="
-          pwd
-          echo ""
-
-          echo "===== FILES IN OUTPUT DIR ====="
-          ls -la
-          echo ""
-
-          echo "===== tsconfig.json ====="
-          if [ -f tsconfig.json ]; then
-            cat tsconfig.json
-          else
-            echo "tsconfig.json NOT FOUND"
-          fi
-          echo ""
-
-          echo "===== tsconfig.esm.json ====="
-          if [ -f tsconfig.esm.json ]; then
-            cat tsconfig.esm.json
-          else
-            echo "tsconfig.esm.json NOT FOUND"
-          fi
-          echo ""
-
       - name: Store typescript-axios-client
         uses: actions/upload-artifact@v7
         with:
@@ -179,7 +136,7 @@ jobs:
 
       - name: Build client documentation
         working-directory: typescript-axios-client
-        run: npx typedoc --tsconfig tsconfig.esm.json ./index.ts --out ../docs/typescript-axios-client
+        run: npx typedoc --tsconfig ./tsconfig.json ./index.ts --out ../docs/typescript-axios-client
 
       - name: Store typescript-axios-client documentation
         uses: actions/upload-artifact@v7
