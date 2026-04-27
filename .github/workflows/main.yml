@@ -199,15 +199,32 @@ jobs:
           openapi-file: clients/openapi.json
           command-args: --additional-properties=supportsES6=true
 
-      - name: Pretty print tsconfig files
+      - name: Debug generated tsconfig files
         working-directory: typescript-axios-client
         run: |
-          echo "===== tsconfig.json ====="
-          npx json tsconfig.json || cat tsconfig.json
-
+          echo "===== WORKING DIRECTORY ====="
+          pwd
           echo ""
+
+          echo "===== FILES IN OUTPUT DIR ====="
+          ls -la
+          echo ""
+
+          echo "===== tsconfig.json ====="
+          if [ -f tsconfig.json ]; then
+            cat tsconfig.json
+          else
+            echo "tsconfig.json NOT FOUND"
+          fi
+          echo ""
+
           echo "===== tsconfig.esm.json ====="
-          npx json tsconfig.esm.json || cat tsconfig.esm.json
+          if [ -f tsconfig.esm.json ]; then
+            cat tsconfig.esm.json
+          else
+            echo "tsconfig.esm.json NOT FOUND"
+          fi
+          echo ""
 
       - name: Store typescript-axios-client
         uses: actions/upload-artifact@v7
