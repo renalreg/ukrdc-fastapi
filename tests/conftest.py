@@ -63,10 +63,15 @@ from ukrdc_fastapi.utils.tasks import TaskTracker
 
 from .utils import create_basic_facility, create_basic_patient, days_ago
 
+
 # TODO: Move data creation into a submodule, and call data creation in each test rather than adding from conftest
 def pytest_collection_modifyitems(session, config, items):
     for item in items:
-        item.add_marker(pytest.mark.httpx_mock(assert_all_responses_were_requested=False))
+        item.add_marker(
+            pytest.mark.httpx_mock(assert_all_responses_were_requested=False)
+        )
+
+
 # Using the factory to create a postgresql instance
 socket_dir = tempfile.TemporaryDirectory()
 postgresql_my_proc = factories.postgresql_proc(port=None, unixsocketdir=socket_dir.name)
@@ -1053,7 +1058,9 @@ def app(
 
 @pytest_asyncio.fixture(scope="function")
 async def client(app):
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as ac:
         yield ac
 
 
@@ -1078,7 +1085,9 @@ async def app_authenticated(app):
 
 @pytest_asyncio.fixture(scope="function")
 async def client_authenticated(app_authenticated):
-    async with AsyncClient(transport=ASGITransport(app=app_authenticated), base_url="http://test") as ac:
+    async with AsyncClient(
+        transport=ASGITransport(app=app_authenticated), base_url="http://test"
+    ) as ac:
         yield ac
 
 
@@ -1132,13 +1141,15 @@ def httpx_session(httpx_mock: HTTPXMock):
     httpx_mock.add_response(
         method="GET",
         text=message_999_response,
-        url=re.compile(r"mock:\/\/mirth.url\/channels\/.*\/messages\/.*"),is_reusable=True,
+        url=re.compile(r"mock:\/\/mirth.url\/channels\/.*\/messages\/.*"),
+        is_reusable=True,
     )
 
     httpx_mock.add_response(
         method="POST",
         text="<long>999</long>",
-        url=re.compile(r"mock:\/\/mirth.url\/channels\/.*\/messages"),is_reusable=True,
+        url=re.compile(r"mock:\/\/mirth.url\/channels\/.*\/messages"),
+        is_reusable=True,
     )
 
     httpx_mock.add_response(
@@ -1156,8 +1167,11 @@ def httpx_session(httpx_mock: HTTPXMock):
     )
 
     httpx_mock.add_response(
-        status_code=204, url=re.compile(r"mock:\/\/mirth.url\/channels\/.*\/messages"),is_reusable=True,
+        status_code=204,
+        url=re.compile(r"mock:\/\/mirth.url\/channels\/.*\/messages"),
+        is_reusable=True,
     )
+
 
 @pytest.fixture(scope="function")
 def superuser():
