@@ -148,7 +148,7 @@ def master_record_latest_message(
         select_messages_related_to_masterrecord(
             record,
             jtrace,
-            since=datetime.datetime.utcnow() - datetime.timedelta(days=365),
+            since=datetime.datetime.now(datetime.UTC) - datetime.timedelta(days=365),
         )
         .where(Message.facility != "TRACING")
         .where(Message.filename.isnot(None))

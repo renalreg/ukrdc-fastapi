@@ -50,7 +50,7 @@ def select_messages(
 
     # Default to showing last 365 days
     since_datetime: datetime.datetime = (
-        since or datetime.datetime.utcnow() - datetime.timedelta(days=365)
+        since or datetime.datetime.now(datetime.UTC) - datetime.timedelta(days=365)
     )
     stmt = stmt.where(Message.received >= since_datetime)
 
