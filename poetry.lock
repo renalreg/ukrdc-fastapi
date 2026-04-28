@@ -1843,14 +1843,14 @@ files = [
 
 [[package]]
 name = "okta-jwt-verifier"
-version = "0.2.9"
+version = "0.4.0"
 description = "A Python library for OKTA JWT tokens validation"
 optional = false
 python-versions = "<4.0,>=3.8"
 groups = ["main"]
 files = [
-    {file = "okta_jwt_verifier-0.2.9-py3-none-any.whl", hash = "sha256:98392dbce2d8a3f32d137a8244af9851f59797445450be209f9e75e98e25ace9"},
-    {file = "okta_jwt_verifier-0.2.9.tar.gz", hash = "sha256:e0fc513e80dd5a5431f215ffe694869c8277f8f110a67c70c980319232bb8352"},
+    {file = "okta_jwt_verifier-0.4.0-py3-none-any.whl", hash = "sha256:6a0410bcee5de4200f7dc1e7cf249570f1119a3210630ad28b2edd6dc39a04eb"},
+    {file = "okta_jwt_verifier-0.4.0.tar.gz", hash = "sha256:55659d490412261abb26a481c0cab7f23b514d25e8c9cd8483f18ebb511e4cea"},
 ]
 
 [package.dependencies]
@@ -3663,4 +3663,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<4.0"
-content-hash = "91f6dbea4abb4fee61f246571565a4620454649811572f0de2ef8aed0fb93b3a"
+content-hash = "359ea5de8b4398e4456df4aed2857952b7529efce792b94ea414e13c5b93f05b"
