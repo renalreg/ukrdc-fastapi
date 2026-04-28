@@ -66,7 +66,7 @@ async def test_record_export_radar(client_authenticated, httpx_mock):
     assert response.json().get("numberOfMessages") == 1
 
 
-@pytest.mark.asynccio
+@pytest.mark.asyncio
 async def test_patient_export_mrc(client_authenticated, ukrdc3_session):
     pid_1 = "PYTEST01:PV:00000000A"
     membership = ProgramMembership(
