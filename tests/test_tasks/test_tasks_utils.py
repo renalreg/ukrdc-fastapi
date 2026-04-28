@@ -44,8 +44,9 @@ def ignore_exception(_loop: AbstractEventLoop, _context: dict[str, Any]) -> None
 
 
 @pytest.fixture(autouse=True)
-def setup_event_loop(event_loop: AbstractEventLoop) -> None:
-    event_loop.set_exception_handler(ignore_exception)
+def setup_event_loop():
+    loop = asyncio.get_event_loop()
+    loop.set_exception_handler(ignore_exception)
 
 
 @pytest.mark.asyncio

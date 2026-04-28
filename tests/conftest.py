@@ -8,7 +8,7 @@ import fakeredis
 import pytest
 import pytest_asyncio
 from fastapi import Security
-from httpx import AsyncClient
+from httpx import AsyncClient, ASGITransport
 from mirth_client import MirthAPI
 from pytest_httpx import HTTPXMock
 from pytest_postgresql import factories
@@ -64,7 +64,9 @@ from ukrdc_fastapi.utils.tasks import TaskTracker
 from .utils import create_basic_facility, create_basic_patient, days_ago
 
 # TODO: Move data creation into a submodule, and call data creation in each test rather than adding from conftest
-
+def pytest_collection_modifyitems(session, config, items):
+    for item in items:
+        item.add_marker(pytest.mark.httpx_mock(assert_all_responses_were_requested=False))
 # Using the factory to create a postgresql instance
 socket_dir = tempfile.TemporaryDirectory()
 postgresql_my_proc = factories.postgresql_proc(port=None, unixsocketdir=socket_dir.name)
@@ -782,10 +784,13 @@ def jtrace_sessionmaker(postgresql_my):
     Create a new function-scoped in-memory JTRACE database and return the session class
     """
 
-    def dbcreator():
-        return postgresql_my.cursor().connection
+    conn = postgresql_my
 
-    engine = create_engine("postgresql+psycopg2://", creator=dbcreator)
+    engine = create_engine(
+        f"postgresql+psycopg2://{conn.info.user}:"
+        f"{conn.info.password}@{conn.info.host}:"
+        f"{conn.info.port}/{conn.info.dbname}"
+    )
     JtraceTestSession = sessionmaker(
         autocommit=False,
         autoflush=False,
@@ -801,10 +806,13 @@ def ukrdc3_sessionmaker(postgresql_my):
     Create a new function-scoped in-memory UKRDC3 database and return the session class
     """
 
-    def dbcreator():
-        return postgresql_my.cursor().connection
+    conn = postgresql_my
 
-    engine = create_engine("postgresql+psycopg2://", creator=dbcreator)
+    engine = create_engine(
+        f"postgresql+psycopg2://{conn.info.user}:"
+        f"{conn.info.password}@{conn.info.host}:"
+        f"{conn.info.port}/{conn.info.dbname}"
+    )
     ukrdc_test_session = sessionmaker(
         autocommit=False,
         autoflush=False,
@@ -820,10 +828,13 @@ def errorsdb_sessionmaker(postgresql_my):
     Create a new function-scoped in-memory ERRORS database and return the session class
     """
 
-    def dbcreator():
-        return postgresql_my.cursor().connection
+    conn = postgresql_my
 
-    engine = create_engine("postgresql+psycopg2://", creator=dbcreator)
+    engine = create_engine(
+        f"postgresql+psycopg2://{conn.info.user}:"
+        f"{conn.info.password}@{conn.info.host}:"
+        f"{conn.info.port}/{conn.info.dbname}"
+    )
     errors_test_session = sessionmaker(
         autocommit=False,
         autoflush=False,
@@ -839,10 +850,13 @@ def statsdb_sessionmaker(postgresql_my):
     Create a new function-scoped in-memory STATS database and return the session class
     """
 
-    def dbcreator():
-        return postgresql_my.cursor().connection
+    conn = postgresql_my
 
-    engine = create_engine("postgresql+psycopg2://", creator=dbcreator)
+    engine = create_engine(
+        f"postgresql+psycopg2://{conn.info.user}:"
+        f"{conn.info.password}@{conn.info.host}:"
+        f"{conn.info.port}/{conn.info.dbname}"
+    )
     stats_test_session = sessionmaker(
         autocommit=False,
         autoflush=False,
@@ -858,10 +872,13 @@ def auditdb_sessionmaker(postgresql_my):
     Create a new function-scoped in-memory AUDIT database and return the session class
     """
 
-    def dbcreator():
-        return postgresql_my.cursor().connection
+    conn = postgresql_my
 
-    engine = create_engine("postgresql+psycopg2://", creator=dbcreator)
+    engine = create_engine(
+        f"postgresql+psycopg2://{conn.info.user}:"
+        f"{conn.info.password}@{conn.info.host}:"
+        f"{conn.info.port}/{conn.info.dbname}"
+    )
     stats_test_session = sessionmaker(
         autocommit=False,
         autoflush=False,
@@ -1036,7 +1053,7 @@ def app(
 
 @pytest_asyncio.fixture(scope="function")
 async def client(app):
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         yield ac
 
 
@@ -1061,7 +1078,7 @@ async def app_authenticated(app):
 
 @pytest_asyncio.fixture(scope="function")
 async def client_authenticated(app_authenticated):
-    async with AsyncClient(app=app_authenticated, base_url="http://test") as ac:
+    async with AsyncClient(transport=ASGITransport(app=app_authenticated), base_url="http://test") as ac:
         yield ac
 
 
@@ -1083,7 +1100,9 @@ async def app_superuser(app):
 
 @pytest_asyncio.fixture(scope="function")
 async def client_superuser(app_superuser):
-    async with AsyncClient(app=app_superuser, base_url="http://test") as ac:
+    async with AsyncClient(
+        transport=ASGITransport(app=app_superuser), base_url="http://test"
+    ) as ac:
         yield ac
 
 
@@ -1110,17 +1129,16 @@ def httpx_session(httpx_mock: HTTPXMock):
         channel_groups_response: str = f.read()
     with open(responses_path.joinpath("messageResponse.xml"), "r") as f:
         message_999_response: str = f.read()
-
     httpx_mock.add_response(
         method="GET",
         text=message_999_response,
-        url=re.compile(r"mock:\/\/mirth.url\/channels\/.*\/messages\/.*"),
+        url=re.compile(r"mock:\/\/mirth.url\/channels\/.*\/messages\/.*"),is_reusable=True,
     )
 
     httpx_mock.add_response(
         method="POST",
         text="<long>999</long>",
-        url=re.compile(r"mock:\/\/mirth.url\/channels\/.*\/messages"),
+        url=re.compile(r"mock:\/\/mirth.url\/channels\/.*\/messages"),is_reusable=True,
     )
 
     httpx_mock.add_response(
@@ -1138,9 +1156,8 @@ def httpx_session(httpx_mock: HTTPXMock):
     )
 
     httpx_mock.add_response(
-        status_code=204, url=re.compile(r"mock:\/\/mirth.url\/channels\/.*\/messages")
+        status_code=204, url=re.compile(r"mock:\/\/mirth.url\/channels\/.*\/messages"),is_reusable=True,
     )
-
 
 @pytest.fixture(scope="function")
 def superuser():
