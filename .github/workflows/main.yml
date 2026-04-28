@@ -281,6 +281,6 @@ jobs:
 
       - name: Deploy to GitHub Pages
         id: deployment # Required to set environment url
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
         # Only deploy to pages if the workflow was triggered by a stable release
         if: (github.event_name == 'release' && !github.event.release.prerelease)
