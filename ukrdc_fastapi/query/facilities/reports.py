@@ -33,7 +33,7 @@ def select_facility_report_cc001(
         raise MissingFacilityError(facility_code)
 
     # Calculate the DoD cutoff date
-    dod_cutoff = datetime.datetime.utcnow() - relativedelta(years=5)
+    dod_cutoff = datetime.datetime.now(datetime.UTC) - relativedelta(years=5)
 
     # Find all records in the facility with no treatment, matching the DoD condition
     q_no_treatment = (

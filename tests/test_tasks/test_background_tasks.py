@@ -4,7 +4,7 @@ from typing import Optional
 import pytest
 import pytest_asyncio
 from fastapi import BackgroundTasks, Depends
-from httpx import AsyncClient
+from httpx import AsyncClient, ASGITransport
 from pydantic import BaseModel
 
 from ukrdc_fastapi.config import configuration
@@ -75,7 +75,9 @@ def app_with_tasks(app_authenticated):
 
 @pytest_asyncio.fixture(scope="function")
 async def client_with_tasks(app_with_tasks):
-    async with AsyncClient(app=app_with_tasks, base_url="http://test") as ac:
+    async with AsyncClient(
+        transport=ASGITransport(app=app_with_tasks), base_url="http://test"
+    ) as ac:
         yield ac
 
 

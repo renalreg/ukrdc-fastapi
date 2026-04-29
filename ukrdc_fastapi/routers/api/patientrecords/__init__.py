@@ -189,7 +189,7 @@ def patient_record_latest_message(
     stmt = (
         select_messages_related_to_patientrecord(
             patient_record,
-            since=datetime.datetime.utcnow() - datetime.timedelta(days=365),
+            since=datetime.datetime.now(datetime.UTC) - datetime.timedelta(days=365),
         )
         .where(Message.facility != "TRACING")
         .where(Message.filename.isnot(None))
