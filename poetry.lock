@@ -3661,13 +3661,13 @@ ukrdc-sqla = ">=2.6.0,<3.0.0"
 
 [[package]]
 name = "ukrdc-xsdata"
-version = "3.4.5"
+version = "4.2.0"
 description = ""
 optional = false
 python-versions = "*"
 groups = ["main"]
 files = [
-    {file = "ukrdc_xsdata-3.4.5-py3-none-any.whl", hash = "sha256:d2084fd01cc45228e5bc73703f86f9b825cfa112263da10bcf84294110dc53b3"},
+    {file = "ukrdc_xsdata-4.2.0-py3-none-any.whl", hash = "sha256:b452f841ff103c9a0923b905f6ee39bec1f45689b5586fa7f1a70e8d7509d536"},
 ]
 
 [package.dependencies]
@@ -3908,4 +3908,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<4.0"
-content-hash = "b8858b6b10c2d163c6a94446aa6bce3183e5ae6a6d40a35b465cd00b7c511ace"
+content-hash = "f709ba44a1f02d8c9e283945a1fe96dae93f2d26fbfca66dce6fb73d4c64a87e"

@@ -24,7 +24,7 @@ single-source = "^0.4.0"
 uvicorn = "^0.46.0"
 mirth-client = "^4.1.0"
 ukrdc-stats = "^2.11.0"
-ukrdc-xsdata = "^3.4.5"
+ukrdc-xsdata = ">=3.4.5,<5.0.0"
 ukrdc-sqla = "^2.6.2"
 
 [tool.poetry.group.dev.dependencies]
