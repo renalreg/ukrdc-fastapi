@@ -2930,14 +2930,14 @@ dev = ["pre-commit", "pytest-asyncio", "tox"]
 
 [[package]]
 name = "pytest-postgresql"
-version = "8.0.0"
+version = "8.1.0"
 description = "Postgresql fixtures and fixture factories for Pytest."
 optional = false
 python-versions = ">=3.10"
 groups = ["dev"]
 files = [
-    {file = "pytest_postgresql-8.0.0-py3-none-any.whl", hash = "sha256:125b63b16d630c2dea19807062ed4c96e6123f06058ce65b82b4b14174d6c4b8"},
-    {file = "pytest_postgresql-8.0.0.tar.gz", hash = "sha256:26cbd44a0adef76cf4a82a3a2263f0e029bc54b5863556a9bd86ca3edfa91cce"},
+    {file = "pytest_postgresql-8.1.0-py3-none-any.whl", hash = "sha256:0868bb3374fa4f454efd73ac1d7b23d2da623782044371b84d39f83a0893f56f"},
+    {file = "pytest_postgresql-8.1.0.tar.gz", hash = "sha256:ffd24027a28aba3d05a909fb03ee87d1d474574c3504f332d6047e8699170adc"},
 ]
 
 [package.dependencies]
