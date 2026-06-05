@@ -22,6 +22,7 @@ Ukrdc3Session = sessionmaker(
             settings.ukrdc_name,
         ),
         connect_args={"application_name": settings.application_name},
+        pool_pre_ping=True, # Test connection before using it, get a new one if stale
     ),
 )
 
@@ -53,6 +54,7 @@ JtraceSession = sessionmaker(
             settings.jtrace_name,
         ),
         connect_args={"application_name": settings.application_name},
+        pool_pre_ping=True, # Test connection before using it, get a new one if stale
     ),
 )
 
@@ -84,6 +86,7 @@ ErrorsSession = sessionmaker(
             settings.errors_name,
         ),
         connect_args={"application_name": settings.application_name},
+        pool_pre_ping=True, # Test connection before using it, get a new one if stale
     ),
 )
 
@@ -115,6 +118,7 @@ StatsSession = sessionmaker(
             settings.stats_name,
         ),
         connect_args={"application_name": settings.application_name},
+        pool_pre_ping=True, # Test connection before using it, get a new one if stale
     ),
 )
 
@@ -146,6 +150,7 @@ AuditSession = sessionmaker(
             settings.audit_name,
         ),
         connect_args={"application_name": settings.application_name},
+        pool_pre_ping=True, # Test connection before using it, get a new one if stale
     ),
 )
 
@@ -170,6 +175,7 @@ UsersSession = sessionmaker(
             "sqlite", name=os.path.join(settings.sqlite_data_dir, settings.usersdb_name)
         ),
         connect_args={"check_same_thread": False},
+        pool_pre_ping=True, # Test connection before using it, get a new one if stale
     )
 )
 
