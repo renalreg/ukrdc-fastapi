@@ -22,6 +22,8 @@ Ukrdc3Session = sessionmaker(
             settings.ukrdc_name,
         ),
         connect_args={"application_name": settings.application_name},
+        pool_pre_ping=True,  # Test connection before using it, get a new one if stale
+        pool_recycle=3600,  # If the connection is older than 1 hour, get a new one instead
     ),
 )
 
@@ -53,6 +55,8 @@ JtraceSession = sessionmaker(
             settings.jtrace_name,
         ),
         connect_args={"application_name": settings.application_name},
+        pool_pre_ping=True,  # Test connection before using it, get a new one if stale,
+        pool_recycle=3600,  # If the connection is older than 1 hour, get a new one instead
     ),
 )
 
@@ -84,6 +88,8 @@ ErrorsSession = sessionmaker(
             settings.errors_name,
         ),
         connect_args={"application_name": settings.application_name},
+        pool_pre_ping=True,  # Test connection before using it, get a new one if stale,
+        pool_recycle=3600,  # If the connection is older than 1 hour, get a new one instead
     ),
 )
 
@@ -115,6 +121,8 @@ StatsSession = sessionmaker(
             settings.stats_name,
         ),
         connect_args={"application_name": settings.application_name},
+        pool_pre_ping=True,  # Test connection before using it, get a new one if stale
+        pool_recycle=3600,  # If the connection is older than 1 hour, get a new one instead
     ),
 )
 
@@ -146,6 +154,8 @@ AuditSession = sessionmaker(
             settings.audit_name,
         ),
         connect_args={"application_name": settings.application_name},
+        pool_pre_ping=True,  # Test connection before using it, get a new one if stale
+        pool_recycle=3600,  # If the connection is older than 1 hour, get a new one instead
     ),
 )
 
@@ -170,6 +180,8 @@ UsersSession = sessionmaker(
             "sqlite", name=os.path.join(settings.sqlite_data_dir, settings.usersdb_name)
         ),
         connect_args={"check_same_thread": False},
+        pool_pre_ping=True,  # Test connection before using it, get a new one if stale
+        pool_recycle=3600,  # If the connection is older than 1 hour, get a new one instead
     )
 )
 
