@@ -13,7 +13,7 @@ fastapi = "^0.125.0"
 fastapi-pagination = { extras = ["sqlalchemy"], version = "^ 0.15.12" }
 httpx = ">=0.23,<0.28.1"
 matplotlib = "3.10.9"
-okta-jwt-verifier = "^0.4.0"
+okta-jwt-verifier = ">=0.4,<0.6"
 psycopg2-binary = "^2.9.12" # Needed for postgres
 pydantic = { extras = ["dotenv"], version = "^1.10.22" }
 python-dateutil = "^2.9.0"
