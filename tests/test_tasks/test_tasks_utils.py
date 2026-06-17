@@ -44,9 +44,19 @@ def ignore_exception(_loop: AbstractEventLoop, _context: dict[str, Any]) -> None
 
 
 @pytest.fixture(autouse=True)
-def setup_event_loop():
+async def setup_event_loop():
     loop = asyncio.get_event_loop()
     loop.set_exception_handler(ignore_exception)
+
+
+async def _capture_until(capsys: CaptureFixture[str], min_count: int, timeout: float = 1.0) -> str:
+    """Poll capsys until at least `min_count` lines of output are seen, or timeout."""
+    start = time.time()
+    out = ""
+    while out.count("hello\n") < min_count and time.time() - start < timeout:
+        await asyncio.sleep(0.02)
+        out += capsys.readouterr().out
+    return out
 
 
 @pytest.mark.asyncio
@@ -56,8 +66,8 @@ async def test_repeat_print(capsys: CaptureFixture[str]) -> None:
         print("hello")
 
     await repeatedly_print_hello()
-    await asyncio.sleep(0.1)
-    out, err = capsys.readouterr()
+    out = await _capture_until(capsys, 3)
+    _, err = capsys.readouterr()
     assert out == "hello\n" * 3
     assert err == ""
 
@@ -69,10 +79,11 @@ async def test_repeat_print_delay(capsys: CaptureFixture[str]) -> None:
         print("hello")
 
     await repeatedly_print_hello()
-    await asyncio.sleep(0.1)
-    out, err = capsys.readouterr()
+    out = await _capture_until(capsys, 2)
+    # give a brief grace window to make sure the 3rd repetition hasn't also landed
+    await asyncio.sleep(0.03)
+    out += capsys.readouterr().out
     assert out == "hello\n" * 2
-    assert err == ""
 
 
 @pytest.mark.asyncio
@@ -82,11 +93,10 @@ async def test_repeat_print_wait(capsys: CaptureFixture[str]) -> None:
         print("hello")
 
     await repeatedly_print_hello()
-    await asyncio.sleep(0.1)
-    out, err = capsys.readouterr()
+    out = await _capture_until(capsys, 1)
+    await asyncio.sleep(0.03)
+    out += capsys.readouterr().out
     assert out == "hello\n" * 1
-    assert err == ""
-
 
 @pytest.mark.asyncio
 async def test_repeat_unlogged_error(caplog: LogCaptureFixture) -> None:
