@@ -49,7 +49,9 @@ async def setup_event_loop():
     loop.set_exception_handler(ignore_exception)
 
 
-async def _capture_until(capsys: CaptureFixture[str], min_count: int, timeout: float = 1.0) -> str:
+async def _capture_until(
+    capsys: CaptureFixture[str], min_count: int, timeout: float = 1.0
+) -> str:
     """Poll capsys until at least `min_count` lines of output are seen, or timeout."""
     start = time.time()
     out = ""
@@ -97,6 +99,7 @@ async def test_repeat_print_wait(capsys: CaptureFixture[str]) -> None:
     await asyncio.sleep(0.03)
     out += capsys.readouterr().out
     assert out == "hello\n" * 1
+
 
 @pytest.mark.asyncio
 async def test_repeat_unlogged_error(caplog: LogCaptureFixture) -> None:
