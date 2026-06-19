@@ -142,7 +142,12 @@ class TrackableTask:
             active_lock = self.lock_redis.get(self._lock_key)
             if active_lock:
                 # If lock is already acquired, raise an error
-                raise TaskLockError(f"Task {self.name} is locked by task {active_lock.decode()}")
+                lock_str = (
+                    active_lock.decode()
+                    if isinstance(active_lock, bytes)
+                    else active_lock
+                )
+                raise TaskLockError(f"Task {self.name} is locked by task {lock_str}")
             # Acquire the lock
             self.lock_redis.set(self._lock_key, self._key)
 
