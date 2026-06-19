@@ -32,7 +32,7 @@ requests = "^2.34.2" # okta-jwt-verifier needs this until a bug is fixed on thei
 bandit = "^1.8.3"
 coverage = { extras = ["toml"], version = "^7.8" }
 deptry = "*"
-fakeredis = "2.35.1"
+fakeredis = "2.36.2"
 mypy = ">=1.16,<3.0"
 pre-commit = "^4.5.0"
 pytest = "^9.0.0"
