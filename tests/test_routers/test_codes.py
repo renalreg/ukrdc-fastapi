@@ -30,7 +30,7 @@ async def test_code_maps_export(client_authenticated):
     )
     assert (
         response.content
-        == b'"CODING_STANDARD_1","CODE_1","CODING_STANDARD_2","CODE_2"\r\n"CODING_STANDARD_2","CODE_2","CODING_STANDARD_1","CODE_1"\r\n"NHS_DATA_DICTIONARY","eth2","URTS_ETHNIC_GROUPING","eth1"\r\n'
+        == b'"CODING_STANDARD_1","CODE_1","CODING_STANDARD_2","CODE_2"\r\n"CODING_STANDARD_2","CODE_2","CODING_STANDARD_1","CODE_1"\r\n"NHS_DATA_DICTIONARY","eth2","URTS_ETHNIC_GROUPING","eth1"\r\n"RR1+_SATELLITE","TSF01","RR1+_MAIN","TSF01"\r\n'
     )
 
 

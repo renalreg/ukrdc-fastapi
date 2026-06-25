@@ -79,7 +79,7 @@ def test_get_coding_standards(ukrdc3_session):
 
 def test_get_code_maps(ukrdc3_session):
     code_maps = ukrdc3_session.scalars(codes.select_code_maps()).all()
-    assert len(code_maps) == 3
+    assert len(code_maps) == 4
 
 
 def test_get_code_maps_filter_standard(ukrdc3_session):

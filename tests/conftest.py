@@ -26,7 +26,6 @@ from ukrdc_sqla.ukrdc import Base as UKRDC3Base
 from ukrdc_sqla.ukrdc import (
     Code,
     CodeExclusion,
-    CodeMap,
     Document,
     LabOrder,
     Level,
@@ -583,10 +582,12 @@ def populate_patient_1_extra(session):
     )
     session.add(modality_code_1)
 
-    satellite_map_1 = CodeMap(source_coding_standard="RR1+_SATELLITE",
-                              source_code="TSF01",
-                              destination_code="TSF01",
-                              destination_coding_standard="RR1+_MAIN")
+    satellite_map_1 = CodeMap(
+        source_coding_standard="RR1+_SATELLITE",
+        source_code="TSF01",
+        destination_code="TSF01",
+        destination_coding_standard="RR1+_MAIN",
+    )
     session.add(satellite_map_1)
     session.commit()
 
