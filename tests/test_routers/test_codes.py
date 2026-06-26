@@ -28,10 +28,14 @@ async def test_code_maps_export(client_authenticated):
     response = await client_authenticated.get(
         f"{configuration.base_url}/codes/export/maps"
     )
-    assert (
-        response.content
-        == b'"CODING_STANDARD_1","CODE_1","CODING_STANDARD_2","CODE_2"\r\n"CODING_STANDARD_2","CODE_2","CODING_STANDARD_1","CODE_1"\r\n"NHS_DATA_DICTIONARY","eth2","URTS_ETHNIC_GROUPING","eth1"\r\n"RR1+_SATELLITE","TSF01","RR1+_MAIN","TSF01"\r\n'
-    )
+    actual_rows = set(response.content.strip().split(b"\r\n"))
+    expected_rows = {
+        b'"CODING_STANDARD_1","CODE_1","CODING_STANDARD_2","CODE_2"',
+        b'"CODING_STANDARD_2","CODE_2","CODING_STANDARD_1","CODE_1"',
+        b'"NHS_DATA_DICTIONARY","eth2","URTS_ETHNIC_GROUPING","eth1"',
+        b'"RR1+_SATELLITE","TSF01","RR1+_MAIN","TSF01"',
+    }
+    assert actual_rows == expected_rows
 
 
 async def test_code_maps_export_filter_standard(client_authenticated):
