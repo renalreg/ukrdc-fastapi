@@ -80,7 +80,7 @@ class SearchSet:
         Add a list of strings to the search query set.
         Each string will be added to any search query group in which it is valid
         """
-        stmt = select(Facility.code)
+        stmt = select(Facility.facilitycode)
         facility_codes = ukrdc3.scalars(stmt).all()
 
         for item in terms:

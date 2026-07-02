@@ -32,7 +32,7 @@ def get_facility_demographic_stats(
         FacilityDemographicStats: Facility demographic distribution statistics
     """
     # Assert the facility exists
-    stmt = select(Facility).where(Facility.code == facility_code)
+    stmt = select(Facility).where(Facility.facilitycode == facility_code)
     facility = ukrdc3.scalars(stmt).first()
 
     if not facility:
@@ -41,7 +41,7 @@ def get_facility_demographic_stats(
     # Calculate all demographic stats
     return DemographicStatsCalculator(
         ukrdc3,
-        facility.code,  # type:ignore
+        facility.facilitycode,  # type:ignore
     ).extract_stats()
 
 
@@ -62,7 +62,7 @@ def get_facility_dialysis_stats(
         DialysisStats: Facility demographic distribution statistics
     """
     # Assert the facility exists
-    stmt = select(Facility).where(Facility.code == facility_code)
+    stmt = select(Facility).where(Facility.facilitycode == facility_code)
     facility = ukrdc3.scalars(stmt).first()
 
     if not facility:
@@ -77,7 +77,7 @@ def get_facility_dialysis_stats(
     # Calculate all demographic stats
     return KRTStatsCalculator(
         ukrdc3,  # type:ignore
-        facility.code,  # type:ignore
+        facility.facilitycode,  # type:ignore
         from_time=from_time,  # type:ignore
         to_time=to_time,  # type:ignore
     ).extract_stats()

@@ -41,7 +41,7 @@ def build_mrc_sync_message(record: PatientRecord, ukrdc3: Session) -> str:
     # TODO: Add facility-level override for MRC outbound sending
     # if not facility.mrc_out:
     #     raise MRCOutboundDisabledError(
-    #         f"MRC outbound sending disabled for {facility.code}"
+    #         f"MRC outbound sending disabled for {facility.facilitycode}"
     #     )
 
     # Check for excluded sending extracts
