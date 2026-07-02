@@ -37,7 +37,7 @@ def get_facility(
     Returns:
         FacilityDetailsSchema: Matched facility
     """
-    stmt = select(Facility).where(Facility.code == facility_code)
+    stmt = select(Facility).where(Facility.facilitycode == facility_code)
     facility = ukrdc3.scalars(stmt).first()
 
     if not facility:
@@ -47,7 +47,7 @@ def get_facility(
     stmt_messages = (
         select(Latest)
         .join(Message)
-        .where(Latest.facility == facility.code)
+        .where(Latest.facility == facility.facilitycode)
         .order_by(Message.received.desc())
     )
     messages = errorsdb.scalars(stmt_messages)
@@ -78,7 +78,7 @@ def get_facility(
     )
 
     return FacilityDetailsSchema(
-        id=facility.code,
+        id=facility.facilitycode,
         description=facility.description,
         last_message_received_at=latest_message.message.received
         if latest_message
@@ -108,7 +108,7 @@ def get_facility_extracts(
     Returns:
         FacilityExtractsSchema: Extract counts
     """
-    stmt = select(Facility).where(Facility.code == facility_code)
+    stmt = select(Facility).where(Facility.facilitycode == facility_code)
     facility = ukrdc3.scalars(stmt).first()
 
     if not facility:
@@ -165,7 +165,7 @@ def build_facilities_list(
     stmt_facility_codes = (
         select(Code)
         .where(Code.coding_standard == "RR1+")
-        .where(Code.code.in_([facility.code for facility in available_facilities]))
+        .where(Code.code.in_([facility.facilitycode for facility in available_facilities]))
     )
     facility_codes = ukrdc3.scalars(stmt_facility_codes).all()
     descriptions = {code.code: code.description for code in facility_codes}
@@ -176,7 +176,7 @@ def build_facilities_list(
         .where(PatientRecord.sendingextract.notin_(["PVMIG", "HSMIG"]))
         .where(
             PatientRecord.sendingfacility.in_(
-                [facility.code for facility in available_facilities]
+                [facility.facilitycode for facility in available_facilities]
             )
         )
         .group_by(PatientRecord.sendingfacility)
@@ -192,7 +192,7 @@ def build_facilities_list(
         select(Latest.facility, Message.msg_status, func.count(Message.msg_status))
         .join(Message)
         .where(
-            Latest.facility.in_([facility.code for facility in available_facilities])
+            Latest.facility.in_([facility.facilitycode for facility in available_facilities])
         )
         .group_by(Latest.facility, Message.msg_status)
     )
@@ -211,7 +211,7 @@ def build_facilities_list(
         select(Latest.facility, func.max(Message.received))
         .join(Message)
         .where(
-            Latest.facility.in_([facility.code for facility in available_facilities])
+            Latest.facility.in_([facility.facilitycode for facility in available_facilities])
         )
         .group_by(Latest.facility)
     )
@@ -223,21 +223,21 @@ def build_facilities_list(
     facility_list: list[FacilityDetailsSchema] = []
     for facility in available_facilities:
         # Find pre-fetched total records count for this facility
-        total_records = total_records_dict.get(facility.code.upper(), 0)
+        total_records = total_records_dict.get(facility.facilitycode.upper(), 0)
         # Find pre-fetched most recent message received time for this facility
-        last_message_received_at = most_recent_dict.get(facility.code.upper())
+        last_message_received_at = most_recent_dict.get(facility.facilitycode.upper())
 
         # Find pre-fetched description for this facility
-        description: Optional[str] = descriptions.get(facility.code.upper())
+        description: Optional[str] = descriptions.get(facility.facilitycode.upper())
 
         # Find pre-fetched status counts for this facility
-        status_stats: dict[str, int] = status_counts_dict.get(facility.code.upper(), {})
+        status_stats: dict[str, int] = status_counts_dict.get(facility.facilitycode.upper(), {})
         patients_receiving_errors = status_stats.get("ERROR", 0)
         patients_receiving_messages = sum(status_stats.values())
 
         facility_list.append(
             FacilityDetailsSchema(
-                id=facility.code,
+                id=facility.facilitycode,
                 description=description,
                 last_message_received_at=last_message_received_at,
                 data_flow=FacilityDataFlowSchema(
@@ -281,7 +281,7 @@ def get_facilities(
     # Look for a pre-calculated cache of the facilities list (see `ukrdc_fastapi.tasks.repeated`)
     cache = BasicCache(redis, CacheKey.FACILITIES_LIST)
     if not cache.exists:
-        stmt = select(Facility).where(Facility.code.notin_(ABSTRACT_FACILITIES))
+        stmt = select(Facility).where(Facility.facilitycode.notin_(ABSTRACT_FACILITIES))
         cache.set(
             build_facilities_list(stmt, ukrdc3, errorsdb),
             expire=settings.cache_facilities_list_seconds,

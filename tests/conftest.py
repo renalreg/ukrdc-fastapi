@@ -583,10 +583,10 @@ def populate_patient_1_extra(session):
     session.add(modality_code_1)
 
     satellite_map_1 = CodeMap(
-        source_coding_standard="RR1+_SATELLITE",
+        source_coding_standard=CodeMapFacilityType.satellite,
         source_code="TSF01",
         destination_code="TSF01",
-        destination_coding_standard="RR1+_MAIN",
+        destination_coding_standard=CodeMapFacilityType.main,
     )
     session.add(satellite_map_1)
     session.commit()

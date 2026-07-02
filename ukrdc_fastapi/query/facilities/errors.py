@@ -27,7 +27,7 @@ def query_patients_latest_errors(
     Returns:
         Query: SQLAlchemy query
     """
-    stmt = select(Facility).where(Facility.code == facility_code)
+    stmt = select(Facility).where(Facility.facilitycode == facility_code)
     facility = ukrdc3.scalars(stmt).first()
 
     if not facility:
@@ -36,7 +36,7 @@ def query_patients_latest_errors(
     stmt_errors = (
         select(Message)
         .join(Latest)
-        .where(Latest.facility == facility.code)
+        .where(Latest.facility == facility.facilitycode)
         .where(Message.msg_status == "ERROR")
     )
 
