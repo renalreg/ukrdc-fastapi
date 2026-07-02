@@ -67,14 +67,14 @@ class MessageSchema(MinimalMessageSchema):
         cls._channel_id_name_map = cinm
 
     @validator("mirth_channel")
-    def channel_name(self, _, values):  # pylint: disable=no-self-argument
+    def channel_name(cls, _, values):  # pylint: disable=no-self-argument
         """
         Dynamically generates the channel name field
         by reading the class Mirth Channel ID-Name map.
         """
         # TODO: Replace with computed_fields once available: https://github.com/samuelcolvin/pydantic/pull/2625
-        if hasattr(self, "_channel_id_name_map"):
+        if hasattr(cls, "_channel_id_name_map"):
             channel_id = values.get("channel_id")
             if channel_id:
-                return self._channel_id_name_map.get(channel_id)
+                return cls._channel_id_name_map.get(channel_id)
         return None

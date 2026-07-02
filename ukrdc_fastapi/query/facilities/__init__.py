@@ -165,7 +165,9 @@ def build_facilities_list(
     stmt_facility_codes = (
         select(Code)
         .where(Code.coding_standard == "RR1+")
-        .where(Code.code.in_([facility.facilitycode for facility in available_facilities]))
+        .where(
+            Code.code.in_([facility.facilitycode for facility in available_facilities])
+        )
     )
     facility_codes = ukrdc3.scalars(stmt_facility_codes).all()
     descriptions = {code.code: code.description for code in facility_codes}
@@ -192,7 +194,9 @@ def build_facilities_list(
         select(Latest.facility, Message.msg_status, func.count(Message.msg_status))
         .join(Message)
         .where(
-            Latest.facility.in_([facility.facilitycode for facility in available_facilities])
+            Latest.facility.in_(
+                [facility.facilitycode for facility in available_facilities]
+            )
         )
         .group_by(Latest.facility, Message.msg_status)
     )
@@ -211,7 +215,9 @@ def build_facilities_list(
         select(Latest.facility, func.max(Message.received))
         .join(Message)
         .where(
-            Latest.facility.in_([facility.facilitycode for facility in available_facilities])
+            Latest.facility.in_(
+                [facility.facilitycode for facility in available_facilities]
+            )
         )
         .group_by(Latest.facility)
     )
@@ -231,7 +237,9 @@ def build_facilities_list(
         description: Optional[str] = descriptions.get(facility.facilitycode.upper())
 
         # Find pre-fetched status counts for this facility
-        status_stats: dict[str, int] = status_counts_dict.get(facility.facilitycode.upper(), {})
+        status_stats: dict[str, int] = status_counts_dict.get(
+            facility.facilitycode.upper(), {}
+        )
         patients_receiving_errors = status_stats.get("ERROR", 0)
         patients_receiving_messages = sum(status_stats.values())
 

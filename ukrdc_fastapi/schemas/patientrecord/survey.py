@@ -20,7 +20,7 @@ class SurveyQuestionSchema(OrmModel):
     response_text: Optional[str] = Field(None, description="Question response text")
 
     @root_validator
-    def convert_codes(self, values):  # pylint: disable=no-self-argument
+    def convert_codes(cls, values):  # pylint: disable=no-self-argument
         """
         Lookup question type and response codes in order to provide
         human-readable data from the database codes. Also allocates

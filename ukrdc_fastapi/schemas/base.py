@@ -16,7 +16,7 @@ class JSONModel(BaseModel):
 
 class OrmModel(JSONModel):
     @validator("*", pre=True)
-    def evaluate_lazy_columns(self, value):  # pylint: disable=no-self-argument
+    def evaluate_lazy_columns(cls, value):  # pylint: disable=no-self-argument
         """
         Find field values with Query type and evaluate to actual data.
 

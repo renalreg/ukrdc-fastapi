@@ -33,7 +33,7 @@ def build_mrc_sync_message(record: PatientRecord, ukrdc3: Session) -> str:
 
     # Check facility-level overrides
 
-    facility = ukrdc3.get(Facility, record.sendingfacility)
+    facility = ukrdc3.get(Facility, (record.sendingfacility, "RR1+"))
 
     if not facility:
         raise ResourceNotFoundError(record.sendingfacility or "None")
