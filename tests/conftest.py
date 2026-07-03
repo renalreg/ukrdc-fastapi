@@ -26,6 +26,7 @@ from ukrdc_sqla.ukrdc import Base as UKRDC3Base
 from ukrdc_sqla.ukrdc import (
     Code,
     CodeExclusion,
+    CodingStandards,
     Document,
     LabOrder,
     Level,
@@ -41,6 +42,7 @@ from ukrdc_sqla.ukrdc import (
     ModalityCodes,
     CodeMap,
 )
+from ukrdc_sqla.utils.constants import CodeMapFacilityType
 
 from ukrdc_fastapi.dependencies import (
     auth,
@@ -108,6 +110,55 @@ UKRDCID_3 = "999999922"
 UKRDCID_4 = "999999933"
 
 
+# Every value ever used as a `coding_standard` / `*codestd` field anywhere in
+# this file. As of ukrdc-sqla 4.2.1, `coding_standard_column()` (used for
+# almost every `*codestd` column in ukrdc.py) is a ForeignKey to
+# coding_standards.coding_standard, so each of these values must exist as a
+# row in CodingStandards before any row referencing it is inserted.
+CODING_STANDARDS = [
+    "CODING_STANDARD_1",
+    "CODING_STANDARD_2",
+    "URTS_ETHNIC_GROUPING",
+    "NHS_DATA_DICTIONARY",
+    "DOSE_UOM_CODE_STD",
+    "DOSE_UOM_CODE_STD_2",
+    "DOSE_UOM_CODE_STD_3",
+    "CF_RR7_TREATMENT",
+    "ODS",
+    "SERVICE_ID_STD",
+    "OBSERVATION_CODE_STD",
+    "PV",
+    "SNOMED",
+    "LOCAL",
+    "RR35",
+    "RR1+",
+    "SERVICE_ID_STD_TEMP",
+    "D_DIAGNOSIS_CODE_STD",
+    "R_DIAGNOSIS_CODE_STD",
+    "DIAGNOSIS_CODE_STD",
+    "DIAGNOSIS_CODE_STD_2",
+    CodeMapFacilityType.satellite,
+    CodeMapFacilityType.main,
+    CodeMapFacilityType.feedshare_child,
+    CodeMapFacilityType.feedshare_parent,
+]
+
+
+def populate_coding_standards(ukrdc3):
+    """
+    Seed the coding_standards table with every coding standard value used
+    anywhere in this test data, since coding_standard_column() fields are
+    now FK-constrained against it (ukrdc-sqla >=4.2.1).
+
+    Must be called before any other populate_* function that inserts rows
+    referencing a coding standard (facilities, codes, patients, etc).
+    """
+    for standard in CODING_STANDARDS:
+        if not ukrdc3.get(CodingStandards, standard):
+            ukrdc3.add(CodingStandards(coding_standard=standard, description=standard))
+    ukrdc3.commit()
+
+
 def populate_basic_stats(statsdb):
     row_1 = MultipleUKRDCID(
         group_id=1,
@@ -129,7 +180,6 @@ def populate_facilities_and_messages(ukrdc3, statsdb, errorsdb):
         "TSF01",
         "TSF01_DESCRIPTION",
         ukrdc3,
-        pkb_in=False,
         pkb_out=True,
         ukrdc_out_pkb=True,
         pkb_msg_exclusions=None,
@@ -139,7 +189,6 @@ def populate_facilities_and_messages(ukrdc3, statsdb, errorsdb):
         "TSF02",
         "TSF02_DESCRIPTION",
         ukrdc3,
-        pkb_in=False,
         pkb_out=False,
         pkb_msg_exclusions=None,
     )
@@ -583,10 +632,10 @@ def populate_patient_1_extra(session):
     session.add(modality_code_1)
 
     satellite_map_1 = CodeMap(
-        source_coding_standard="RR1+_SATELLITE",
+        source_coding_standard=CodeMapFacilityType.satellite,
         source_code="TSF01",
         destination_code="TSF01",
-        destination_coding_standard="RR1+_MAIN",
+        destination_coding_standard=CodeMapFacilityType.main,
     )
     session.add(satellite_map_1)
     session.commit()
@@ -703,6 +752,7 @@ def populate_workitems(session: Session):
 
 
 def populate_all(ukrdc3: Session, jtrace: Session, errorsdb: Session, statsdb: Session):
+    populate_coding_standards(ukrdc3)
     populate_facilities_and_messages(ukrdc3, statsdb, errorsdb)
     populate_codes(ukrdc3)
 

@@ -163,6 +163,7 @@ def create_basic_facility(
     ukrdc_out_pkb: bool = False,
     pkb_msg_exclusions: Optional[list[str]] = None,
 ):
+
     code_obj = Code(
         coding_standard="RR1+",
         code=code,
@@ -172,12 +173,12 @@ def create_basic_facility(
 
     facility_obj = Facility(
         code=code,
-        pkb_in=pkb_in,
         pkb_out=pkb_out,
-        ukrdc_out_pkb=ukrdc_out_pkb,
-        pkb_msg_exclusions=pkb_msg_exclusions if pkb_msg_exclusions else [],
+        ukrdcoutpkb=ukrdc_out_pkb,
+        facilitycodestd="RR1+",
+        facilitytype="Adult Renal Centre",
+        pkbmsgexclusions=pkb_msg_exclusions if pkb_msg_exclusions else [],
     )
-
     ukrdc3.add(code_obj)
     ukrdc3.add(facility_obj)
 

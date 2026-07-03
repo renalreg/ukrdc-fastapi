@@ -26,7 +26,7 @@ def select_facility_report_cc001(
         Select: Select of patients mathching the report conditions
     """
     # Assert the facility exists
-    stmt = select(Facility).where(Facility.code == facility_code)
+    stmt = select(Facility).where(Facility.facilitycode == facility_code)
     facility = ukrdc3.scalars(stmt).first()
 
     if not facility:
@@ -39,7 +39,7 @@ def select_facility_report_cc001(
     q_no_treatment = (
         select(PatientRecord)
         .join(Patient)
-        .where(PatientRecord.sendingfacility == facility.code)
+        .where(PatientRecord.sendingfacility == facility.facilitycode)
         .where(PatientRecord.sendingextract == "UKRDC")
         .where(PatientRecord.treatments == None)  # noqa: E711 # No treatments
         .where(
@@ -86,7 +86,7 @@ def select_facility_report_pm001(
         Select: Select of patients mathching the report conditions
     """
     # Assert the facility exists
-    stmt = select(Facility).where(Facility.code == facility_code)
+    stmt = select(Facility).where(Facility.facilitycode == facility_code)
     facility = ukrdc3.execute(stmt).scalar_one()
 
     if not facility:
@@ -102,7 +102,7 @@ def select_facility_report_pm001(
 
     return (
         select(PatientRecord)
-        .where(PatientRecord.sendingfacility == facility.code)
+        .where(PatientRecord.sendingfacility == facility.facilitycode)
         .where(PatientRecord.sendingextract == "UKRDC")
         .where(PatientRecord.ukrdcid.notin_(q2))  # No related program memberships
     )
@@ -126,7 +126,7 @@ def select_missing_radar_patients(
         Select: ****
     """
     # Assert the facility exists
-    stmt = select(Facility).where(Facility.code == facility_code)
+    stmt = select(Facility).where(Facility.facilitycode == facility_code)
     facility = ukrdc3.execute(stmt).scalar_one()
 
     if not facility:
@@ -139,11 +139,11 @@ def select_missing_radar_patients(
         .outerjoin(
             B,
             (B.ukrdcid == PatientRecord.ukrdcid)
-            & (B.sendingfacility == facility.code)
+            & (B.sendingfacility == facility.facilitycode)
             & (B.sendingextract.in_(("PV", "UKRDC"))),
         )
         .join(ProgramMembership, ProgramMembership.pid == PatientRecord.pid)
-        .where(PatientRecord.sendingfacility == facility.code)
+        .where(PatientRecord.sendingfacility == facility.facilitycode)
         .where(
             and_(
                 PatientRecord.sendingextract == "RADAR",

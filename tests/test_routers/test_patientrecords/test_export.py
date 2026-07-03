@@ -139,7 +139,7 @@ async def test_record_ukrdc_to_pkb_export_disabled(
 
     # Disable UKRDC to PKB outbound
     facility = ukrdc3_session.query(Facility).filter_by(code="TSF01").first()
-    facility.ukrdc_out_pkb = False
+    facility.ukrdcoutpkb = False
     ukrdc3_session.commit()
 
     with pytest.raises(PKBOutboundDisabledError):

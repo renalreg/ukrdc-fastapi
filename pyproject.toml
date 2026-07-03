@@ -25,7 +25,7 @@ uvicorn = ">=0.48,<0.50"
 mirth-client = "^4.1.0"
 ukrdc-stats = "^2.11.0"
 ukrdc-xsdata = "^4.2.0"
-ukrdc-sqla = "^2.6.2"
+ukrdc-sqla = "^4.2.1"
 requests = "^2.34.2" # okta-jwt-verifier needs this until a bug is fixed on their end
 
 [tool.poetry.group.dev.dependencies]

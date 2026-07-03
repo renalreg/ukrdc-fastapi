@@ -77,7 +77,7 @@ def test_build_pkb_sync_disabled_facility(ukrdc3_session):
     _create_membership(pid_1, ukrdc3_session)
     record = ukrdc3_session.get(PatientRecord, pid_1)
 
-    facility = ukrdc3_session.get(Facility, record.sendingfacility)
+    facility = ukrdc3_session.get(Facility, (record.sendingfacility, "RR1+"))
     facility.pkb_out = False
     ukrdc3_session.commit()
 
@@ -103,7 +103,7 @@ def test_build_pkb_sync_message_facility_exclusions(ukrdc3_session):
     _create_membership(pid_1, ukrdc3_session)
     record = ukrdc3_session.get(PatientRecord, pid_1)
 
-    facility = ukrdc3_session.get(Facility, record.sendingfacility)
+    facility = ukrdc3_session.get(Facility, (record.sendingfacility, "RR1+"))
     facility.pkb_msg_exclusions = ["MDM_T02_DOC"]
     ukrdc3_session.commit()
 

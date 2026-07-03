@@ -243,8 +243,8 @@ def workitem_messages(
         statuses=status,
         nis=workitem_nis,
         facility=facility,
-        since=since or worktiem_obj.creation_date - datetime.timedelta(hours=12),
-        until=until or worktiem_obj.creation_date + datetime.timedelta(hours=12),
+        since=since or worktiem_obj.creation_date - datetime.timedelta(hours=12),  # type: ignore
+        until=until or worktiem_obj.creation_date + datetime.timedelta(hours=12),  # type: ignore
     )
     stmt = apply_message_list_permissions(stmt, user)
 
