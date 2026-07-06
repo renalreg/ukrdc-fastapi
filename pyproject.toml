@@ -21,7 +21,7 @@ python-stdnum = "^2.2"
 redis = ">=7.4,<9.0"
 sentry-sdk = { extras = ["fastapi"], version = "^2.58.0" }
 single-source = "^0.4.0"
-uvicorn = ">=0.48,<0.50"
+uvicorn = ">=0.48,<0.51"
 mirth-client = "^4.1.0"
 ukrdc-stats = "^2.11.0"
 ukrdc-xsdata = "^4.2.0"
