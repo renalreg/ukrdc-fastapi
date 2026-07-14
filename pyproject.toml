@@ -29,6 +29,7 @@ ukrdc-xsdata = "^4.2.0"
 ukrdc-sqla = "^4.2.1"
 requests = "^2.34.2" # okta-jwt-verifier needs this until a bug is fixed on their end
 ukrr-extract = {git="https://github.com/renalreg/ukrr_quarterly_extract.git",rev="UK-108"}
+psycopg2 = "^2.9.12"
 
 [tool.poetry.group.dev.dependencies]
 bandit = "^1.8.3"
