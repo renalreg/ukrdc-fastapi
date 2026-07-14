@@ -51,6 +51,18 @@ jobs:
       - name: Install and configure Poetry
         run: python -m pip install -U pip && pip install poetry
 
+      - name: Generate a token
+        id: generate-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.AL_APP_ID }}
+          private-key: ${{ secrets.AL_APP_KEY }}
+          owner: renalreg
+
+      - name: Authenticate GitHub HTTPS for private deps
+        run: |
+          git config --global url."https://x-access-token:${{ steps.generate-token.outputs.token }}@github.com/".insteadOf "https://github.com/"
+
       - name: Install Dependencies
         run: poetry install
 
@@ -136,6 +148,18 @@ jobs:
 
       - name: Install and configure Poetry
         uses: snok/install-poetry@v1
+
+      - name: Generate a token
+        id: generate-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.AL_APP_ID }}
+          private-key: ${{ secrets.AL_APP_KEY }}
+          owner: renalreg
+
+      - name: Authenticate GitHub HTTPS for private deps
+        run: |
+          git config --global url."https://x-access-token:${{ steps.generate-token.outputs.token }}@github.com/".insteadOf "https://github.com/"
 
       - name: Install Dependencies
         run: poetry install
