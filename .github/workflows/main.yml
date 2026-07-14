@@ -167,7 +167,7 @@ jobs:
           path: clients/
 
       - name: Install Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: "24"
           check-latest: true
@@ -217,7 +217,7 @@ jobs:
           path: typescript-axios-client
 
       - name: Install Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: "24"
           check-latest: true
