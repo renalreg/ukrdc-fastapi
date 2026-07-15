@@ -3686,7 +3686,7 @@ python-dateutil = "^2.9.0.post0,<3"
 
 [package.source]
 type = "git"
-url = "ssh://git@github.com/renalreg/rr_common.git"
+url = "https://github.com/renalreg/rr_common.git"
 reference = "HEAD"
 resolved_reference = "a30ce57890eeb35853d6cfd9d2ea44e90c35ec43"
 
@@ -3981,14 +3981,14 @@ sqlcipher = ["sqlcipher3_binary"]
 
 [[package]]
 name = "starlette"
-version = "0.50.0"
+version = "1.3.1"
 description = "The little ASGI library that shines."
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "starlette-0.50.0-py3-none-any.whl", hash = "sha256:9e5391843ec9b6e472eed1365a78c8098cfceb7a74bfd4d6b1c0c0095efb3bca"},
-    {file = "starlette-0.50.0.tar.gz", hash = "sha256:a2a17b22203254bcbc2e1f926d2d55f3f9497f769416b3190768befe598fa3ca"},
+    {file = "starlette-1.3.1-py3-none-any.whl", hash = "sha256:c7372aae11c3c3f26a42df7bd626cec2f47d03483d261d369516a615a53714c6"},
+    {file = "starlette-1.3.1.tar.gz", hash = "sha256:05d0213193f2fbaae60e2ecb593b4add4262ad4e46536b54abe36f11a71724e0"},
 ]
 
 [package.dependencies]
@@ -3996,7 +3996,7 @@ anyio = ">=3.6.2,<5"
 typing-extensions = {version = ">=4.10.0", markers = "python_version < \"3.13\""}
 
 [package.extras]
-full = ["httpx (>=0.27.0,<0.29.0)", "itsdangerous", "jinja2", "python-multipart (>=0.0.18)", "pyyaml"]
+full = ["httpx (>=0.27.0,<0.29.0)", "httpx2 (>=2.0.0)", "itsdangerous", "jinja2", "python-multipart (>=0.0.18)", "pyyaml"]
 
 [[package]]
 name = "stevedore"
@@ -4255,7 +4255,7 @@ psycopg2-binary = "*"
 pydantic-settings = "^2.12.0"
 python-dotenv = "^1.1.1"
 requests = "^2.32.3"
-rr_common = {git = "ssh://git@github.com/renalreg/rr_common.git"}
+rr_common = {git = "https://github.com/renalreg/rr_common.git"}
 sqlalchemy = ">=2.0.0, <3"
 tqdm = "^4.67.0"
 ukrdc-sqla = ">=4.0.0, <5"
@@ -4264,7 +4264,7 @@ ukrdc-sqla = ">=4.0.0, <5"
 type = "git"
 url = "https://github.com/renalreg/ukrr_quarterly_extract.git"
 reference = "UK-108"
-resolved_reference = "76ad97f8325dc65ecdae0c40cf32b917cf94335d"
+resolved_reference = "8cd1b3b831e3e8a4cc4b39c2d02ff3051c62aaeb"
 
 [[package]]
 name = "urllib3"
