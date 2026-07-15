@@ -259,7 +259,7 @@ jobs:
         # Only publish API client on release
         if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
         working-directory: typescript-axios-client
-        run: npm publish --access public
+        run: npm publish --access public --tag beta
 
       - name: Build client documentation
         working-directory: typescript-axios-client
