@@ -5,7 +5,6 @@ from fastapi import APIRouter, Depends
 from fastapi import Query as QueryParam
 from fastapi import Security
 from mirth_client import MirthAPI
-from pydantic.fields import Field
 from redis import Redis
 from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import WorkItem
@@ -31,22 +30,13 @@ from ukrdc_fastapi.query.workitems import (
     select_workitem_collection,
     select_workitems_related_to_workitem,
 )
-from ukrdc_fastapi.schemas.base import JSONModel
 from ukrdc_fastapi.schemas.empi import WorkItemExtendedSchema, WorkItemSchema
 from ukrdc_fastapi.schemas.message import MessageSchema
+from ukrdc_fastapi.schemas.requests import CloseWorkItemRequest, UpdateWorkItemRequest
 from ukrdc_fastapi.utils.mirth import MirthMessageResponseSchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
 
 router = APIRouter()
-
-
-class CloseWorkItemRequest(JSONModel):
-    comment: Optional[str] = Field(None, max_length=100)
-
-
-class UpdateWorkItemRequest(JSONModel):
-    status: Optional[int] = None
-    comment: Optional[str] = Field(None, max_length=100)
 
 
 def _get_workitem(

@@ -26,6 +26,7 @@ from ukrdc_fastapi.query.facilities import (
     get_facilities,
     get_facility,
     get_facility_extracts,
+    all_feedshare,
 )
 from ukrdc_fastapi.query.facilities.errors import (
     get_errors_history,
@@ -37,7 +38,6 @@ from ukrdc_fastapi.sorters import ERROR_SORTER
 from ukrdc_fastapi.utils.cache import ResponseCache
 from ukrdc_fastapi.utils.paginate import Page, paginate
 from ukrdc_fastapi.utils.sort import ObjectSorter, SQLASorter, make_object_sorter
-
 from . import reports, stats
 
 router = APIRouter(tags=["Facilities"])
@@ -79,6 +79,31 @@ def facility_list(
     facilities = apply_facility_list_permissions(facilities, user)
 
     return sorter.sort(facilities)
+
+
+@router.get("/feedshare", response_model=dict[str, list[str]])
+def facility_feedshare(
+    ukrdc3: Session = Depends(get_ukrdc3),
+    user: UKRDCUser = Security(auth.get_user()),
+    cache: ResponseCache = Depends(
+        facility_cache_factory(FacilityCachePrefix.FEEDSHARE)
+    ),
+):
+    """Retreive all feedshare facility groupings, keyed by parent facility code.
+
+    Feedshare relationships change very rarely, so this is cached for 1 hour
+    rather than recomputed on every request.
+    """
+    # If no cached value exists, or the cached value has expired
+    if not cache.exists:
+        # Cache the computed mapping, and expire after 1 hour
+        cache.set(all_feedshare(ukrdc3), expire=3600)
+
+    # Add response cache headers to the response
+    cache.prepare_response()
+
+    # Fetch the cached value and return
+    return cache.get()
 
 
 @router.get("/{code}", response_model=FacilityDetailsSchema)

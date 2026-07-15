@@ -23,7 +23,7 @@ def _custom_generate_unique_id(route: APIRoute):
     """
     operation_id = route.name
     operation_id = re.sub("[^0-9a-zA-Z_]", "_", operation_id)
-    operation_id = list(route.methods)[0].lower() + "_" + operation_id
+    operation_id = list(route.methods)[0].lower() + "_" + operation_id  # type: ignore
     return operation_id
 
 

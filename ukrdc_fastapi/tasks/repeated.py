@@ -47,7 +47,7 @@ async def update_channel_id_name_map() -> None:
     async def innerfunc():
         async with mirth_session() as mirth:
             channel_map = await _run_in_threadpool(get_channel_map, mirth, get_redis())
-            MessageSchema.channel_id_name_map = channel_map
+            MessageSchema._channel_id_name_map = channel_map
 
     task = get_root_task_tracker().create(innerfunc, name="Update Mirth Channel Map")
     return await task.tracked()

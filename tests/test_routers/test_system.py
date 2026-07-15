@@ -32,7 +32,7 @@ async def test_read_system_user_preferences(client_superuser):
         f"{configuration.base_url}/system/user/preferences"
     )
     # In the absence of any manually-set preferences, ensure we get default values back
-    assert UserPreferences(**response.json()) == UserPreferences().dict()
+    assert UserPreferences(**response.json()) == UserPreferences()
 
 
 async def test_update_system_user_preferences_placeholder(client_superuser):

@@ -109,12 +109,12 @@ class TreatmentSchema(OrmModel):
     # actioncode: Currently unused
 
     # Attributes
-    hdp01: Optional[str]
-    hdp02: Optional[str]
-    hdp03: Optional[str]
-    hdp04: Optional[str]
-    qbl05: Optional[str]
-    qbl06: Optional[str]
-    qbl07: Optional[str]
-    erf61: Optional[str]
-    pat35: Optional[str]
+    hdp01: Optional[str] = None
+    hdp02: Optional[str] = None
+    hdp03: Optional[str] = None
+    hdp04: Optional[str] = None
+    qbl05: Optional[str] = None
+    qbl06: Optional[str] = None
+    qbl07: Optional[str] = None
+    erf61: Optional[str] = None
+    pat35: Optional[str] = None

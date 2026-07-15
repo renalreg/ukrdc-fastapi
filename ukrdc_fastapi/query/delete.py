@@ -1,4 +1,5 @@
 import hashlib
+import json
 from dataclasses import dataclass
 from typing import Optional, Any
 
@@ -163,7 +164,10 @@ def _create_delete_patientrecord_summary(
     )
     # we must normalize the pid preview as patientrecord, is dynamically fetched
     normalized = normalize_delete_pid_preview(to_delete_summary)
-    to_delete_json = normalized.json(exclude_unset=True, sort_keys=True)
+    to_delete_json = json.dumps(
+        normalized.model_dump(exclude_unset=True, mode="json"),
+        sort_keys=True,
+    )
 
     # We ignore Bandit warnings here as MD5 is not being used for security purposes
     to_delete_hash = hashlib.md5(to_delete_json.encode()).hexdigest()  # nosec

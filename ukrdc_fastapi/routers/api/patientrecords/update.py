@@ -1,6 +1,3 @@
-import datetime
-from typing import Optional
-
 from fastapi import APIRouter, Depends, Security
 from mirth_client.mirth import MirthAPI
 from redis import Redis
@@ -15,24 +12,11 @@ from ukrdc_fastapi.dependencies.audit import (
 )
 from ukrdc_fastapi.dependencies.auth import Permissions, auth
 from ukrdc_fastapi.query.mirth.rda import update_patient_demographics
-from ukrdc_fastapi.schemas.base import JSONModel
-from ukrdc_fastapi.schemas.patientrecord.patient import (
-    AddressSchema,
-    GenderType,
-    NameSchema,
-)
+from ukrdc_fastapi.schemas.requests import DemographicUpdateRequest
 from ukrdc_fastapi.utils.mirth import MirthMessageResponseSchema
-
 from .dependencies import _get_patientrecord
 
 router = APIRouter(tags=["Patient Records/Update"])
-
-
-class DemographicUpdateRequest(JSONModel):
-    name: Optional[NameSchema]
-    birth_time: Optional[datetime.datetime]
-    gender: Optional[GenderType]
-    address: Optional[AddressSchema]
 
 
 @router.post(

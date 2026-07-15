@@ -49,6 +49,7 @@ class FacilityCachePrefix(CachePrefix):
 
     ROOT = "facilities:root"
     EXTRACTS = "facilities:extracts"
+    FEEDSHARE = "facilities:feedshare"
     DEMOGRAPHICS = "facilities:stats:demographics"
     KRT = "facilities:stats:krt"
 

@@ -2,7 +2,6 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, Security
 from mirth_client.mirth import MirthAPI
-from pydantic.fields import Field
 from redis import Redis
 from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import MasterRecord, Person
@@ -14,27 +13,11 @@ from ukrdc_fastapi.permissions.masterrecords import assert_masterrecord_permissi
 from ukrdc_fastapi.permissions.persons import assert_person_permission
 from ukrdc_fastapi.query.mirth.merge import merge_master_records
 from ukrdc_fastapi.query.mirth.unlink import unlink_person_from_master_record
-from ukrdc_fastapi.schemas.base import JSONModel
 from ukrdc_fastapi.schemas.empi import LinkRecordSchema
+from ukrdc_fastapi.schemas.requests import MergeRequest, UnlinkRequest
 from ukrdc_fastapi.utils.mirth import MirthMessageResponseSchema
 
 router = APIRouter(tags=["Patient Index Operations"])
-
-
-class MergeRequest(JSONModel):
-    superseding: int = Field(..., title="Superseding master-record ID")
-    superseded: int = Field(..., title="Superseded master-record ID")
-
-
-class UnlinkRequest(JSONModel):
-    person_id: int = Field(..., title="ID of the person-record to be unlinked")
-    master_id: int = Field(..., title="ID of the master-record to unlink from")
-    comment: Optional[str] = Field(None, max_length=100)
-
-
-class UnlinkPatientRequest(JSONModel):
-    pid: str = Field(..., title="PID of the patient-record to be unlinked")
-    master_id: int = Field(..., title="ID of the master-record to unlink from")
 
 
 @router.post(

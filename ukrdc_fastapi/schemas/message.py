@@ -1,7 +1,7 @@
 import datetime
-from typing import Optional, ClassVar
+from typing import Optional, ClassVar, Annotated
 
-from pydantic import Field, validator
+from pydantic import Field, field_validator, ValidationInfo, BeforeValidator
 
 from .base import OrmModel
 
@@ -39,20 +39,20 @@ class MinimalMessageSchema(OrmModel):
 class MessageSchema(MinimalMessageSchema):
     """A full representation of a single message"""
 
-    channel_id_name_map: ClassVar[dict[str, str]] = {}
+    _channel_id_name_map: ClassVar[dict[str, str]] = {}
 
     error: Optional[str] = Field(None, description="Error message, if any")
     status: Optional[str] = Field(None, description="Message status code")
 
     # Mirth message
     # Field names are determined by ORM, but we alias to something more useful for the API
-    message_id: str = Field(alias="mirthMessageId", description="Mirth message ID")
+    message_id: Annotated[str, BeforeValidator(str)] = Field(
+        alias="mirthMessageId", description="Mirth message ID"
+    )
     channel_id: str = Field(alias="mirthChannelId", description="Mirth channel ID")
     mirth_channel: Optional[str] = Field(
         None, description="Mirth channel name, if known"
     )
-
-    _channel_id_name_map: dict[str, str]
 
     @classmethod
     def set_channel_id_name_map(cls, cinm: dict[str, str]):
@@ -66,15 +66,16 @@ class MessageSchema(MinimalMessageSchema):
         """
         cls._channel_id_name_map = cinm
 
-    @validator("mirth_channel")
-    def channel_name(cls, _, values):  # pylint: disable=no-self-argument
+    @field_validator("mirth_channel", mode="after")
+    @classmethod
+    def channel_name(cls, _, info: ValidationInfo):
         """
         Dynamically generates the channel name field
         by reading the class Mirth Channel ID-Name map.
         """
         # TODO: Replace with computed_fields once available: https://github.com/samuelcolvin/pydantic/pull/2625
-        if hasattr(cls, "_channel_id_name_map"):
-            channel_id = values.get("channel_id")
+        if cls._channel_id_name_map:
+            channel_id = info.data.get("channel_id")
             if channel_id:
                 return cls._channel_id_name_map.get(channel_id)
         return None

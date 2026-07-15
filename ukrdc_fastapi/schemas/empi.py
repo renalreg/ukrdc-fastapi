@@ -2,7 +2,7 @@ import datetime
 import json
 from typing import Optional, Union
 
-from pydantic import Field, validator
+from pydantic import field_validator, Field
 
 from .base import OrmModel
 
@@ -144,7 +144,8 @@ class WorkItemSchema(OrmModel):
         None, description="Master record"
     )
 
-    @validator("attributes", pre=True)
+    @field_validator("attributes", mode="before")
+    @classmethod
     def normalise_attributes(cls, value: Union[str, dict, WorkItemAttributes]):  # pylint: disable=no-self-argument
         """
         Convert attributes JSON keys into MasterRecord property keys
