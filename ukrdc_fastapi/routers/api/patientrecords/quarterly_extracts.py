@@ -39,6 +39,7 @@ def pid_quarterly_extract(
         centre=[centre],
         quarter=quarter,
     )
+    conf.centre=centre
 
     try:
         results = list(
