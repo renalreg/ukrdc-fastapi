@@ -188,8 +188,10 @@ def facility_extracts(
     # If no cached value exists, or the cached value has expired
     if not cache.exists:
         # Cache a computed value, and expire after 1 hour
-        cache.set(get_facility_extracts(ukrdc3, code), expire=3600)
-
+        try:
+            cache.set(get_facility_extracts(ukrdc3, code), expire=3600)
+        except Exception as e:
+            return e
     # Add response cache headers to the response
     cache.prepare_response()
 
