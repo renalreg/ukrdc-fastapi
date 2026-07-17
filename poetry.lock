@@ -1992,13 +1992,15 @@ psutil = {version = ">=4.0.0", markers = "sys_platform != \"cygwin\""}
 
 [[package]]
 name = "mirth-client"
-version = "4.2.0"
+version = "5.0.0"
 description = "Basic Python interface for Mirth Connect"
 optional = false
-python-versions = "^3.9"
+python-versions = "<4.0,>=3.9"
 groups = ["main"]
-files = []
-develop = false
+files = [
+    {file = "mirth_client-5.0.0-py3-none-any.whl", hash = "sha256:783ac63611b10eff2f2ef425edb169227cabfcc0b01a3909fdaf18136a2c82cb"},
+    {file = "mirth_client-5.0.0.tar.gz", hash = "sha256:330a1b324a14ff9f354c30bbe7538aa862e3e40ab7ecb46f264d3dc3882beb77"},
+]
 
 [package.dependencies]
 httpx = ">=0.23,<0.28.2"
@@ -2009,12 +2011,6 @@ xmltodict = ">=0.12,<1.1"
 
 [package.extras]
 docs = ["Sphinx (>=3.5.3,<8.0.0)", "sphinx-rtd-theme (>=0.5.1,<3.2.0)"]
-
-[package.source]
-type = "git"
-url = "https://github.com/renalreg/python-mirth-client.git"
-reference = "drop-pydantic-v1"
-resolved_reference = "a79e8dd53dd061229115b5549d104b81429b2871"
 
 [[package]]
 name = "multidict"
@@ -4198,28 +4194,24 @@ SQLAlchemy = ">=2.0.0,<3.0.0"
 
 [[package]]
 name = "ukrdc-stats"
-version = "2.13.7"
+version = "2.13.8"
 description = "A package to produce stats from the ukrdc database to be displayed on the dashboard"
 optional = false
-python-versions = "^3.12"
+python-versions = "<4.0,>=3.12"
 groups = ["main"]
-files = []
-develop = false
+files = [
+    {file = "ukrdc_stats-2.13.8-py3-none-any.whl", hash = "sha256:33b454de047397d81e7ef7cb52291682dde9fa7f9292f0b3dfc448dcd5954862"},
+    {file = "ukrdc_stats-2.13.8.tar.gz", hash = "sha256:503ecd8fc8f5dd51a3fab75ab9f7dfea6e0b00a371420acfbbecd8a4c395224c"},
+]
 
 [package.dependencies]
-freezegun = "^1.2.2"
-pandas = "^2.2.2"
-psycopg = {version = "^3.2.11", extras = ["binary"]}
+freezegun = ">=1.2.2,<2.0.0"
+pandas = ">=2.2.2,<3.0.0"
+psycopg = {version = ">=3.2.11,<4.0.0", extras = ["binary"]}
 pydantic = ">=2.0.0,<3"
-setuptools = "^75.8.0"
-SQLAlchemy = "^2.0.0"
-ukrdc-sqla = "^4.0.0"
-
-[package.source]
-type = "git"
-url = "https://github.com/renalreg/dashboard-stats.git"
-reference = "pydantic-2"
-resolved_reference = "050251d808caceb89b33cc98e20cc5554418db2b"
+setuptools = ">=75.8.0,<76.0.0"
+SQLAlchemy = ">=2.0.0,<3.0.0"
+ukrdc-sqla = ">=4.0.0,<5.0.0"
 
 [[package]]
 name = "ukrdc-xsdata"
@@ -4237,7 +4229,7 @@ xsdata = "*"
 
 [[package]]
 name = "ukrr-extract"
-version = "3.6.0"
+version = "3.7.0"
 description = "Utility to produce quarterly data files to be loaded into the renalreg database."
 optional = false
 python-versions = ">=3.10,<4.0"
@@ -4263,8 +4255,8 @@ ukrdc-sqla = ">=4.0.0, <5"
 [package.source]
 type = "git"
 url = "https://github.com/renalreg/ukrr_quarterly_extract.git"
-reference = "UK-108"
-resolved_reference = "8cd1b3b831e3e8a4cc4b39c2d02ff3051c62aaeb"
+reference = "v3.7.0"
+resolved_reference = "e9b987fe0af27c187fd7ab8b24f020cf1e226943"
 
 [[package]]
 name = "urllib3"
@@ -4480,4 +4472,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<4.0"
-content-hash = "053bd81ebae44e72572d5484d72da84ac1723e8b8eca8af64d7e708a7d9bb103"
+content-hash = "eace17f3341f0a07b63c6f40299cf9d0727b71871e75d89cbaa5dedb5eef1404"
