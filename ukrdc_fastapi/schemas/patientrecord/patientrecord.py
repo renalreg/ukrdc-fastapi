@@ -156,14 +156,14 @@ class DialysisSessionSchema(OrmModel):
     )
 
     # Session data
-    qhd19: Optional[str]
-    qhd20: Optional[str]
-    qhd21: Optional[str]
-    qhd22: Optional[str]
-    qhd30: Optional[str]
-    qhd31: Optional[str]
-    qhd32: Optional[str]
-    qhd33: Optional[str]
+    qhd19: Optional[str] = None
+    qhd20: Optional[str] = None
+    qhd21: Optional[str] = None
+    qhd22: Optional[str] = None
+    qhd30: Optional[str] = None
+    qhd31: Optional[str] = None
+    qhd32: Optional[str] = None
+    qhd33: Optional[str] = None
 
     # updatedon: Currently unused
     # actioncode: Currently unused

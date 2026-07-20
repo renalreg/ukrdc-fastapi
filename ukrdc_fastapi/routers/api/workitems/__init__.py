@@ -24,7 +24,7 @@ router.include_router(workitem_id.router)
 class UnlinkWorkItemRequestSchema(BaseModel):
     master_record: str = Field(..., title="Master record ID")
     person_id: str = Field(..., title="Person ID")
-    comment: Optional[str]
+    comment: Optional[str] = None
 
 
 @router.get(

@@ -1,7 +1,7 @@
 import datetime
-from typing import Optional
+from typing import Optional, Annotated
 
-from pydantic import Field
+from pydantic import Field, BeforeValidator
 
 from ..base import OrmModel
 
@@ -18,7 +18,9 @@ class MedicationSchema(OrmModel):
 
     drug_product_generic: str = Field(..., description="Generic name of the medication")
 
-    dosequantity: Optional[str] = Field(None, description="Dose quantity")
+    dosequantity: Annotated[
+        Optional[str], BeforeValidator(lambda v: str(v) if v is not None else v)
+    ] = Field(None, description="...")
     doseuomcode: Optional[str] = Field(
         None, description="Dose unit of measurement code"
     )

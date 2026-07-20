@@ -1,4 +1,4 @@
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, ConfigDict, field_validator
 from sqlalchemy.orm import Query
 
 
@@ -8,15 +8,17 @@ def _to_camel(snake_str: str) -> str:
 
 
 class JSONModel(BaseModel):
-    class Config:
-        orm_mode = True
-        alias_generator = _to_camel
-        allow_population_by_field_name = True
+    model_config = ConfigDict(
+        from_attributes=True,
+        alias_generator=_to_camel,
+        populate_by_name=True,
+    )
 
 
+# noinspection PyMethodParameters
 class OrmModel(JSONModel):
-    @validator("*", pre=True)
-    def evaluate_lazy_columns(cls, value):  # pylint: disable=no-self-argument
+    @field_validator("*", mode="before")
+    def evaluate_lazy_columns(cls, value):
         """
         Find field values with Query type and evaluate to actual data.
 

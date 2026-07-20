@@ -56,7 +56,15 @@ from ukrdc_fastapi.sorters import AUDIT_SORTER, ERROR_SORTER
 from ukrdc_fastapi.utils.paginate import Page, paginate
 from ukrdc_fastapi.utils.sort import SQLASorter, make_sqla_sorter
 
-from . import diagnoses, documents, export, laborders, results, update
+from . import (
+    diagnoses,
+    documents,
+    export,
+    laborders,
+    results,
+    update,
+    quarterly_extracts,
+)
 from .dependencies import _get_patientrecord
 
 router = APIRouter(tags=["Patient Records"])
@@ -66,6 +74,8 @@ router.include_router(results.router, prefix="/{pid}/results")
 router.include_router(laborders.router, prefix="/{pid}/laborders")
 router.include_router(documents.router, prefix="/{pid}/documents")
 router.include_router(diagnoses.router, prefix="/{pid}/diagnoses")
+
+router.include_router(quarterly_extracts.router, prefix="/{pid}/quarterly_extract")
 
 
 # Self-resources

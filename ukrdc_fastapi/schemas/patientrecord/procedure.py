@@ -66,42 +66,42 @@ class ProcedureSchema(OrmModel):
 
 class DialysisSessionSchema(ProcedureSchema):
     # Session data
-    qhd19: Optional[str]
-    qhd20: Optional[str]
-    qhd21: Optional[str]
-    qhd22: Optional[str]
-    qhd30: Optional[str]
-    qhd31: Optional[str]
-    qhd32: Optional[str]
-    qhd33: Optional[str]
+    qhd19: Optional[str] = None
+    qhd20: Optional[str] = None
+    qhd21: Optional[str] = None
+    qhd22: Optional[str] = None
+    qhd30: Optional[str] = None
+    qhd31: Optional[str] = None
+    qhd32: Optional[str] = None
+    qhd33: Optional[str] = None
 
 
 class TransplantSchema(ProcedureSchema):
-    tra64: Optional[datetime.datetime]
-    tra65: Optional[str]
-    tra66: Optional[str]
-    tra69: Optional[datetime.datetime]
-    tra76: Optional[str]
-    tra77: Optional[str]
-    tra78: Optional[str]
-    tra79: Optional[str]
-    tra80: Optional[str]
-    tra8a: Optional[str]
-    tra81: Optional[str]
-    tra82: Optional[str]
-    tra83: Optional[str]
-    tra84: Optional[str]
-    tra85: Optional[str]
-    tra86: Optional[str]
-    tra87: Optional[str]
-    tra88: Optional[str]
-    tra89: Optional[str]
-    tra90: Optional[str]
-    tra91: Optional[str]
-    tra92: Optional[str]
-    tra93: Optional[str]
-    tra94: Optional[str]
-    tra95: Optional[str]
-    tra96: Optional[str]
-    tra97: Optional[str]
-    tra98: Optional[str]
+    tra64: Optional[datetime.datetime] = None
+    tra65: Optional[str] = None
+    tra66: Optional[str] = None
+    tra69: Optional[datetime.datetime] = None
+    tra76: Optional[str] = None
+    tra77: Optional[str] = None
+    tra78: Optional[str] = None
+    tra79: Optional[str] = None
+    tra80: Optional[str] = None
+    tra8a: Optional[str] = None
+    tra81: Optional[str] = None
+    tra82: Optional[str] = None
+    tra83: Optional[str] = None
+    tra84: Optional[str] = None
+    tra85: Optional[str] = None
+    tra86: Optional[str] = None
+    tra87: Optional[str] = None
+    tra88: Optional[str] = None
+    tra89: Optional[str] = None
+    tra90: Optional[str] = None
+    tra91: Optional[str] = None
+    tra92: Optional[str] = None
+    tra93: Optional[str] = None
+    tra94: Optional[str] = None
+    tra95: Optional[str] = None
+    tra96: Optional[str] = None
+    tra97: Optional[str] = None
+    tra98: Optional[str] = None

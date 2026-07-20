@@ -7,7 +7,7 @@ def test_get_user_preferences_defaults(users_session, superuser):
     prefs = get_user_preferences(users_session, superuser)
 
     # In the absence of any manually-set preferences, ensure we get default values back
-    assert prefs == UserPreferences().dict()
+    assert prefs == UserPreferences()
 
 
 def test_get_user_preferences_ignores(users_session, superuser):
@@ -16,7 +16,7 @@ def test_get_user_preferences_ignores(users_session, superuser):
 
     # Ensure the nonexistent preference just gets ignored
     prefs = get_user_preferences(users_session, superuser)
-    assert prefs == UserPreferences().dict()
+    assert prefs == UserPreferences()
 
 
 def test_update_user_preferences_placeholder(users_session, superuser):

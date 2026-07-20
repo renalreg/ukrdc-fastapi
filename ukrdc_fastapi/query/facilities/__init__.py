@@ -5,7 +5,8 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.selectable import Select
 from ukrdc_sqla.errorsdb import Latest, Message
-from ukrdc_sqla.ukrdc import Code, Facility, PatientRecord
+from ukrdc_sqla.ukrdc import Code, Facility, PatientRecord, FacilityRelationship
+from ukrdc_sqla.utils.constants import RelationshipType
 
 from ukrdc_fastapi.config import settings
 from ukrdc_fastapi.exceptions import MissingFacilityError
@@ -312,3 +313,30 @@ def get_facilities(
         ]
 
     return facilities
+
+
+def all_feedshare(ukrdc3: Session) -> dict[str, list[str]]:
+    """Get all feedshare facility relationships, grouped by parent facility code.
+
+    Args:
+        ukrdc3 (Session): SQLAlchemy session
+
+    Returns:
+        dict[str, list[str]]: Mapping of parent facility code to a list of
+            child facility codes that share the same feed, e.g.
+            {"X": ["child1", "child2"], "Y": ["child3", "child1"]}
+    """
+    stmt = select(
+        FacilityRelationship.parentfacilitycode,
+        FacilityRelationship.childfacilitycode,
+    ).where(
+        FacilityRelationship.relationshiptype == RelationshipType.feedshare,
+    )
+
+    rows = ukrdc3.execute(stmt).all()
+
+    feedshare_map: dict[str, list[str]] = {}
+    for parent_code, child_code in rows:
+        feedshare_map.setdefault(parent_code, []).append(child_code)
+
+    return feedshare_map

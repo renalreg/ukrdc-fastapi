@@ -9,24 +9,27 @@ version = "6.6.1"
 python = ">=3.12,<4.0"
 SQLAlchemy = { version = ">=2.0,<3" }
 cryptography = ">=49.0.0" # Needed to get round this issue https://github.com/okta/okta-jwt-verifier-python/issues/72
-fastapi = "^0.125.0"
-fastapi-pagination = { extras = ["sqlalchemy"], version = "^ 0.15.12" } # pydantic v1 support drops on 0.16
+fastapi = "^0.139.0"
+fastapi-pagination = { extras = ["sqlalchemy"], version = "^ 0.15.15" } # pydantic v1 support drops on 0.16
 httpx = ">=0.23,<0.28.1"
 matplotlib = "3.11.0"
 okta-jwt-verifier = "^0.5.0"
 psycopg2-binary = "^2.9.12" # Needed for postgres
-pydantic = { extras = ["dotenv"], version = "^1.10.22" }
+pydantic = "^2.0.0"
+pydantic-settings = "^2.0.0"
 python-dateutil = "^2.9.0"
 python-stdnum = "^2.2"
 redis = ">=7.4,<9.0"
 sentry-sdk = { extras = ["fastapi"], version = "^2.58.0" }
 single-source = "^0.4.0"
 uvicorn = ">=0.5,<0.60"
-mirth-client = "^4.2.0"
-ukrdc-stats = "^2.11.0"
+mirth-client = "5.0.0"
+ukrdc-stats = "^2.13.8"
 ukrdc-xsdata = "^4.2.0"
 ukrdc-sqla = "^4.2.1"
 requests = "^2.34.2" # okta-jwt-verifier needs this until a bug is fixed on their end
+ukrr-extract = {git="https://github.com/renalreg/ukrr_quarterly_extract.git",rev="v3.7.0"}
+psycopg2 = "^2.9.12"
 
 [tool.poetry.group.dev.dependencies]
 bandit = "^1.8.3"

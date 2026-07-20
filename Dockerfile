@@ -1,4 +1,4 @@
-FROM python:3.12-slim-bookworm
+FROM python:3.12
 
 ARG GITHUB_SHA
 ARG GITHUB_REF
@@ -14,9 +14,25 @@ ENV PYTHONUNBUFFERED=1 \
 
 # Required to build some wheels on newer Python versions
 RUN apt update && \
-    apt install -y --no-install-recommends build-essential libpq-dev libpq-dev postgresql postgresql-contrib && \
+    apt install -y --no-install-recommends build-essential libpq-dev libpq-dev postgresql postgresql-contrib git && \
     useradd -m appuser && mkdir -p /tmp/pgdata && chown appuser:appuser /tmp/pgdata && \
-    rm -rf /var/lib/apt/lists/* 
+    rm -rf /var/lib/apt/lists/*
+
+# SSH setup for private Git deps
+RUN mkdir -p /home/appuser/.ssh && \
+    ssh-keyscan github.com >> /home/appuser/.ssh/known_hosts && \
+    chown -R appuser:appuser /home/appuser/.ssh
+
+RUN --mount=type=secret,id=ssh_private_key,uid=1000 \
+    cp /run/secrets/ssh_private_key /home/appuser/.ssh/id_rsa && \
+    chmod 600 /home/appuser/.ssh/id_rsa && \
+    chown appuser:appuser /home/appuser/.ssh/id_rsa
+
+# System-level config applies regardless of which user runs git later
+RUN git config --system url."git@github.com:".insteadOf "https://github.com/"
+
+# Force poetry to use system git instead of dulwich for VCS deps
+ENV POETRY_EXPERIMENTAL_SYSTEM_GIT_CLIENT=true
 
 WORKDIR /app
 
@@ -27,6 +43,7 @@ COPY . ./
 RUN chown -R appuser:appuser /app
 
 USER appuser
+ENV HOME=/home/appuser
 
 RUN poetry install --with dev --no-interaction
 
