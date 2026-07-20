@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.7.2](https://github.com/renalreg/ukrdc-fastapi/compare/v6.7.1...v6.7.2) (2026-07-20)
+
+
+### Bug Fixes
+
+* **docker:** fixed docker ([23fc9e9](https://github.com/renalreg/ukrdc-fastapi/commit/23fc9e9ae26c1d7ea4d435288912619aa3097376))
+
 ## [6.7.1](https://github.com/renalreg/ukrdc-fastapi/compare/v6.7.0...v6.7.1) (2026-07-20)
 
 
