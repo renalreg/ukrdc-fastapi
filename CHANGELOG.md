@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.7.1](https://github.com/renalreg/ukrdc-fastapi/compare/v6.7.0...v6.7.1) (2026-07-20)
+
+
+### Bug Fixes
+
+* **yml:** fixed yml ([f6547c9](https://github.com/renalreg/ukrdc-fastapi/commit/f6547c9e778f38aced34a02f5f1234fcee1394cc))
+
 ## [6.7.0](https://github.com/renalreg/ukrdc-fastapi/compare/v6.6.1...v6.7.0) (2026-07-20)
 
 
