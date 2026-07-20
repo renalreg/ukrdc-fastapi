@@ -114,6 +114,14 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Generate a token
+        id: generate-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.AL_APP_ID }}
+          private-key: ${{ secrets.AL_APP_KEY }}
+          owner: renalreg
+
       - name: Build and push
         uses: docker/build-push-action@v7
         with:
@@ -122,6 +130,8 @@ jobs:
             GITHUB_SHA=${{ github.sha }}
             GITHUB_REF=${{ github.ref }}
             SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+          secrets: |
+            GIT_AUTH_TOKEN=${{ steps.generate-token.outputs.token }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
