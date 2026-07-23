@@ -1,0 +1,58 @@
+FROM python:3.12
+
+ARG GITHUB_SHA
+ARG GITHUB_REF
+ARG SENTRY_DSN
+
+ENV PYTHONUNBUFFERED=1 \
+    POETRY_VIRTUALENVS_IN_PROJECT=true \
+    POETRY_NO_INTERACTION=1 \
+    POETRY_VERSION=1.1.11 \
+    GITHUB_SHA=$GITHUB_SHA \
+    GITHUB_REF=$GITHUB_REF \
+    SENTRY_DSN=$SENTRY_DSN
+
+# Required to build some wheels on newer Python versions
+RUN apt update && \
+    apt install -y --no-install-recommends build-essential libpq-dev libpq-dev postgresql postgresql-contrib git && \
+    useradd -m appuser && mkdir -p /tmp/pgdata && chown appuser:appuser /tmp/pgdata && \
+    rm -rf /var/lib/apt/lists/*
+
+# Force poetry to use system git instead of dulwich for VCS deps
+ENV POETRY_EXPERIMENTAL_SYSTEM_GIT_CLIENT=true
+
+WORKDIR /app
+
+RUN python -m pip install -U pip wheel && pip install poetry
+
+
+
+# Create the SSH directory and add github.com to known hosts
+RUN mkdir -p /root/.ssh && ssh-keyscan github.com >> /root/.ssh/known_hosts
+
+# Add our SSH private key for installing Git dependencies
+# Using Docker BuildKit secret mount
+RUN --mount=type=secret,id=ssh_private_key \
+    cat /run/secrets/ssh_private_key >> /root/.ssh/id_rsa
+
+# Add newline and fix permissions
+RUN sed -i '$a\' /root/.ssh/id_rsa && chmod 600 /root/.ssh/id_rsa
+
+
+# Configure HTTPS token auth, run poetry install, then remove the token from
+# git config -- all within one RUN so the token never lands in a committed
+# image layer. --mount=type=secret only keeps it out of build cache/history;
+# it does NOT stop it from persisting if we wrote it to a file in an earlier,
+# separate RUN step.
+RUN git config --global url."git@github.com:".insteadOf "https://github.com/"
+
+COPY . ./
+
+RUN poetry install --with dev --no-interaction;
+
+RUN chown -R appuser:appuser /app
+
+USER appuser
+ENV HOME=/home/appuser
+
+CMD ["poetry", "run", "uvicorn", "ukrdc_fastapi.main:app", "--host", "0.0.0.0", "--port", "8000"]
