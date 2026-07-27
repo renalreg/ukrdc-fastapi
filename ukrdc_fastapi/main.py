@@ -9,10 +9,17 @@ from fastapi_pagination import add_pagination
 
 from ukrdc_fastapi.config import configuration, settings
 from ukrdc_fastapi.dependencies.auth import auth, Permissions
+from ukrdc_fastapi.dependencies.logging import (
+    configure_logging,
+    RequestLoggingMiddleware,
+)
 from ukrdc_fastapi.dependencies.sentry import add_sentry
 from ukrdc_fastapi.exceptions import ResourceNotFoundError
 from ukrdc_fastapi.routers import api
 from ukrdc_fastapi.tasks import repeated, startup
+
+# Set up logging before anything else so startup/lifespan logs use it too
+configure_logging()
 
 
 # Create app
@@ -80,6 +87,7 @@ if settings.disable_auth:
 
 
 # Add middlewares
+app.add_middleware(RequestLoggingMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.allow_origins,
@@ -104,4 +112,4 @@ async def http_exception_handler(_, exc):
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host="127.0.0.1", port=8000, log_config=None)

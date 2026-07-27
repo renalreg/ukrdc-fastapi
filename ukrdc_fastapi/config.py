@@ -32,6 +32,10 @@ class Settings(BaseSettings):
     # Optional debug mode
     debug: bool = False
 
+    # Logging levels (app logger defaults to DEBUG when `debug` is set)
+    log_level: str = "INFO"
+    access_log_level: str = "INFO"
+
     # Optional disable Oauth for local development
     disable_auth: bool = False
 
