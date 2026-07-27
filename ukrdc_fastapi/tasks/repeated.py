@@ -25,6 +25,7 @@ from .utils import repeat_every
 task_executor = ThreadPoolExecutor(
     max_workers=settings.background_threads, thread_name_prefix="bg_task_"
 )
+logger = logging.getLogger(__name__)
 
 
 async def _run_in_threadpool(sync_func, *args):
@@ -148,6 +149,6 @@ def _calculate_stats_sync() -> Dict[str, Dict[str, Any]]:
                         "end": end_date.strftime("%Y-%m-%d"),
                     }
                 except MissingFacilityError as e:
-                    logging.error(f"Stats failed for {facility}: {e}")
+                    logger.error(f"Stats failed for {facility}: {e}")
 
     return results

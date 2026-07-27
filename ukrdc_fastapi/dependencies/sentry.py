@@ -17,6 +17,8 @@ from ukrdc_fastapi.exceptions import (
     ResourceNotFoundError,
 )
 
+logger = logging.getLogger(__name__)
+
 
 def add_sentry(app: FastAPI):
     """Configure and initialise the Sentry API, if a DSN is available
@@ -25,7 +27,7 @@ def add_sentry(app: FastAPI):
         app (FastAPI): App to attach Sentry to
     """
     if configuration.sentry_dsn:
-        logging.warning("Sentry reporting is enabled")
+        logger.warning("Sentry reporting is enabled")
         sentry_sdk.init(  # pylint: disable=abstract-class-instantiated
             dsn=configuration.sentry_dsn,
             integrations=[
@@ -48,4 +50,4 @@ def add_sentry(app: FastAPI):
         )
         app.add_middleware(SentryAsgiMiddleware)
     else:
-        logging.warning("No Sentry DSN found. Sentry reporting disabled.")
+        logger.warning("No Sentry DSN found. Sentry reporting disabled.")
