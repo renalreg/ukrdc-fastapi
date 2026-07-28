@@ -63,8 +63,8 @@ def parse_date(date_string: str | None) -> datetime.datetime | None:
 
 
 def daterange(
-    start_date: Union[datetime.date, datetime.datetime],
-    end_date: Union[datetime.date, datetime.datetime],
+    start_date: datetime.date | datetime.datetime,
+    end_date: datetime.date | datetime.datetime,
 ) -> Generator[datetime.date, None, None]:
     """
     Generate a range of dates between two dates, separated by one day

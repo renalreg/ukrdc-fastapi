@@ -210,7 +210,7 @@ def records_from_full_name(
 
 
 def records_from_dob(
-    ukrdc3: Session, dobs: Iterable[Union[str, datetime.date]]
+    ukrdc3: Session, dobs: Iterable[str | datetime.date]
 ) -> Sequence[PatientRecord]:
     """Finds Ids from date of birth"""
     conditions = [Patient.birth_time == dob for dob in dobs]

@@ -37,7 +37,7 @@ from starlette.concurrency import run_in_threadpool
 NoArgsNoReturnFuncT = Callable[[], None]
 NoArgsNoReturnAsyncFuncT = Callable[[], Coroutine[Any, Any, None]]
 NoArgsNoReturnDecorator = Callable[
-    [Union[NoArgsNoReturnFuncT, NoArgsNoReturnAsyncFuncT]], NoArgsNoReturnAsyncFuncT
+    [NoArgsNoReturnFuncT | NoArgsNoReturnAsyncFuncT], NoArgsNoReturnAsyncFuncT
 ]
 
 
@@ -74,7 +74,7 @@ def repeat_every(
     """
 
     def decorator(
-        func: Union[NoArgsNoReturnAsyncFuncT, NoArgsNoReturnFuncT],
+        func: NoArgsNoReturnAsyncFuncT | NoArgsNoReturnFuncT,
     ) -> NoArgsNoReturnAsyncFuncT:
         """
         Converts the decorated function into a repeated, periodically-called version of itself.

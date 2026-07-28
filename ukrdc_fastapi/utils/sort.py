@@ -30,10 +30,10 @@ class OrderBy(str, enum.Enum):
 class SQLASorter:
     def __init__(
         self,
-        column_map: dict[str, Union[Column, InstrumentedAttribute]],
+        column_map: dict[str, Column | InstrumentedAttribute],
         sort_by: enum.Enum | None = None,
         order_by: OrderBy | None = None,
-        default_sort_by: Union[Column, InstrumentedAttribute] | None = None,
+        default_sort_by: Column | InstrumentedAttribute | None = None,
         default_order_by: OrderBy = OrderBy.DESC,
     ) -> None:
         self.column_map = column_map
@@ -42,7 +42,7 @@ class SQLASorter:
         self.default_sort_by = default_sort_by
         self.default_order_by = default_order_by
 
-    def sort(self, query: Union[Query, Select]):
+    def sort(self, query: Query | Select):
         """Sort an SQLAlchemy query by the paremeters obtained from FastAPI
 
         Args:
@@ -51,7 +51,7 @@ class SQLASorter:
         Returns:
             query (sqlalchemy.orm.Query): Sorted query
         """
-        sort_column: Union[Column, InstrumentedAttribute] | None
+        sort_column: Column | InstrumentedAttribute | None
         if self.sort_by:
             sort_column = self.column_map.get(self.sort_by.value)
             if not sort_column:
@@ -75,7 +75,7 @@ class SQLASorter:
         return query.order_by(sort_func())
 
 
-def _make_sorter_enum_name(columns: list[Union[Column, str]]) -> str:
+def _make_sorter_enum_name(columns: list[Column | str]) -> str:
     modelnames = set()
     for col in columns:
         cls = str(col).split(".", maxsplit=1)[0]
@@ -84,8 +84,8 @@ def _make_sorter_enum_name(columns: list[Union[Column, str]]) -> str:
 
 
 def make_sqla_sorter(
-    columns: list[Union[Column, InstrumentedAttribute]],
-    default_sort_by: Union[Column, InstrumentedAttribute] | None = None,
+    columns: list[Column | InstrumentedAttribute],
+    default_sort_by: Column | InstrumentedAttribute | None = None,
     default_order_by: OrderBy = OrderBy.DESC,
 ):
     """Generate a sorter FastAPI dependency function
@@ -98,7 +98,7 @@ def make_sqla_sorter(
     Returns:
         [function]: FastAPI dependency function returning a SQLASorter instance
     """
-    column_map: dict[str, Union[Column, InstrumentedAttribute]] = {
+    column_map: dict[str, Column | InstrumentedAttribute] = {
         col.key: col for col in columns if col.key
     }
     sort_enum = enum.Enum(  # type: ignore

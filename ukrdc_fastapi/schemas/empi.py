@@ -144,7 +144,7 @@ class WorkItemSchema(OrmModel):
 
     @field_validator("attributes", mode="before")
     @classmethod
-    def normalise_attributes(cls, value: Union[str, dict, WorkItemAttributes]):  # pylint: disable=no-self-argument
+    def normalise_attributes(cls, value: str | dict | WorkItemAttributes):  # pylint: disable=no-self-argument
         """
         Convert attributes JSON keys into MasterRecord property keys
         """

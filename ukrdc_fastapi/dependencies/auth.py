@@ -143,7 +143,7 @@ class URKDCAuth:
 
         return get_user_dependency
 
-    def permission(self, permission: Union[str, Sequence[str]]) -> Callable:
+    def permission(self, permission: str | Sequence[str]) -> Callable:
         """
         Dependency factory to check for the presence of a permission or set of permissions.
         Permissions are obtained from the token key set by self.permission_key, since this is

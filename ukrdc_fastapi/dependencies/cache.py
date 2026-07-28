@@ -14,7 +14,7 @@ from ukrdc_fastapi.utils.cache import (
 )
 
 
-def cache_factory(cachekey: Union[CacheKey, DynamicCacheKey]):
+def cache_factory(cachekey: CacheKey | DynamicCacheKey):
     """
     Build a cache dependency function. The returned function
     can be used as a FastAPI dependency.

@@ -111,7 +111,7 @@ class Auditer:
     def add_event(
         self,
         resource: Resource,
-        resource_id: Union[str, int] | None,
+        resource_id: str | int | None,
         operation: AuditOperation | None,
         parent: AuditEvent | None = None,
     ) -> AuditEvent:
@@ -141,7 +141,7 @@ class Auditer:
 
     def add_workitem(
         self,
-        workitem: Union[WorkItem, WorkItemSchema, WorkItemExtendedSchema],
+        workitem: WorkItem | WorkItemSchema | WorkItemExtendedSchema,
         parent: AuditEvent | None = None,
     ) -> AuditEvent:
         """Add a WorkItem and all of its child Person and Master Records to the audit database

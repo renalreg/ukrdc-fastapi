@@ -103,7 +103,7 @@ class BasicCache:
     def __init__(
         self,
         redis: Redis,
-        key: Union[CacheKey, DynamicCacheKey],
+        key: CacheKey | DynamicCacheKey,
         encoder: type[json.JSONEncoder] = JsonEncoder,
         prefix: str = "response-cache:",
     ) -> None:
@@ -180,7 +180,7 @@ class ResponseCache(BasicCache):
     def __init__(
         self,
         redis: Redis,
-        key: Union[CacheKey, DynamicCacheKey],
+        key: CacheKey | DynamicCacheKey,
         request: Request,
         response: Response,
         encoder: type[json.JSONEncoder] = JsonEncoder,
