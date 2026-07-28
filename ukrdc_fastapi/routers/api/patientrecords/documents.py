@@ -18,7 +18,7 @@ from ukrdc_fastapi.schemas.patientrecord.documents import (
     DocumentSummarySchema,
 )
 from ukrdc_fastapi.utils.paginate import Page, paginate
-from ukrdc_fastapi.utils.sort import SQLASorter, make_sqla_sorter
+from ukrdc_fastapi.utils.sort import SQLASorter
 
 from .dependencies import _get_patientrecord
 

@@ -1,5 +1,4 @@
 import datetime
-from typing import Optional
 
 from mirth_client import MirthAPI
 from mirth_client.models import ConnectorMessageData, ConnectorMessageModel

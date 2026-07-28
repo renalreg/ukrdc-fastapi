@@ -1,5 +1,5 @@
 import datetime
-from typing import List, Optional
+from typing import List
 
 from pydantic.fields import Field
 from sqlalchemy.orm.session import Session

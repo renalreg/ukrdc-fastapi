@@ -1,6 +1,6 @@
 import json
 from enum import Enum
-from typing import Any, Optional, Type, Union
+from typing import Any, Type, Union
 
 from redis import Redis
 from starlette.requests import Request

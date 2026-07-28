@@ -1,7 +1,7 @@
 import hashlib
 import json
 from dataclasses import dataclass
-from typing import Optional, Any
+from typing import Any
 
 from fastapi.exceptions import HTTPException
 from pydantic import BaseModel

@@ -1,5 +1,3 @@
-from typing import Optional
-
 from mirth_client.mirth import MirthAPI
 from redis import Redis
 from ukrdc_sqla.empi import WorkItem

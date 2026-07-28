@@ -1,5 +1,3 @@
-from typing import Optional
-
 from fastapi import APIRouter, Depends, HTTPException, Security
 from mirth_client import MirthAPI
 from mirth_client.models import ChannelMessageModel

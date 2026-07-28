@@ -1,5 +1,5 @@
 import datetime
-from typing import Optional, Annotated
+from typing import Annotated
 
 from pydantic import Field, BeforeValidator
 

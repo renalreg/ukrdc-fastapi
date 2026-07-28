@@ -1,5 +1,4 @@
 import datetime
-from typing import Optional
 
 from sqlalchemy import and_, not_, or_, select
 from sqlalchemy.sql.selectable import Select

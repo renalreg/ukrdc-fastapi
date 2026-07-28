@@ -1,5 +1,4 @@
 import asyncio
-from typing import Optional
 from uuid import UUID
 
 from mirth_client import Channel, MirthAPI

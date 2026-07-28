@@ -1,5 +1,3 @@
-from typing import Optional
-
 from redis import Redis
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session

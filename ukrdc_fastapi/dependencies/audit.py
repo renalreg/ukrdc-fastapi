@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import AsyncGenerator, Optional, Union
+from typing import AsyncGenerator, Union
 
 from fastapi import Depends, Request, Security
 from sqlalchemy.orm.session import Session
@@ -11,8 +11,6 @@ from ukrdc_fastapi.dependencies import get_auditdb
 from ukrdc_fastapi.dependencies.auth import UKRDCUser, get_current_user
 from ukrdc_fastapi.models.audit import AccessEvent, AuditEvent
 from ukrdc_fastapi.schemas.empi import WorkItemExtendedSchema, WorkItemSchema
-
-from .auth import auth
 
 
 class Resource(Enum):

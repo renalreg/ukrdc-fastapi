@@ -1,4 +1,4 @@
-from typing import Callable, Optional, Sequence, Union
+from typing import Callable, Sequence, Union
 
 from fastapi import Depends, HTTPException
 from pydantic.main import BaseModel

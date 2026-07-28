@@ -1,7 +1,7 @@
 import datetime
 from contextlib import suppress
 from time import time
-from typing import Generator, Optional, Union
+from typing import Generator, Union
 
 
 class Timer:

@@ -1,6 +1,5 @@
 import csv
 import io
-from typing import Optional
 
 from fastapi import APIRouter, Depends, Query, Response, Security
 from sqlalchemy.orm import Session

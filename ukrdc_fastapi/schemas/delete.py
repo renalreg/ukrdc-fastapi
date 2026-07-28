@@ -1,5 +1,3 @@
-from typing import Optional
-
 from pydantic import Field
 
 from ukrdc_fastapi.schemas.empi import (

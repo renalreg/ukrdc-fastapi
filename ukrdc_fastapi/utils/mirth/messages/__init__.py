@@ -1,5 +1,3 @@
-from typing import Optional
-
 # Override Bandit warnings, since we use this to generate XML, not parse
 from xml.etree.ElementTree import Element, SubElement, tostring  # nosec
 

@@ -1,5 +1,4 @@
 import datetime
-from typing import Optional
 
 from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import LinkRecord, MasterRecord, Person, PidXRef

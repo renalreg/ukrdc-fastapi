@@ -3,7 +3,7 @@ The intention is that this will eventually be broken into a separately published
 hence the slightly odd inline structure.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 from fastapi import HTTPException
 from fastapi.openapi.models import OAuth2, OAuthFlowAuthorizationCode, OAuthFlows

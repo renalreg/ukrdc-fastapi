@@ -1,12 +1,10 @@
-from typing import Optional
-
 from fastapi import APIRouter, Depends, Security
 from pydantic import Field
 from sqlalchemy.orm import Session
 
 from ukrdc_fastapi.config import configuration
 from ukrdc_fastapi.dependencies import get_usersdb
-from ukrdc_fastapi.dependencies.auth import UKRDCUser, auth, get_current_user
+from ukrdc_fastapi.dependencies.auth import UKRDCUser, get_current_user
 from ukrdc_fastapi.query.users import get_user_preferences, update_user_preferences
 from ukrdc_fastapi.schemas.base import JSONModel
 from ukrdc_fastapi.schemas.user import UserPreferences, UserPreferencesRequest

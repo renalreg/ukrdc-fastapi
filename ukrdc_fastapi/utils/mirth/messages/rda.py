@@ -1,5 +1,4 @@
 import datetime
-from typing import Optional
 
 from ukrdc_sqla.ukrdc import PatientRecord
 from ukrdc_xsdata.ukrdc import (  # type: ignore

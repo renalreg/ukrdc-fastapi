@@ -1,5 +1,3 @@
-from typing import Optional
-
 from pydantic_settings import SettingsConfigDict, BaseSettings
 
 from . import __version__ as package_ver

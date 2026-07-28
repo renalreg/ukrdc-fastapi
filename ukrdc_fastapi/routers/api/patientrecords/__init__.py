@@ -1,5 +1,4 @@
 import datetime
-from typing import Optional
 
 from fastapi import APIRouter, Depends
 from fastapi import Query as QueryParam
@@ -69,7 +68,6 @@ from ukrdc_fastapi.schemas.patientrecord.survey import SurveySchema
 from ukrdc_fastapi.schemas.patientrecord.treatments import TreatmentSchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
 from ukrdc_fastapi.utils.sort import SQLASorter
-
 from . import (
     diagnoses,
     documents,

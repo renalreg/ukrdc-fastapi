@@ -1,5 +1,3 @@
-from typing import Optional
-
 from pydantic import Field
 from sqlalchemy import and_, select
 from sqlalchemy.orm import Session

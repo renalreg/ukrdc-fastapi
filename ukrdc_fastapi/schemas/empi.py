@@ -1,6 +1,6 @@
 import datetime
 import json
-from typing import Optional, Union
+from typing import Union
 
 from pydantic import field_validator, Field
 

@@ -1,4 +1,3 @@
-from typing import Optional
 from datetime import datetime
 from redis import Redis
 
@@ -10,7 +9,7 @@ from ukrdc_fastapi.dependencies.cache import get_redis
 
 from ukrdc_fastapi.config import settings
 from ukrdc_fastapi.dependencies import get_ukrdc3
-from ukrdc_fastapi.dependencies.auth import UKRDCUser, auth, get_current_user
+from ukrdc_fastapi.dependencies.auth import UKRDCUser, get_current_user
 from ukrdc_fastapi.dependencies.cache import cache_factory
 from ukrdc_fastapi.permissions.facilities import assert_facility_permission
 from ukrdc_fastapi.query.facilities.stats import (

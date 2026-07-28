@@ -1,5 +1,4 @@
 import datetime
-from typing import Optional
 
 from mirth_client.mirth import MirthAPI
 from redis import Redis

@@ -1,5 +1,4 @@
 from asyncio import sleep
-from typing import Optional
 
 from mirth_client.mirth import MirthAPI
 from redis import Redis

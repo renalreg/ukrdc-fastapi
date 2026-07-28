@@ -1,5 +1,3 @@
-from typing import Optional
-
 from fastapi import APIRouter, Depends, Security
 from mirth_client.mirth import MirthAPI
 from redis import Redis
