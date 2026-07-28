@@ -17,7 +17,7 @@ def json_serial(obj):
         return obj.isoformat()
     if isinstance(obj, set):
         return list(obj)
-    raise TypeError("Type %s not serializable" % type(obj))
+    raise TypeError(f"Type {str(type(obj))} not serializable")
 
 
 session: Session = AuditSession()
