@@ -33,7 +33,7 @@ def create_basic_patient(
     birth_time: datetime.datetime,
     ukrdc3: Session,
     jtrace: Session,
-    death_time: Optional[datetime.datetime] = None,
+    death_time: datetime.datetime | None = None,
 ):
     record = PatientRecord(
         pid=pid,
@@ -161,7 +161,7 @@ def create_basic_facility(
     pkb_in: bool = False,
     pkb_out: bool = False,
     ukrdc_out_pkb: bool = False,
-    pkb_msg_exclusions: Optional[list[str]] = None,
+    pkb_msg_exclusions: list[str] | None = None,
 ):
 
     code_obj = Code(

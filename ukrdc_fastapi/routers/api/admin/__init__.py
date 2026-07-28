@@ -34,8 +34,8 @@ router.include_router(datahealth.router, prefix="/datahealth")
     ],
 )
 def full_workitem_history(
-    since: Optional[datetime.date] = None,
-    until: Optional[datetime.date] = None,
+    since: datetime.date | None = None,
+    until: datetime.date | None = None,
     jtrace: Session = Depends(get_jtrace),
 ):
     """Retreive basic statistics about recent records"""
@@ -57,8 +57,8 @@ def full_workitem_history(
     ],
 )
 def full_errors_history(
-    since: Optional[datetime.date] = None,
-    until: Optional[datetime.date] = None,
+    since: datetime.date | None = None,
+    until: datetime.date | None = None,
     statsdb: Session = Depends(get_statsdb),
 ):
     """Retreive basic statistics about recent records"""

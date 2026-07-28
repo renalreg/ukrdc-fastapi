@@ -12,19 +12,19 @@ from ukrdc_fastapi.schemas.patientrecord.patient import (
 
 
 class DemographicUpdateRequest(JSONModel):
-    name: Optional[NameSchema] = None
-    birth_time: Optional[datetime.datetime] = None
-    gender: Optional[GenderType] = None
-    address: Optional[AddressSchema] = None
+    name: NameSchema | None = None
+    birth_time: datetime.datetime | None = None
+    gender: GenderType | None = None
+    address: AddressSchema | None = None
 
 
 class CloseWorkItemRequest(JSONModel):
-    comment: Optional[str] = Field(None, max_length=100)
+    comment: str | None = Field(None, max_length=100)
 
 
 class UpdateWorkItemRequest(JSONModel):
-    status: Optional[int] = None
-    comment: Optional[str] = Field(None, max_length=100)
+    status: int | None = None
+    comment: str | None = Field(None, max_length=100)
 
 
 class MergeRequest(JSONModel):
@@ -35,7 +35,7 @@ class MergeRequest(JSONModel):
 class UnlinkRequest(JSONModel):
     person_id: int = Field(..., title="ID of the person-record to be unlinked")
     master_id: int = Field(..., title="ID of the master-record to unlink from")
-    comment: Optional[str] = Field(None, max_length=100)
+    comment: str | None = Field(None, max_length=100)
 
 
 class UnlinkPatientRequest(JSONModel):

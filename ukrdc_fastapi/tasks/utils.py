@@ -44,9 +44,9 @@ def repeat_every(
     *,
     seconds: float,
     wait_first: bool = False,
-    logger: Optional[logging.Logger] = None,
+    logger: logging.Logger | None = None,
     raise_exceptions: bool = False,
-    max_repetitions: Optional[int] = None,
+    max_repetitions: int | None = None,
 ) -> NoArgsNoReturnDecorator:
     """
     This function returns a decorator that modifies a function so it is periodically re-executed after its first call.

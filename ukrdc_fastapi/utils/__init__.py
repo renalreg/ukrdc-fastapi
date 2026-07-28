@@ -20,11 +20,11 @@ class Timer:
 
 def build_db_uri(
     driver: str,
-    host: Optional[str] = None,
-    port: Optional[int] = None,
-    user: Optional[str] = None,
-    password: Optional[str] = None,
-    name: Optional[str] = None,
+    host: str | None = None,
+    port: int | None = None,
+    user: str | None = None,
+    password: str | None = None,
+    name: str | None = None,
 ) -> str:
     """Construct a database URI from required parameters
 
@@ -44,7 +44,7 @@ def build_db_uri(
     return f"{driver}://{user}:{password}@{host}:{port}/{name}"
 
 
-def parse_date(date_string: Optional[str]) -> Optional[datetime.datetime]:
+def parse_date(date_string: str | None) -> datetime.datetime | None:
     """Convert a fuzzy date string into a datetime object
 
     Args:

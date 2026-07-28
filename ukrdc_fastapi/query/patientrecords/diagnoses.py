@@ -21,19 +21,19 @@ from ukrdc_fastapi.schemas.patientrecord import (
 
 
 class ExtendedDiagnosisSchema(DiagnosisSchema):
-    description: Optional[str] = Field(
+    description: str | None = Field(
         None, description="Formal coding description, if available"
     )
 
 
 class ExtendedRenalDiagnosisSchema(RenalDiagnosisSchema):
-    description: Optional[str] = Field(
+    description: str | None = Field(
         None, description="Formal coding description, if available"
     )
 
 
 class ExtendedCauseOfDeathSchema(CauseOfDeathSchema):
-    description: Optional[str] = Field(
+    description: str | None = Field(
         None, description="Formal coding description, if available"
     )
 

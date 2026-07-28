@@ -19,8 +19,8 @@ from ukrdc_fastapi.exceptions import MissingFacilityError
 def get_facility_demographic_stats(
     ukrdc3: Session,
     facility_code: str,
-    since: Optional[datetime.datetime] = None,
-    until: Optional[datetime.datetime] = None,
+    since: datetime.datetime | None = None,
+    until: datetime.datetime | None = None,
 ) -> DemographicsStats:
     """Extract demographic distributions for all UKRDC/RDA records in a given facility
 
@@ -48,8 +48,8 @@ def get_facility_demographic_stats(
 def get_facility_dialysis_stats(
     ukrdc3: Session,
     facility_code: str,
-    since: Optional[datetime.datetime] = None,
-    until: Optional[datetime.datetime] = None,
+    since: datetime.datetime | None = None,
+    until: datetime.datetime | None = None,
 ) -> UnitLevelKRTStats:
     """Extract dialysis statistics for all UKRDC/RDA records in a given facility
 

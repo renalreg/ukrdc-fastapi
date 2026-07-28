@@ -20,10 +20,10 @@ class OktaJWTBearer(SecurityBase):
         issuer: str,
         audience: str,
         client_ids: list[str],
-        scopes: Optional[dict[str, str]] = None,
-        scheme_name: Optional[str] = None,
-        description: Optional[str] = None,
-        auto_error: Optional[bool] = True,
+        scopes: dict[str, str] | None = None,
+        scheme_name: str | None = None,
+        description: str | None = None,
+        auto_error: bool | None = True,
     ):
         # Parameters for JWT validation
         self.issuer = issuer.rstrip("/")
@@ -49,9 +49,9 @@ class OktaJWTBearer(SecurityBase):
         self.scheme_name = scheme_name or self.__class__.__name__
         self.auto_error = auto_error
 
-    async def __call__(self, request: Request) -> Optional[Dict[str, Any]]:
+    async def __call__(self, request: Request) -> Dict[str, Any] | None:
         # Fetch authorization header
-        authorization: Optional[str] = request.headers.get("Authorization")
+        authorization: str | None = request.headers.get("Authorization")
         scheme, credentials = get_authorization_scheme_param(authorization)
         # Verify authorization header
         if not (authorization and scheme and credentials):

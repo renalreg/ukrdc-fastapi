@@ -11,77 +11,77 @@ class DocumentSummarySchema(OrmModel):
 
     id: str = Field(..., description="Document ID")
     pid: str = Field(..., description="Patient ID")
-    documenttime: Optional[datetime.datetime] = Field(
+    documenttime: datetime.datetime | None = Field(
         None, description="Document created time"
     )
-    documentname: Optional[str] = Field(None, description="Document name")
+    documentname: str | None = Field(None, description="Document name")
 
-    filetype: Optional[str] = Field(None, description="Document file type")
-    filename: Optional[str] = Field(None, description="Document file name")
+    filetype: str | None = Field(None, description="Document file type")
+    filename: str | None = Field(None, description="Document file name")
 
-    enteredbydesc: Optional[str] = Field(
+    enteredbydesc: str | None = Field(
         None, description="Document author description"
     )
-    enteredatcode: Optional[str] = Field(None, description="Document organisation code")
+    enteredatcode: str | None = Field(None, description="Document organisation code")
 
 
 class DocumentSchema(DocumentSummarySchema):
     """A patient document."""
 
-    idx: Optional[int] = Field(None, description="Document index")
+    idx: int | None = Field(None, description="Document index")
 
-    notetext: Optional[str] = Field(None, description="Document note text")
+    notetext: str | None = Field(None, description="Document note text")
 
-    documenttypecode: Optional[str] = Field(None, description="Document type code")
-    documenttypecodestd: Optional[str] = Field(
+    documenttypecode: str | None = Field(None, description="Document type code")
+    documenttypecodestd: str | None = Field(
         None, description="Document type code standard"
     )
-    documenttypedesc: Optional[str] = Field(
+    documenttypedesc: str | None = Field(
         None, description="Document type description"
     )
 
-    cliniciancode: Optional[str] = Field(
+    cliniciancode: str | None = Field(
         None, description="Document author clinician code"
     )
-    cliniciancodestd: Optional[str] = Field(
+    cliniciancodestd: str | None = Field(
         None, description="Document author clinician code standard"
     )
-    cliniciandesc: Optional[str] = Field(
+    cliniciandesc: str | None = Field(
         None, description="Document author clinician description"
     )
 
-    statuscode: Optional[str] = Field(None, description="Document status code")
-    statuscodestd: Optional[str] = Field(
+    statuscode: str | None = Field(None, description="Document status code")
+    statuscodestd: str | None = Field(
         None, description="Document status code standard"
     )
-    statusdesc: Optional[str] = Field(None, description="Document status description")
+    statusdesc: str | None = Field(None, description="Document status description")
 
-    enteredbycode: Optional[str] = Field(None, description="Document author code")
-    enteredbycodestd: Optional[str] = Field(
+    enteredbycode: str | None = Field(None, description="Document author code")
+    enteredbycodestd: str | None = Field(
         None, description="Document author code standard"
     )
 
-    enteredatcodestd: Optional[str] = Field(
+    enteredatcodestd: str | None = Field(
         None, description="Document organisation code standard"
     )
-    enteredatdesc: Optional[str] = Field(
+    enteredatdesc: str | None = Field(
         None, description="Document organisation description"
     )
 
-    documenturl: Optional[str] = Field(None, description="Document URL")
-    updatedon: Optional[datetime.datetime] = Field(
+    documenturl: str | None = Field(None, description="Document URL")
+    updatedon: datetime.datetime | None = Field(
         None, description="Document updated timestamp"
     )
-    actioncode: Optional[str] = Field(None, description="Document action code")
-    externalid: Optional[str] = Field(None, description="Document external ID")
+    actioncode: str | None = Field(None, description="Document action code")
+    externalid: str | None = Field(None, description="Document external ID")
 
-    update_date: Optional[datetime.datetime] = Field(
+    update_date: datetime.datetime | None = Field(
         None, description="Document updated timestamp"
     )
-    creation_date: Optional[datetime.datetime] = Field(
+    creation_date: datetime.datetime | None = Field(
         None, description="Document created timestamp"
     )
 
-    repository_update_date: Optional[datetime.datetime] = Field(
+    repository_update_date: datetime.datetime | None = Field(
         None, description="Document repository updated timestamp"
     )

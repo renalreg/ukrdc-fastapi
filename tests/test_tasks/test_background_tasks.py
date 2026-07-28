@@ -27,7 +27,7 @@ class TaskSubmitModel(BaseModel):
     time_to_wait: float
     bad: bool = False
     private: bool = False
-    force_owner: Optional[str] = None
+    force_owner: str | None = None
 
 
 @pytest.mark.anyio

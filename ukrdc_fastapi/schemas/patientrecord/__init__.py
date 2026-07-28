@@ -27,8 +27,8 @@ class ProgramMembershipSchema(OrmModel):
     """A program membership record."""
 
     program_name: str = Field(..., description="Program name")
-    from_time: Optional[datetime.date] = Field(None, description="Program start date")
-    to_time: Optional[datetime.date] = Field(None, description="Program end date")
+    from_time: datetime.date | None = Field(None, description="Program start date")
+    to_time: datetime.date | None = Field(None, description="Program end date")
 
 
 class SocialHistorySchema(OrmModel):
@@ -65,17 +65,17 @@ class PVDataSchema(OrmModel):
     """
 
     creation_date: datetime.datetime = Field(..., description="Creation date")
-    update_date: Optional[datetime.datetime] = Field(None, description="Update date")
+    update_date: datetime.datetime | None = Field(None, description="Update date")
 
-    rrtstatus: Optional[str] = Field(None, description="RRT status code")
-    rrtstatus_desc: Optional[str] = Field(None, description="RRT status")
+    rrtstatus: str | None = Field(None, description="RRT status code")
+    rrtstatus_desc: str | None = Field(None, description="RRT status")
 
-    tpstatus: Optional[str] = Field(None, description="Transplant status code")
-    tpstatus_desc: Optional[str] = Field(None, description="Transplant status")
+    tpstatus: str | None = Field(None, description="Transplant status code")
+    tpstatus_desc: str | None = Field(None, description="Transplant status")
 
-    bloodgroup: Optional[str] = Field(None, description="Blood group")
+    bloodgroup: str | None = Field(None, description="Blood group")
 
-    diagnosisdate: Optional[datetime.datetime] = Field(
+    diagnosisdate: datetime.datetime | None = Field(
         None, description="Diagnosis date"
     )
 
@@ -85,10 +85,10 @@ class PVDeleteSchema(OrmModel):
 
     did: int = Field(..., description="Delete ID")
     pid: str = Field(..., description="Patient ID")
-    observation_time: Optional[datetime.datetime] = Field(
+    observation_time: datetime.datetime | None = Field(
         None, description="Observation timestamp"
     )
-    service_id: Optional[str] = Field(None, description="Service ID")
+    service_id: str | None = Field(None, description="Service ID")
 
 
 class PatientRecordSummarySchema(OrmModel):
@@ -100,12 +100,12 @@ class PatientRecordSummarySchema(OrmModel):
     localpatientid: str = Field(..., description="Local patient ID")
     ukrdcid: str = Field(..., description="UKRDC ID")
 
-    pvdata: Optional[PVDataSchema] = Field(None, description="PV Data")
+    pvdata: PVDataSchema | None = Field(None, description="PV Data")
 
     program_memberships: list[ProgramMembershipSchema] = Field(
         [], description="Program memberships"
     )
-    patient: Optional[PatientSchema] = Field(None, description="Patient")
+    patient: PatientSchema | None = Field(None, description="Patient")
 
     repository_creation_date: datetime.datetime = Field(
         ..., description="Repository creation timestamp"
@@ -118,7 +118,7 @@ class PatientRecordSummarySchema(OrmModel):
 class PatientRecordSchema(PatientRecordSummarySchema):
     """A patient record."""
 
-    master_id: Optional[int] = Field(None, description="Master record ID")
+    master_id: int | None = Field(None, description="Master record ID")
 
     @classmethod
     def from_orm_with_master_record(
@@ -190,4 +190,4 @@ class PatientRecordFullSchema(PatientRecordSummarySchema):
     surveys: list[SurveySchema] = Field(..., description="Surveys")
     pvdelete: list[PVDeleteSchema] = Field(..., description="PV Deletes")
 
-    patient: Optional[PatientSchema] = Field(None, description="Patient")
+    patient: PatientSchema | None = Field(None, description="Patient")

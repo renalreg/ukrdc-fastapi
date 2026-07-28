@@ -9,39 +9,39 @@ from ..base import OrmModel
 class MedicationSchema(OrmModel):
     """Information about a single medication"""
 
-    from_time: Optional[datetime.datetime] = Field(
+    from_time: datetime.datetime | None = Field(
         None, description="Time the patient started taking the medication"
     )
-    to_time: Optional[datetime.datetime] = Field(
+    to_time: datetime.datetime | None = Field(
         None, description="Time the patient stopped taking the medication"
     )
 
     drug_product_generic: str = Field(..., description="Generic name of the medication")
 
     dosequantity: Annotated[
-        Optional[str], BeforeValidator(lambda v: str(v) if v is not None else v)
+        str | None, BeforeValidator(lambda v: str(v) if v is not None else v)
     ] = Field(None, description="...")
-    doseuomcode: Optional[str] = Field(
+    doseuomcode: str | None = Field(
         None, description="Dose unit of measurement code"
     )
-    doseuomcodestd: Optional[str] = Field(
+    doseuomcodestd: str | None = Field(
         None, description="Dose unit of measurement coding standard"
     )
-    doseuomdesc: Optional[str] = Field(
+    doseuomdesc: str | None = Field(
         None, description="Dose unit of measurement description"
     )
 
-    frequency: Optional[str] = Field(None, description="Medication frequency")
+    frequency: str | None = Field(None, description="Medication frequency")
 
-    routecode: Optional[str] = Field(None, description="Route code")
-    routecodestd: Optional[str] = Field(None, description="Route coding standard")
-    routedesc: Optional[str] = Field(None, description="Route description")
+    routecode: str | None = Field(None, description="Route code")
+    routecodestd: str | None = Field(None, description="Route coding standard")
+    routedesc: str | None = Field(None, description="Route description")
 
-    comment: Optional[str] = Field(None, description="Comment on the medication")
+    comment: str | None = Field(None, description="Comment on the medication")
 
-    entering_organization_code: Optional[str] = Field(
+    entering_organization_code: str | None = Field(
         None, description="Code of the organization that entered the medication"
     )
-    entering_organization_description: Optional[str] = Field(
+    entering_organization_description: str | None = Field(
         None, description="Description of the organization that entered the medication"
     )

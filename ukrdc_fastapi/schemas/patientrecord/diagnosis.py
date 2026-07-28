@@ -12,22 +12,22 @@ class BaseDiagnosisSchema(OrmModel):
     pid: str = Field(..., description="Patient ID")
 
     creation_date: datetime.datetime = Field(..., description="Database creation date")
-    update_date: Optional[datetime.datetime] = Field(
+    update_date: datetime.datetime | None = Field(
         ..., description="Database update date"
     )
 
-    enteredon: Optional[datetime.datetime] = Field(..., description="Entered date")
-    updatedon: Optional[datetime.datetime] = Field(..., description="Updated date")
+    enteredon: datetime.datetime | None = Field(..., description="Entered date")
+    updatedon: datetime.datetime | None = Field(..., description="Updated date")
 
-    diagnosistype: Optional[str] = Field(..., description="Diagnosis type")
+    diagnosistype: str | None = Field(..., description="Diagnosis type")
 
-    diagnosis_code: Optional[str] = Field(None, description="Diagnosis code")
-    diagnosis_code_std: Optional[str] = Field(
+    diagnosis_code: str | None = Field(None, description="Diagnosis code")
+    diagnosis_code_std: str | None = Field(
         None, description="Diagnosis code standard"
     )
-    diagnosis_desc: Optional[str] = Field(None, description="Diagnosis description")
+    diagnosis_desc: str | None = Field(None, description="Diagnosis description")
 
-    comments: Optional[str] = Field(None, description="Diagnosis comments")
+    comments: str | None = Field(None, description="Diagnosis comments")
 
 
 class DiagnosisSchema(BaseDiagnosisSchema):
@@ -35,10 +35,10 @@ class DiagnosisSchema(BaseDiagnosisSchema):
 
     id: str = Field(..., description="Diagnosis ID")
 
-    identification_time: Optional[datetime.datetime] = Field(
+    identification_time: datetime.datetime | None = Field(
         None, description="Diagnosis identification timestamp"
     )
-    onset_time: Optional[datetime.datetime] = Field(
+    onset_time: datetime.datetime | None = Field(
         None, description="Diagnosis onset timestamp"
     )
 
@@ -46,10 +46,10 @@ class DiagnosisSchema(BaseDiagnosisSchema):
 class RenalDiagnosisSchema(BaseDiagnosisSchema):
     """A renal diagnosis record."""
 
-    identification_time: Optional[datetime.datetime] = Field(
+    identification_time: datetime.datetime | None = Field(
         None, description="Diagnosis identification timestamp"
     )
-    onset_time: Optional[datetime.datetime] = Field(
+    onset_time: datetime.datetime | None = Field(
         None, description="Diagnosis onset timestamp"
     )
 

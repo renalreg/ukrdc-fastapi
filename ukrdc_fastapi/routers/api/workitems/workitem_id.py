@@ -122,7 +122,7 @@ async def workitem_update(
     ],
 )
 async def workitem_close(
-    args: Optional[CloseWorkItemRequest],
+    args: CloseWorkItemRequest | None,
     workitem_obj: WorkItem = Depends(_get_workitem),
     user: UKRDCUser = Security(auth.get_user()),
     mirth: MirthAPI = Depends(get_mirth),
@@ -198,10 +198,10 @@ def workitem_related(
 )
 def workitem_messages(
     worktiem_obj: WorkItem = Depends(_get_workitem),
-    facility: Optional[str] = None,
-    since: Optional[datetime.datetime] = None,
-    until: Optional[datetime.datetime] = None,
-    status: Optional[list[str]] = QueryParam(None),
+    facility: str | None = None,
+    since: datetime.datetime | None = None,
+    until: datetime.datetime | None = None,
+    status: list[str] | None = QueryParam(None),
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
     errorsdb: Session = Depends(get_errorsdb),

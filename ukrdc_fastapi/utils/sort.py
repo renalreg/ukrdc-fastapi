@@ -31,9 +31,9 @@ class SQLASorter:
     def __init__(
         self,
         column_map: dict[str, Union[Column, InstrumentedAttribute]],
-        sort_by: Optional[enum.Enum] = None,
-        order_by: Optional[OrderBy] = None,
-        default_sort_by: Optional[Union[Column, InstrumentedAttribute]] = None,
+        sort_by: enum.Enum | None = None,
+        order_by: OrderBy | None = None,
+        default_sort_by: Union[Column, InstrumentedAttribute] | None = None,
         default_order_by: OrderBy = OrderBy.DESC,
     ) -> None:
         self.column_map = column_map
@@ -51,7 +51,7 @@ class SQLASorter:
         Returns:
             query (sqlalchemy.orm.Query): Sorted query
         """
-        sort_column: Optional[Union[Column, InstrumentedAttribute]]
+        sort_column: Union[Column, InstrumentedAttribute] | None
         if self.sort_by:
             sort_column = self.column_map.get(self.sort_by.value)
             if not sort_column:
@@ -85,7 +85,7 @@ def _make_sorter_enum_name(columns: list[Union[Column, str]]) -> str:
 
 def make_sqla_sorter(
     columns: list[Union[Column, InstrumentedAttribute]],
-    default_sort_by: Optional[Union[Column, InstrumentedAttribute]] = None,
+    default_sort_by: Union[Column, InstrumentedAttribute] | None = None,
     default_order_by: OrderBy = OrderBy.DESC,
 ):
     """Generate a sorter FastAPI dependency function
@@ -106,7 +106,7 @@ def make_sqla_sorter(
     )
 
     def sort_parameters(
-        sort_by: Optional[sort_enum] = None, order_by: Optional[OrderBy] = None
+        sort_by: sort_enum | None = None, order_by: OrderBy | None = None
     ):
         return SQLASorter(
             column_map,
@@ -123,9 +123,9 @@ class ObjectSorter:
     def __init__(
         self,
         columns: list[str],
-        sort_by: Optional[enum.Enum] = None,
-        order_by: Optional[OrderBy] = None,
-        default_sort_by: Optional[str] = None,
+        sort_by: enum.Enum | None = None,
+        order_by: OrderBy | None = None,
+        default_sort_by: str | None = None,
         default_order_by: OrderBy = OrderBy.DESC,
     ) -> None:
         self.columns = columns
@@ -144,7 +144,7 @@ class ObjectSorter:
             items (list[Any]): Sorted list of objects
         """
 
-        sort_attr: Optional[str] = (
+        sort_attr: str | None = (
             self.sort_by.name if self.sort_by else self.default_sort_by
         )
         if not sort_attr:
@@ -168,7 +168,7 @@ class ObjectSorter:
 def make_object_sorter(
     name: str,
     columns: list[str],
-    default_sort_by: Optional[str] = None,
+    default_sort_by: str | None = None,
     default_order_by: OrderBy = OrderBy.DESC,
 ):
     """Generate a sorter FastAPI dependency function
@@ -185,7 +185,7 @@ def make_object_sorter(
     sort_enum = enum.Enum(name, {col: col for col in columns})  # type: ignore
 
     def sort_parameters(
-        sort_by: Optional[sort_enum] = None, order_by: Optional[OrderBy] = None
+        sort_by: sort_enum | None = None, order_by: OrderBy | None = None
     ):
         return ObjectSorter(
             columns,

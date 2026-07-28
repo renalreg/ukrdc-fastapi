@@ -10,11 +10,11 @@ class ChannelSchema(OrmModel):
     """Internal configuration information about a single Mirth channel"""
 
     id: str = Field(..., description="Channel ID")
-    name: Optional[str] = Field(None, description="Channel name")
-    store_first_message: Optional[bool] = Field(
+    name: str | None = Field(None, description="Channel name")
+    store_first_message: bool | None = Field(
         None, description="Is the first connector message of each message stored?"
     )
-    store_last_message: Optional[bool] = Field(
+    store_last_message: bool | None = Field(
         None, description="Is the last connector message of each message stored?"
     )
 
@@ -23,15 +23,15 @@ class MinimalMessageSchema(OrmModel):
     """A minimal representation of a single message"""
 
     id: int = Field(..., description="Message ID")
-    received: Optional[datetime.datetime] = Field(
+    received: datetime.datetime | None = Field(
         None, description="Message received timestamp"
     )
     msg_status: str = Field(..., description="Message status code")
-    ni: Optional[str] = Field(
+    ni: str | None = Field(
         None, description="National ID of the patient the message is about"
     )
-    filename: Optional[str] = Field(None, description="Filename of the message")
-    facility: Optional[str] = Field(
+    filename: str | None = Field(None, description="Filename of the message")
+    facility: str | None = Field(
         None, description="Facility code of the message sender"
     )
 
@@ -41,8 +41,8 @@ class MessageSchema(MinimalMessageSchema):
 
     _channel_id_name_map: ClassVar[dict[str, str]] = {}
 
-    error: Optional[str] = Field(None, description="Error message, if any")
-    status: Optional[str] = Field(None, description="Message status code")
+    error: str | None = Field(None, description="Error message, if any")
+    status: str | None = Field(None, description="Message status code")
 
     # Mirth message
     # Field names are determined by ORM, but we alias to something more useful for the API
@@ -50,7 +50,7 @@ class MessageSchema(MinimalMessageSchema):
         alias="mirthMessageId", description="Mirth message ID"
     )
     channel_id: str = Field(alias="mirthChannelId", description="Mirth channel ID")
-    mirth_channel: Optional[str] = Field(
+    mirth_channel: str | None = Field(
         None, description="Mirth channel name, if known"
     )
 

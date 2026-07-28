@@ -18,12 +18,12 @@ from ukrdc_fastapi.utils import daterange
 
 
 def select_workitems(
-    statuses: Optional[list[int]] = None,
-    master_id: Optional[list[int]] = None,
-    person_id: Optional[list[int]] = None,
-    facility: Optional[str] = None,
-    since: Optional[datetime.datetime] = None,
-    until: Optional[datetime.datetime] = None,
+    statuses: list[int] | None = None,
+    master_id: list[int] | None = None,
+    person_id: list[int] | None = None,
+    facility: str | None = None,
+    since: datetime.datetime | None = None,
+    until: datetime.datetime | None = None,
 ) -> Select:
     """Get a list of WorkItems
 
@@ -204,8 +204,8 @@ def select_workitems_related_to_message(message: Message, jtrace: Session) -> Se
 
 def get_full_workitem_history(
     jtrace: Session,
-    since: Optional[datetime.date] = None,
-    until: Optional[datetime.date] = None,
+    since: datetime.date | None = None,
+    until: datetime.date | None = None,
 ):
     """Get a combined workitem history by grouping and counting workitems by creation date.
 

@@ -111,10 +111,10 @@ def patient_audit(
     patient_record: PatientRecord = Depends(_get_patientrecord),
     ukrdc3: Session = Depends(get_ukrdc3),
     auditdb: Session = Depends(get_auditdb),
-    resource: Optional[Resource] = None,
-    operation: Optional[AuditOperation] = None,
-    since: Optional[datetime.datetime] = None,
-    until: Optional[datetime.datetime] = None,
+    resource: Resource | None = None,
+    operation: AuditOperation | None = None,
+    since: datetime.datetime | None = None,
+    until: datetime.datetime | None = None,
     sorter: SQLASorter = Depends(AUDIT_SORTER),
 ):
     """
@@ -146,10 +146,10 @@ def patient_audit(
 )
 def patient_messages(
     patient_record: PatientRecord = Depends(_get_patientrecord),
-    since: Optional[datetime.datetime] = None,
-    until: Optional[datetime.datetime] = None,
-    status: Optional[list[str]] = QueryParam(None),
-    channel: Optional[list[str]] = QueryParam(None),
+    since: datetime.datetime | None = None,
+    until: datetime.datetime | None = None,
+    status: list[str] | None = QueryParam(None),
+    channel: list[str] | None = QueryParam(None),
     user: UKRDCUser = Security(auth.get_user()),
     errorsdb: Session = Depends(get_errorsdb),
     sorter: SQLASorter = Depends(ERROR_SORTER),
@@ -233,7 +233,7 @@ def patient_delete(
     ukrdc3: Session = Depends(get_ukrdc3),
     jtrace: Session = Depends(get_jtrace),
     audit: Auditer = Depends(get_auditer),
-    args: Optional[DeletePidRequest] = None,
+    args: DeletePidRequest | None = None,
 ):
     """Delete a specific patient record and all its associated data"""
     summary: DeletePIDResponseSchema
@@ -398,7 +398,7 @@ def patient_surveys(
 def patient_observations(
     patient_record: PatientRecord = Depends(_get_patientrecord),
     ukrdc3: Session = Depends(get_ukrdc3),
-    code: Optional[list[str]] = QueryParam([]),
+    code: list[str] | None = QueryParam([]),
     sorter: SQLASorter = Depends(
         make_sqla_sorter(
             [Observation.observation_time, Observation.updated_on],

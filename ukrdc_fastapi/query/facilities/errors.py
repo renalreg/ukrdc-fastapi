@@ -16,7 +16,7 @@ from ukrdc_fastapi.utils import daterange
 def query_patients_latest_errors(
     ukrdc3: Session,
     facility_code: str,
-    channels: Optional[list[str]] = None,
+    channels: list[str] | None = None,
 ) -> Select:
     """Retrieve the most recent error messages for each patient currently receiving errors.
 
@@ -51,8 +51,8 @@ def get_errors_history(
     ukrdc3: Session,
     statsdb: Session,
     facility_code: str,
-    since: Optional[datetime.date] = None,
-    until: Optional[datetime.date] = None,
+    since: datetime.date | None = None,
+    until: datetime.date | None = None,
 ) -> list[HistoryPoint]:
     """Get a day-by-day error count for a particular facility/unit
 

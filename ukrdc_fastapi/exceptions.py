@@ -6,7 +6,7 @@ from fastapi.exceptions import HTTPException
 
 
 class PermissionsError(HTTPException):
-    def __init__(self, headers: Optional[dict[str, Any]] = None) -> None:
+    def __init__(self, headers: dict[str, Any] | None = None) -> None:
         super().__init__(
             403,
             detail="You do not have permission to access resources belonging to this facility.",

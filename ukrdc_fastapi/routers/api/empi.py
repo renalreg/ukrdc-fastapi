@@ -36,8 +36,8 @@ async def empi_merge(
 ):
     """Merge a pair of MasterRecords"""
     # Get the records
-    superseding: Optional[MasterRecord] = jtrace.get(MasterRecord, args.superseding)
-    superseded: Optional[MasterRecord] = jtrace.get(MasterRecord, args.superseded)
+    superseding: MasterRecord | None = jtrace.get(MasterRecord, args.superseding)
+    superseded: MasterRecord | None = jtrace.get(MasterRecord, args.superseded)
 
     if not (superseding and superseded):
         raise ResourceNotFoundError("Master Record not found")

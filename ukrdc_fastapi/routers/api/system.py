@@ -15,18 +15,18 @@ router = APIRouter(tags=["System Info"])
 
 
 class UserSchema(JSONModel):
-    permissions: Optional[list[str]] = Field(
+    permissions: list[str] | None = Field(
         None, description="List of user permissions"
     )
-    email: Optional[str] = Field(None, description="User email address")
+    email: str | None = Field(None, description="User email address")
 
 
 class SystemInfoSchema(JSONModel):
-    github_sha: Optional[str] = Field(
+    github_sha: str | None = Field(
         default=configuration.github_sha,
         description="Git commit SHA of the running server version",
     )
-    github_ref: Optional[str] = Field(
+    github_ref: str | None = Field(
         default=configuration.github_ref,
         description="Git branch of the running server version",
     )

@@ -13,108 +13,108 @@ class TreatmentSchema(OrmModel):
     pid: str = Field(..., description="Patient ID")
 
     creation_date: datetime.datetime = Field(..., description="Database creation date")
-    update_date: Optional[datetime.datetime] = Field(
+    update_date: datetime.datetime | None = Field(
         ..., description="Database update date"
     )
     # idx: Currently unused
-    externalid: Optional[str] = Field(None, description="External session ID")
+    externalid: str | None = Field(None, description="External session ID")
 
     # Encounter time
-    fromtime: Optional[datetime.date] = Field(None, description="Encounter start date")
-    totime: Optional[datetime.date] = Field(None, description="Encounter end date")
+    fromtime: datetime.date | None = Field(None, description="Encounter start date")
+    totime: datetime.date | None = Field(None, description="Encounter end date")
 
     # Encounter information
-    encounternumber: Optional[str] = Field(None, description="Encounter number")
-    encountertype: Optional[str] = Field(None, description="Encounter type")
+    encounternumber: str | None = Field(None, description="Encounter number")
+    encountertype: str | None = Field(None, description="Encounter type")
 
     # Clinician
-    admittingcliniciancode: Optional[str] = Field(
+    admittingcliniciancode: str | None = Field(
         None, description="Clinicial code. Rarely used."
     )
-    admittingcliniciancodestd: Optional[str] = Field(
+    admittingcliniciancodestd: str | None = Field(
         None, description="Clinicial code standard. Rarely used."
     )
-    admittingcliniciandesc: Optional[str] = Field(
+    admittingcliniciandesc: str | None = Field(
         None, description="Clinician description"
     )
 
     # Admit reason
-    admitreasoncode: Optional[str] = Field(None, description="Admission reason code")
-    admitreasoncodestd: Optional[str] = Field(
+    admitreasoncode: str | None = Field(None, description="Admission reason code")
+    admitreasoncodestd: str | None = Field(
         None, description="Admission reason code standard"
     )
-    admitreasondesc: Optional[str] = Field(
+    admitreasondesc: str | None = Field(
         None, description="Admission reason description"
     )
 
     # Admission source
-    admissionsourcecode: Optional[str] = Field(
+    admissionsourcecode: str | None = Field(
         None, description="Admission source code"
     )
-    admissionsourcecodestd: Optional[str] = Field(
+    admissionsourcecodestd: str | None = Field(
         None, description="Admission source code standard"
     )
-    admissionsourcedesc: Optional[str] = Field(
+    admissionsourcedesc: str | None = Field(
         None, description="Admission source description"
     )
 
     # Discharge reason
-    dischargereasoncode: Optional[str] = Field(
+    dischargereasoncode: str | None = Field(
         None, description="Discharge reason code"
     )
-    dischargereasoncodestd: Optional[str] = Field(
+    dischargereasoncodestd: str | None = Field(
         None, description="Discharge reason code standard"
     )
-    dischargereasondesc: Optional[str] = Field(
+    dischargereasondesc: str | None = Field(
         None, description="Discharge reason description"
     )
 
     # Discharge location
-    dischargelocationcode: Optional[str] = Field(
+    dischargelocationcode: str | None = Field(
         None, description="Discharge location code"
     )
-    dischargelocationcodestd: Optional[str] = Field(
+    dischargelocationcodestd: str | None = Field(
         None, description="Discharge location code standard"
     )
-    dischargelocationdesc: Optional[str] = Field(
+    dischargelocationdesc: str | None = Field(
         None, description="Discharge location description"
     )
 
     # Health care facility
-    healthcarefacilitycode: Optional[str] = Field(
+    healthcarefacilitycode: str | None = Field(
         None, description="Health care facility code"
     )
-    healthcarefacilitycodestd: Optional[str] = Field(
+    healthcarefacilitycodestd: str | None = Field(
         None, description="Health care facility code standard"
     )
-    healthcarefacilitydesc: Optional[str] = Field(
+    healthcarefacilitydesc: str | None = Field(
         None, description="Health care facility description"
     )
 
     # Data entry site/unit
-    enteredatcode: Optional[str] = Field(
+    enteredatcode: str | None = Field(
         None,
         description="Site code at which the data was entered. Usually an RR1+ code.",
     )
-    enteredatcodestd: Optional[str] = Field(
+    enteredatcodestd: str | None = Field(
         None, description="Site code standard at which the data was entered."
     )
-    enteredatdesc: Optional[str] = Field(
+    enteredatdesc: str | None = Field(
         None, description="Site description at which the data was entered."
     )
 
-    visitdescription: Optional[str] = Field(None, description="Visit description")
+    visitdescription: str | None = Field(None, description="Visit description")
 
     # updatedon: Currently unused
     # actioncode: Currently unused
 
     # Attributes
-    hdp01: Optional[str] = None
-    hdp02: Optional[str] = None
-    hdp03: Optional[str] = None
-    hdp04: Optional[str] = None
-    qbl05: Optional[str] = None
-    qbl06: Optional[str] = None
-    qbl07: Optional[str] = None
-    erf61: Optional[str] = None
-    pat35: Optional[str] = None
+    hdp01: str | None = None
+    hdp02: str | None = None
+    hdp03: str | None = None
+    hdp04: str | None = None
+    qbl05: str | None = None
+    qbl06: str | None = None
+    qbl07: str | None = None
+    erf61: str | None = None
+    pat35: str | None = None

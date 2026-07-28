@@ -33,8 +33,8 @@ class MultipleUKRDCIDGroup(OrmModel):
 
 def get_full_errors_history(
     statsdb: Session,
-    since: Optional[datetime.date] = None,
-    until: Optional[datetime.date] = None,
+    since: datetime.date | None = None,
+    until: datetime.date | None = None,
 ) -> list[HistoryPoint]:
     """Get a combined error history by merging each facilities histories from the stats database.
 

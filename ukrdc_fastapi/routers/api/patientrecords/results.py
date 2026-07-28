@@ -34,10 +34,10 @@ router = APIRouter()
 def patient_results(
     patient_record: PatientRecord = Depends(_get_patientrecord),
     ukrdc3: Session = Depends(get_ukrdc3),
-    service_id: Optional[list[str]] = QueryParam([]),
-    order_id: Optional[list[str]] = QueryParam([]),
-    since: Optional[datetime.datetime] = None,
-    until: Optional[datetime.datetime] = None,
+    service_id: list[str] | None = QueryParam([]),
+    order_id: list[str] | None = QueryParam([]),
+    since: datetime.datetime | None = None,
+    until: datetime.datetime | None = None,
     sorter: SQLASorter = Depends(
         make_sqla_sorter(
             [ResultItem.observation_time, ResultItem.entered_on],
@@ -117,7 +117,7 @@ def patient_result_delete(
     if not item:
         raise HTTPException(404, detail="Result item not found")
 
-    order: Optional[LabOrder] = item.order
+    order: LabOrder | None = item.order
 
     ukrdc3.delete(item)
     ukrdc3.commit()

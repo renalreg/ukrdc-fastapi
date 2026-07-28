@@ -17,6 +17,6 @@ class UserPreference(Base):
     key: Mapped[str] = mapped_column(
         String, primary_key=True, nullable=False
     )  # Preference key
-    val: Mapped[Optional[str]] = mapped_column(
+    val: Mapped[str | None] = mapped_column(
         JSON
     )  # Preference value, as a JSON primitive, array, or object

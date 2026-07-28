@@ -136,7 +136,7 @@ def facility(
 )
 def facility_patients_latest_errors(
     code: str,
-    channel: Optional[list[str]] = QueryParam(None),
+    channel: list[str] | None = QueryParam(None),
     ukrdc3: Session = Depends(get_ukrdc3),
     errorsdb: Session = Depends(get_errorsdb),
     user: UKRDCUser = Security(auth.get_user()),
@@ -161,8 +161,8 @@ def facility_patients_latest_errors(
 @router.get("/{code}/error_history", response_model=list[HistoryPoint])
 def facility_errrors_history(
     code: str,
-    since: Optional[datetime.date] = None,
-    until: Optional[datetime.date] = None,
+    since: datetime.date | None = None,
+    until: datetime.date | None = None,
     ukrdc3: Session = Depends(get_ukrdc3),
     statsdb: Session = Depends(get_statsdb),
     user: UKRDCUser = Security(auth.get_user()),

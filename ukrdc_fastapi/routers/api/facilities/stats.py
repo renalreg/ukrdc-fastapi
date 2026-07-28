@@ -33,8 +33,8 @@ def facility_stats_demographics(
     redis: Redis = Depends(get_redis),
     ukrdc3: Session = Depends(get_ukrdc3),
     user: UKRDCUser = Security(auth.get_user()),
-    since: Optional[str] = None,
-    until: Optional[str] = None,
+    since: str | None = None,
+    until: str | None = None,
 ):
     """Retreive demographic statistics for a given facility"""
     assert_facility_permission(code, user)
@@ -86,8 +86,8 @@ def facility_stats_krt(
     redis: Redis = Depends(get_redis),
     ukrdc3: Session = Depends(get_ukrdc3),
     user: UKRDCUser = Security(auth.get_user()),
-    since: Optional[str] = None,
-    until: Optional[str] = None,
+    since: str | None = None,
+    until: str | None = None,
 ):
     """Retreive KRT statistics for a given facility"""
     assert_facility_permission(code, user)

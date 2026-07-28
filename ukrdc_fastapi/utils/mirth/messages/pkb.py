@@ -55,7 +55,7 @@ def _get_facility_exclusions(facility: Facility) -> list[str]:
     Returns:
         [type]: [description]
     """
-    excl: Optional[list[str]] = (
+    excl: list[str] | None = (
         list(facility.pkb_msg_exclusions) if facility.pkb_msg_exclusions else None
     )
     return excl or []

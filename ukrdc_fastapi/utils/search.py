@@ -35,7 +35,7 @@ class SearchSet:
         """Add a datetime formatted string to the search query set.
         If the string cannot be parsed as a datetime, it will be ignored"""
 
-        parsed_date: Optional[datetime.datetime] = parse_date(item)
+        parsed_date: datetime.datetime | None = parse_date(item)
         if parsed_date:
             self.dates.append(parsed_date.date())
 

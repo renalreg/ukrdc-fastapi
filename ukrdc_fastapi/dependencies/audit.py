@@ -112,11 +112,9 @@ class Auditer:
     def add_event(
         self,
         resource: Resource,
-        resource_id: Optional[Union[str, int]],
-        operation: Optional[
-            Union[AuditOperation, AuditOperation, AuditOperation, AuditOperation]
-        ],
-        parent: Optional[AuditEvent] = None,
+        resource_id: Union[str, int] | None,
+        operation: Union[AuditOperation, AuditOperation, AuditOperation, AuditOperation] | None,
+        parent: AuditEvent | None = None,
     ) -> AuditEvent:
         """Add an audit event
 
@@ -145,7 +143,7 @@ class Auditer:
     def add_workitem(
         self,
         workitem: Union[WorkItem, WorkItemSchema, WorkItemExtendedSchema],
-        parent: Optional[AuditEvent] = None,
+        parent: AuditEvent | None = None,
     ) -> AuditEvent:
         """Add a WorkItem and all of its child Person and Master Records to the audit database
 

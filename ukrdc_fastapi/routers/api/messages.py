@@ -61,12 +61,12 @@ def _get_message(
     dependencies=[Security(auth.permission(Permissions.READ_MESSAGES))],
 )
 def messages(
-    facility: Optional[str] = None,
-    since: Optional[datetime.datetime] = None,
-    until: Optional[datetime.datetime] = None,
-    status: Optional[list[str]] = QueryParam(None),
-    channel: Optional[list[str]] = QueryParam(None),
-    ni: Optional[list[str]] = QueryParam([]),
+    facility: str | None = None,
+    since: datetime.datetime | None = None,
+    until: datetime.datetime | None = None,
+    status: list[str] | None = QueryParam(None),
+    channel: list[str] | None = QueryParam(None),
+    ni: list[str] | None = QueryParam([]),
     user: UKRDCUser = Security(auth.get_user()),
     errorsdb: Session = Depends(get_errorsdb),
     sorter: SQLASorter = Depends(ERROR_SORTER),

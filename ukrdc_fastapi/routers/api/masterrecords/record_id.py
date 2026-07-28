@@ -94,7 +94,7 @@ def master_record(
 def master_record_related(
     record: MasterRecord = Depends(_get_masterrecord),
     exclude_self: bool = True,
-    nationalid_type: Optional[str] = None,
+    nationalid_type: str | None = None,
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
     audit: Auditer = Depends(get_auditer),
@@ -274,11 +274,11 @@ def master_record_linkrecords(
 )
 def master_record_messages(
     record: MasterRecord = Depends(_get_masterrecord),
-    facility: Optional[str] = None,
-    since: Optional[datetime.datetime] = None,
-    until: Optional[datetime.datetime] = None,
-    status: Optional[list[str]] = QueryParam(None),
-    channel: Optional[list[str]] = QueryParam(None),
+    facility: str | None = None,
+    since: datetime.datetime | None = None,
+    until: datetime.datetime | None = None,
+    status: list[str] | None = QueryParam(None),
+    channel: list[str] | None = QueryParam(None),
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
     errorsdb: Session = Depends(get_errorsdb),
@@ -317,7 +317,7 @@ def master_record_messages(
 )
 def master_record_workitems(
     record: MasterRecord = Depends(_get_masterrecord),
-    status: Optional[list[int]] = QueryParam([1]),
+    status: list[int] | None = QueryParam([1]),
     user: UKRDCUser = Security(auth.get_user()),
     jtrace: Session = Depends(get_jtrace),
     audit: Auditer = Depends(get_auditer),

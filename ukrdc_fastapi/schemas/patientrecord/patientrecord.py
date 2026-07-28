@@ -21,8 +21,8 @@ class ProgramMembershipSchema(OrmModel):
     """A program membership record."""
 
     program_name: str = Field(..., description="Program name")
-    from_time: Optional[datetime.date] = Field(None, description="Program start date")
-    to_time: Optional[datetime.date] = Field(None, description="Program end date")
+    from_time: datetime.date | None = Field(None, description="Program start date")
+    to_time: datetime.date | None = Field(None, description="Program end date")
 
 
 class SocialHistorySchema(OrmModel):
@@ -52,22 +52,22 @@ class BaseDiagnosisSchema(OrmModel):
     pid: str = Field(..., description="Patient ID")
 
     creation_date: datetime.datetime = Field(..., description="Database creation date")
-    update_date: Optional[datetime.datetime] = Field(
+    update_date: datetime.datetime | None = Field(
         ..., description="Database update date"
     )
 
-    enteredon: Optional[datetime.datetime] = Field(..., description="Entered date")
-    updatedon: Optional[datetime.datetime] = Field(..., description="Updated date")
+    enteredon: datetime.datetime | None = Field(..., description="Entered date")
+    updatedon: datetime.datetime | None = Field(..., description="Updated date")
 
-    diagnosistype: Optional[str] = Field(..., description="Diagnosis type")
+    diagnosistype: str | None = Field(..., description="Diagnosis type")
 
-    diagnosis_code: Optional[str] = Field(None, description="Diagnosis code")
-    diagnosis_code_std: Optional[str] = Field(
+    diagnosis_code: str | None = Field(None, description="Diagnosis code")
+    diagnosis_code_std: str | None = Field(
         None, description="Diagnosis code standard"
     )
-    diagnosis_desc: Optional[str] = Field(None, description="Diagnosis description")
+    diagnosis_desc: str | None = Field(None, description="Diagnosis description")
 
-    comments: Optional[str] = Field(None, description="Diagnosis comments")
+    comments: str | None = Field(None, description="Diagnosis comments")
 
 
 class DiagnosisSchema(BaseDiagnosisSchema):
@@ -75,10 +75,10 @@ class DiagnosisSchema(BaseDiagnosisSchema):
 
     id: str = Field(..., description="Diagnosis ID")
 
-    identification_time: Optional[datetime.datetime] = Field(
+    identification_time: datetime.datetime | None = Field(
         None, description="Diagnosis identification timestamp"
     )
-    onset_time: Optional[datetime.datetime] = Field(
+    onset_time: datetime.datetime | None = Field(
         None, description="Diagnosis onset timestamp"
     )
 
@@ -86,10 +86,10 @@ class DiagnosisSchema(BaseDiagnosisSchema):
 class RenalDiagnosisSchema(BaseDiagnosisSchema):
     """A renal diagnosis record."""
 
-    identification_time: Optional[datetime.datetime] = Field(
+    identification_time: datetime.datetime | None = Field(
         None, description="Diagnosis identification timestamp"
     )
-    onset_time: Optional[datetime.datetime] = Field(
+    onset_time: datetime.datetime | None = Field(
         None, description="Diagnosis onset timestamp"
     )
 
@@ -105,65 +105,65 @@ class DialysisSessionSchema(OrmModel):
     pid: str = Field(..., description="Patient ID")
 
     creation_date: datetime.datetime = Field(..., description="Database creation date")
-    update_date: Optional[datetime.datetime] = Field(
+    update_date: datetime.datetime | None = Field(
         ..., description="Database update date"
     )
 
     # idx: Currently unused
-    externalid: Optional[str] = Field(None, description="External session ID")
+    externalid: str | None = Field(None, description="External session ID")
 
-    proceduretime: Optional[datetime.datetime] = Field(
+    proceduretime: datetime.datetime | None = Field(
         ..., description="Procedure datetime"
     )
 
     # Procedure type
-    proceduretypecode: Optional[str] = Field(None, description="Procedure code")
-    proceduretypecodestd: Optional[str] = Field(
+    proceduretypecode: str | None = Field(None, description="Procedure code")
+    proceduretypecodestd: str | None = Field(
         None, description="Procedure code standard"
     )
-    proceduretypedesc: Optional[str] = Field(None, description="Procedure description")
+    proceduretypedesc: str | None = Field(None, description="Procedure description")
 
     # Clinician
-    cliniciancode: Optional[str] = Field(
+    cliniciancode: str | None = Field(
         None, description="Clinicial code. Rarely used."
     )
-    cliniciancodestd: Optional[str] = Field(
+    cliniciancodestd: str | None = Field(
         None, description="Clinicial code standard. Rarely used."
     )
-    cliniciandesc: Optional[str] = Field(None, description="Clinician description")
+    cliniciandesc: str | None = Field(None, description="Clinician description")
 
     # Data-entry user
-    enteredbycode: Optional[str] = Field(
+    enteredbycode: str | None = Field(
         None, description="Data-entry user code. Usually a local username or ID."
     )
-    enteredbycodestd: Optional[str] = Field(
+    enteredbycodestd: str | None = Field(
         None, description="Data-entry user code standard. Usually local."
     )
-    enteredbydesc: Optional[str] = Field(
+    enteredbydesc: str | None = Field(
         None, description="Data-entry user description"
     )
 
     # Data entry site/unit
-    enteredatcode: Optional[str] = Field(
+    enteredatcode: str | None = Field(
         None,
         description="Site code at which the data was entered. Usually an RR1+ code.",
     )
-    enteredatcodestd: Optional[str] = Field(
+    enteredatcodestd: str | None = Field(
         None, description="Site code standard at which the data was entered."
     )
-    enteredatdesc: Optional[str] = Field(
+    enteredatdesc: str | None = Field(
         None, description="Site description at which the data was entered."
     )
 
     # Session data
-    qhd19: Optional[str] = None
-    qhd20: Optional[str] = None
-    qhd21: Optional[str] = None
-    qhd22: Optional[str] = None
-    qhd30: Optional[str] = None
-    qhd31: Optional[str] = None
-    qhd32: Optional[str] = None
-    qhd33: Optional[str] = None
+    qhd19: str | None = None
+    qhd20: str | None = None
+    qhd21: str | None = None
+    qhd22: str | None = None
+    qhd30: str | None = None
+    qhd31: str | None = None
+    qhd32: str | None = None
+    qhd33: str | None = None
 
     # updatedon: Currently unused
     # actioncode: Currently unused
@@ -181,77 +181,77 @@ class DocumentSummarySchema(OrmModel):
 
     id: str = Field(..., description="Document ID")
     pid: str = Field(..., description="Patient ID")
-    documenttime: Optional[datetime.datetime] = Field(
+    documenttime: datetime.datetime | None = Field(
         None, description="Document created time"
     )
-    documentname: Optional[str] = Field(None, description="Document name")
+    documentname: str | None = Field(None, description="Document name")
 
-    filetype: Optional[str] = Field(None, description="Document file type")
-    filename: Optional[str] = Field(None, description="Document file name")
+    filetype: str | None = Field(None, description="Document file type")
+    filename: str | None = Field(None, description="Document file name")
 
-    enteredbydesc: Optional[str] = Field(
+    enteredbydesc: str | None = Field(
         None, description="Document author description"
     )
-    enteredatcode: Optional[str] = Field(None, description="Document organisation code")
+    enteredatcode: str | None = Field(None, description="Document organisation code")
 
 
 class DocumentSchema(DocumentSummarySchema):
     """A patient document."""
 
-    idx: Optional[int] = Field(None, description="Document index")
+    idx: int | None = Field(None, description="Document index")
 
-    notetext: Optional[str] = Field(None, description="Document note text")
-    documenttypecode: Optional[str] = Field(None, description="Document type code")
-    documenttypecodestd: Optional[str] = Field(
+    notetext: str | None = Field(None, description="Document note text")
+    documenttypecode: str | None = Field(None, description="Document type code")
+    documenttypecodestd: str | None = Field(
         None, description="Document type code standard"
     )
-    documenttypedesc: Optional[str] = Field(
+    documenttypedesc: str | None = Field(
         None, description="Document type description"
     )
 
-    cliniciancode: Optional[str] = Field(
+    cliniciancode: str | None = Field(
         None, description="Document author clinician code"
     )
-    cliniciancodestd: Optional[str] = Field(
+    cliniciancodestd: str | None = Field(
         None, description="Document author clinician code standard"
     )
-    cliniciandesc: Optional[str] = Field(
+    cliniciandesc: str | None = Field(
         None, description="Document author clinician description"
     )
 
-    statuscode: Optional[str] = Field(None, description="Document status code")
-    statuscodestd: Optional[str] = Field(
+    statuscode: str | None = Field(None, description="Document status code")
+    statuscodestd: str | None = Field(
         None, description="Document status code standard"
     )
-    statusdesc: Optional[str] = Field(None, description="Document status description")
+    statusdesc: str | None = Field(None, description="Document status description")
 
-    enteredbycode: Optional[str] = Field(None, description="Document author code")
-    enteredbycodestd: Optional[str] = Field(
+    enteredbycode: str | None = Field(None, description="Document author code")
+    enteredbycodestd: str | None = Field(
         None, description="Document author code standard"
     )
 
-    enteredatcodestd: Optional[str] = Field(
+    enteredatcodestd: str | None = Field(
         None, description="Document organisation code standard"
     )
-    enteredatdesc: Optional[str] = Field(
+    enteredatdesc: str | None = Field(
         None, description="Document organisation description"
     )
 
-    documenturl: Optional[str] = Field(None, description="Document URL")
-    updatedon: Optional[datetime.datetime] = Field(
+    documenturl: str | None = Field(None, description="Document URL")
+    updatedon: datetime.datetime | None = Field(
         None, description="Document updated timestamp"
     )
-    actioncode: Optional[str] = Field(None, description="Document action code")
-    externalid: Optional[str] = Field(None, description="Document external ID")
+    actioncode: str | None = Field(None, description="Document action code")
+    externalid: str | None = Field(None, description="Document external ID")
 
-    update_date: Optional[datetime.datetime] = Field(
+    update_date: datetime.datetime | None = Field(
         None, description="Document updated timestamp"
     )
-    creation_date: Optional[datetime.datetime] = Field(
+    creation_date: datetime.datetime | None = Field(
         None, description="Document created timestamp"
     )
 
-    repository_update_date: Optional[datetime.datetime] = Field(
+    repository_update_date: datetime.datetime | None = Field(
         None, description="Document repository updated timestamp"
     )
 
@@ -261,8 +261,8 @@ class EncounterSchema(OrmModel):
 
     id: str = Field(..., description="Encounter ID")
     pid: str = Field(..., description="Patient ID")
-    from_time: Optional[datetime.datetime] = Field(None, description="Encounter start")
-    to_time: Optional[datetime.datetime] = Field(None, description="Encounter end")
+    from_time: datetime.datetime | None = Field(None, description="Encounter start")
+    to_time: datetime.datetime | None = Field(None, description="Encounter end")
 
 
 class ClinicalRelationshipSchema(OrmModel):
@@ -278,13 +278,13 @@ class PVDataSchema(OrmModel):
     """
 
     creation_date: datetime.datetime = Field(..., description="Creation date")
-    update_date: Optional[datetime.datetime] = Field(None, description="Update date")
+    update_date: datetime.datetime | None = Field(None, description="Update date")
 
-    rrtstatus: Optional[str] = Field(None, description="RRT status code")
-    tpstatus: Optional[str] = Field(None, description="Transplant status")
-    bloodgroup: Optional[str] = Field(None, description="Blood group")
+    rrtstatus: str | None = Field(None, description="RRT status code")
+    tpstatus: str | None = Field(None, description="Transplant status")
+    bloodgroup: str | None = Field(None, description="Blood group")
 
-    diagnosisdate: Optional[datetime.datetime] = Field(
+    diagnosisdate: datetime.datetime | None = Field(
         None, description="Diagnosis date"
     )
 
@@ -294,10 +294,10 @@ class PVDeleteSchema(OrmModel):
 
     did: int = Field(..., description="Delete ID")
     pid: str = Field(..., description="Patient ID")
-    observation_time: Optional[datetime.datetime] = Field(
+    observation_time: datetime.datetime | None = Field(
         None, description="Observation timestamp"
     )
-    service_id: Optional[str] = Field(None, description="Service ID")
+    service_id: str | None = Field(None, description="Service ID")
 
 
 class PatientRecordSummarySchema(OrmModel):
@@ -309,12 +309,12 @@ class PatientRecordSummarySchema(OrmModel):
     localpatientid: str = Field(..., description="Local patient ID")
     ukrdcid: str = Field(..., description="UKRDC ID")
 
-    pvdata: Optional[PVDataSchema] = Field(None, description="PV Data")
+    pvdata: PVDataSchema | None = Field(None, description="PV Data")
 
     program_memberships: list[ProgramMembershipSchema] = Field(
         [], description="Program memberships"
     )
-    patient: Optional[PatientSchema] = Field(None, description="Patient")
+    patient: PatientSchema | None = Field(None, description="Patient")
 
     repository_creation_date: datetime.datetime = Field(
         ..., description="Repository creation timestamp"
@@ -327,7 +327,7 @@ class PatientRecordSummarySchema(OrmModel):
 class PatientRecordSchema(PatientRecordSummarySchema):
     """A patient record."""
 
-    master_id: Optional[int] = Field(None, description="Master record ID")
+    master_id: int | None = Field(None, description="Master record ID")
 
     @classmethod
     def from_orm_with_master_record(
@@ -380,4 +380,4 @@ class PatientRecordFullSchema(PatientRecordSummarySchema):
     surveys: list[SurveySchema] = Field(..., description="Surveys")
     pvdelete: list[PVDeleteSchema] = Field(..., description="PV Deletes")
 
-    patient: Optional[PatientSchema] = Field(None, description="Patient")
+    patient: PatientSchema | None = Field(None, description="Patient")

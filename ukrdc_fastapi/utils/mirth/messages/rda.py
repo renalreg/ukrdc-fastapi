@@ -19,10 +19,10 @@ from ukrdc_fastapi.schemas.patientrecord.patient import (
 
 def build_demographic_update_message(
     record: PatientRecord,
-    name: Optional[NameSchema],
-    birth_time: Optional[datetime.datetime],
-    gender: Optional[GenderType],
-    address: Optional[AddressSchema],
+    name: NameSchema | None,
+    birth_time: datetime.datetime | None,
+    gender: GenderType | None,
+    address: AddressSchema | None,
 ) -> str:
     """
     Build an RDA XML message to update the demographic data of a given patient record

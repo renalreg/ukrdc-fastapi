@@ -19,9 +19,9 @@ class MasterRecordSchema(OrmModel):
         ..., description="EMPI record last updated timestamp"
     )
     date_of_birth: datetime.date = Field(..., description="Patient date of birth")
-    gender: Optional[str] = Field(None, description="Patient gender code")
-    givenname: Optional[str] = Field(None, description="Patient given name")
-    surname: Optional[str] = Field(None, description="Patient surname")
+    gender: str | None = Field(None, description="Patient gender code")
+    givenname: str | None = Field(None, description="Patient given name")
+    surname: str | None = Field(None, description="Patient surname")
     status: int = Field(..., description="EMPI record status code")
     effective_date: datetime.datetime
 
@@ -45,9 +45,9 @@ class PersonSchema(OrmModel):
     localid_type: str = Field(..., description="Person local ID type code")
     date_of_birth: datetime.date = Field(..., description="Date of birth")
     gender: str = Field(..., description="Gender code")
-    date_of_death: Optional[datetime.date] = Field(None, description="Date of death")
-    givenname: Optional[str] = Field(None, description="Given name")
-    surname: Optional[str] = Field(None, description="Surname")
+    date_of_death: datetime.date | None = Field(None, description="Date of death")
+    givenname: str | None = Field(None, description="Given name")
+    surname: str | None = Field(None, description="Surname")
     xref_entries: list[PidXRefSchema] = Field(..., description="PID xrefs")
 
 
@@ -94,22 +94,22 @@ class WorkItemAttributes(OrmModel):
     Attributes of the incoming record that mismatch the destination EMPI record, in the format incoming:destination
     """
 
-    sending_extract: Optional[str] = Field(
+    sending_extract: str | None = Field(
         None, description="Mismatching sending extract values"
     )
-    sending_facility: Optional[str] = Field(
+    sending_facility: str | None = Field(
         None, description="Mismatching sending facility values"
     )
-    localid: Optional[str] = Field(None, description="Mismatching local ID values")
-    date_of_birth: Optional[str] = Field(
+    localid: str | None = Field(None, description="Mismatching local ID values")
+    date_of_birth: str | None = Field(
         None, description="Mismatching date of birth values"
     )
-    date_of_death: Optional[str] = Field(
+    date_of_death: str | None = Field(
         None, description="Mismatching date of death values"
     )
-    gender: Optional[str] = Field(None, description="Mismatching gender code values")
-    givenname: Optional[str] = Field(None, description="Mismatching given name values")
-    surname: Optional[str] = Field(None, description="Mismatching surname values")
+    gender: str | None = Field(None, description="Mismatching gender code values")
+    givenname: str | None = Field(None, description="Mismatching given name values")
+    surname: str | None = Field(None, description="Mismatching surname values")
 
 
 class WorkItemSchema(OrmModel):
@@ -128,19 +128,19 @@ class WorkItemSchema(OrmModel):
     last_updated: datetime.datetime = Field(
         ..., description="Work item last updated timestamp"
     )
-    updated_by: Optional[str] = Field(
+    updated_by: str | None = Field(
         None, description="Work item last updated by username"
     )
 
-    attributes: Optional[WorkItemAttributes] = Field(
+    attributes: WorkItemAttributes | None = Field(
         None, description="Work item mismatching attributes"
     )
-    update_description: Optional[str] = Field(
+    update_description: str | None = Field(
         None, description="Description of the reaoning behind the last update"
     )
 
-    person: Optional[PersonSchema] = Field(None, description="Person record")
-    master_record: Optional[MasterRecordSchema] = Field(
+    person: PersonSchema | None = Field(None, description="Person record")
+    master_record: MasterRecordSchema | None = Field(
         None, description="Master record"
     )
 
@@ -155,12 +155,12 @@ class WorkItemSchema(OrmModel):
             value = json.loads(value)
         # Re-map dictionary keys
         if isinstance(value, dict):
-            new_attribute_dict: dict[str, Optional[str]] = {}
+            new_attribute_dict: dict[str, str | None] = {}
             for key, attribute in value.items():
                 # Pick a new key
                 new_key = WORKITEM_ATTRIBUTE_MAP.get(key, key)
                 # Break the colon-delimited attribute value into a list
-                split_value: Optional[list[str]] = (
+                split_value: list[str] | None = (
                     attribute.split(":") if attribute else None
                 )
 
@@ -180,7 +180,7 @@ class WorkItemSchema(OrmModel):
 class WorkItemIncomingSchema(OrmModel):
     """Incoming records for a work item in the EMPI"""
 
-    person: Optional[PersonSchema] = Field(None, description="Person record")
+    person: PersonSchema | None = Field(None, description="Person record")
     master_records: list[MasterRecordSchema] = Field(..., description="Master records")
 
 
@@ -188,7 +188,7 @@ class WorkItemDestinationSchema(OrmModel):
     """Destination records for a work item in the EMPI"""
 
     persons: list[PersonSchema] = Field(..., description="Person records")
-    master_record: Optional[MasterRecordSchema] = Field(
+    master_record: MasterRecordSchema | None = Field(
         None, description="Master record"
     )
 

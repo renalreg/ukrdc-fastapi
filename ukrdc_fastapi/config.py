@@ -15,11 +15,11 @@ class Configuration(BaseSettings):
     deployment_env: str = "development"
 
     # Sentry
-    sentry_dsn: Optional[str] = None
+    sentry_dsn: str | None = None
 
     # Build
-    github_sha: Optional[str] = None
-    github_ref: Optional[str] = None
+    github_sha: str | None = None
+    github_ref: str | None = None
 
     # Package info
     version: str = package_ver or "0.0.0-dev"

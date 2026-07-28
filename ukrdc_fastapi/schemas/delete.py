@@ -17,7 +17,7 @@ from .base import OrmModel
 class DeletePidRequest(OrmModel):
     """A request to delete a PID from the UKRDC"""
 
-    hash: Optional[str] = Field(None, description="Hash of the record to delete")
+    hash: str | None = Field(None, description="Hash of the record to delete")
 
 
 class DeletePidFromEmpiRequest(OrmModel):
@@ -39,10 +39,10 @@ class DeletePidFromEmpiRequest(OrmModel):
 class DeletePIDPreviewSchema(OrmModel):
     """A preview of the records that will be deleted"""
 
-    patient_record: Optional[PatientRecordFullSchema] = Field(
+    patient_record: PatientRecordFullSchema | None = Field(
         None, description="Patient record to delete"
     )
-    empi: Optional[DeletePidFromEmpiRequest] = Field(
+    empi: DeletePidFromEmpiRequest | None = Field(
         None, description="EMPI records to delete"
     )
 
