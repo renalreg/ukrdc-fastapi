@@ -59,7 +59,7 @@ def fetch_page(client: httpx.Client, page: int) -> Page:
         )
         response.raise_for_status()
     except httpx.RequestError as e:
-        print(f"Error fetching data for {FACILITY_CODE}: {str(e)}")
+        print(f"Error fetching data for {FACILITY_CODE}: {e!s}")
         return Page(items=[], total=0, page=page, size=PAGE_SIZE)
 
     data = response.json()
@@ -136,7 +136,7 @@ def main() -> None:
                     str(OUTPUT_PATH).format(facility_code=facility_code), index=False
                 )
         except Exception as e:
-            print(f"Failed to process {facility_code}: {str(e)}")
+            print(f"Failed to process {facility_code}: {e!s}")
             continue
 
 
