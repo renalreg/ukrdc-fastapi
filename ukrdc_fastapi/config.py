@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic_settings import BaseSettings
+from pydantic_settings import SettingsConfigDict, BaseSettings
 
 from . import __version__ as package_ver
 
@@ -137,9 +137,7 @@ class Settings(BaseSettings):
         "http://localhost:3000",
         "http://ukrdc-nuxt-3:3000",
     ]
-
-    class Config:
-        env_file = ".env"
+    model_config = SettingsConfigDict(env_file=".env")
 
 
 settings = Settings()

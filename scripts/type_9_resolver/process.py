@@ -33,7 +33,7 @@ async def process_workitem(workitem_id: int):
         print(f"nis: {workitem_nis}")
 
         messages = [
-            MessageSchema.from_orm(msg)
+            MessageSchema.model_validate(msg)
             for msg in errorsdb.scalars(
                 select_messages(
                     statuses=["ERROR"],

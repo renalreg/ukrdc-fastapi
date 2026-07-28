@@ -79,7 +79,7 @@ def get_code(ukrdc3: Session, coding_standard: str, code: str) -> ExtendedCodeSc
     ).all()
 
     return ExtendedCodeSchema(
-        **CodeSchema.from_orm(code_obj).dict(),
+        **CodeSchema.model_validate(code_obj).model_dump(),
         maps_to=maps_to,
         mapped_by=mapped_by,
     )

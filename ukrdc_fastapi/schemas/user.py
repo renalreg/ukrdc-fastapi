@@ -1,11 +1,11 @@
 from typing import Optional
 
-from pydantic import Extra, Field
+from pydantic import Field
 
 from .base import OrmModel
 
 
-class UserPreferences(OrmModel, extra=Extra.ignore):
+class UserPreferences(OrmModel, extra="ignore"):
     """User preferences"""
 
     placeholder: bool = Field(

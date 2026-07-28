@@ -107,7 +107,7 @@ def message(
     # validator, meaning we don't get a populated channel name unless we explicitly
     # call it here.
     audit.add_event(Resource.MESSAGE, message_obj.id, AuditOperation.READ)
-    return MessageSchema.from_orm(message_obj)
+    return MessageSchema.model_validate(message_obj)
 
 
 @router.get(

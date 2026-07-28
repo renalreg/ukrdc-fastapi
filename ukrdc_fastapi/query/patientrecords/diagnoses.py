@@ -62,7 +62,7 @@ def get_patient_diagnosis(
     items = []
 
     for row in result:
-        item = ExtendedDiagnosisSchema.from_orm(row[0])
+        item = ExtendedDiagnosisSchema.model_validate(row[0])
         item.description = row[1]
         items.append(item)
 
@@ -93,7 +93,7 @@ def get_patient_renal_diagnosis(
     items = []
 
     for row in result:
-        item = ExtendedRenalDiagnosisSchema.from_orm(row.RenalDiagnosis)
+        item = ExtendedRenalDiagnosisSchema.model_validate(row.RenalDiagnosis)
         item.description = row.description
         items.append(item)
 
@@ -124,7 +124,7 @@ def get_patient_cause_of_death(
     items = []
 
     for row in result:
-        item = ExtendedCauseOfDeathSchema.from_orm(row.CauseOfDeath)
+        item = ExtendedCauseOfDeathSchema.model_validate(row.CauseOfDeath)
         item.description = row.description
         items.append(item)
 
