@@ -40,9 +40,7 @@ def record_is_membership(record: PatientRecord):
         return True
 
     # Records with systems as their sendingfacility are membership records
-    if record.sendingfacility in MEMBERSHIP_FACILITIES:
-        return True
-    return False
+    return record.sendingfacility in MEMBERSHIP_FACILITIES
 
 
 def record_is_data(record: PatientRecord):

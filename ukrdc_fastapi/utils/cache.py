@@ -202,9 +202,7 @@ class ResponseCache(BasicCache):
         Returns:
             bool: Does the incoming request have a 'Cache-Control: no-store' header
         """
-        if self.request.headers.get("Cache-Control") == "no-store":
-            return True
-        return False
+        return self.request.headers.get("Cache-Control") == "no-store"
 
     def _set_etag(self, value_str: str | None):
         """Set the etag header for a given resource string

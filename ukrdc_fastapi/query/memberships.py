@@ -43,6 +43,4 @@ def record_has_active_membership(
 
     active_memberships_of_this_type = ukrdc3.scalars(stmt).all()
 
-    if active_memberships_of_this_type:
-        return True
-    return False
+    return bool(active_memberships_of_this_type)
