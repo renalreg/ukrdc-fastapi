@@ -1,4 +1,3 @@
-from typing import Union
 from collections.abc import Callable, Sequence
 
 from fastapi import Depends, HTTPException

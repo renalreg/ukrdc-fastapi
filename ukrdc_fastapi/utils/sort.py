@@ -1,6 +1,6 @@
 import enum
 import functools
-from typing import Any, Union
+from typing import Any
 
 from fastapi import HTTPException
 from sqlalchemy import Column

@@ -1,5 +1,3 @@
-from typing import Union
-
 from fastapi import Depends
 from redis import Redis
 from starlette.requests import Request

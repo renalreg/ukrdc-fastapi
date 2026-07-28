@@ -96,9 +96,7 @@ def get_multiple_ukrdcids(
         list[list[MasterRecord]]: List of groups of records.
     """
     # Fetch all unresolved rows
-    stmt_multiple_ids = select(MultipleUKRDCID).where(
-        MultipleUKRDCID.resolved == False  # noqa: E712
-    )
+    stmt_multiple_ids = select(MultipleUKRDCID).where(MultipleUKRDCID.resolved == False)
     multiple_ids = statsdb.scalars(stmt_multiple_ids).all()
     record_groups = {item.master_id: item for item in multiple_ids}
 
