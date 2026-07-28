@@ -140,9 +140,7 @@ class WorkItemSchema(OrmModel):
     )
 
     person: PersonSchema | None = Field(None, description="Person record")
-    master_record: MasterRecordSchema | None = Field(
-        None, description="Master record"
-    )
+    master_record: MasterRecordSchema | None = Field(None, description="Master record")
 
     @field_validator("attributes", mode="before")
     @classmethod
@@ -188,9 +186,7 @@ class WorkItemDestinationSchema(OrmModel):
     """Destination records for a work item in the EMPI"""
 
     persons: list[PersonSchema] = Field(..., description="Person records")
-    master_record: MasterRecordSchema | None = Field(
-        None, description="Master record"
-    )
+    master_record: MasterRecordSchema | None = Field(None, description="Master record")
 
 
 class WorkItemExtendedSchema(WorkItemSchema):

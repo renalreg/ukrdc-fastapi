@@ -10,7 +10,12 @@ from ukrdc_fastapi.dependencies.audit import (
     Resource,
     get_auditer,
 )
-from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
+from ukrdc_fastapi.dependencies.auth import (
+    Permissions,
+    UKRDCUser,
+    auth,
+    get_current_user,
+)
 from ukrdc_fastapi.exceptions import PermissionsError
 from ukrdc_fastapi.permissions.patientrecords import apply_patientrecord_list_permission
 from ukrdc_fastapi.query.mirth.memberships import create_partner_membership_for_ukrdcid
@@ -28,7 +33,7 @@ router = APIRouter(tags=["UKRDC Record Group"])
 )
 def ukrdcid_records(
     ukrdcid: str,
-    user: UKRDCUser = Security(auth.get_user()),
+    user: UKRDCUser = Security(get_current_user),
     ukrdc3: Session = Depends(get_ukrdc3),
     audit: Auditer = Depends(get_auditer),
 ):
@@ -57,7 +62,7 @@ def ukrdcid_records(
 )
 async def ukrdcid_memberships_create_pkb(
     ukrdcid: str,
-    user: UKRDCUser = Security(auth.get_user()),
+    user: UKRDCUser = Security(get_current_user),
     ukrdc3: Session = Depends(get_ukrdc3),
     mirth: MirthAPI = Depends(get_mirth),
     audit: Auditer = Depends(get_auditer),
@@ -85,7 +90,7 @@ async def ukrdcid_memberships_create_pkb(
 )
 async def ukrdcid_memberships_create_mrc(
     ukrdcid: str,
-    user: UKRDCUser = Security(auth.get_user()),
+    user: UKRDCUser = Security(get_current_user),
     ukrdc3: Session = Depends(get_ukrdc3),
     mirth: MirthAPI = Depends(get_mirth),
     audit: Auditer = Depends(get_auditer),

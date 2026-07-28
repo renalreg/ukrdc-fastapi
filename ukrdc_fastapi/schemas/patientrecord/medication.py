@@ -21,9 +21,7 @@ class MedicationSchema(OrmModel):
     dosequantity: Annotated[
         str | None, BeforeValidator(lambda v: str(v) if v is not None else v)
     ] = Field(None, description="...")
-    doseuomcode: str | None = Field(
-        None, description="Dose unit of measurement code"
-    )
+    doseuomcode: str | None = Field(None, description="Dose unit of measurement code")
     doseuomcodestd: str | None = Field(
         None, description="Dose unit of measurement coding standard"
     )

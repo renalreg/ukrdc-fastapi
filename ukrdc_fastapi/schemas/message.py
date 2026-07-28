@@ -50,9 +50,7 @@ class MessageSchema(MinimalMessageSchema):
         alias="mirthMessageId", description="Mirth message ID"
     )
     channel_id: str = Field(alias="mirthChannelId", description="Mirth channel ID")
-    mirth_channel: str | None = Field(
-        None, description="Mirth channel name, if known"
-    )
+    mirth_channel: str | None = Field(None, description="Mirth channel name, if known")
 
     @classmethod
     def set_channel_id_name_map(cls, cinm: dict[str, str]):

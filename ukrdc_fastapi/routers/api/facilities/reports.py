@@ -2,7 +2,12 @@ from fastapi import APIRouter, Depends, Security
 from sqlalchemy.orm import Session
 
 from ukrdc_fastapi.dependencies import get_ukrdc3
-from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
+from ukrdc_fastapi.dependencies.auth import (
+    Permissions,
+    UKRDCUser,
+    auth,
+    get_current_user,
+)
 from ukrdc_fastapi.permissions.facilities import assert_facility_permission
 from ukrdc_fastapi.query.facilities.reports import (
     select_facility_report_cc001,
@@ -28,7 +33,7 @@ router = APIRouter(tags=["Facilities/Reports"], prefix="/{code}/reports")
 def facility_reports_cc001(
     code: str,
     ukrdc3: Session = Depends(get_ukrdc3),
-    user: UKRDCUser = Security(auth.get_user()),
+    user: UKRDCUser = Security(get_current_user),
 ):
     """
     Custom Cohort Report 001:
@@ -54,7 +59,7 @@ def facility_reports_cc001(
 def facility_reports_pm001(
     code: str,
     ukrdc3: Session = Depends(get_ukrdc3),
-    user: UKRDCUser = Security(auth.get_user()),
+    user: UKRDCUser = Security(get_current_user),
 ):
     """
     Program Membership Report 001:
@@ -76,7 +81,7 @@ def facility_reports_pm001(
 def facility_radar_missing(
     code: str,
     ukrdc3: Session = Depends(get_ukrdc3),
-    user: UKRDCUser = Security(auth.get_user()),
+    user: UKRDCUser = Security(get_current_user),
 ):
     """
     Radar missing:

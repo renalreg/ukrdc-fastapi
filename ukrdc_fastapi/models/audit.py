@@ -40,9 +40,7 @@ class AuditEvent(Base):
     __tablename__ = "audit_event"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    parent_id: Mapped[int | None] = mapped_column(
-        Integer, ForeignKey("audit_event.id")
-    )
+    parent_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("audit_event.id"))
     children: Mapped[list["AuditEvent"]] = relationship("AuditEvent")
 
     access_event_id: Mapped[int | None] = mapped_column(
@@ -52,11 +50,7 @@ class AuditEvent(Base):
         "AccessEvent", back_populates="audit_events"
     )
 
-    resource: Mapped[int | None] = mapped_column(
-        String
-    )  # Resource type (null if self)
-    resource_id: Mapped[str | None] = mapped_column(
-        String
-    )  # Resource ID if applicable
+    resource: Mapped[int | None] = mapped_column(String)  # Resource type (null if self)
+    resource_id: Mapped[str | None] = mapped_column(String)  # Resource ID if applicable
 
     operation: Mapped[str | None] = mapped_column(String)  # Resource operation

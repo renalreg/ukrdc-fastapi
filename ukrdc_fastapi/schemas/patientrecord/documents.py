@@ -19,9 +19,7 @@ class DocumentSummarySchema(OrmModel):
     filetype: str | None = Field(None, description="Document file type")
     filename: str | None = Field(None, description="Document file name")
 
-    enteredbydesc: str | None = Field(
-        None, description="Document author description"
-    )
+    enteredbydesc: str | None = Field(None, description="Document author description")
     enteredatcode: str | None = Field(None, description="Document organisation code")
 
 
@@ -36,9 +34,7 @@ class DocumentSchema(DocumentSummarySchema):
     documenttypecodestd: str | None = Field(
         None, description="Document type code standard"
     )
-    documenttypedesc: str | None = Field(
-        None, description="Document type description"
-    )
+    documenttypedesc: str | None = Field(None, description="Document type description")
 
     cliniciancode: str | None = Field(
         None, description="Document author clinician code"
@@ -51,9 +47,7 @@ class DocumentSchema(DocumentSummarySchema):
     )
 
     statuscode: str | None = Field(None, description="Document status code")
-    statuscodestd: str | None = Field(
-        None, description="Document status code standard"
-    )
+    statuscodestd: str | None = Field(None, description="Document status code standard")
     statusdesc: str | None = Field(None, description="Document status description")
 
     enteredbycode: str | None = Field(None, description="Document author code")

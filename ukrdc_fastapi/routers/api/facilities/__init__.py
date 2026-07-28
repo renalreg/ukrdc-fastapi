@@ -1,5 +1,4 @@
 import datetime
-from typing import Optional
 
 from fastapi import APIRouter, Depends
 from fastapi import Query as QueryParam
@@ -14,8 +13,18 @@ from ukrdc_fastapi.dependencies.audit import (
     Resource,
     get_auditer,
 )
-from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
-from ukrdc_fastapi.dependencies.cache import FacilityCachePrefix, facility_cache_factory
+from ukrdc_fastapi.dependencies.auth import (
+    Permissions,
+    UKRDCUser,
+    auth,
+    get_current_user,
+)
+from ukrdc_fastapi.dependencies.cache import (
+    EXTRACT_FACILITY_CACHE,
+    ROOT_FACILITY_CACHE,
+    FEEDSHARE_FACILITY_CACHE,
+)
+from ukrdc_fastapi.dependencies.sorters import ERROR_SORTER, FACILITY_ENUM_SORTER
 from ukrdc_fastapi.permissions.facilities import (
     apply_facility_list_permissions,
     assert_facility_permission,
@@ -34,10 +43,9 @@ from ukrdc_fastapi.query.facilities.errors import (
 )
 from ukrdc_fastapi.schemas.common import HistoryPoint
 from ukrdc_fastapi.schemas.message import MessageSchema
-from ukrdc_fastapi.sorters import ERROR_SORTER
 from ukrdc_fastapi.utils.cache import ResponseCache
 from ukrdc_fastapi.utils.paginate import Page, paginate
-from ukrdc_fastapi.utils.sort import ObjectSorter, SQLASorter, make_object_sorter
+from ukrdc_fastapi.utils.sort import ObjectSorter, SQLASorter
 from . import reports, stats
 
 router = APIRouter(tags=["Facilities"])
@@ -49,22 +57,11 @@ router.include_router(reports.router)
 def facility_list(
     include_inactive: bool = False,
     include_empty: bool = False,
-    sorter: ObjectSorter = Depends(
-        make_object_sorter(
-            "FacilitySorterEnum",
-            [
-                "id",
-                "statistics.total_patients",
-                "statistics.patients_receiving_message_error",
-                "data_flow.pkb_out",
-                "last_message_received_at",
-            ],
-        )
-    ),
+    sorter: ObjectSorter = FACILITY_ENUM_SORTER,
     ukrdc3: Session = Depends(get_ukrdc3),
     errorsdb: Session = Depends(get_errorsdb),
     redis: Redis = Depends(get_redis),
-    user: UKRDCUser = Security(auth.get_user()),
+    user: UKRDCUser = Security(get_current_user),
 ):
     """Retreive a list of on-record facilities"""
     facilities = get_facilities(
@@ -84,10 +81,8 @@ def facility_list(
 @router.get("/feedshare", response_model=dict[str, list[str]])
 def facility_feedshare(
     ukrdc3: Session = Depends(get_ukrdc3),
-    user: UKRDCUser = Security(auth.get_user()),
-    cache: ResponseCache = Depends(
-        facility_cache_factory(FacilityCachePrefix.FEEDSHARE)
-    ),
+    user: UKRDCUser = Security(get_current_user),
+    cache: ResponseCache = FEEDSHARE_FACILITY_CACHE,
 ):
     """Retreive all feedshare facility groupings, keyed by parent facility code.
 
@@ -111,8 +106,8 @@ def facility(
     code: str,
     ukrdc3: Session = Depends(get_ukrdc3),
     errorsdb: Session = Depends(get_errorsdb),
-    user: UKRDCUser = Security(auth.get_user()),
-    cache: ResponseCache = Depends(facility_cache_factory(FacilityCachePrefix.ROOT)),
+    user: UKRDCUser = Security(get_current_user),
+    cache: ResponseCache = ROOT_FACILITY_CACHE,
 ):
     """Retreive information and current status of a particular facility"""
     assert_facility_permission(code, user)
@@ -139,8 +134,8 @@ def facility_patients_latest_errors(
     channel: list[str] | None = QueryParam(None),
     ukrdc3: Session = Depends(get_ukrdc3),
     errorsdb: Session = Depends(get_errorsdb),
-    user: UKRDCUser = Security(auth.get_user()),
-    sorter: SQLASorter = Depends(ERROR_SORTER),
+    user: UKRDCUser = Security(get_current_user),
+    sorter: SQLASorter = ERROR_SORTER,
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive time-series new error counts for the last year for a particular facility"""
@@ -165,7 +160,7 @@ def facility_errrors_history(
     until: datetime.date | None = None,
     ukrdc3: Session = Depends(get_ukrdc3),
     statsdb: Session = Depends(get_statsdb),
-    user: UKRDCUser = Security(auth.get_user()),
+    user: UKRDCUser = Security(get_current_user),
 ):
     """Retreive time-series new error counts for the last year for a particular facility"""
     assert_facility_permission(code, user)
@@ -177,10 +172,8 @@ def facility_errrors_history(
 def facility_extracts(
     code: str,
     ukrdc3: Session = Depends(get_ukrdc3),
-    user: UKRDCUser = Security(auth.get_user()),
-    cache: ResponseCache = Depends(
-        facility_cache_factory(FacilityCachePrefix.EXTRACTS)
-    ),
+    user: UKRDCUser = Security(get_current_user),
+    cache: ResponseCache = EXTRACT_FACILITY_CACHE,
 ):
     """Retreive extract counts for a particular facility"""
     assert_facility_permission(code, user)

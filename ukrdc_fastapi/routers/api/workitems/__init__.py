@@ -8,7 +8,12 @@ from ukrdc_sqla.empi import WorkItem
 
 from ukrdc_fastapi.dependencies import get_jtrace
 from ukrdc_fastapi.dependencies.audit import Auditer, get_auditer
-from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
+from ukrdc_fastapi.dependencies.auth import (
+    Permissions,
+    UKRDCUser,
+    auth,
+    get_current_user,
+)
 from ukrdc_fastapi.permissions.workitems import apply_workitem_list_permission
 from ukrdc_fastapi.query.workitems import select_workitems
 from ukrdc_fastapi.schemas.empi import WorkItemSchema
@@ -27,6 +32,19 @@ class UnlinkWorkItemRequestSchema(BaseModel):
     comment: str | None = None
 
 
+_workitem_sorter = Depends(
+    make_sqla_sorter(
+        [
+            WorkItem.id,
+            WorkItem.last_updated,
+            WorkItem.master_id,
+            WorkItem.person_id,
+        ],
+        default_sort_by=WorkItem.last_updated,
+    )
+)
+
+
 @router.get(
     "",
     response_model=Page[WorkItemSchema],
@@ -37,19 +55,9 @@ def workitems(
     until: datetime.datetime | None = None,
     status: list[int] | None = Query([1]),
     facility: str | None = None,
-    user: UKRDCUser = Security(auth.get_user()),
+    user: UKRDCUser = Security(get_current_user),
     jtrace: Session = Depends(get_jtrace),
-    sorter: SQLASorter = Depends(
-        make_sqla_sorter(
-            [
-                WorkItem.id,
-                WorkItem.last_updated,
-                WorkItem.master_id,
-                WorkItem.person_id,
-            ],
-            default_sort_by=WorkItem.last_updated,
-        )
-    ),
+    sorter: SQLASorter = _workitem_sorter,
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a list of open work items from the EMPI"""

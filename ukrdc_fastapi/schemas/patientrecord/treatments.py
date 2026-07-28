@@ -48,9 +48,7 @@ class TreatmentSchema(OrmModel):
     )
 
     # Admission source
-    admissionsourcecode: str | None = Field(
-        None, description="Admission source code"
-    )
+    admissionsourcecode: str | None = Field(None, description="Admission source code")
     admissionsourcecodestd: str | None = Field(
         None, description="Admission source code standard"
     )
@@ -59,9 +57,7 @@ class TreatmentSchema(OrmModel):
     )
 
     # Discharge reason
-    dischargereasoncode: str | None = Field(
-        None, description="Discharge reason code"
-    )
+    dischargereasoncode: str | None = Field(None, description="Discharge reason code")
     dischargereasoncodestd: str | None = Field(
         None, description="Discharge reason code standard"
     )

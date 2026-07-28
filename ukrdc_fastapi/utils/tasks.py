@@ -33,9 +33,7 @@ class TrackableTaskSchema(JSONModel):
     error: str | None = Field(None, description="Error message, if any")
 
     created: datetime.datetime = Field(..., description="Task creation timestamp")
-    started: datetime.datetime | None = Field(
-        None, description="Task start timestamp"
-    )
+    started: datetime.datetime | None = Field(None, description="Task start timestamp")
     finished: datetime.datetime | None = Field(
         None, description="Task finish timestamp"
     )
@@ -86,9 +84,7 @@ class TrackableTask:
         self.finished: datetime.datetime | None = None
 
         self._func: Callable = func
-        self._lock_key: str | None = (
-            f"{_LOCK_PREFIX}{self.lock}" if self.lock else None
-        )
+        self._lock_key: str | None = f"{_LOCK_PREFIX}{self.lock}" if self.lock else None
 
         self._prime()
         self._sync()

@@ -15,7 +15,13 @@ from ukrdc_fastapi.dependencies.audit import (
     Resource,
     get_auditer,
 )
-from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
+from ukrdc_fastapi.dependencies.auth import (
+    Permissions,
+    UKRDCUser,
+    auth,
+    get_current_user,
+)
+from ukrdc_fastapi.dependencies.sorters import ERROR_SORTER
 from ukrdc_fastapi.exceptions import ResourceNotFoundError
 from ukrdc_fastapi.permissions.messages import (
     apply_message_list_permissions,
@@ -33,7 +39,6 @@ from ukrdc_fastapi.query.workitems import select_workitems_related_to_message
 from ukrdc_fastapi.schemas.empi import WorkItemSchema
 from ukrdc_fastapi.schemas.message import MessageSchema
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordSummarySchema
-from ukrdc_fastapi.sorters import ERROR_SORTER
 from ukrdc_fastapi.utils.paginate import Page, paginate
 from ukrdc_fastapi.utils.sort import SQLASorter
 
@@ -42,7 +47,7 @@ router = APIRouter(tags=["Messages"])
 
 def _get_message(
     message_id: int,
-    user: UKRDCUser = Security(auth.get_user()),
+    user: UKRDCUser = Security(get_current_user),
     errorsdb: Session = Depends(get_errorsdb),
 ):
     """Simple dependency to turn ID query param and User object into a Message object."""
@@ -67,9 +72,9 @@ def messages(
     status: list[str] | None = QueryParam(None),
     channel: list[str] | None = QueryParam(None),
     ni: list[str] | None = QueryParam([]),
-    user: UKRDCUser = Security(auth.get_user()),
+    user: UKRDCUser = Security(get_current_user),
     errorsdb: Session = Depends(get_errorsdb),
-    sorter: SQLASorter = Depends(ERROR_SORTER),
+    sorter: SQLASorter = ERROR_SORTER,
     audit: Auditer = Depends(get_auditer),
 ):
     """
@@ -140,7 +145,7 @@ async def message_source(
 )
 async def message_workitems(
     message_obj: Message = Depends(_get_message),
-    user: UKRDCUser = Security(auth.get_user()),
+    user: UKRDCUser = Security(get_current_user),
     jtrace: Session = Depends(get_jtrace),
     audit: Auditer = Depends(get_auditer),
 ):
@@ -169,7 +174,7 @@ async def message_workitems(
 )
 async def message_patientrecords(
     message_obj: Message = Depends(_get_message),
-    user: UKRDCUser = Security(auth.get_user()),
+    user: UKRDCUser = Security(get_current_user),
     ukrdc3: Session = Depends(get_ukrdc3),
     audit: Auditer = Depends(get_auditer),
 ):

@@ -8,7 +8,7 @@ from starlette.requests import ClientDisconnect
 from ukrdc_sqla.empi import WorkItem
 
 from ukrdc_fastapi.dependencies import get_auditdb
-from ukrdc_fastapi.dependencies.auth import UKRDCUser
+from ukrdc_fastapi.dependencies.auth import UKRDCUser, get_current_user
 from ukrdc_fastapi.models.audit import AccessEvent, AuditEvent
 from ukrdc_fastapi.schemas.empi import WorkItemExtendedSchema, WorkItemSchema
 
@@ -113,7 +113,8 @@ class Auditer:
         self,
         resource: Resource,
         resource_id: Union[str, int] | None,
-        operation: Union[AuditOperation, AuditOperation, AuditOperation, AuditOperation] | None,
+        operation: Union[AuditOperation, AuditOperation, AuditOperation, AuditOperation]
+        | None,
         parent: AuditEvent | None = None,
     ) -> AuditEvent:
         """Add an audit event
@@ -195,7 +196,7 @@ class Auditer:
 async def get_auditer(
     request: Request,
     auditdb: Session = Depends(get_auditdb),
-    user: UKRDCUser = Security(auth.get_user()),
+    user: UKRDCUser = Security(get_current_user),
 ) -> AsyncGenerator[Auditer, None]:
     """Yeild a new Auditer object with an access event pre-populated
 

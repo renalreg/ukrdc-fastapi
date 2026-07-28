@@ -62,9 +62,7 @@ class BaseDiagnosisSchema(OrmModel):
     diagnosistype: str | None = Field(..., description="Diagnosis type")
 
     diagnosis_code: str | None = Field(None, description="Diagnosis code")
-    diagnosis_code_std: str | None = Field(
-        None, description="Diagnosis code standard"
-    )
+    diagnosis_code_std: str | None = Field(None, description="Diagnosis code standard")
     diagnosis_desc: str | None = Field(None, description="Diagnosis description")
 
     comments: str | None = Field(None, description="Diagnosis comments")
@@ -124,9 +122,7 @@ class DialysisSessionSchema(OrmModel):
     proceduretypedesc: str | None = Field(None, description="Procedure description")
 
     # Clinician
-    cliniciancode: str | None = Field(
-        None, description="Clinicial code. Rarely used."
-    )
+    cliniciancode: str | None = Field(None, description="Clinicial code. Rarely used.")
     cliniciancodestd: str | None = Field(
         None, description="Clinicial code standard. Rarely used."
     )
@@ -139,9 +135,7 @@ class DialysisSessionSchema(OrmModel):
     enteredbycodestd: str | None = Field(
         None, description="Data-entry user code standard. Usually local."
     )
-    enteredbydesc: str | None = Field(
-        None, description="Data-entry user description"
-    )
+    enteredbydesc: str | None = Field(None, description="Data-entry user description")
 
     # Data entry site/unit
     enteredatcode: str | None = Field(
@@ -189,9 +183,7 @@ class DocumentSummarySchema(OrmModel):
     filetype: str | None = Field(None, description="Document file type")
     filename: str | None = Field(None, description="Document file name")
 
-    enteredbydesc: str | None = Field(
-        None, description="Document author description"
-    )
+    enteredbydesc: str | None = Field(None, description="Document author description")
     enteredatcode: str | None = Field(None, description="Document organisation code")
 
 
@@ -205,9 +197,7 @@ class DocumentSchema(DocumentSummarySchema):
     documenttypecodestd: str | None = Field(
         None, description="Document type code standard"
     )
-    documenttypedesc: str | None = Field(
-        None, description="Document type description"
-    )
+    documenttypedesc: str | None = Field(None, description="Document type description")
 
     cliniciancode: str | None = Field(
         None, description="Document author clinician code"
@@ -220,9 +210,7 @@ class DocumentSchema(DocumentSummarySchema):
     )
 
     statuscode: str | None = Field(None, description="Document status code")
-    statuscodestd: str | None = Field(
-        None, description="Document status code standard"
-    )
+    statuscodestd: str | None = Field(None, description="Document status code standard")
     statusdesc: str | None = Field(None, description="Document status description")
 
     enteredbycode: str | None = Field(None, description="Document author code")
@@ -284,9 +272,7 @@ class PVDataSchema(OrmModel):
     tpstatus: str | None = Field(None, description="Transplant status")
     bloodgroup: str | None = Field(None, description="Blood group")
 
-    diagnosisdate: datetime.datetime | None = Field(
-        None, description="Diagnosis date"
-    )
+    diagnosisdate: datetime.datetime | None = Field(None, description="Diagnosis date")
 
 
 class PVDeleteSchema(OrmModel):

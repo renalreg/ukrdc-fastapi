@@ -30,9 +30,7 @@ PAGE_SIZE: int = 100_000
 OUTPUT_PATH: Path = (
     Path("scripts") / "analytics" / "output/" / "radar_missing_{facility_code}.xlsx"
 )
-AUTH_TOKEN: str | None = (
-    None  # Set to a bearer token string if your API requires auth
-)
+AUTH_TOKEN: str | None = None  # Set to a bearer token string if your API requires auth
 
 FACILITY_CODE: str = ""
 

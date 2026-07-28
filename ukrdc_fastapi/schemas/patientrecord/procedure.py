@@ -29,9 +29,7 @@ class ProcedureSchema(OrmModel):
     proceduretypedesc: str | None = Field(None, description="Procedure description")
 
     # Clinician
-    cliniciancode: str | None = Field(
-        None, description="Clinicial code. Rarely used."
-    )
+    cliniciancode: str | None = Field(None, description="Clinicial code. Rarely used.")
     cliniciancodestd: str | None = Field(
         None, description="Clinicial code standard. Rarely used."
     )
@@ -44,9 +42,7 @@ class ProcedureSchema(OrmModel):
     enteredbycodestd: str | None = Field(
         None, description="Data-entry user code standard. Usually local."
     )
-    enteredbydesc: str | None = Field(
-        None, description="Data-entry user description"
-    )
+    enteredbydesc: str | None = Field(None, description="Data-entry user description")
 
     # Data entry site/unit
     enteredatcode: str | None = Field(

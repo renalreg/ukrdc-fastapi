@@ -41,9 +41,7 @@ class AuditEventSchema(OrmModel):
 
     identifiers: List[str] = Field([], description="Additional resource identifiers")
 
-    def populate_identifiers(
-        self, jtrace: Session | None, ukrdc3: Session | None
-    ):
+    def populate_identifiers(self, jtrace: Session | None, ukrdc3: Session | None):
         """
         Use database sessions to populate an array of resource identifier strings.
         The identifiers will vary depending on resource type, but should be listed

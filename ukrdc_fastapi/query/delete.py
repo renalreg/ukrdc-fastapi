@@ -95,9 +95,7 @@ def _find_empi_items_to_delete(jtrace: Session, pid: str) -> EMPIDeleteItems:
 
             # If the above query comes back empty, the Master Record is ONLY linked to the Person being deleted, and so can itself be deleted
             if not link_records_related_to_other_persons:
-                master_record: MasterRecord | None = jtrace.get(
-                    MasterRecord, master_id
-                )
+                master_record: MasterRecord | None = jtrace.get(MasterRecord, master_id)
                 if master_record:
                     # Add the Master Record to be deleted
                     to_delete.master_records.append(master_record)

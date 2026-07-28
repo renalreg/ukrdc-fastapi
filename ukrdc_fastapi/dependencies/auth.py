@@ -184,3 +184,5 @@ auth = URKDCAuth(
     settings.oauth_audience,
     [settings.app_client_id, settings.swagger_client_id],
 )
+
+get_current_user = auth.get_user()

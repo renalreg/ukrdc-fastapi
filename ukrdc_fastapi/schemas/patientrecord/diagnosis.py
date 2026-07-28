@@ -22,9 +22,7 @@ class BaseDiagnosisSchema(OrmModel):
     diagnosistype: str | None = Field(..., description="Diagnosis type")
 
     diagnosis_code: str | None = Field(None, description="Diagnosis code")
-    diagnosis_code_std: str | None = Field(
-        None, description="Diagnosis code standard"
-    )
+    diagnosis_code_std: str | None = Field(None, description="Diagnosis code standard")
     diagnosis_desc: str | None = Field(None, description="Diagnosis description")
 
     comments: str | None = Field(None, description="Diagnosis comments")

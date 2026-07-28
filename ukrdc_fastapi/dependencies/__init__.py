@@ -105,7 +105,7 @@ def get_redis() -> redis.Redis:
 
 
 def get_task_tracker(
-    user: auth.UKRDCUser = Security(auth.auth.get_user()),
+    user: auth.UKRDCUser = Security(auth.get_current_user),
 ) -> TaskTracker:
     """Creates a TaskTracker pre-populated with a User and Redis session"""
     return TaskTracker(

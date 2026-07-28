@@ -17,7 +17,13 @@ from ukrdc_fastapi.dependencies.audit import (
     Resource,
     get_auditer,
 )
-from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
+from ukrdc_fastapi.dependencies.auth import (
+    Permissions,
+    UKRDCUser,
+    auth,
+    get_current_user,
+)
+from ukrdc_fastapi.dependencies.sorters import ERROR_SORTER
 from ukrdc_fastapi.permissions.masterrecords import apply_masterrecord_list_permissions
 from ukrdc_fastapi.permissions.messages import (
     apply_message_list_permissions,
@@ -45,7 +51,6 @@ from ukrdc_fastapi.schemas.empi import (
 )
 from ukrdc_fastapi.schemas.message import MessageSchema, MinimalMessageSchema
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordSummarySchema
-from ukrdc_fastapi.sorters import ERROR_SORTER
 from ukrdc_fastapi.utils.paginate import Page, paginate
 from ukrdc_fastapi.utils.sort import SQLASorter
 
@@ -95,7 +100,7 @@ def master_record_related(
     record: MasterRecord = Depends(_get_masterrecord),
     exclude_self: bool = True,
     nationalid_type: str | None = None,
-    user: UKRDCUser = Security(auth.get_user()),
+    user: UKRDCUser = Security(get_current_user),
     jtrace: Session = Depends(get_jtrace),
     audit: Auditer = Depends(get_auditer),
 ):
@@ -135,7 +140,7 @@ def master_record_related(
 )
 def master_record_latest_message(
     record: MasterRecord = Depends(_get_masterrecord),
-    user: UKRDCUser = Security(auth.get_user()),
+    user: UKRDCUser = Security(get_current_user),
     jtrace: Session = Depends(get_jtrace),
     errorsdb: Session = Depends(get_errorsdb),
 ):
@@ -225,7 +230,7 @@ def master_record_statistics(
 )
 def master_record_linkrecords(
     record: MasterRecord = Depends(_get_masterrecord),
-    user: UKRDCUser = Security(auth.get_user()),
+    user: UKRDCUser = Security(get_current_user),
     jtrace: Session = Depends(get_jtrace),
     audit: Auditer = Depends(get_auditer),
 ):
@@ -279,10 +284,10 @@ def master_record_messages(
     until: datetime.datetime | None = None,
     status: list[str] | None = QueryParam(None),
     channel: list[str] | None = QueryParam(None),
-    user: UKRDCUser = Security(auth.get_user()),
+    user: UKRDCUser = Security(get_current_user),
     jtrace: Session = Depends(get_jtrace),
     errorsdb: Session = Depends(get_errorsdb),
-    sorter: SQLASorter = Depends(ERROR_SORTER),
+    sorter: SQLASorter = ERROR_SORTER,
     audit: Auditer = Depends(get_auditer),
 ):
     """
@@ -318,7 +323,7 @@ def master_record_messages(
 def master_record_workitems(
     record: MasterRecord = Depends(_get_masterrecord),
     status: list[int] | None = QueryParam([1]),
-    user: UKRDCUser = Security(auth.get_user()),
+    user: UKRDCUser = Security(get_current_user),
     jtrace: Session = Depends(get_jtrace),
     audit: Auditer = Depends(get_auditer),
 ):
@@ -352,7 +357,7 @@ def master_record_workitems(
 )
 def master_record_persons(
     record: MasterRecord = Depends(_get_masterrecord),
-    user: UKRDCUser = Security(auth.get_user()),
+    user: UKRDCUser = Security(get_current_user),
     jtrace: Session = Depends(get_jtrace),
     audit: Auditer = Depends(get_auditer),
 ):
@@ -380,7 +385,7 @@ def master_record_persons(
 )
 def master_record_patientrecords(
     record: MasterRecord = Depends(_get_masterrecord),
-    user: UKRDCUser = Security(auth.get_user()),
+    user: UKRDCUser = Security(get_current_user),
     jtrace: Session = Depends(get_jtrace),
     ukrdc3: Session = Depends(get_ukrdc3),
     audit: Auditer = Depends(get_auditer),

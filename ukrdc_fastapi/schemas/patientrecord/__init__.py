@@ -75,9 +75,7 @@ class PVDataSchema(OrmModel):
 
     bloodgroup: str | None = Field(None, description="Blood group")
 
-    diagnosisdate: datetime.datetime | None = Field(
-        None, description="Diagnosis date"
-    )
+    diagnosisdate: datetime.datetime | None = Field(None, description="Diagnosis date")
 
 
 class PVDeleteSchema(OrmModel):

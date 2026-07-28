@@ -1,5 +1,4 @@
 import datetime
-from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi import Query as QueryParam
@@ -17,10 +16,10 @@ from ukrdc_fastapi.dependencies.audit import (
     get_auditer,
 )
 from ukrdc_fastapi.dependencies.auth import Permissions, auth
+from ukrdc_fastapi.dependencies.sorters import RESULT_SORTER
 from ukrdc_fastapi.schemas.patientrecord.laborder import ResultItemSchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
-from ukrdc_fastapi.utils.sort import SQLASorter, make_sqla_sorter
-
+from ukrdc_fastapi.utils.sort import SQLASorter
 from .dependencies import _get_patientrecord
 
 router = APIRouter()
@@ -38,12 +37,7 @@ def patient_results(
     order_id: list[str] | None = QueryParam([]),
     since: datetime.datetime | None = None,
     until: datetime.datetime | None = None,
-    sorter: SQLASorter = Depends(
-        make_sqla_sorter(
-            [ResultItem.observation_time, ResultItem.entered_on],
-            default_sort_by=ResultItem.observation_time,
-        )
-    ),
+    sorter: SQLASorter = RESULT_SORTER,
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's lab orders"""

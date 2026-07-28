@@ -41,9 +41,7 @@ class ChannelGroupModel(OrmModel):
 
     id: UUID = Field(..., description="Mirth channel group ID")
     name: str = Field(..., description="Mirth channel group name")
-    description: str | None = Field(
-        None, description="Mirth channel group description"
-    )
+    description: str | None = Field(None, description="Mirth channel group description")
     revision: str = Field(..., description="Mirth channel group revision")
 
     channels: list[ChannelFullModel] = Field(

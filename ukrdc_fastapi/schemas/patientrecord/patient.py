@@ -70,9 +70,7 @@ class FamilyDoctorSchema(OrmModel):
     gp_info: GPInfo | None = Field(None, description="GP information")
 
     gppracticeid: str | None = Field(None, description="GP practice code")
-    gp_practice_info: GPInfo | None = Field(
-        None, description="GP practice information"
-    )
+    gp_practice_info: GPInfo | None = Field(None, description="GP practice information")
 
     addressuse: str | None = Field(None, description="Address use code")
     fromtime: datetime.datetime | None = Field(None, description="Start date")
@@ -100,19 +98,13 @@ class PatientSchema(OrmModel):
         ..., description="Contact details"
     )
 
-    familydoctor: FamilyDoctorSchema | None = Field(
-        None, description="Family doctor"
-    )
+    familydoctor: FamilyDoctorSchema | None = Field(None, description="Family doctor")
 
     birth_time: datetime.datetime = Field(..., description="Patient birth date")
-    death_time: datetime.datetime | None = Field(
-        None, description="Patient death date"
-    )
+    death_time: datetime.datetime | None = Field(None, description="Patient death date")
     gender: GenderType = Field(..., description="Patient gender code")
 
-    ethnic_group_code: str | None = Field(
-        None, description="Patient ethnic group code"
-    )
+    ethnic_group_code: str | None = Field(None, description="Patient ethnic group code")
     ethnic_group_description: str | None = Field(
         None, description="Patient ethnic group description"
     )

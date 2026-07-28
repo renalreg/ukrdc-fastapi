@@ -1086,7 +1086,7 @@ def app(
         return users_session
 
     def _get_task_tracker(
-        user: auth.UKRDCUser = Security(auth.auth.get_user()),
+        user: auth.UKRDCUser = Security(auth.get_current_user),
     ):
         return TaskTracker(task_redis_sessions[0], task_redis_sessions[1], user=user)
 

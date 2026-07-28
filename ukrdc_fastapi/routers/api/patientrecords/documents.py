@@ -12,6 +12,7 @@ from ukrdc_fastapi.dependencies.audit import (
     get_auditer,
 )
 from ukrdc_fastapi.dependencies.auth import Permissions, auth
+from ukrdc_fastapi.dependencies.sorters import DOCUMENT_SORTER
 from ukrdc_fastapi.schemas.patientrecord.documents import (
     DocumentSchema,
     DocumentSummarySchema,
@@ -32,12 +33,7 @@ router = APIRouter()
 def patient_documents(
     patient_record: PatientRecord = Depends(_get_patientrecord),
     ukrdc3: Session = Depends(get_ukrdc3),
-    sorter: SQLASorter = Depends(
-        make_sqla_sorter(
-            [Document.documenttime, Document.updatedon],
-            default_sort_by=Document.documenttime,
-        )
-    ),
+    sorter: SQLASorter = DOCUMENT_SORTER,
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's documents"""

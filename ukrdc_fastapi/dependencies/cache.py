@@ -78,3 +78,13 @@ def facility_cache_factory(prefix: FacilityCachePrefix):
         return ResponseCache(redis, cachekey, request, response)
 
     return facility_cache_factory_dependency
+
+
+ADMIN_COUNTS_CACHE = Depends(cache_factory(CacheKey.ADMIN_COUNTS))
+EXTRACT_FACILITY_CACHE = Depends(facility_cache_factory(FacilityCachePrefix.EXTRACTS))
+
+ROOT_FACILITY_CACHE = Depends(facility_cache_factory(FacilityCachePrefix.ROOT))
+
+FEEDSHARE_FACILITY_CACHE = Depends(
+    facility_cache_factory(FacilityCachePrefix.FEEDSHARE)
+)

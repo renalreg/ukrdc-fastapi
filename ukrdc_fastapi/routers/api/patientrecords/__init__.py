@@ -28,7 +28,22 @@ from ukrdc_fastapi.dependencies.audit import (
     Resource,
     get_auditer,
 )
-from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
+from ukrdc_fastapi.dependencies.auth import (
+    Permissions,
+    UKRDCUser,
+    auth,
+    get_current_user,
+)
+from ukrdc_fastapi.dependencies.sorters import (
+    MEDICATION_SORTER,
+    DIALYSIS_SESSION_SORTER,
+    OBSERVATION_SORTER,
+    SURVEY_SORTER,
+    TRANSPLANT_SORTER,
+    TREATMENT_SORTER,
+    AUDIT_SORTER,
+    ERROR_SORTER,
+)
 from ukrdc_fastapi.permissions.messages import (
     apply_message_list_permissions,
     assert_message_permissions,
@@ -52,9 +67,8 @@ from ukrdc_fastapi.schemas.patientrecord.observation import ObservationSchema
 from ukrdc_fastapi.schemas.patientrecord.procedure import TransplantSchema
 from ukrdc_fastapi.schemas.patientrecord.survey import SurveySchema
 from ukrdc_fastapi.schemas.patientrecord.treatments import TreatmentSchema
-from ukrdc_fastapi.sorters import AUDIT_SORTER, ERROR_SORTER
 from ukrdc_fastapi.utils.paginate import Page, paginate
-from ukrdc_fastapi.utils.sort import SQLASorter, make_sqla_sorter
+from ukrdc_fastapi.utils.sort import SQLASorter
 
 from . import (
     diagnoses,
@@ -115,7 +129,7 @@ def patient_audit(
     operation: AuditOperation | None = None,
     since: datetime.datetime | None = None,
     until: datetime.datetime | None = None,
-    sorter: SQLASorter = Depends(AUDIT_SORTER),
+    sorter: SQLASorter = AUDIT_SORTER,
 ):
     """
     Retreive a page of audit events related to a particular master record.
@@ -150,9 +164,9 @@ def patient_messages(
     until: datetime.datetime | None = None,
     status: list[str] | None = QueryParam(None),
     channel: list[str] | None = QueryParam(None),
-    user: UKRDCUser = Security(auth.get_user()),
+    user: UKRDCUser = Security(get_current_user),
     errorsdb: Session = Depends(get_errorsdb),
-    sorter: SQLASorter = Depends(ERROR_SORTER),
+    sorter: SQLASorter = ERROR_SORTER,
     audit: Auditer = Depends(get_auditer),
 ):
     """
@@ -188,7 +202,7 @@ def patient_messages(
 )
 def patient_record_latest_message(
     patient_record: PatientRecord = Depends(_get_patientrecord),
-    user: UKRDCUser = Security(auth.get_user()),
+    user: UKRDCUser = Security(get_current_user),
     errorsdb: Session = Depends(get_errorsdb),
 ):
     """
@@ -271,12 +285,7 @@ def patient_delete(
 def patient_medications(
     patient_record: PatientRecord = Depends(_get_patientrecord),
     ukrdc3: Session = Depends(get_ukrdc3),
-    sorter: SQLASorter = Depends(
-        make_sqla_sorter(
-            [Medication.fromtime, Medication.totime],
-            default_sort_by=Medication.fromtime,
-        )
-    ),
+    sorter: SQLASorter = MEDICATION_SORTER,
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's medications"""
@@ -305,12 +314,7 @@ def patient_medications(
 def patient_treatments(
     patient_record: PatientRecord = Depends(_get_patientrecord),
     ukrdc3: Session = Depends(get_ukrdc3),
-    sorter: SQLASorter = Depends(
-        make_sqla_sorter(
-            [Treatment.fromtime, Treatment.totime],
-            default_sort_by=Treatment.fromtime,
-        )
-    ),
+    sorter: SQLASorter = TREATMENT_SORTER,
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's treatments"""
@@ -336,12 +340,7 @@ def patient_treatments(
 def patient_transplants(
     patient_record: PatientRecord = Depends(_get_patientrecord),
     ukrdc3: Session = Depends(get_ukrdc3),
-    sorter: SQLASorter = Depends(
-        make_sqla_sorter(
-            [Transplant.proceduretime, Transplant.creation_date],
-            default_sort_by=Transplant.proceduretime,
-        )
-    ),
+    sorter: SQLASorter = TRANSPLANT_SORTER,
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's transplant procedures"""
@@ -367,12 +366,7 @@ def patient_transplants(
 def patient_surveys(
     patient_record: PatientRecord = Depends(_get_patientrecord),
     ukrdc3: Session = Depends(get_ukrdc3),
-    sorter: SQLASorter = Depends(
-        make_sqla_sorter(
-            [Survey.surveytime, Survey.updatedon],
-            default_sort_by=Survey.surveytime,
-        )
-    ),
+    sorter: SQLASorter = SURVEY_SORTER,
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's surveys"""
@@ -399,12 +393,7 @@ def patient_observations(
     patient_record: PatientRecord = Depends(_get_patientrecord),
     ukrdc3: Session = Depends(get_ukrdc3),
     code: list[str] | None = QueryParam([]),
-    sorter: SQLASorter = Depends(
-        make_sqla_sorter(
-            [Observation.observation_time, Observation.updated_on],
-            default_sort_by=Observation.observation_time,
-        )
-    ),
+    sorter: SQLASorter = OBSERVATION_SORTER,
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's lab orders"""
@@ -433,12 +422,7 @@ def patient_observations(
 def patient_dialysis_sessions(
     patient_record: PatientRecord = Depends(_get_patientrecord),
     ukrdc3: Session = Depends(get_ukrdc3),
-    sorter: SQLASorter = Depends(
-        make_sqla_sorter(
-            [DialysisSession.proceduretime, DialysisSession.creation_date],
-            default_sort_by=DialysisSession.proceduretime,
-        )
-    ),
+    sorter: SQLASorter = DIALYSIS_SESSION_SORTER,
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's lab orders"""

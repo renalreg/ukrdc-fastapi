@@ -1,18 +1,16 @@
 import datetime
-from typing import Optional
 
 from fastapi import APIRouter, Depends, Security
 from sqlalchemy.orm import Session
 
 from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_statsdb, get_ukrdc3
 from ukrdc_fastapi.dependencies.auth import Permissions, auth
-from ukrdc_fastapi.dependencies.cache import cache_factory
+from ukrdc_fastapi.dependencies.cache import ADMIN_COUNTS_CACHE
 from ukrdc_fastapi.query.admin import AdminCountsSchema, get_admin_counts
 from ukrdc_fastapi.query.stats import get_full_errors_history
 from ukrdc_fastapi.query.workitems import get_full_workitem_history
 from ukrdc_fastapi.schemas.common import HistoryPoint
-from ukrdc_fastapi.utils.cache import CacheKey, ResponseCache
-
+from ukrdc_fastapi.utils.cache import ResponseCache
 from . import datahealth
 
 router = APIRouter(tags=["Admin"])
@@ -85,7 +83,7 @@ def admin_counts(
     ukrdc3: Session = Depends(get_ukrdc3),
     jtrace: Session = Depends(get_jtrace),
     errorsdb: Session = Depends(get_errorsdb),
-    cache: ResponseCache = Depends(cache_factory(CacheKey.ADMIN_COUNTS)),
+    cache: ResponseCache = ADMIN_COUNTS_CACHE,
 ):
     """Retreive basic counts across the UKRDC"""
     # If no cached value exists, or the cached value has expired
