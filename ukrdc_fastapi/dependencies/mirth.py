@@ -2,7 +2,6 @@ from contextlib import asynccontextmanager
 from collections.abc import AsyncGenerator
 
 from mirth_client import MirthAPI
-from mirth_client.exceptions import MirthLoginError
 
 from ukrdc_fastapi.config import settings
 

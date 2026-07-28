@@ -95,7 +95,6 @@ class RenalDiagnosisSchema(BaseDiagnosisSchema):
 class CauseOfDeathSchema(BaseDiagnosisSchema):
     """A cause of death record."""
 
-    pass
 
 
 class DialysisSessionSchema(OrmModel):
