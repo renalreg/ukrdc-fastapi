@@ -37,7 +37,7 @@ uid_email_map: dict[str, set[str]] = {}
 
 i = 0
 
-for event in membership_creations:
+for i, event in enumerate(membership_creations, start=1):
     even: AuditEvent
     uid: str = event.access_event.uid
 
@@ -49,7 +49,6 @@ for event in membership_creations:
         uid_email_map[uid].add(event.access_event.sub)
     creation_events[uid].append(event.access_event.time)
 
-    i += 1
     if i % 100 == 0:
         print(i)
 
