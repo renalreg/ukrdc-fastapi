@@ -94,4 +94,4 @@ class AuditEventSchema(OrmModel):
                 child.populate_identifiers(jtrace, ukrdc3)
 
 
-AuditEventSchema.update_forward_refs()
+AuditEventSchema.model_rebuild()

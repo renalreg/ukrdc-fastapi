@@ -143,7 +143,7 @@ def normalize_delete_pid_preview(
             )
         return obj
 
-    normalized_dict = model.dict(exclude_unset=True)
+    normalized_dict = model.model_dump(exclude_unset=True)
     for field in ["patient_record", "empi"]:
         if normalized_dict.get(field) is not None:
             normalized_dict[field] = normalize_obj(normalized_dict[field])
@@ -156,8 +156,8 @@ def _create_delete_patientrecord_summary(
     empi_to_delete: EMPIDeleteItems,
     committed: bool = False,
 ) -> DeletePIDResponseSchema:
-    empi_to_delete_summary = DeletePidFromEmpiRequest.from_orm(empi_to_delete)
-    record_to_delete_summary = PatientRecordFullSchema.from_orm(record_to_delete)
+    empi_to_delete_summary = DeletePidFromEmpiRequest.model_validate(empi_to_delete)
+    record_to_delete_summary = PatientRecordFullSchema.model_validate(record_to_delete)
 
     to_delete_summary = DeletePIDPreviewSchema(
         patient_record=record_to_delete_summary, empi=empi_to_delete_summary

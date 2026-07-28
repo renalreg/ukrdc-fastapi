@@ -42,4 +42,4 @@ async def unlink_person_from_master_record(
     stmt = select(LinkRecord).where(LinkRecord.person_id == person.id)
     first_link_related_to_person = jtrace.scalars(stmt).first()
 
-    return LinkRecordSchema.from_orm(first_link_related_to_person)
+    return LinkRecordSchema.model_validate(first_link_related_to_person)

@@ -43,7 +43,7 @@ def update_user_preferences(
     """
     try:
         # For each explicitly-included preference key-value pair
-        for key, val in prefs.dict(exclude_unset=True).items():
+        for key, val in prefs.model_dump(exclude_unset=True).items():
             # Create and merge a new database row
             usersdb.merge(UserPreference(uid=user.id, key=key, val=val))
         usersdb.commit()

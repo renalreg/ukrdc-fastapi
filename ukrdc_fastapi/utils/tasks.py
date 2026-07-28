@@ -114,7 +114,7 @@ class TrackableTask:
         Returns:
             TrackableTaskSchema: Task resource representation
         """
-        return TrackableTaskSchema.from_orm(self)
+        return TrackableTaskSchema.model_validate(self)
 
     def _sync(self):
         self.task_redis.hset(self._key, mapping=self._rdict())
