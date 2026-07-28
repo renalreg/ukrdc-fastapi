@@ -15,6 +15,7 @@ instead of uvicorn's default:
 import logging
 import logging.config
 import time
+from typing import ClassVar
 
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
@@ -34,7 +35,7 @@ class SafeRequestFormatter(logging.Formatter):
     without them, so a stray log call on the access logger can't KeyError.
     """
 
-    DEFAULTS = {
+    DEFAULTS: ClassVar[dict[str, str]] = {
         "client_ip": "-",
         "method": "-",
         "path": "-",

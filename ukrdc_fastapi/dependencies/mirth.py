@@ -17,8 +17,5 @@ async def mirth_session() -> AsyncGenerator[MirthAPI, None]:
     async with MirthAPI(
         settings.mirth_url, verify_ssl=settings.mirth_verify_ssl, timeout=None
     ) as api:
-        try:
-            await api.login(settings.mirth_user, settings.mirth_pass)
-        except MirthLoginError as e:
-            raise e
+        await api.login(settings.mirth_user, settings.mirth_pass)
         yield api

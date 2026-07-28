@@ -103,7 +103,7 @@ def repeat_every(
                             )
                             logger.error(formatted_exception)
                         if raise_exceptions:
-                            raise exc
+                            raise
                     await asyncio.sleep(seconds)
 
             ensure_future(loop())
