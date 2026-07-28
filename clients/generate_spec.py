@@ -1,7 +1,9 @@
-from fastapi.openapi.utils import get_openapi
-from ukrdc_fastapi.main import app
 import json
 from pathlib import Path
+
+from fastapi.openapi.utils import get_openapi
+
+from ukrdc_fastapi.main import app
 
 parent = Path(__file__).resolve().parent
 

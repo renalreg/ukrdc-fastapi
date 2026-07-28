@@ -1,7 +1,7 @@
 import datetime
 
 from dateutil.relativedelta import relativedelta
-from sqlalchemy import and_, or_, not_, select
+from sqlalchemy import and_, not_, or_, select
 from sqlalchemy.orm import Session, aliased
 from sqlalchemy.sql.selectable import Select
 from ukrdc_sqla.ukrdc import Facility, Patient, PatientRecord, ProgramMembership

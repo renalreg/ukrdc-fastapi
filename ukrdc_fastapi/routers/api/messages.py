@@ -1,8 +1,7 @@
 import datetime
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Security
 from fastapi import Query as QueryParam
-from fastapi import Security
 from mirth_client.mirth import MirthAPI
 from sqlalchemy.orm import Session
 from ukrdc_sqla.errorsdb import Message

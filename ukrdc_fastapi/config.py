@@ -1,4 +1,4 @@
-from pydantic_settings import SettingsConfigDict, BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from . import __version__ as package_ver
 

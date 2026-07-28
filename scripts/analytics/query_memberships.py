@@ -4,6 +4,7 @@ from typing import List
 
 from sqlalchemy import and_, select
 from sqlalchemy.orm import Session
+
 from ukrdc_fastapi.dependencies.audit import AuditOperation, Resource
 from ukrdc_fastapi.dependencies.database import AuditSession
 from ukrdc_fastapi.models.audit import AuditEvent

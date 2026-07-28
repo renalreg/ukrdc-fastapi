@@ -3,7 +3,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.selectable import Select
 from ukrdc_sqla.errorsdb import Latest, Message
-from ukrdc_sqla.ukrdc import Code, Facility, PatientRecord, FacilityRelationship
+from ukrdc_sqla.ukrdc import Code, Facility, FacilityRelationship, PatientRecord
 from ukrdc_sqla.utils.constants import RelationshipType
 
 from ukrdc_fastapi.config import settings

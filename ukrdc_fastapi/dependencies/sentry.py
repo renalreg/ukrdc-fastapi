@@ -11,8 +11,8 @@ from sentry_sdk.integrations.starlette import StarletteIntegration
 from ukrdc_fastapi.config import configuration
 from ukrdc_fastapi.exceptions import (
     NoActiveMembershipError,
-    PKBOutboundDisabledError,
     PermissionsError,
+    PKBOutboundDisabledError,
     RecordTypeError,
     ResourceNotFoundError,
 )

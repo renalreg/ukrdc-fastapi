@@ -1,7 +1,7 @@
 import datetime
 from typing import Annotated
 
-from pydantic import Field, BeforeValidator
+from pydantic import BeforeValidator, Field
 
 from ..base import OrmModel
 

@@ -1,6 +1,6 @@
 import datetime
 import re
-from typing import Iterable, Union, Sequence
+from typing import Iterable, Sequence, Union
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session

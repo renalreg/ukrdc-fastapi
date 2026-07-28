@@ -1,10 +1,11 @@
-import logging
-from datetime import datetime, time, date, timedelta
-from concurrent.futures import ThreadPoolExecutor
 import asyncio
+import logging
+from concurrent.futures import ThreadPoolExecutor
+from datetime import date, datetime, time, timedelta
+from typing import Any, Dict
+
 from sqlalchemy import select
 from sqlalchemy.sql.functions import func
-from typing import Dict, Any
 from ukrdc_sqla.ukrdc import PatientRecord
 
 from ukrdc_fastapi.config import settings

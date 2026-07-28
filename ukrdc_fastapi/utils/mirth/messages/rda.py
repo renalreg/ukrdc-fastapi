@@ -3,7 +3,11 @@ import datetime
 from ukrdc_sqla.ukrdc import PatientRecord
 from ukrdc_xsdata.ukrdc import (  # type: ignore
     Patient as RDAPatient,
+)
+from ukrdc_xsdata.ukrdc import (
     PatientRecord as RDAPatientRecord,
+)
+from ukrdc_xsdata.ukrdc import (
     types,
 )
 from xsdata.formats.dataclass.serializers.xml import XmlSerializer

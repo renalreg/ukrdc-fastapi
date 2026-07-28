@@ -12,8 +12,8 @@ from ukrdc_fastapi.utils.mirth.messages import (
     build_export_radar_message,
     build_export_tests_message,
 )
-from ukrdc_fastapi.utils.mirth.messages.pkb import build_pkb_sync_messages
 from ukrdc_fastapi.utils.mirth.messages.mrc import build_mrc_sync_message
+from ukrdc_fastapi.utils.mirth.messages.pkb import build_pkb_sync_messages
 from ukrdc_fastapi.utils.records import record_is_data
 
 

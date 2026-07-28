@@ -1,9 +1,9 @@
 from ukrdc_sqla.ukrdc import (
-    Diagnosis,
-    RenalDiagnosis,
-    Code,
-    PatientRecord,
     CauseOfDeath,
+    Code,
+    Diagnosis,
+    PatientRecord,
+    RenalDiagnosis,
 )
 
 from ukrdc_fastapi.query.patientrecords.diagnoses import (
@@ -12,8 +12,8 @@ from ukrdc_fastapi.query.patientrecords.diagnoses import (
     get_patient_renal_diagnosis,
 )
 
-from ...utils import days_ago
 from ...conftest import PID_1
+from ...utils import days_ago
 
 
 def _add_extra_diagnoses(session):

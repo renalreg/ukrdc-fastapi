@@ -1,4 +1,4 @@
-from sqlalchemy import and_, exists, or_, select, literal
+from sqlalchemy import and_, exists, literal, or_, select
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.selectable import Select
 from ukrdc_sqla.ukrdc import PatientRecord

@@ -8,10 +8,10 @@ from fastapi.routing import APIRoute
 from fastapi_pagination import add_pagination
 
 from ukrdc_fastapi.config import configuration, settings
-from ukrdc_fastapi.dependencies.auth import auth, Permissions
+from ukrdc_fastapi.dependencies.auth import Permissions, auth
 from ukrdc_fastapi.dependencies.logging import (
-    configure_logging,
     RequestLoggingMiddleware,
+    configure_logging,
 )
 from ukrdc_fastapi.dependencies.sentry import add_sentry
 from ukrdc_fastapi.exceptions import ResourceNotFoundError

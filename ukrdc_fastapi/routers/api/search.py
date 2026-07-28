@@ -1,6 +1,5 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Security
 from fastapi import Query as QueryParam
-from fastapi import Security
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import LinkRecord, MasterRecord

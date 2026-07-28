@@ -3,7 +3,7 @@ import asyncio
 import pytest
 import pytest_asyncio
 from fastapi import BackgroundTasks, Depends
-from httpx import AsyncClient, ASGITransport
+from httpx import ASGITransport, AsyncClient
 from pydantic import BaseModel
 
 from ukrdc_fastapi.config import configuration

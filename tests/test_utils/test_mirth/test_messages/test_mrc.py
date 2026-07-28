@@ -1,5 +1,6 @@
-from tests.utils import days_ago
 from ukrdc_sqla.ukrdc import PatientRecord, ProgramMembership
+
+from tests.utils import days_ago
 from ukrdc_fastapi.utils.mirth.messages.mrc import build_mrc_sync_message
 
 

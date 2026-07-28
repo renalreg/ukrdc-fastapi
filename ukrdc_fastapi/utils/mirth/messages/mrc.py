@@ -1,12 +1,12 @@
+from xml.etree.ElementTree import Element, SubElement, tostring  # nosec
+
 from sqlalchemy.orm import Session
 from ukrdc_sqla.ukrdc import Facility, PatientRecord
 
-from xml.etree.ElementTree import Element, SubElement, tostring  # nosec
-
 from ukrdc_fastapi.exceptions import (
+    MRCOutboundDisabledError,
     NoActiveMembershipError,
     ResourceNotFoundError,
-    MRCOutboundDisabledError,
 )
 from ukrdc_fastapi.query.memberships import record_has_active_membership
 

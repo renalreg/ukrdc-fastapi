@@ -3,10 +3,10 @@ from typing import List
 
 from sqlalchemy import DateTime, Integer, String
 from sqlalchemy.orm import (
-    Mapped,
-    relationship,
-    mapped_column,
     DeclarativeBase,
+    Mapped,
+    mapped_column,
+    relationship,
 )
 from sqlalchemy.sql.schema import ForeignKey
 

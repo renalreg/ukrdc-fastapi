@@ -1,4 +1,4 @@
-from sqlalchemy import or_, select, func
+from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.selectable import Select
 from ukrdc_sqla.ukrdc import Code, CodeExclusion, CodeMap

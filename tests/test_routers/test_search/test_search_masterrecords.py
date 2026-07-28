@@ -1,7 +1,8 @@
 from urllib.parse import quote
 
 from ukrdc_fastapi.config import configuration
-from .utils import commit_extra_patients, TEST_NUMBERS, BUMPER
+
+from .utils import BUMPER, TEST_NUMBERS, commit_extra_patients
 
 
 async def test_search_all(ukrdc3_session, jtrace_session, client_superuser):

@@ -2,7 +2,7 @@ import datetime
 import json
 from typing import Union
 
-from pydantic import field_validator, Field
+from pydantic import Field, field_validator
 
 from .base import OrmModel
 

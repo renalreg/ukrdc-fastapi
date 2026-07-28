@@ -4,7 +4,7 @@ from typing import Any, Union
 
 from fastapi import HTTPException
 from sqlalchemy import Column
-from sqlalchemy.orm import Query, InstrumentedAttribute
+from sqlalchemy.orm import InstrumentedAttribute, Query
 from sqlalchemy.sql.selectable import Select
 
 

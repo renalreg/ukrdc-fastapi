@@ -1,5 +1,6 @@
 from fastapi import Depends
 from ukrdc_sqla.empi import WorkItem
+from ukrdc_sqla.errorsdb import Message
 from ukrdc_sqla.ukrdc import (
     DialysisSession,
     Document,
@@ -10,10 +11,9 @@ from ukrdc_sqla.ukrdc import (
     Transplant,
     Treatment,
 )
-from ukrdc_sqla.errorsdb import Message
 
 from ukrdc_fastapi.models.audit import AccessEvent, AuditEvent
-from ukrdc_fastapi.utils.sort import make_sqla_sorter, make_object_sorter, OrderBy
+from ukrdc_fastapi.utils.sort import OrderBy, make_object_sorter, make_sqla_sorter
 
 WORKITEM_SORTER = Depends(
     make_sqla_sorter(

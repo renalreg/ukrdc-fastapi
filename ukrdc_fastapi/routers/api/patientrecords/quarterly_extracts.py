@@ -1,7 +1,6 @@
 import sentry_sdk
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Security
 from fastapi import Query as QueryParam
-from fastapi import Security
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 from ukrdc_sqla.ukrdc import PatientRecord
@@ -16,11 +15,12 @@ from ukrr_extract.shared_utils import (
 from ukrdc_fastapi.dependencies import get_ukrdc3
 from ukrdc_fastapi.dependencies.auth import (
     Permissions,
-    auth,
     UKRDCUser,
+    auth,
     get_current_user,
 )
 from ukrdc_fastapi.permissions.facilities import assert_facility_permission
+
 from .dependencies import _get_patientrecord
 
 router = APIRouter()

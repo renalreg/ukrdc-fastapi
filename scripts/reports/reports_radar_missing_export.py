@@ -6,12 +6,12 @@ If required this could easily be generalized for all the reports.
 
 from __future__ import annotations
 
-import pandas as pd
 from dataclasses import dataclass
-from typing import Any, Dict, List
 from pathlib import Path
-import httpx
+from typing import Any, Dict, List
 
+import httpx
+import pandas as pd
 
 BASE_URL: str = "http://localhost:8000"
 FACILITY_CODES: List[str] = [

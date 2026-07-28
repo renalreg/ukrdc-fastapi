@@ -1,10 +1,9 @@
 import datetime
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Security
 from fastapi import Query as QueryParam
-from fastapi import Security
 from fastapi.responses import Response
-from sqlalchemy import select, exists
+from sqlalchemy import exists, select
 from sqlalchemy.orm import Session
 from ukrdc_sqla.ukrdc import LabOrder, PatientRecord, ResultItem
 
@@ -20,6 +19,7 @@ from ukrdc_fastapi.dependencies.sorters import RESULT_SORTER
 from ukrdc_fastapi.schemas.patientrecord.laborder import ResultItemSchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
 from ukrdc_fastapi.utils.sort import SQLASorter
+
 from .dependencies import _get_patientrecord
 
 router = APIRouter()

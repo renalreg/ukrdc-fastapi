@@ -1,4 +1,5 @@
 import json
+
 import matplotlib.pyplot as plt
 
 with open("./scripts/analytics/output/uids.json", "r") as f1:

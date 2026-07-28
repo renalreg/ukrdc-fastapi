@@ -3,7 +3,6 @@ import os
 from typing import List
 
 from sqlalchemy import select
-
 from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import MasterRecord
 
