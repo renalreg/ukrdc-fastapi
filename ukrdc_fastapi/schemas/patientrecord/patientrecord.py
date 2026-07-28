@@ -96,7 +96,6 @@ class CauseOfDeathSchema(BaseDiagnosisSchema):
     """A cause of death record."""
 
 
-
 class DialysisSessionSchema(OrmModel):
     id: str = Field(..., description="Session ID")
     pid: str = Field(..., description="Patient ID")
