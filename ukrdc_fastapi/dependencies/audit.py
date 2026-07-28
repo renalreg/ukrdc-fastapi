@@ -112,8 +112,7 @@ class Auditer:
         self,
         resource: Resource,
         resource_id: Union[str, int] | None,
-        operation: Union[AuditOperation, AuditOperation, AuditOperation, AuditOperation]
-        | None,
+        operation: AuditOperation | None,
         parent: AuditEvent | None = None,
     ) -> AuditEvent:
         """Add an audit event
