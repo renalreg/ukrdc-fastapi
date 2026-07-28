@@ -1,5 +1,4 @@
 import datetime
-from typing import List
 
 from sqlalchemy import DateTime, Integer, String
 from sqlalchemy.orm import (
@@ -31,7 +30,7 @@ class AccessEvent(Base):
     method: Mapped[str | None] = mapped_column(String)  # API method
     body: Mapped[str | None] = mapped_column(String)  # API request body
 
-    audit_events: Mapped[List["AuditEvent"]] = relationship(
+    audit_events: Mapped[list["AuditEvent"]] = relationship(
         "AuditEvent", back_populates="access_event"
     )
 

@@ -1,5 +1,5 @@
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
 
 from mirth_client import MirthAPI
 from mirth_client.exceptions import MirthLoginError

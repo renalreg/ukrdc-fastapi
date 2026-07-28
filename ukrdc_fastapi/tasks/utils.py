@@ -29,7 +29,8 @@ import logging
 from asyncio import ensure_future
 from functools import wraps
 from traceback import format_exception
-from typing import Any, Callable, Coroutine, Union
+from typing import Any, Union
+from collections.abc import Callable, Coroutine
 
 from starlette.concurrency import run_in_threadpool
 

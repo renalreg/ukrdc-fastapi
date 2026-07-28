@@ -3,7 +3,7 @@ The intention is that this will eventually be broken into a separately published
 hence the slightly odd inline structure.
 """
 
-from typing import Any, Dict
+from typing import Any
 
 from fastapi import HTTPException
 from fastapi.openapi.models import OAuth2, OAuthFlowAuthorizationCode, OAuthFlows
@@ -49,7 +49,7 @@ class OktaJWTBearer(SecurityBase):
         self.scheme_name = scheme_name or self.__class__.__name__
         self.auto_error = auto_error
 
-    async def __call__(self, request: Request) -> Dict[str, Any] | None:
+    async def __call__(self, request: Request) -> dict[str, Any] | None:
         # Fetch authorization header
         authorization: str | None = request.headers.get("Authorization")
         scheme, credentials = get_authorization_scheme_param(authorization)

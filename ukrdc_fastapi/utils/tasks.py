@@ -1,7 +1,8 @@
 import datetime
 import inspect
 from functools import wraps
-from typing import Any, Callable, Literal
+from typing import Any, Literal
+from collections.abc import Callable
 from uuid import UUID, uuid4
 
 from fastapi import HTTPException

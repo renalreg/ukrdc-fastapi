@@ -1,5 +1,5 @@
 from time import time
-from typing import Sequence
+from collections.abc import Sequence
 
 from sqlalchemy import and_, desc, select
 from ukrdc_sqla.errorsdb import Message

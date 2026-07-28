@@ -8,13 +8,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 import httpx
 import pandas as pd
 
 BASE_URL: str = "http://localhost:8000"
-FACILITY_CODES: List[str] = [
+FACILITY_CODES: list[str] = [
     "RAJ",
     "RAQ01",
     "RCSLB",
@@ -37,14 +37,14 @@ FACILITY_CODE: str = ""
 
 @dataclass
 class Page:
-    items: List[Dict[str, Any]]
+    items: list[dict[str, Any]]
     total: int
     page: int
     size: int
 
 
-def build_headers() -> Dict[str, str]:
-    headers: Dict[str, str] = {"Accept": "application/json"}
+def build_headers() -> dict[str, str]:
+    headers: dict[str, str] = {"Accept": "application/json"}
     if AUTH_TOKEN:
         headers["Authorization"] = f"Bearer {AUTH_TOKEN}"
     return headers
@@ -72,8 +72,8 @@ def fetch_page(client: httpx.Client, page: int) -> Page:
     return Page(items=items, total=total, page=current_page, size=size)
 
 
-def fetch_all_results() -> List[Dict[str, Any]]:
-    results: List[Dict[str, Any]] = []
+def fetch_all_results() -> list[dict[str, Any]]:
+    results: list[dict[str, Any]] = []
 
     with httpx.Client(headers=build_headers(), timeout=30.0) as client:
         # Fetch everything in a single request by using a very large page size.
@@ -85,8 +85,8 @@ def fetch_all_results() -> List[Dict[str, Any]]:
     return results
 
 
-def results_to_dataframe(results: List[Dict[str, Any]]) -> pd.DataFrame:
-    rows_for_df: List[Dict[str, Any]] = []
+def results_to_dataframe(results: list[dict[str, Any]]) -> pd.DataFrame:
+    rows_for_df: list[dict[str, Any]] = []
 
     for item in results:
         pid = item.get("pid")
@@ -98,7 +98,7 @@ def results_to_dataframe(results: List[Dict[str, Any]]) -> pd.DataFrame:
         program_memberships = item.get("programMemberships", [])
         if program_memberships:
             for membership in program_memberships:
-                row: Dict[str, Any] = {
+                row: dict[str, Any] = {
                     "pid": pid,
                     "sendingfacility": sending_facility,
                     "sendingextract": sending_extract,

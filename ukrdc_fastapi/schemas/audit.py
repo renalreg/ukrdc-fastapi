@@ -1,5 +1,4 @@
 import datetime
-from typing import List
 
 from pydantic.fields import Field
 from sqlalchemy.orm.session import Session
@@ -37,9 +36,9 @@ class AuditEventSchema(OrmModel):
 
     operation: str = Field(..., description="Audit event operation")
 
-    children: List["AuditEventSchema"] = Field([], description="Child events")
+    children: list["AuditEventSchema"] = Field([], description="Child events")
 
-    identifiers: List[str] = Field([], description="Additional resource identifiers")
+    identifiers: list[str] = Field([], description="Additional resource identifiers")
 
     def populate_identifiers(self, jtrace: Session | None, ukrdc3: Session | None):
         """

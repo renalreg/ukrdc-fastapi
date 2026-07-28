@@ -1,6 +1,7 @@
 from datetime import datetime
 from enum import Enum
-from typing import AsyncGenerator, Union
+from typing import Union
+from collections.abc import AsyncGenerator
 
 from fastapi import Depends, Request, Security
 from sqlalchemy.orm.session import Session

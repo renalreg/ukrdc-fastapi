@@ -1,5 +1,5 @@
 from time import time
-from typing import Any, List
+from typing import Any
 
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
@@ -126,7 +126,7 @@ if __name__ == "__main__":
 
     print("Setting up...")
     session = JtraceSession()
-    records: List[MasterRecord] = session.query(MasterRecord).limit(100).all()
+    records: list[MasterRecord] = session.query(MasterRecord).limit(100).all()
     print("Starting test...")
 
     for record in records:

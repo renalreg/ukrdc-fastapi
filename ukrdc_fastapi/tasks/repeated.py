@@ -2,7 +2,7 @@ import asyncio
 import logging
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime, time, timedelta
-from typing import Any, Dict
+from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.sql.functions import func
@@ -109,7 +109,7 @@ async def precalculate_facility_stats_dialysis() -> None:
     return await task.tracked()
 
 
-def _calculate_stats_sync() -> Dict[str, Dict[str, Any]]:
+def _calculate_stats_sync() -> dict[str, dict[str, Any]]:
     """Sync stats calculation (runs in threadpool)"""
     results = {}
     with ukrdc3_session() as ukrdc3:
