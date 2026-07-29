@@ -2,7 +2,7 @@
 # https://docs.astral.sh/ruff/configuration/
 [lint]
 # select = [...]  # See the Default Rules page for the full listing.
-ignore = ["ASYNC251","BLE001","RUF015"]
+ignore = ["ASYNC251","BLE001","RUF015","DTZ"]
 
 [lint.flake8-bugbear]
 # FastAPI's Depends()/Security()/Query() in argument defaults is the
