@@ -2,7 +2,7 @@
 Query code snippets that are useful in more than one type of resource query
 """
 
-from ukrdc_sqla.empi import Person, PidXRef
+from ukrdc_sqla.empi import Person
 
 
 def person_belongs_to_units(person: Person, units: list[str]) -> bool:
@@ -15,8 +15,4 @@ def person_belongs_to_units(person: Person, units: list[str]) -> bool:
     Returns:
         bool: True if the Person is associated with a unit from the list.
     """
-    xref: PidXRef
-    for xref in person.xref_entries:
-        if xref.sending_facility in units:
-            return True
-    return False
+    return any(xref.sending_facility in units for xref in person.xref_entries)

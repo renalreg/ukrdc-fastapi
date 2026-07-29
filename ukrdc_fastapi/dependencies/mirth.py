@@ -1,8 +1,7 @@
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator
 
 from mirth_client import MirthAPI
-from mirth_client.exceptions import MirthLoginError
 
 from ukrdc_fastapi.config import settings
 
@@ -17,8 +16,5 @@ async def mirth_session() -> AsyncGenerator[MirthAPI, None]:
     async with MirthAPI(
         settings.mirth_url, verify_ssl=settings.mirth_verify_ssl, timeout=None
     ) as api:
-        try:
-            await api.login(settings.mirth_user, settings.mirth_pass)
-        except MirthLoginError as e:
-            raise e
+        await api.login(settings.mirth_user, settings.mirth_pass)
         yield api

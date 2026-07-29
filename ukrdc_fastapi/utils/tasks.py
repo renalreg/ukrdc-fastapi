@@ -1,7 +1,8 @@
 import datetime
 import inspect
+from collections.abc import Callable
 from functools import wraps
-from typing import Any, Callable, Literal, Optional
+from typing import Any, Literal
 from uuid import UUID, uuid4
 
 from fastapi import HTTPException
@@ -30,13 +31,11 @@ class TrackableTaskSchema(JSONModel):
     )
     owner: str = Field(..., description="Task owner username")
     status: StatusType = Field(..., description="Task status")
-    error: Optional[str] = Field(None, description="Error message, if any")
+    error: str | None = Field(None, description="Error message, if any")
 
     created: datetime.datetime = Field(..., description="Task creation timestamp")
-    started: Optional[datetime.datetime] = Field(
-        None, description="Task start timestamp"
-    )
-    finished: Optional[datetime.datetime] = Field(
+    started: datetime.datetime | None = Field(None, description="Task start timestamp")
+    finished: datetime.datetime | None = Field(
         None, description="Task finish timestamp"
     )
 
@@ -46,7 +45,7 @@ class TrackableTaskSchema(JSONModel):
         We can't store NoneType in Redis, so when loading
         from Redis we need to convert empty strings to None
         """
-        normalized_dict: dict[str, Optional[str]] = {}
+        normalized_dict: dict[str, str | None] = {}
         for key, value in redis_dict.items():
             if value == "":
                 normalized_dict[key] = None
@@ -62,8 +61,8 @@ class TrackableTask:
         lock_redis: Redis,
         user: UKRDCUser,
         func: Callable,
-        name: Optional[str] = None,
-        lock: Optional[str] = None,
+        name: str | None = None,
+        lock: str | None = None,
         visibility: VisibilityType = "public",
     ):
         self.task_redis: Redis = task_redis
@@ -75,20 +74,18 @@ class TrackableTask:
         self._key: str = self.id.hex
 
         self.name: str = name or func.__name__
-        self.lock: Optional[str] = lock
+        self.lock: str | None = lock
         self.visibility: VisibilityType = visibility
-        self.owner: Optional[str] = self.user.email
+        self.owner: str | None = self.user.email
         self.status: StatusType = "pending"
-        self.error: Optional[str] = None
+        self.error: str | None = None
 
         self.created: datetime.datetime = datetime.datetime.now()
-        self.started: Optional[datetime.datetime] = None
-        self.finished: Optional[datetime.datetime] = None
+        self.started: datetime.datetime | None = None
+        self.finished: datetime.datetime | None = None
 
         self._func: Callable = func
-        self._lock_key: Optional[str] = (
-            f"{_LOCK_PREFIX}{self.lock}" if self.lock else None
-        )
+        self._lock_key: str | None = f"{_LOCK_PREFIX}{self.lock}" if self.lock else None
 
         self._prime()
         self._sync()
@@ -254,8 +251,8 @@ class TaskTracker:
     def create(
         self,
         func: Callable,
-        name: Optional[str] = None,
-        lock: Optional[str] = None,
+        name: str | None = None,
+        lock: str | None = None,
         visibility: VisibilityType = "public",
     ) -> TrackableTask:
         """Create, track, and start a new background task
@@ -282,8 +279,8 @@ class TaskTracker:
     def http_create(
         self,
         func: Callable,
-        name: Optional[str] = None,
-        lock: Optional[str] = None,
+        name: str | None = None,
+        lock: str | None = None,
         visibility: VisibilityType = "public",
     ) -> TrackableTask:
         """

@@ -1,5 +1,3 @@
-from typing import Optional
-
 from fastapi import APIRouter, Depends, HTTPException, Security
 from mirth_client import MirthAPI
 from mirth_client.models import ChannelMessageModel
@@ -85,7 +83,7 @@ async def mirth_channel(
     channels = await get_channels_with_statistics(mirth, redis)
     channel_map = {str(channel.id): channel for channel in channels}
 
-    channel: Optional[ChannelFullModel] = channel_map.get(channel_id)
+    channel: ChannelFullModel | None = channel_map.get(channel_id)
     if not channel:
         raise HTTPException(404, detail="Channel not found")  # pragma: no cover
 

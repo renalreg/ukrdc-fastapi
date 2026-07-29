@@ -9,12 +9,13 @@ from ukrdc_sqla.stats import LastRunTimes
 
 from ukrdc_fastapi.dependencies import get_jtrace, get_statsdb
 from ukrdc_fastapi.dependencies.auth import Permissions, auth
+from ukrdc_fastapi.dependencies.sorters import WORK_ITEM_GROUP_SORTER
 from ukrdc_fastapi.query.stats import MultipleUKRDCIDGroup, get_multiple_ukrdcids
 from ukrdc_fastapi.query.workitems import select_workitems
 from ukrdc_fastapi.schemas.base import OrmModel
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema
 from ukrdc_fastapi.utils.paginate import Page, paginate_sequence
-from ukrdc_fastapi.utils.sort import ObjectSorter, OrderBy, make_object_sorter
+from ukrdc_fastapi.utils.sort import ObjectSorter
 
 router = APIRouter(tags=["Admin/Data Health"])
 
@@ -69,14 +70,7 @@ def datahealth_multiple_ukrdcids_last_run(
     dependencies=[Security(auth.permission(DATA_HEALTH_PERMISSIONS))],
 )
 def record_workitem_counts(
-    sorter: ObjectSorter = Depends(
-        make_object_sorter(
-            "WorkItemGroupSorterEnum",
-            ["work_item_count", "master_record.id", "master_record.last_updated"],
-            default_sort_by="work_item_count",
-            default_order_by=OrderBy.DESC,
-        )
-    ),
+    sorter: ObjectSorter = WORK_ITEM_GROUP_SORTER,
     jtrace: Session = Depends(get_jtrace),
 ):
     """

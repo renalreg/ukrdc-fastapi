@@ -47,10 +47,10 @@ def update_user_preferences(
             # Create and merge a new database row
             usersdb.merge(UserPreference(uid=user.id, key=key, val=val))
         usersdb.commit()
-    except exc.SQLAlchemyError as e:
+    except exc.SQLAlchemyError:
         # Rollback on error, and re-raise
         usersdb.rollback()
-        raise e
+        raise
 
     # Return full preferences object
     return get_user_preferences(usersdb, user)

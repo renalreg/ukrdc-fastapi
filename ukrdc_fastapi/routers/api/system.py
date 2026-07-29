@@ -1,12 +1,10 @@
-from typing import Optional
-
 from fastapi import APIRouter, Depends, Security
 from pydantic import Field
 from sqlalchemy.orm import Session
 
 from ukrdc_fastapi.config import configuration
 from ukrdc_fastapi.dependencies import get_usersdb
-from ukrdc_fastapi.dependencies.auth import UKRDCUser, auth
+from ukrdc_fastapi.dependencies.auth import UKRDCUser, get_current_user
 from ukrdc_fastapi.query.users import get_user_preferences, update_user_preferences
 from ukrdc_fastapi.schemas.base import JSONModel
 from ukrdc_fastapi.schemas.user import UserPreferences, UserPreferencesRequest
@@ -15,18 +13,16 @@ router = APIRouter(tags=["System Info"])
 
 
 class UserSchema(JSONModel):
-    permissions: Optional[list[str]] = Field(
-        None, description="List of user permissions"
-    )
-    email: Optional[str] = Field(None, description="User email address")
+    permissions: list[str] | None = Field(None, description="List of user permissions")
+    email: str | None = Field(None, description="User email address")
 
 
 class SystemInfoSchema(JSONModel):
-    github_sha: Optional[str] = Field(
+    github_sha: str | None = Field(
         default=configuration.github_sha,
         description="Git commit SHA of the running server version",
     )
-    github_ref: Optional[str] = Field(
+    github_ref: str | None = Field(
         default=configuration.github_ref,
         description="Git branch of the running server version",
     )
@@ -43,14 +39,15 @@ def system_info():
 
 
 @router.get("/user", response_model=UserSchema)
-def system_user(user: UKRDCUser = Security(auth.get_user())):
+def system_user(user: UKRDCUser = Security(get_current_user)):
     """Retreive basic user info"""
     return UserSchema(email=user.email, permissions=user.permissions)
 
 
 @router.get("/user/preferences", response_model=UserPreferences)
 def system_user_preferences(
-    user: UKRDCUser = Security(auth.get_user()), usersdb: Session = Depends(get_usersdb)
+    user: UKRDCUser = Security(get_current_user),
+    usersdb: Session = Depends(get_usersdb),
 ):
     """Retreive user preferences"""
     return get_user_preferences(usersdb, user)
@@ -59,7 +56,7 @@ def system_user_preferences(
 @router.put("/user/preferences", response_model=UserPreferences)
 def update_system_user_preferences(
     prefs: UserPreferencesRequest,
-    user: UKRDCUser = Security(auth.get_user()),
+    user: UKRDCUser = Security(get_current_user),
     usersdb: Session = Depends(get_usersdb),
 ):
     """Update user preferences"""

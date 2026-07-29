@@ -1,6 +1,5 @@
 import csv
 import io
-from typing import Optional
 
 from fastapi import APIRouter, Depends, Query, Response, Security
 from sqlalchemy.orm import Session
@@ -33,8 +32,8 @@ router = APIRouter(tags=["Codes"])
 )
 def code_list(
     ukrdc3: Session = Depends(get_ukrdc3),
-    coding_standard: Optional[list[str]] = Query(None),
-    search: Optional[str] = Query(None),
+    coding_standard: list[str] | None = Query(None),
+    search: str | None = Query(None),
 ):
     """Retreive a list of internal codes"""
     return paginate(ukrdc3, select_codes(coding_standard, search))
@@ -61,10 +60,10 @@ def code_details(
 )
 def code_maps(
     ukrdc3: Session = Depends(get_ukrdc3),
-    source_coding_standard: Optional[list[str]] = Query(None),
-    destination_coding_standard: Optional[list[str]] = Query(None),
-    source_code: Optional[str] = None,
-    destination_code: Optional[str] = None,
+    source_coding_standard: list[str] | None = Query(None),
+    destination_coding_standard: list[str] | None = Query(None),
+    source_code: str | None = None,
+    destination_code: str | None = None,
 ):
     """Retreive a list of internal code maps"""
     return paginate(
@@ -85,9 +84,9 @@ def code_maps(
 )
 def code_exclusions(
     ukrdc3: Session = Depends(get_ukrdc3),
-    coding_standard: Optional[list[str]] = Query(None),
-    code: Optional[list[str]] = Query(None),
-    system: Optional[list[str]] = Query(None),
+    coding_standard: list[str] | None = Query(None),
+    code: list[str] | None = Query(None),
+    system: list[str] | None = Query(None),
 ):
     """Retreive a list of internal code maps"""
     return paginate(ukrdc3, select_code_exclusions(coding_standard, code, system))
@@ -110,8 +109,8 @@ def coding_standards_list(ukrdc3: Session = Depends(get_ukrdc3)):
 )
 def code_list_export(
     ukrdc3: Session = Depends(get_ukrdc3),
-    coding_standard: Optional[list[str]] = Query(None),
-    search: Optional[str] = Query(None),
+    coding_standard: list[str] | None = Query(None),
+    search: str | None = Query(None),
 ):
     """Export a CSV of a list of internal codes"""
     selected_codes = ukrdc3.scalars(select_codes(coding_standard, search)).all()
@@ -132,10 +131,10 @@ def code_list_export(
 )
 def code_maps_export(
     ukrdc3: Session = Depends(get_ukrdc3),
-    source_coding_standard: Optional[list[str]] = Query(None),
-    destination_coding_standard: Optional[list[str]] = Query(None),
-    source_code: Optional[str] = None,
-    destination_code: Optional[str] = None,
+    source_coding_standard: list[str] | None = Query(None),
+    destination_coding_standard: list[str] | None = Query(None),
+    source_code: str | None = None,
+    destination_code: str | None = None,
 ):
     """Export a CSV of a list of internal codes"""
     selected_maps = ukrdc3.scalars(
@@ -170,9 +169,9 @@ def code_maps_export(
 )
 def code_exclusions_export(
     ukrdc3: Session = Depends(get_ukrdc3),
-    coding_standard: Optional[list[str]] = Query(None),
-    code: Optional[list[str]] = Query(None),
-    system: Optional[list[str]] = Query(None),
+    coding_standard: list[str] | None = Query(None),
+    code: list[str] | None = Query(None),
+    system: list[str] | None = Query(None),
 ):
     """Export a CSV of a list of internal codes"""
     selected_exclusions = ukrdc3.scalars(

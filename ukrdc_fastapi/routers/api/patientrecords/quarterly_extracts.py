@@ -1,7 +1,6 @@
 import sentry_sdk
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Security
 from fastapi import Query as QueryParam
-from fastapi import Security
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 from ukrdc_sqla.ukrdc import PatientRecord
@@ -14,8 +13,14 @@ from ukrr_extract.shared_utils import (
 )
 
 from ukrdc_fastapi.dependencies import get_ukrdc3
-from ukrdc_fastapi.dependencies.auth import Permissions, auth, UKRDCUser
+from ukrdc_fastapi.dependencies.auth import (
+    Permissions,
+    UKRDCUser,
+    auth,
+    get_current_user,
+)
 from ukrdc_fastapi.permissions.facilities import assert_facility_permission
+
 from .dependencies import _get_patientrecord
 
 router = APIRouter()
@@ -30,7 +35,7 @@ def pid_quarterly_extract(
     ukrdc3: Session = Depends(get_ukrdc3),
     quarter: int = QueryParam(...),
     centre: str = QueryParam(...),
-    user: UKRDCUser = Security(auth.get_user()),
+    user: UKRDCUser = Security(get_current_user),
 ):
 
     assert_facility_permission(centre, user)

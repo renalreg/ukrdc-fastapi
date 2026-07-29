@@ -1,4 +1,5 @@
 from ukrdc_sqla.ukrdc import Observation, PatientRecord
+
 from ukrdc_fastapi.config import configuration
 from ukrdc_fastapi.schemas.patientrecord.observation import ObservationSchema
 

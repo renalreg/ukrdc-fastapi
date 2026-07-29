@@ -1,5 +1,4 @@
 import datetime
-from typing import Optional
 
 from mirth_client import MirthAPI
 from mirth_client.models import ConnectorMessageData, ConnectorMessageModel
@@ -21,17 +20,17 @@ from ukrdc_fastapi.schemas.base import OrmModel
 class MessageSourceSchema(OrmModel):
     """A message source file"""
 
-    content: Optional[str] = Field(None, description="Message content")
-    content_type: Optional[str] = Field(None, description="Message content type")
+    content: str | None = Field(None, description="Message content")
+    content_type: str | None = Field(None, description="Message content type")
 
 
 def select_messages(
-    statuses: Optional[list[str]] = None,
-    channels: Optional[list[str]] = None,
-    nis: Optional[list[str]] = None,
-    facility: Optional[str] = None,
-    since: Optional[datetime.datetime] = None,
-    until: Optional[datetime.datetime] = None,
+    statuses: list[str] | None = None,
+    channels: list[str] | None = None,
+    nis: list[str] | None = None,
+    facility: str | None = None,
+    since: datetime.datetime | None = None,
+    until: datetime.datetime | None = None,
 ) -> Select:
     """Get a list of error messages from the errorsdb
 
@@ -106,7 +105,7 @@ async def get_message_source(message: Message, mirth: MirthAPI) -> MessageSource
 
     first_connector_message = connector_messages[0] if connector_messages else None
 
-    message_data: Optional[ConnectorMessageData] = None
+    message_data: ConnectorMessageData | None = None
 
     if first_connector_message:
         # Prioritise encoded message over raw
@@ -127,11 +126,11 @@ async def get_message_source(message: Message, mirth: MirthAPI) -> MessageSource
 def select_messages_related_to_masterrecord(
     record: MasterRecord,
     jtrace: Session,
-    statuses: Optional[list[str]] = None,
-    channels: Optional[list[str]] = None,
-    facility: Optional[str] = None,
-    since: Optional[datetime.datetime] = None,
-    until: Optional[datetime.datetime] = None,
+    statuses: list[str] | None = None,
+    channels: list[str] | None = None,
+    facility: str | None = None,
+    since: datetime.datetime | None = None,
+    until: datetime.datetime | None = None,
 ) -> Select:
     """Get a list of error messages from the errorsdb
 
@@ -167,10 +166,10 @@ def select_messages_related_to_masterrecord(
 
 def select_messages_related_to_patientrecord(
     record: PatientRecord,
-    statuses: Optional[list[str]] = None,
-    channels: Optional[list[str]] = None,
-    since: Optional[datetime.datetime] = None,
-    until: Optional[datetime.datetime] = None,
+    statuses: list[str] | None = None,
+    channels: list[str] | None = None,
+    since: datetime.datetime | None = None,
+    until: datetime.datetime | None = None,
 ) -> Select:
     national_ids: list[str] = [
         number.patientid

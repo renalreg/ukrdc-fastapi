@@ -1,5 +1,4 @@
 import datetime
-from typing import Optional
 
 from fastapi import APIRouter, Depends, Query, Security
 from pydantic import BaseModel, Field
@@ -8,7 +7,12 @@ from ukrdc_sqla.empi import WorkItem
 
 from ukrdc_fastapi.dependencies import get_jtrace
 from ukrdc_fastapi.dependencies.audit import Auditer, get_auditer
-from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
+from ukrdc_fastapi.dependencies.auth import (
+    Permissions,
+    UKRDCUser,
+    auth,
+    get_current_user,
+)
 from ukrdc_fastapi.permissions.workitems import apply_workitem_list_permission
 from ukrdc_fastapi.query.workitems import select_workitems
 from ukrdc_fastapi.schemas.empi import WorkItemSchema
@@ -24,7 +28,20 @@ router.include_router(workitem_id.router)
 class UnlinkWorkItemRequestSchema(BaseModel):
     master_record: str = Field(..., title="Master record ID")
     person_id: str = Field(..., title="Person ID")
-    comment: Optional[str] = None
+    comment: str | None = None
+
+
+_workitem_sorter = Depends(
+    make_sqla_sorter(
+        [
+            WorkItem.id,
+            WorkItem.last_updated,
+            WorkItem.master_id,
+            WorkItem.person_id,
+        ],
+        default_sort_by=WorkItem.last_updated,
+    )
+)
 
 
 @router.get(
@@ -33,23 +50,13 @@ class UnlinkWorkItemRequestSchema(BaseModel):
     dependencies=[Security(auth.permission(Permissions.READ_WORKITEMS))],
 )
 def workitems(
-    since: Optional[datetime.datetime] = None,
-    until: Optional[datetime.datetime] = None,
-    status: Optional[list[int]] = Query([1]),
-    facility: Optional[str] = None,
-    user: UKRDCUser = Security(auth.get_user()),
+    since: datetime.datetime | None = None,
+    until: datetime.datetime | None = None,
+    status: list[int] | None = Query([1]),
+    facility: str | None = None,
+    user: UKRDCUser = Security(get_current_user),
     jtrace: Session = Depends(get_jtrace),
-    sorter: SQLASorter = Depends(
-        make_sqla_sorter(
-            [
-                WorkItem.id,
-                WorkItem.last_updated,
-                WorkItem.master_id,
-                WorkItem.person_id,
-            ],
-            default_sort_by=WorkItem.last_updated,
-        )
-    ),
+    sorter: SQLASorter = _workitem_sorter,
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a list of open work items from the EMPI"""

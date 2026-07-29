@@ -1,0 +1,30 @@
+# Ruff configuration for ukrdc-fastapi
+# https://docs.astral.sh/ruff/configuration/
+[lint]
+# select = [...]  # See the Default Rules page for the full listing.
+ignore = ["ASYNC251","BLE001","RUF015","DTZ"]
+
+[lint.flake8-bugbear]
+# FastAPI's Depends()/Security()/Query() in argument defaults is the
+# intended dependency-injection pattern, not a mutable-default bug (B008).
+# This covers the outer wrapper call...
+extend-immutable-calls = [
+    "fastapi.Depends",
+    "fastapi.Security",
+    "fastapi.Query",
+    "fastapi.Body",
+    "fastapi.Header",
+    "fastapi.Path",
+    "fastapi.Cookie",
+    "fastapi.Form",
+    "fastapi.File",
+    # ...but calls made *inside* Depends()/Security() (e.g.
+    # Security(auth.get_user())) are flagged separately, so the
+    # project's dependency-factory helpers need listing too.
+    "auth.get_user",
+    "auth.auth.get_user",
+    "make_object_sorter",
+    "make_sqla_sorter",
+    "cache_factory",
+    "facility_cache_factory",
+]

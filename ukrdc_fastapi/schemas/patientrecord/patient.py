@@ -1,5 +1,5 @@
 import datetime
-from typing import Literal, Optional
+from typing import Literal
 
 from pydantic import Field
 
@@ -13,7 +13,7 @@ class NameSchema(OrmModel):
 
     given: str = Field(..., description="Given name")
     family: str = Field(..., description="Family name")
-    nameuse: Optional[str] = Field(None, description="Name use code")
+    nameuse: str | None = Field(None, description="Name use code")
 
 
 class NumberSchema(OrmModel):
@@ -27,67 +27,65 @@ class NumberSchema(OrmModel):
 class AddressSchema(OrmModel):
     """Patient address"""
 
-    from_time: Optional[datetime.date] = Field(None, description="Address start date")
-    to_time: Optional[datetime.date] = Field(None, description="Address end date")
-    street: Optional[str] = Field(None, description="Street address")
-    town: Optional[str] = Field(None, description="Town")
-    county: Optional[str] = Field(None, description="County")
-    postcode: Optional[str] = Field(None, description="Postcode")
+    from_time: datetime.date | None = Field(None, description="Address start date")
+    to_time: datetime.date | None = Field(None, description="Address end date")
+    street: str | None = Field(None, description="Street address")
+    town: str | None = Field(None, description="Town")
+    county: str | None = Field(None, description="County")
+    postcode: str | None = Field(None, description="Postcode")
 
-    country_code: Optional[str] = Field(None, description="Country code")
-    country_code_std: Optional[str] = Field(None, description="Country code standard")
-    country_description: Optional[str] = Field(None, description="Country description")
+    country_code: str | None = Field(None, description="Country code")
+    country_code_std: str | None = Field(None, description="Country code standard")
+    country_description: str | None = Field(None, description="Country description")
 
-    addressuse: Optional[str] = Field(None, description="Address use code")
+    addressuse: str | None = Field(None, description="Address use code")
 
 
 class ContactDetailSchema(OrmModel):
     """Patient contact detail"""
 
-    use: Optional[str] = Field(None, description="Contact detail use code")
-    value: Optional[str] = Field(None, description="Contact detail value")
-    commenttext: Optional[str] = Field(None, description="Contact detail comment")
+    use: str | None = Field(None, description="Contact detail use code")
+    value: str | None = Field(None, description="Contact detail value")
+    commenttext: str | None = Field(None, description="Contact detail comment")
 
 
 class GPInfo(OrmModel):
     """Patient GP information"""
 
     code: str = Field(..., description="GP code")
-    gpname: Optional[str] = Field(None, description="GP name")
-    street: Optional[str] = Field(None, description="GP street address")
-    postcode: Optional[str] = Field(None, description="GP postcode")
-    contactvalue: Optional[str] = Field(None, description="GP contact value")
-    type: Optional[str] = Field(None, description="GP type code")
+    gpname: str | None = Field(None, description="GP name")
+    street: str | None = Field(None, description="GP street address")
+    postcode: str | None = Field(None, description="GP postcode")
+    contactvalue: str | None = Field(None, description="GP contact value")
+    type: str | None = Field(None, description="GP type code")
 
 
 class FamilyDoctorSchema(OrmModel):
     """Patient family doctor information"""
 
     id: str = Field(..., description="Family doctor ID")
-    gpname: Optional[str] = Field(None, description="GP name")
+    gpname: str | None = Field(None, description="GP name")
 
-    gpid: Optional[str] = Field(None, description="GP code")
-    gp_info: Optional[GPInfo] = Field(None, description="GP information")
+    gpid: str | None = Field(None, description="GP code")
+    gp_info: GPInfo | None = Field(None, description="GP information")
 
-    gppracticeid: Optional[str] = Field(None, description="GP practice code")
-    gp_practice_info: Optional[GPInfo] = Field(
-        None, description="GP practice information"
-    )
+    gppracticeid: str | None = Field(None, description="GP practice code")
+    gp_practice_info: GPInfo | None = Field(None, description="GP practice information")
 
-    addressuse: Optional[str] = Field(None, description="Address use code")
-    fromtime: Optional[datetime.datetime] = Field(None, description="Start date")
-    totime: Optional[datetime.datetime] = Field(None, description="End date")
-    street: Optional[str] = Field(None, description="Street address")
-    town: Optional[str] = Field(None, description="Town")
-    county: Optional[str] = Field(None, description="County")
-    postcode: Optional[str] = Field(None, description="Postcode")
-    countrycode: Optional[str] = Field(None, description="Country code")
-    countrycodestd: Optional[str] = Field(None, description="Country code standard")
-    countrydesc: Optional[str] = Field(None, description="Country description")
-    contactuse: Optional[str] = Field(None, description="Contact use code")
-    contactvalue: Optional[str] = Field(None, description="Contact value")
-    email: Optional[str] = Field(None, description="Email address")
-    commenttext: Optional[str] = Field(None, description="Comment")
+    addressuse: str | None = Field(None, description="Address use code")
+    fromtime: datetime.datetime | None = Field(None, description="Start date")
+    totime: datetime.datetime | None = Field(None, description="End date")
+    street: str | None = Field(None, description="Street address")
+    town: str | None = Field(None, description="Town")
+    county: str | None = Field(None, description="County")
+    postcode: str | None = Field(None, description="Postcode")
+    countrycode: str | None = Field(None, description="Country code")
+    countrycodestd: str | None = Field(None, description="Country code standard")
+    countrydesc: str | None = Field(None, description="Country description")
+    contactuse: str | None = Field(None, description="Contact use code")
+    contactvalue: str | None = Field(None, description="Contact value")
+    email: str | None = Field(None, description="Email address")
+    commenttext: str | None = Field(None, description="Comment")
 
 
 class PatientSchema(OrmModel):
@@ -100,19 +98,13 @@ class PatientSchema(OrmModel):
         ..., description="Contact details"
     )
 
-    familydoctor: Optional[FamilyDoctorSchema] = Field(
-        None, description="Family doctor"
-    )
+    familydoctor: FamilyDoctorSchema | None = Field(None, description="Family doctor")
 
     birth_time: datetime.datetime = Field(..., description="Patient birth date")
-    death_time: Optional[datetime.datetime] = Field(
-        None, description="Patient death date"
-    )
+    death_time: datetime.datetime | None = Field(None, description="Patient death date")
     gender: GenderType = Field(..., description="Patient gender code")
 
-    ethnic_group_code: Optional[str] = Field(
-        None, description="Patient ethnic group code"
-    )
-    ethnic_group_description: Optional[str] = Field(
+    ethnic_group_code: str | None = Field(None, description="Patient ethnic group code")
+    ethnic_group_description: str | None = Field(
         None, description="Patient ethnic group description"
     )

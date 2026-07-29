@@ -1,6 +1,7 @@
+from ukrdc_sqla.ukrdc import ResultItem
+
 from ukrdc_fastapi.config import configuration
 from ukrdc_fastapi.schemas.patientrecord.laborder import ResultItemSchema
-from ukrdc_sqla.ukrdc import ResultItem
 
 
 async def test_record_resultitems(client_superuser):

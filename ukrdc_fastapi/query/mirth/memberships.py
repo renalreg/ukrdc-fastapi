@@ -3,7 +3,6 @@ from redis import Redis
 
 from ukrdc_fastapi.query.mirth.base import safe_send_mirth_message_to_name
 from ukrdc_fastapi.utils.mirth import MirthMessageResponseSchema
-
 from ukrdc_fastapi.utils.mirth.messages import build_create_partner_membership_message
 
 

@@ -1,5 +1,4 @@
 import datetime
-from typing import Optional
 
 from sqlalchemy import and_, not_, or_, select
 from sqlalchemy.sql.selectable import Select
@@ -11,10 +10,10 @@ from ukrdc_fastapi.models.audit import AccessEvent, AuditEvent
 
 def select_auditevents_related_to_patientrecord(
     record: PatientRecord,
-    resource: Optional[Resource] = None,
-    operation: Optional[AuditOperation] = None,
-    since: Optional[datetime.datetime] = None,
-    until: Optional[datetime.datetime] = None,
+    resource: Resource | None = None,
+    operation: AuditOperation | None = None,
+    since: datetime.datetime | None = None,
+    until: datetime.datetime | None = None,
 ) -> Select:
     """Get all audit events related to a patient record
 

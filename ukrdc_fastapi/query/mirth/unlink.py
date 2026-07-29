@@ -1,5 +1,4 @@
 from asyncio import sleep
-from typing import Optional
 
 from mirth_client.mirth import MirthAPI
 from redis import Redis
@@ -15,7 +14,7 @@ from ukrdc_fastapi.utils.mirth.messages import build_unlink_message
 async def unlink_person_from_master_record(
     person: Person,
     master: MasterRecord,
-    comment: Optional[str],
+    comment: str | None,
     user_id: str,
     jtrace: Session,
     mirth: MirthAPI,

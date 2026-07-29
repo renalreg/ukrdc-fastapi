@@ -1,7 +1,7 @@
 import datetime
 
 from dateutil.relativedelta import relativedelta
-from sqlalchemy import and_, or_, not_, select
+from sqlalchemy import and_, not_, or_, select
 from sqlalchemy.orm import Session, aliased
 from sqlalchemy.sql.selectable import Select
 from ukrdc_sqla.ukrdc import Facility, Patient, PatientRecord, ProgramMembership
@@ -41,10 +41,10 @@ def select_facility_report_cc001(
         .join(Patient)
         .where(PatientRecord.sendingfacility == facility.facilitycode)
         .where(PatientRecord.sendingextract == "UKRDC")
-        .where(PatientRecord.treatments == None)  # noqa: E711 # No treatments
+        .where(PatientRecord.treatments == None)  # No treatments
         .where(
             or_(
-                Patient.deathtime == None,  # noqa: E711
+                Patient.deathtime == None,
                 Patient.deathtime >= dod_cutoff,
             )
         )
@@ -97,7 +97,7 @@ def select_facility_report_pm001(
         select(PatientRecord.ukrdcid)
         .join(ProgramMembership, ProgramMembership.pid == PatientRecord.pid)
         .where(ProgramMembership.program_name == "PKB")
-        .where(ProgramMembership.totime == None)  # noqa: E711 # No end time
+        .where(ProgramMembership.totime == None)  # No end time
     )
 
     return (
@@ -155,5 +155,5 @@ def select_missing_radar_patients(
                 ),
             )
         )
-        .where(B.ukrdcid == None)  # noqa: E711
+        .where(B.ukrdcid == None)
     )

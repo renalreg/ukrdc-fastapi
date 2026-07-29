@@ -1,4 +1,4 @@
-from typing import Literal, Optional, get_args
+from typing import Literal, get_args
 
 # Override Bandit warnings, since we use this to generate XML, not parse
 from xml.etree.ElementTree import Element, SubElement, tostring  # nosec
@@ -55,7 +55,7 @@ def _get_facility_exclusions(facility: Facility) -> list[str]:
     Returns:
         [type]: [description]
     """
-    excl: Optional[list[str]] = (
+    excl: list[str] | None = (
         list(facility.pkb_msg_exclusions) if facility.pkb_msg_exclusions else None
     )
     return excl or []

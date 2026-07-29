@@ -1,6 +1,6 @@
 import json
 from enum import Enum
-from typing import Any, Optional, Type, Union
+from typing import Any
 
 from redis import Redis
 from starlette.requests import Request
@@ -103,19 +103,19 @@ class BasicCache:
     def __init__(
         self,
         redis: Redis,
-        key: Union[CacheKey, DynamicCacheKey],
-        encoder: Type[json.JSONEncoder] = JsonEncoder,
+        key: CacheKey | DynamicCacheKey,
+        encoder: type[json.JSONEncoder] = JsonEncoder,
         prefix: str = "response-cache:",
     ) -> None:
         self.redis = redis
-        self.encoder: Type[json.JSONEncoder] = encoder
+        self.encoder: type[json.JSONEncoder] = encoder
         self.prefix = prefix
 
         self.key: str = key.value
 
         # Enable pre-retreiving cached value on init
-        self._cached_value_str: Optional[str] = None
-        self._cached_value: Optional[Any] = BasicCache._sentinel
+        self._cached_value_str: str | None = None
+        self._cached_value: Any | None = BasicCache._sentinel
 
         # Pre-fetch the cached value
         if self.redis.exists(self.key):
@@ -161,7 +161,7 @@ class BasicCache:
         # Hold the cached value in memory for the duration of this request
         self._cached_value = json.loads(value_str)
 
-    def set(self, obj: Any, expire: Optional[int] = None) -> None:
+    def set(self, obj: Any, expire: int | None = None) -> None:
         """Set a new cached value for this key
 
         Args:
@@ -180,10 +180,10 @@ class ResponseCache(BasicCache):
     def __init__(
         self,
         redis: Redis,
-        key: Union[CacheKey, DynamicCacheKey],
+        key: CacheKey | DynamicCacheKey,
         request: Request,
         response: Response,
-        encoder: Type[json.JSONEncoder] = JsonEncoder,
+        encoder: type[json.JSONEncoder] = JsonEncoder,
         prefix: str = "response-cache:",
     ) -> None:
         super().__init__(redis, key, encoder, prefix)
@@ -202,11 +202,9 @@ class ResponseCache(BasicCache):
         Returns:
             bool: Does the incoming request have a 'Cache-Control: no-store' header
         """
-        if self.request.headers.get("Cache-Control") == "no-store":
-            return True
-        return False
+        return self.request.headers.get("Cache-Control") == "no-store"
 
-    def _set_etag(self, value_str: Optional[str]):
+    def _set_etag(self, value_str: str | None):
         """Set the etag header for a given resource string
 
         Args:
@@ -214,7 +212,7 @@ class ResponseCache(BasicCache):
         """
         self.etag = f"W/{hash(value_str)}"
 
-    def set(self, obj: Any, expire: Optional[int] = None) -> None:
+    def set(self, obj: Any, expire: int | None = None) -> None:
         """Set a new cached value for this key
 
         Args:

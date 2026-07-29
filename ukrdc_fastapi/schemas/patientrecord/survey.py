@@ -1,5 +1,4 @@
 import datetime
-from typing import Optional
 
 from pydantic import Field, model_validator
 
@@ -15,9 +14,9 @@ class SurveyQuestionSchema(OrmModel):
     questiontypecode: str = Field(..., description="Question type code")
     response: str = Field(..., description="Question response")
 
-    question_group: Optional[str] = Field(None, description="Question group")
-    question_type: Optional[str] = Field(None, description="Question type")
-    response_text: Optional[str] = Field(None, description="Question response text")
+    question_group: str | None = Field(None, description="Question group")
+    question_type: str | None = Field(None, description="Question type")
+    response_text: str | None = Field(None, description="Question response text")
 
     @model_validator(mode="after")
     def convert_codes(self):
@@ -65,5 +64,5 @@ class SurveySchema(OrmModel):
     pid: str = Field(..., description="Patient ID")
     surveytime: datetime.datetime = Field(..., description="Survey timestamp")
     surveytypecode: str = Field(..., description="Survey type code")
-    enteredbycode: Optional[str] = Field(None, description="Survey author code")
-    enteredatcode: Optional[str] = Field(None, description="Survey organization code")
+    enteredbycode: str | None = Field(None, description="Survey author code")
+    enteredatcode: str | None = Field(None, description="Survey organization code")

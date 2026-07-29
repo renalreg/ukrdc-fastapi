@@ -1,5 +1,4 @@
 import datetime
-from typing import Optional
 
 from pydantic import Field
 
@@ -11,52 +10,48 @@ class ProcedureSchema(OrmModel):
     pid: str = Field(..., description="Patient ID")
 
     creation_date: datetime.datetime = Field(..., description="Database creation date")
-    update_date: Optional[datetime.datetime] = Field(
+    update_date: datetime.datetime | None = Field(
         ..., description="Database update date"
     )
     # idx: Currently unused
-    externalid: Optional[str] = Field(None, description="External session ID")
+    externalid: str | None = Field(None, description="External session ID")
 
-    proceduretime: Optional[datetime.datetime] = Field(
+    proceduretime: datetime.datetime | None = Field(
         ..., description="Procedure datetime"
     )
 
     # Procedure type
-    proceduretypecode: Optional[str] = Field(None, description="Procedure code")
-    proceduretypecodestd: Optional[str] = Field(
+    proceduretypecode: str | None = Field(None, description="Procedure code")
+    proceduretypecodestd: str | None = Field(
         None, description="Procedure code standard"
     )
-    proceduretypedesc: Optional[str] = Field(None, description="Procedure description")
+    proceduretypedesc: str | None = Field(None, description="Procedure description")
 
     # Clinician
-    cliniciancode: Optional[str] = Field(
-        None, description="Clinicial code. Rarely used."
-    )
-    cliniciancodestd: Optional[str] = Field(
+    cliniciancode: str | None = Field(None, description="Clinicial code. Rarely used.")
+    cliniciancodestd: str | None = Field(
         None, description="Clinicial code standard. Rarely used."
     )
-    cliniciandesc: Optional[str] = Field(None, description="Clinician description")
+    cliniciandesc: str | None = Field(None, description="Clinician description")
 
     # Data-entry user
-    enteredbycode: Optional[str] = Field(
+    enteredbycode: str | None = Field(
         None, description="Data-entry user code. Usually a local username or ID."
     )
-    enteredbycodestd: Optional[str] = Field(
+    enteredbycodestd: str | None = Field(
         None, description="Data-entry user code standard. Usually local."
     )
-    enteredbydesc: Optional[str] = Field(
-        None, description="Data-entry user description"
-    )
+    enteredbydesc: str | None = Field(None, description="Data-entry user description")
 
     # Data entry site/unit
-    enteredatcode: Optional[str] = Field(
+    enteredatcode: str | None = Field(
         None,
         description="Site code at which the data was entered. Usually an RR1+ code.",
     )
-    enteredatcodestd: Optional[str] = Field(
+    enteredatcodestd: str | None = Field(
         None, description="Site code standard at which the data was entered."
     )
-    enteredatdesc: Optional[str] = Field(
+    enteredatdesc: str | None = Field(
         None, description="Site description at which the data was entered."
     )
 
@@ -66,42 +61,42 @@ class ProcedureSchema(OrmModel):
 
 class DialysisSessionSchema(ProcedureSchema):
     # Session data
-    qhd19: Optional[str] = None
-    qhd20: Optional[str] = None
-    qhd21: Optional[str] = None
-    qhd22: Optional[str] = None
-    qhd30: Optional[str] = None
-    qhd31: Optional[str] = None
-    qhd32: Optional[str] = None
-    qhd33: Optional[str] = None
+    qhd19: str | None = None
+    qhd20: str | None = None
+    qhd21: str | None = None
+    qhd22: str | None = None
+    qhd30: str | None = None
+    qhd31: str | None = None
+    qhd32: str | None = None
+    qhd33: str | None = None
 
 
 class TransplantSchema(ProcedureSchema):
-    tra64: Optional[datetime.datetime] = None
-    tra65: Optional[str] = None
-    tra66: Optional[str] = None
-    tra69: Optional[datetime.datetime] = None
-    tra76: Optional[str] = None
-    tra77: Optional[str] = None
-    tra78: Optional[str] = None
-    tra79: Optional[str] = None
-    tra80: Optional[str] = None
-    tra8a: Optional[str] = None
-    tra81: Optional[str] = None
-    tra82: Optional[str] = None
-    tra83: Optional[str] = None
-    tra84: Optional[str] = None
-    tra85: Optional[str] = None
-    tra86: Optional[str] = None
-    tra87: Optional[str] = None
-    tra88: Optional[str] = None
-    tra89: Optional[str] = None
-    tra90: Optional[str] = None
-    tra91: Optional[str] = None
-    tra92: Optional[str] = None
-    tra93: Optional[str] = None
-    tra94: Optional[str] = None
-    tra95: Optional[str] = None
-    tra96: Optional[str] = None
-    tra97: Optional[str] = None
-    tra98: Optional[str] = None
+    tra64: datetime.datetime | None = None
+    tra65: str | None = None
+    tra66: str | None = None
+    tra69: datetime.datetime | None = None
+    tra76: str | None = None
+    tra77: str | None = None
+    tra78: str | None = None
+    tra79: str | None = None
+    tra80: str | None = None
+    tra8a: str | None = None
+    tra81: str | None = None
+    tra82: str | None = None
+    tra83: str | None = None
+    tra84: str | None = None
+    tra85: str | None = None
+    tra86: str | None = None
+    tra87: str | None = None
+    tra88: str | None = None
+    tra89: str | None = None
+    tra90: str | None = None
+    tra91: str | None = None
+    tra92: str | None = None
+    tra93: str | None = None
+    tra94: str | None = None
+    tra95: str | None = None
+    tra96: str | None = None
+    tra97: str | None = None
+    tra98: str | None = None

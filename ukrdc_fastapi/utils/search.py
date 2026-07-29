@@ -1,6 +1,6 @@
 import datetime
 import re
-from typing import Iterable, Optional, Union, Sequence
+from collections.abc import Iterable, Sequence
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -35,7 +35,7 @@ class SearchSet:
         """Add a datetime formatted string to the search query set.
         If the string cannot be parsed as a datetime, it will be ignored"""
 
-        parsed_date: Optional[datetime.datetime] = parse_date(item)
+        parsed_date: datetime.datetime | None = parse_date(item)
         if parsed_date:
             self.dates.append(parsed_date.date())
 
@@ -209,7 +209,7 @@ def records_from_full_name(
 
 
 def records_from_dob(
-    ukrdc3: Session, dobs: Iterable[Union[str, datetime.date]]
+    ukrdc3: Session, dobs: Iterable[str | datetime.date]
 ) -> Sequence[PatientRecord]:
     """Finds Ids from date of birth"""
     conditions = [Patient.birth_time == dob for dob in dobs]

@@ -1,9 +1,7 @@
 import datetime
-from typing import Optional
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Security
 from fastapi import Query as QueryParam
-from fastapi import Security
 from mirth_client import MirthAPI
 from redis import Redis
 from sqlalchemy.orm import Session
@@ -16,7 +14,12 @@ from ukrdc_fastapi.dependencies.audit import (
     Resource,
     get_auditer,
 )
-from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
+from ukrdc_fastapi.dependencies.auth import (
+    Permissions,
+    UKRDCUser,
+    auth,
+    get_current_user,
+)
 from ukrdc_fastapi.exceptions import ResourceNotFoundError
 from ukrdc_fastapi.permissions.messages import apply_message_list_permissions
 from ukrdc_fastapi.permissions.workitems import (
@@ -41,7 +44,7 @@ router = APIRouter()
 
 def _get_workitem(
     workitem_id: int,
-    user: UKRDCUser = Security(auth.get_user()),
+    user: UKRDCUser = Security(get_current_user),
     jtrace: Session = Depends(get_jtrace),
 ):
     """Retreive a particular work item from the EMPI"""
@@ -92,7 +95,7 @@ def workitem(
 async def workitem_update(
     args: UpdateWorkItemRequest,
     workitem_obj: WorkItem = Depends(_get_workitem),
-    user: UKRDCUser = Security(auth.get_user()),
+    user: UKRDCUser = Security(get_current_user),
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
     audit: Auditer = Depends(get_auditer),
@@ -122,9 +125,9 @@ async def workitem_update(
     ],
 )
 async def workitem_close(
-    args: Optional[CloseWorkItemRequest],
+    args: CloseWorkItemRequest | None,
     workitem_obj: WorkItem = Depends(_get_workitem),
-    user: UKRDCUser = Security(auth.get_user()),
+    user: UKRDCUser = Security(get_current_user),
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
     audit: Auditer = Depends(get_auditer),
@@ -150,7 +153,7 @@ async def workitem_close(
 )
 def workitem_collection(
     workitem_obj: WorkItem = Depends(_get_workitem),
-    user: UKRDCUser = Security(auth.get_user()),
+    user: UKRDCUser = Security(get_current_user),
     jtrace: Session = Depends(get_jtrace),
     audit: Auditer = Depends(get_auditer),
 ):
@@ -174,7 +177,7 @@ def workitem_collection(
 )
 def workitem_related(
     workitem_obj: WorkItem = Depends(_get_workitem),
-    user: UKRDCUser = Security(auth.get_user()),
+    user: UKRDCUser = Security(get_current_user),
     jtrace: Session = Depends(get_jtrace),
     audit: Auditer = Depends(get_auditer),
 ):
@@ -198,11 +201,11 @@ def workitem_related(
 )
 def workitem_messages(
     worktiem_obj: WorkItem = Depends(_get_workitem),
-    facility: Optional[str] = None,
-    since: Optional[datetime.datetime] = None,
-    until: Optional[datetime.datetime] = None,
-    status: Optional[list[str]] = QueryParam(None),
-    user: UKRDCUser = Security(auth.get_user()),
+    facility: str | None = None,
+    since: datetime.datetime | None = None,
+    until: datetime.datetime | None = None,
+    status: list[str] | None = QueryParam(None),
+    user: UKRDCUser = Security(get_current_user),
     jtrace: Session = Depends(get_jtrace),
     errorsdb: Session = Depends(get_errorsdb),
     audit: Auditer = Depends(get_auditer),

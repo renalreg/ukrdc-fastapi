@@ -1,17 +1,16 @@
 import datetime
-from typing import Optional
 
 from fastapi import APIRouter, Depends, Security
 from sqlalchemy.orm import Session
 
 from ukrdc_fastapi.dependencies import get_errorsdb, get_jtrace, get_statsdb, get_ukrdc3
 from ukrdc_fastapi.dependencies.auth import Permissions, auth
-from ukrdc_fastapi.dependencies.cache import cache_factory
+from ukrdc_fastapi.dependencies.cache import ADMIN_COUNTS_CACHE
 from ukrdc_fastapi.query.admin import AdminCountsSchema, get_admin_counts
 from ukrdc_fastapi.query.stats import get_full_errors_history
 from ukrdc_fastapi.query.workitems import get_full_workitem_history
 from ukrdc_fastapi.schemas.common import HistoryPoint
-from ukrdc_fastapi.utils.cache import CacheKey, ResponseCache
+from ukrdc_fastapi.utils.cache import ResponseCache
 
 from . import datahealth
 
@@ -34,8 +33,8 @@ router.include_router(datahealth.router, prefix="/datahealth")
     ],
 )
 def full_workitem_history(
-    since: Optional[datetime.date] = None,
-    until: Optional[datetime.date] = None,
+    since: datetime.date | None = None,
+    until: datetime.date | None = None,
     jtrace: Session = Depends(get_jtrace),
 ):
     """Retreive basic statistics about recent records"""
@@ -57,8 +56,8 @@ def full_workitem_history(
     ],
 )
 def full_errors_history(
-    since: Optional[datetime.date] = None,
-    until: Optional[datetime.date] = None,
+    since: datetime.date | None = None,
+    until: datetime.date | None = None,
     statsdb: Session = Depends(get_statsdb),
 ):
     """Retreive basic statistics about recent records"""
@@ -85,7 +84,7 @@ def admin_counts(
     ukrdc3: Session = Depends(get_ukrdc3),
     jtrace: Session = Depends(get_jtrace),
     errorsdb: Session = Depends(get_errorsdb),
-    cache: ResponseCache = Depends(cache_factory(CacheKey.ADMIN_COUNTS)),
+    cache: ResponseCache = ADMIN_COUNTS_CACHE,
 ):
     """Retreive basic counts across the UKRDC"""
     # If no cached value exists, or the cached value has expired

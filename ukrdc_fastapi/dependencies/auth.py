@@ -1,4 +1,4 @@
-from typing import Callable, Optional, Sequence, Union
+from collections.abc import Callable, Sequence
 
 from fastapi import Depends, HTTPException
 from pydantic.main import BaseModel
@@ -84,7 +84,7 @@ class Permissions:
 
 class UKRDCUser(BaseModel):
     id: str
-    cid: Optional[str] = None  # TODO:REVIEW  is this allowed
+    cid: str | None = None  # TODO:REVIEW  is this allowed
     email: str
     scopes: list[str]
     permissions: list[str]
@@ -142,7 +142,7 @@ class URKDCAuth:
 
         return get_user_dependency
 
-    def permission(self, permission: Union[str, Sequence[str]]) -> Callable:
+    def permission(self, permission: str | Sequence[str]) -> Callable:
         """
         Dependency factory to check for the presence of a permission or set of permissions.
         Permissions are obtained from the token key set by self.permission_key, since this is
@@ -184,3 +184,5 @@ auth = URKDCAuth(
     settings.oauth_audience,
     [settings.app_client_id, settings.swagger_client_id],
 )
+
+get_current_user = auth.get_user()

@@ -6,15 +6,15 @@ If required this could easily be generalized for all the reports.
 
 from __future__ import annotations
 
-import pandas as pd
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
 from pathlib import Path
-import httpx
+from typing import Any
 
+import httpx
+import pandas as pd
 
 BASE_URL: str = "http://localhost:8000"
-FACILITY_CODES: List[str] = [
+FACILITY_CODES: list[str] = [
     "RAJ",
     "RAQ01",
     "RCSLB",
@@ -30,23 +30,21 @@ PAGE_SIZE: int = 100_000
 OUTPUT_PATH: Path = (
     Path("scripts") / "analytics" / "output/" / "radar_missing_{facility_code}.xlsx"
 )
-AUTH_TOKEN: Optional[str] = (
-    None  # Set to a bearer token string if your API requires auth
-)
+AUTH_TOKEN: str | None = None  # Set to a bearer token string if your API requires auth
 
 FACILITY_CODE: str = ""
 
 
 @dataclass
 class Page:
-    items: List[Dict[str, Any]]
+    items: list[dict[str, Any]]
     total: int
     page: int
     size: int
 
 
-def build_headers() -> Dict[str, str]:
-    headers: Dict[str, str] = {"Accept": "application/json"}
+def build_headers() -> dict[str, str]:
+    headers: dict[str, str] = {"Accept": "application/json"}
     if AUTH_TOKEN:
         headers["Authorization"] = f"Bearer {AUTH_TOKEN}"
     return headers
@@ -61,7 +59,7 @@ def fetch_page(client: httpx.Client, page: int) -> Page:
         )
         response.raise_for_status()
     except httpx.RequestError as e:
-        print(f"Error fetching data for {FACILITY_CODE}: {str(e)}")
+        print(f"Error fetching data for {FACILITY_CODE}: {e!s}")
         return Page(items=[], total=0, page=page, size=PAGE_SIZE)
 
     data = response.json()
@@ -74,8 +72,8 @@ def fetch_page(client: httpx.Client, page: int) -> Page:
     return Page(items=items, total=total, page=current_page, size=size)
 
 
-def fetch_all_results() -> List[Dict[str, Any]]:
-    results: List[Dict[str, Any]] = []
+def fetch_all_results() -> list[dict[str, Any]]:
+    results: list[dict[str, Any]] = []
 
     with httpx.Client(headers=build_headers(), timeout=30.0) as client:
         # Fetch everything in a single request by using a very large page size.
@@ -87,8 +85,8 @@ def fetch_all_results() -> List[Dict[str, Any]]:
     return results
 
 
-def results_to_dataframe(results: List[Dict[str, Any]]) -> pd.DataFrame:
-    rows_for_df: List[Dict[str, Any]] = []
+def results_to_dataframe(results: list[dict[str, Any]]) -> pd.DataFrame:
+    rows_for_df: list[dict[str, Any]] = []
 
     for item in results:
         pid = item.get("pid")
@@ -100,7 +98,7 @@ def results_to_dataframe(results: List[Dict[str, Any]]) -> pd.DataFrame:
         program_memberships = item.get("programMemberships", [])
         if program_memberships:
             for membership in program_memberships:
-                row: Dict[str, Any] = {
+                row: dict[str, Any] = {
                     "pid": pid,
                     "sendingfacility": sending_facility,
                     "sendingextract": sending_extract,
@@ -138,7 +136,7 @@ def main() -> None:
                     str(OUTPUT_PATH).format(facility_code=facility_code), index=False
                 )
         except Exception as e:
-            print(f"Failed to process {facility_code}: {str(e)}")
+            print(f"Failed to process {facility_code}: {e!s}")
             continue
 
 

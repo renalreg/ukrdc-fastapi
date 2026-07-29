@@ -1,6 +1,4 @@
-from typing import Optional
-
-from sqlalchemy import or_, select, func
+from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.selectable import Select
 from ukrdc_sqla.ukrdc import Code, CodeExclusion, CodeMap
@@ -15,8 +13,8 @@ class ExtendedCodeSchema(CodeSchema):
 
 
 def select_codes(
-    coding_standard: Optional[list[str]] = None,
-    search: Optional[str] = None,
+    coding_standard: list[str] | None = None,
+    search: str | None = None,
 ) -> Select:
     """Get the list of codes from the code list
 
@@ -56,7 +54,7 @@ def get_code(ukrdc3: Session, coding_standard: str, code: str) -> ExtendedCodeSc
     Returns:
         ExtendedCodeSchema: Extended code details
     """
-    code_obj: Optional[Code] = ukrdc3.get(Code, (coding_standard, code))
+    code_obj: Code | None = ukrdc3.get(Code, (coding_standard, code))
 
     if not code_obj:
         raise MissingCodeError(coding_standard, code)
@@ -86,10 +84,10 @@ def get_code(ukrdc3: Session, coding_standard: str, code: str) -> ExtendedCodeSc
 
 
 def select_code_maps(
-    source_coding_standard: Optional[list[str]] = None,
-    destination_coding_standard: Optional[list[str]] = None,
-    source_code: Optional[str] = None,
-    destination_code: Optional[str] = None,
+    source_coding_standard: list[str] | None = None,
+    destination_coding_standard: list[str] | None = None,
+    source_code: str | None = None,
+    destination_code: str | None = None,
 ) -> Select:
     """Get the list of codes from the code map
 
@@ -129,9 +127,9 @@ def select_code_maps(
 
 
 def select_code_exclusions(
-    coding_standard: Optional[list[str]] = None,
-    code: Optional[list[str]] = None,
-    system: Optional[list[str]] = None,
+    coding_standard: list[str] | None = None,
+    code: list[str] | None = None,
+    system: list[str] | None = None,
 ) -> Select:
     """Get the list of code exclusions
 
@@ -159,7 +157,7 @@ def select_code_exclusions(
     return query
 
 
-def get_coding_standards(ukrdc3: Session) -> list[Optional[str]]:
+def get_coding_standards(ukrdc3: Session) -> list[str | None]:
     """Get a list of available coding standards
 
     Args:

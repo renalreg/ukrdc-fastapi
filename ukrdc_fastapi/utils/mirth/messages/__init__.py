@@ -1,5 +1,3 @@
-from typing import Optional
-
 # Override Bandit warnings, since we use this to generate XML, not parse
 from xml.etree.ElementTree import Element, SubElement, tostring  # nosec
 
@@ -31,7 +29,7 @@ def build_unlink_message(
     master_record: int,
     person_id: int,
     user: str,
-    description: Optional[str] = None,
+    description: str | None = None,
 ) -> str:
     """Build rawData for a Person record be unlinked from a MasterRecord
 
@@ -62,7 +60,7 @@ def build_unlink_message(
 
 
 def build_update_workitem_message(
-    workitem_id: int, status: int, description: Optional[str], user: str
+    workitem_id: int, status: int, description: str | None, user: str
 ) -> str:
     """Build rawData to update a WorkItem record
 

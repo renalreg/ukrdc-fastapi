@@ -1,5 +1,3 @@
-from typing import Optional
-
 from fastapi import APIRouter, Depends, Security
 from mirth_client.mirth import MirthAPI
 from redis import Redis
@@ -7,7 +5,12 @@ from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import MasterRecord, Person
 
 from ukrdc_fastapi.dependencies import get_jtrace, get_mirth, get_redis
-from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
+from ukrdc_fastapi.dependencies.auth import (
+    Permissions,
+    UKRDCUser,
+    auth,
+    get_current_user,
+)
 from ukrdc_fastapi.exceptions import ResourceNotFoundError
 from ukrdc_fastapi.permissions.masterrecords import assert_masterrecord_permission
 from ukrdc_fastapi.permissions.persons import assert_person_permission
@@ -29,15 +32,15 @@ router = APIRouter(tags=["Patient Index Operations"])
 )
 async def empi_merge(
     args: MergeRequest,
-    user: UKRDCUser = Security(auth.get_user()),
+    user: UKRDCUser = Security(get_current_user),
     jtrace: Session = Depends(get_jtrace),
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),
 ):
     """Merge a pair of MasterRecords"""
     # Get the records
-    superseding: Optional[MasterRecord] = jtrace.get(MasterRecord, args.superseding)
-    superseded: Optional[MasterRecord] = jtrace.get(MasterRecord, args.superseded)
+    superseding: MasterRecord | None = jtrace.get(MasterRecord, args.superseding)
+    superseded: MasterRecord | None = jtrace.get(MasterRecord, args.superseded)
 
     if not (superseding and superseded):
         raise ResourceNotFoundError("Master Record not found")
@@ -58,7 +61,7 @@ async def empi_merge(
 )
 async def empi_unlink(
     args: UnlinkRequest,
-    user: UKRDCUser = Security(auth.get_user()),
+    user: UKRDCUser = Security(get_current_user),
     jtrace: Session = Depends(get_jtrace),
     mirth: MirthAPI = Depends(get_mirth),
     redis: Redis = Depends(get_redis),

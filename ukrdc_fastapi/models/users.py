@@ -1,5 +1,3 @@
-from typing import Optional
-
 from sqlalchemy import JSON, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column  # type: ignore
 
@@ -17,6 +15,6 @@ class UserPreference(Base):
     key: Mapped[str] = mapped_column(
         String, primary_key=True, nullable=False
     )  # Preference key
-    val: Mapped[Optional[str]] = mapped_column(
+    val: Mapped[str | None] = mapped_column(
         JSON
     )  # Preference value, as a JSON primitive, array, or object

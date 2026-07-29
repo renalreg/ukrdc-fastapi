@@ -1,17 +1,15 @@
-from typing import Optional
 from datetime import datetime
-from redis import Redis
 
-from fastapi import APIRouter, Depends, Security, Request, Response
+from fastapi import APIRouter, Depends, Request, Response, Security
+from redis import Redis
 from sqlalchemy.orm import Session
 from ukrdc_stats.calculators.demographics import DemographicsStats
 from ukrdc_stats.calculators.krt import UnitLevelKRTStats
-from ukrdc_fastapi.dependencies.cache import get_redis
 
 from ukrdc_fastapi.config import settings
 from ukrdc_fastapi.dependencies import get_ukrdc3
-from ukrdc_fastapi.dependencies.auth import UKRDCUser, auth
-from ukrdc_fastapi.dependencies.cache import cache_factory
+from ukrdc_fastapi.dependencies.auth import UKRDCUser, get_current_user
+from ukrdc_fastapi.dependencies.cache import cache_factory, get_redis
 from ukrdc_fastapi.permissions.facilities import assert_facility_permission
 from ukrdc_fastapi.query.facilities.stats import (
     get_facility_demographic_stats,
@@ -32,9 +30,9 @@ def facility_stats_demographics(
     response: Response,
     redis: Redis = Depends(get_redis),
     ukrdc3: Session = Depends(get_ukrdc3),
-    user: UKRDCUser = Security(auth.get_user()),
-    since: Optional[str] = None,
-    until: Optional[str] = None,
+    user: UKRDCUser = Security(get_current_user),
+    since: str | None = None,
+    until: str | None = None,
 ):
     """Retreive demographic statistics for a given facility"""
     assert_facility_permission(code, user)
@@ -85,9 +83,9 @@ def facility_stats_krt(
     response: Response,
     redis: Redis = Depends(get_redis),
     ukrdc3: Session = Depends(get_ukrdc3),
-    user: UKRDCUser = Security(auth.get_user()),
-    since: Optional[str] = None,
-    until: Optional[str] = None,
+    user: UKRDCUser = Security(get_current_user),
+    since: str | None = None,
+    until: str | None = None,
 ):
     """Retreive KRT statistics for a given facility"""
     assert_facility_permission(code, user)

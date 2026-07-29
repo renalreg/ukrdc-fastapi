@@ -1,6 +1,5 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Security
 from fastapi import Query as QueryParam
-from fastapi import Security
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from ukrdc_sqla.empi import LinkRecord, MasterRecord
@@ -13,7 +12,12 @@ from ukrdc_fastapi.dependencies.audit import (
     Resource,
     get_auditer,
 )
-from ukrdc_fastapi.dependencies.auth import Permissions, UKRDCUser, auth
+from ukrdc_fastapi.dependencies.auth import (
+    Permissions,
+    UKRDCUser,
+    auth,
+    get_current_user,
+)
 from ukrdc_fastapi.permissions.masterrecords import apply_masterrecord_list_permissions
 from ukrdc_fastapi.permissions.patientrecords import apply_patientrecord_list_permission
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema
@@ -48,7 +52,7 @@ def search_masterrecords(
     number_type: list[str] = QueryParam(
         [], description="Number types to return, e.g. UKRDC, NHS, CHI, HSC"
     ),
-    user: UKRDCUser = Security(auth.get_user()),
+    user: UKRDCUser = Security(get_current_user),
     jtrace: Session = Depends(get_jtrace),
     ukrdc3: Session = Depends(get_ukrdc3),
     audit: Auditer = Depends(get_auditer),
@@ -125,7 +129,7 @@ def search_records(
     include_survey: bool = QueryParam(
         False, description="Include survey-only records in search results"
     ),
-    user: UKRDCUser = Security(auth.get_user()),
+    user: UKRDCUser = Security(get_current_user),
     ukrdc3: Session = Depends(get_ukrdc3),
     audit: Auditer = Depends(get_auditer),
 ):

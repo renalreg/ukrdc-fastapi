@@ -1,6 +1,8 @@
 from urllib.parse import quote
+
 from ukrdc_fastapi.config import configuration
-from .utils import commit_extra_patients, TEST_NUMBERS
+
+from .utils import TEST_NUMBERS, commit_extra_patients
 
 # NB: We only need the jtrace session here because our test utility function to create new patients uses it.
 # Long-term (post-JTRACE) it will not be required.

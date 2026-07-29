@@ -1,7 +1,8 @@
+from ukrdc_sqla.ukrdc import PatientRecord
+
 from tests.conftest import PID_1, PID_2, UKRDCID_1, UKRDCID_2
 from ukrdc_fastapi.config import configuration
 from ukrdc_fastapi.dependencies.audit import AuditOperation, Resource
-from ukrdc_sqla.ukrdc import PatientRecord
 from ukrdc_fastapi.query.audit import select_auditevents_related_to_patientrecord
 
 

@@ -1,10 +1,11 @@
-import logging
-from datetime import datetime, time, date, timedelta
-from concurrent.futures import ThreadPoolExecutor
 import asyncio
+import logging
+from concurrent.futures import ThreadPoolExecutor
+from datetime import date, datetime, time, timedelta
+from typing import Any
+
 from sqlalchemy import select
 from sqlalchemy.sql.functions import func
-from typing import Dict, Any
 from ukrdc_sqla.ukrdc import PatientRecord
 
 from ukrdc_fastapi.config import settings
@@ -108,7 +109,7 @@ async def precalculate_facility_stats_dialysis() -> None:
     return await task.tracked()
 
 
-def _calculate_stats_sync() -> Dict[str, Dict[str, Any]]:
+def _calculate_stats_sync() -> dict[str, dict[str, Any]]:
     """Sync stats calculation (runs in threadpool)"""
     results = {}
     with ukrdc3_session() as ukrdc3:

@@ -1,5 +1,3 @@
-from typing import Optional
-
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.selectable import Select
@@ -15,7 +13,7 @@ def select_masterrecords_related_to_masterrecord(
     record: MasterRecord,
     jtrace: Session,
     exclude_self: bool = False,
-    nationalid_type: Optional[str] = None,
+    nationalid_type: str | None = None,
 ) -> Select:
     """Get a query of MasterRecords related via the LinkRecord network to a given MasterRecord
 
@@ -47,9 +45,9 @@ def select_masterrecords_related_to_masterrecord(
 
 
 def select_masterrecords_related_to_person(
-    person: Optional[Person],
+    person: Person | None,
     jtrace: Session,
-    nationalid_type: Optional[str] = None,
+    nationalid_type: str | None = None,
 ) -> Select:
     """Get a query of MasterRecords related via the LinkRecord network to a given Person
 

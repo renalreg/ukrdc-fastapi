@@ -1,10 +1,9 @@
 import asyncio
-from typing import Optional
 
 import pytest
 import pytest_asyncio
 from fastapi import BackgroundTasks, Depends
-from httpx import AsyncClient, ASGITransport
+from httpx import ASGITransport, AsyncClient
 from pydantic import BaseModel
 
 from ukrdc_fastapi.config import configuration
@@ -27,7 +26,7 @@ class TaskSubmitModel(BaseModel):
     time_to_wait: float
     bad: bool = False
     private: bool = False
-    force_owner: Optional[str] = None
+    force_owner: str | None = None
 
 
 @pytest.mark.anyio

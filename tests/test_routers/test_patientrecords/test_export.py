@@ -1,7 +1,7 @@
 import re
 
 import pytest
-from ukrdc_sqla.ukrdc import ProgramMembership, Facility
+from ukrdc_sqla.ukrdc import Facility, ProgramMembership
 
 from tests.utils import days_ago
 from ukrdc_fastapi.config import configuration

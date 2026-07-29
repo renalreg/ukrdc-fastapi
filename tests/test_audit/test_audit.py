@@ -1,4 +1,5 @@
 from sqlalchemy import select
+
 from ukrdc_fastapi.config import configuration
 from ukrdc_fastapi.models.audit import AuditEvent
 

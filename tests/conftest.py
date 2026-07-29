@@ -1,14 +1,14 @@
 import re
 import tempfile
+import uuid
 from datetime import datetime
 from pathlib import Path
-import uuid
 
 import fakeredis
 import pytest
 import pytest_asyncio
 from fastapi import Security
-from httpx import AsyncClient, ASGITransport
+from httpx import ASGITransport, AsyncClient
 from mirth_client import MirthAPI
 from pytest_httpx import HTTPXMock
 from pytest_postgresql import factories
@@ -26,11 +26,14 @@ from ukrdc_sqla.ukrdc import Base as UKRDC3Base
 from ukrdc_sqla.ukrdc import (
     Code,
     CodeExclusion,
+    CodeMap,
     CodingStandards,
+    DialysisSession,
     Document,
     LabOrder,
     Level,
     Medication,
+    ModalityCodes,
     Observation,
     ProgramMembership,
     Question,
@@ -38,9 +41,6 @@ from ukrdc_sqla.ukrdc import (
     Score,
     Survey,
     Treatment,
-    DialysisSession,
-    ModalityCodes,
-    CodeMap,
 )
 from ukrdc_sqla.utils.constants import CodeMapFacilityType
 
@@ -1086,7 +1086,7 @@ def app(
         return users_session
 
     def _get_task_tracker(
-        user: auth.UKRDCUser = Security(auth.auth.get_user()),
+        user: auth.UKRDCUser = Security(auth.get_current_user),
     ):
         return TaskTracker(task_redis_sessions[0], task_redis_sessions[1], user=user)
 

@@ -1,5 +1,4 @@
 import datetime
-from typing import List, Optional
 
 from pydantic.fields import Field
 from sqlalchemy.orm.session import Session
@@ -23,7 +22,7 @@ class AccessEventSchema(OrmModel):
 
     path: str = Field(..., description="Access event path")
     method: str = Field(..., description="Access event HTTP method")
-    body: Optional[str] = Field(None, description="Access event HTTP body")
+    body: str | None = Field(None, description="Access event HTTP body")
 
 
 class AuditEventSchema(OrmModel):
@@ -32,18 +31,16 @@ class AuditEventSchema(OrmModel):
     id: int = Field(..., description="Audit event ID")
     access_event: AccessEventSchema = Field(..., description="Access event")
 
-    resource: Optional[str] = Field(None, description="Resource accessed")
-    resource_id: Optional[str] = Field(None, description="Resource ID")
+    resource: str | None = Field(None, description="Resource accessed")
+    resource_id: str | None = Field(None, description="Resource ID")
 
     operation: str = Field(..., description="Audit event operation")
 
-    children: List["AuditEventSchema"] = Field([], description="Child events")
+    children: list["AuditEventSchema"] = Field([], description="Child events")
 
-    identifiers: List[str] = Field([], description="Additional resource identifiers")
+    identifiers: list[str] = Field([], description="Additional resource identifiers")
 
-    def populate_identifiers(
-        self, jtrace: Optional[Session], ukrdc3: Optional[Session]
-    ):
+    def populate_identifiers(self, jtrace: Session | None, ukrdc3: Session | None):
         """
         Use database sessions to populate an array of resource identifier strings.
         The identifiers will vary depending on resource type, but should be listed
@@ -55,7 +52,7 @@ class AuditEventSchema(OrmModel):
             record = ukrdc3.get(PatientRecord, self.resource_id)
             if record:
                 # Obtain the first known MRN for the patient
-                first_mrn: Optional[PatientNumber] = None
+                first_mrn: PatientNumber | None = None
                 # Try to find the first PatientNumber of type MRN
                 try:
                     first_mrn = next(

@@ -1,5 +1,4 @@
 import datetime
-from typing import Optional
 
 from pydantic import Field
 
@@ -11,21 +10,21 @@ class CodeSchema(OrmModel):
 
     coding_standard: str = Field(..., description="Coding standard")
     code: str = Field(..., description="Code")
-    description: Optional[str] = Field(None, description="Code description")
-    object_type: Optional[str] = Field(
+    description: str | None = Field(None, description="Code description")
+    object_type: str | None = Field(
         None,
         description="Object type, e.g. observation, result, dose_unit. Rarely used in practice.",
     )
 
     creation_date: datetime.datetime = Field(..., description="Creation date")
-    update_date: Optional[datetime.datetime] = Field(..., description="Update date")
+    update_date: datetime.datetime | None = Field(..., description="Update date")
 
-    units: Optional[str] = Field(None, description="Units of measurement")
+    units: str | None = Field(None, description="Units of measurement")
 
-    pkb_reference_range: Optional[str] = Field(
+    pkb_reference_range: str | None = Field(
         None, description="Test result reference range for PKB"
     )
-    pkb_comment: Optional[str] = Field(None, description="Test result comment for PKB")
+    pkb_comment: str | None = Field(None, description="Test result comment for PKB")
 
 
 class CodeMapSchema(OrmModel):
@@ -40,7 +39,7 @@ class CodeMapSchema(OrmModel):
     destination_code: str = Field(..., description="Destination code")
 
     creation_date: datetime.datetime = Field(..., description="Creation date")
-    update_date: Optional[datetime.datetime] = Field(..., description="Update date")
+    update_date: datetime.datetime | None = Field(..., description="Update date")
 
 
 class CodeExclusionSchema(OrmModel):

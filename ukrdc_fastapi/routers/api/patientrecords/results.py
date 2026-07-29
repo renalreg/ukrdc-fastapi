@@ -1,11 +1,9 @@
 import datetime
-from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Security
 from fastapi import Query as QueryParam
-from fastapi import Security
 from fastapi.responses import Response
-from sqlalchemy import select, exists
+from sqlalchemy import exists, select
 from sqlalchemy.orm import Session
 from ukrdc_sqla.ukrdc import LabOrder, PatientRecord, ResultItem
 
@@ -17,9 +15,10 @@ from ukrdc_fastapi.dependencies.audit import (
     get_auditer,
 )
 from ukrdc_fastapi.dependencies.auth import Permissions, auth
+from ukrdc_fastapi.dependencies.sorters import RESULT_SORTER
 from ukrdc_fastapi.schemas.patientrecord.laborder import ResultItemSchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
-from ukrdc_fastapi.utils.sort import SQLASorter, make_sqla_sorter
+from ukrdc_fastapi.utils.sort import SQLASorter
 
 from .dependencies import _get_patientrecord
 
@@ -34,16 +33,11 @@ router = APIRouter()
 def patient_results(
     patient_record: PatientRecord = Depends(_get_patientrecord),
     ukrdc3: Session = Depends(get_ukrdc3),
-    service_id: Optional[list[str]] = QueryParam([]),
-    order_id: Optional[list[str]] = QueryParam([]),
-    since: Optional[datetime.datetime] = None,
-    until: Optional[datetime.datetime] = None,
-    sorter: SQLASorter = Depends(
-        make_sqla_sorter(
-            [ResultItem.observation_time, ResultItem.entered_on],
-            default_sort_by=ResultItem.observation_time,
-        )
-    ),
+    service_id: list[str] | None = QueryParam([]),
+    order_id: list[str] | None = QueryParam([]),
+    since: datetime.datetime | None = None,
+    until: datetime.datetime | None = None,
+    sorter: SQLASorter = RESULT_SORTER,
     audit: Auditer = Depends(get_auditer),
 ):
     """Retreive a specific patient's lab orders"""
@@ -117,7 +111,7 @@ def patient_result_delete(
     if not item:
         raise HTTPException(404, detail="Result item not found")
 
-    order: Optional[LabOrder] = item.order
+    order: LabOrder | None = item.order
 
     ukrdc3.delete(item)
     ukrdc3.commit()

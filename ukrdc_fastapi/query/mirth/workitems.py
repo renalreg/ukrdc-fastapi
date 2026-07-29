@@ -1,5 +1,3 @@
-from typing import Optional
-
 from mirth_client.mirth import MirthAPI
 from redis import Redis
 from ukrdc_sqla.empi import WorkItem
@@ -17,8 +15,8 @@ async def update_workitem(
     mirth: MirthAPI,
     redis: Redis,
     user_id: str,
-    status: Optional[int] = None,
-    comment: Optional[str] = None,
+    status: int | None = None,
+    comment: str | None = None,
 ) -> MirthMessageResponseSchema:
     """Update a WorkItem by ID if it exists and the user has permission
 
@@ -36,7 +34,7 @@ async def update_workitem(
     if not workitem.id:
         raise ValueError("WorkItem has no ID")  # pragma: no cover
 
-    target_status: Optional[int] = status or workitem.status
+    target_status: int | None = status or workitem.status
 
     if not target_status:
         raise ValueError("WorkItem status is not valid")  # pragma: no cover
@@ -59,7 +57,7 @@ async def close_workitem(
     mirth: MirthAPI,
     redis: Redis,
     user_id: str,
-    comment: Optional[str] = None,
+    comment: str | None = None,
 ) -> MirthMessageResponseSchema:
     """Close a WorkItem by ID if it exists and the user has permission
 

@@ -1,6 +1,6 @@
+from collections.abc import AsyncGenerator
 from datetime import datetime
 from enum import Enum
-from typing import AsyncGenerator, Optional, Union
 
 from fastapi import Depends, Request, Security
 from sqlalchemy.orm.session import Session
@@ -8,11 +8,9 @@ from starlette.requests import ClientDisconnect
 from ukrdc_sqla.empi import WorkItem
 
 from ukrdc_fastapi.dependencies import get_auditdb
-from ukrdc_fastapi.dependencies.auth import UKRDCUser
+from ukrdc_fastapi.dependencies.auth import UKRDCUser, get_current_user
 from ukrdc_fastapi.models.audit import AccessEvent, AuditEvent
 from ukrdc_fastapi.schemas.empi import WorkItemExtendedSchema, WorkItemSchema
-
-from .auth import auth
 
 
 class Resource(Enum):
@@ -112,11 +110,9 @@ class Auditer:
     def add_event(
         self,
         resource: Resource,
-        resource_id: Optional[Union[str, int]],
-        operation: Optional[
-            Union[AuditOperation, AuditOperation, AuditOperation, AuditOperation]
-        ],
-        parent: Optional[AuditEvent] = None,
+        resource_id: str | int | None,
+        operation: AuditOperation | None,
+        parent: AuditEvent | None = None,
     ) -> AuditEvent:
         """Add an audit event
 
@@ -144,8 +140,8 @@ class Auditer:
 
     def add_workitem(
         self,
-        workitem: Union[WorkItem, WorkItemSchema, WorkItemExtendedSchema],
-        parent: Optional[AuditEvent] = None,
+        workitem: WorkItem | WorkItemSchema | WorkItemExtendedSchema,
+        parent: AuditEvent | None = None,
     ) -> AuditEvent:
         """Add a WorkItem and all of its child Person and Master Records to the audit database
 
@@ -197,7 +193,7 @@ class Auditer:
 async def get_auditer(
     request: Request,
     auditdb: Session = Depends(get_auditdb),
-    user: UKRDCUser = Security(auth.get_user()),
+    user: UKRDCUser = Security(get_current_user),
 ) -> AsyncGenerator[Auditer, None]:
     """Yeild a new Auditer object with an access event pre-populated
 

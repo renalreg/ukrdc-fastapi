@@ -1,5 +1,4 @@
 import datetime
-from typing import Optional
 
 from pydantic import Field
 from sqlalchemy import select
@@ -33,8 +32,8 @@ class MultipleUKRDCIDGroup(OrmModel):
 
 def get_full_errors_history(
     statsdb: Session,
-    since: Optional[datetime.date] = None,
-    until: Optional[datetime.date] = None,
+    since: datetime.date | None = None,
+    until: datetime.date | None = None,
 ) -> list[HistoryPoint]:
     """Get a combined error history by merging each facilities histories from the stats database.
 
@@ -97,9 +96,7 @@ def get_multiple_ukrdcids(
         list[list[MasterRecord]]: List of groups of records.
     """
     # Fetch all unresolved rows
-    stmt_multiple_ids = select(MultipleUKRDCID).where(
-        MultipleUKRDCID.resolved == False  # noqa: E712
-    )
+    stmt_multiple_ids = select(MultipleUKRDCID).where(MultipleUKRDCID.resolved == False)
     multiple_ids = statsdb.scalars(stmt_multiple_ids).all()
     record_groups = {item.master_id: item for item in multiple_ids}
 

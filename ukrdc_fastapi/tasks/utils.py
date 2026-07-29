@@ -27,16 +27,17 @@ https://github.com/dmontagu/fastapi-utils
 import asyncio
 import logging
 from asyncio import ensure_future
+from collections.abc import Callable, Coroutine
 from functools import wraps
 from traceback import format_exception
-from typing import Any, Callable, Coroutine, Optional, Union
+from typing import Any
 
 from starlette.concurrency import run_in_threadpool
 
 NoArgsNoReturnFuncT = Callable[[], None]
 NoArgsNoReturnAsyncFuncT = Callable[[], Coroutine[Any, Any, None]]
 NoArgsNoReturnDecorator = Callable[
-    [Union[NoArgsNoReturnFuncT, NoArgsNoReturnAsyncFuncT]], NoArgsNoReturnAsyncFuncT
+    [NoArgsNoReturnFuncT | NoArgsNoReturnAsyncFuncT], NoArgsNoReturnAsyncFuncT
 ]
 
 
@@ -44,9 +45,9 @@ def repeat_every(
     *,
     seconds: float,
     wait_first: bool = False,
-    logger: Optional[logging.Logger] = None,
+    logger: logging.Logger | None = None,
     raise_exceptions: bool = False,
-    max_repetitions: Optional[int] = None,
+    max_repetitions: int | None = None,
 ) -> NoArgsNoReturnDecorator:
     """
     This function returns a decorator that modifies a function so it is periodically re-executed after its first call.
@@ -73,7 +74,7 @@ def repeat_every(
     """
 
     def decorator(
-        func: Union[NoArgsNoReturnAsyncFuncT, NoArgsNoReturnFuncT],
+        func: NoArgsNoReturnAsyncFuncT | NoArgsNoReturnFuncT,
     ) -> NoArgsNoReturnAsyncFuncT:
         """
         Converts the decorated function into a repeated, periodically-called version of itself.
@@ -102,7 +103,7 @@ def repeat_every(
                             )
                             logger.error(formatted_exception)
                         if raise_exceptions:
-                            raise exc
+                            raise
                     await asyncio.sleep(seconds)
 
             ensure_future(loop())

@@ -1,11 +1,9 @@
-from typing import Optional
-
 from redis import Redis
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.selectable import Select
 from ukrdc_sqla.errorsdb import Latest, Message
-from ukrdc_sqla.ukrdc import Code, Facility, PatientRecord, FacilityRelationship
+from ukrdc_sqla.ukrdc import Code, Facility, FacilityRelationship, PatientRecord
 from ukrdc_sqla.utils.constants import RelationshipType
 
 from ukrdc_fastapi.config import settings
@@ -235,7 +233,7 @@ def build_facilities_list(
         last_message_received_at = most_recent_dict.get(facility.facilitycode.upper())
 
         # Find pre-fetched description for this facility
-        description: Optional[str] = descriptions.get(facility.facilitycode.upper())
+        description: str | None = descriptions.get(facility.facilitycode.upper())
 
         # Find pre-fetched status counts for this facility
         status_stats: dict[str, int] = status_counts_dict.get(

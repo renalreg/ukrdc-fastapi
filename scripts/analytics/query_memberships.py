@@ -1,9 +1,9 @@
 import datetime
 import json
-from typing import List
 
 from sqlalchemy import and_, select
 from sqlalchemy.orm import Session
+
 from ukrdc_fastapi.dependencies.audit import AuditOperation, Resource
 from ukrdc_fastapi.dependencies.database import AuditSession
 from ukrdc_fastapi.models.audit import AuditEvent
@@ -16,7 +16,7 @@ def json_serial(obj):
         return obj.isoformat()
     if isinstance(obj, set):
         return list(obj)
-    raise TypeError("Type %s not serializable" % type(obj))
+    raise TypeError(f"Type {type(obj)!s} not serializable")
 
 
 session: Session = AuditSession()
@@ -33,12 +33,12 @@ membership_creations = session.scalars(stmt).all()
 
 print(len(membership_creations))
 
-creation_events: dict[str, List[datetime.datetime]] = {}
+creation_events: dict[str, list[datetime.datetime]] = {}
 uid_email_map: dict[str, set[str]] = {}
 
 i = 0
 
-for event in membership_creations:
+for i, event in enumerate(membership_creations, start=1):
     even: AuditEvent
     uid: str = event.access_event.uid
 
@@ -50,7 +50,6 @@ for event in membership_creations:
         uid_email_map[uid].add(event.access_event.sub)
     creation_events[uid].append(event.access_event.time)
 
-    i += 1
     if i % 100 == 0:
         print(i)
 

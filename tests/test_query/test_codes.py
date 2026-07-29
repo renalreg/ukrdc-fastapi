@@ -168,10 +168,8 @@ def test_get_code_exclusions(ukrdc3_session):
     assert {codeexc.code for codeexc in exclusions} == {
         "CODE_1",
         "CODE_2",
-        "CODE_2",
     }
     assert {codeexc.system for codeexc in exclusions} == {
-        "SYSTEM_1",
         "SYSTEM_1",
         "SYSTEM_2",
     }
