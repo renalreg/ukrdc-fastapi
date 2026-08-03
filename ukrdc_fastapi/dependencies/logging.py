@@ -108,7 +108,7 @@ LOGGING = {
         "uvicorn": {"handlers": ["console"], "level": "INFO", "propagate": False},
         "uvicorn.error": {"handlers": ["console"], "level": "INFO", "propagate": False},
         "uvicorn.access": {"handlers": [], "level": "CRITICAL", "propagate": False},
-        "ukrdc_stats": {
+        "ukrdc_stats": {  # TODO revist once the ukrdc-stats issues have been fixed
             "handlers": ["console"],
             "level": "CRITICAL",
             "propagate": False,
