@@ -14,6 +14,7 @@ from ukrdc_fastapi.schemas.facility import (
     FacilityDetailsSchema,
     FacilityExtractsSchema,
     FacilityStatisticsSchema,
+    FacilitySchema,
 )
 from ukrdc_fastapi.utils.cache import BasicCache, CacheKey
 from ukrdc_fastapi.utils.records import ABSTRACT_FACILITIES
@@ -89,6 +90,23 @@ def get_facility(
             pkb_message_exclusions=facility.pkb_msg_exclusions or [],
         ),
     )
+
+
+# Bulk lookup of facility id/description by facility code
+
+
+def get_facility_descriptions(
+    ukrdc3: Session,
+    facility_codes: list[str],
+) -> list[FacilitySchema]:
+    """Get id/description for multiple facilities by facility code"""
+    stmt = select(Facility).where(Facility.facilitycode.in_(facility_codes))
+    facilities = ukrdc3.scalars(stmt).all()
+
+    return [
+        FacilitySchema(id=f.facilitycode, description=f.description)
+        for f in facilities
+    ]
 
 
 # Facility extract statistics

@@ -31,10 +31,12 @@ from ukrdc_fastapi.permissions.facilities import (
 from ukrdc_fastapi.query.facilities import (
     FacilityDetailsSchema,
     FacilityExtractsSchema,
+    FacilitySchema,
     all_feedshare,
     get_facilities,
     get_facility,
     get_facility_extracts,
+    get_facility_descriptions
 )
 from ukrdc_fastapi.query.facilities.errors import (
     get_errors_history,
@@ -99,6 +101,20 @@ def facility_feedshare(
 
     # Fetch the cached value and return
     return cache.get()
+
+
+@router.get("/descriptions", response_model=list[FacilitySchema])
+def facility_descriptions(
+    # Main facility code
+    facility_code: str,
+    # List of facility codes - each one a satellite associated with the main facility
+    facility_codes: list[str] = QueryParam(...),
+    ukrdc3: Session = Depends(get_ukrdc3),
+    user: UKRDCUser = Security(get_current_user),
+): 
+    """Retrieve id/description for multiple facilities (satellites of a given main unit)"""
+    assert_facility_permission(facility_code, user)
+    return get_facility_descriptions(ukrdc3, facility_codes)
 
 
 @router.get("/{code}", response_model=FacilityDetailsSchema)
