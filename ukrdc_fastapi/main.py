@@ -12,6 +12,7 @@ from ukrdc_fastapi.dependencies.auth import Permissions, auth
 from ukrdc_fastapi.dependencies.logging import (
     RequestLoggingMiddleware,
     configure_logging,
+    register_ukrdc_stats_exception_handlers,
 )
 from ukrdc_fastapi.dependencies.sentry import add_sentry
 from ukrdc_fastapi.exceptions import ResourceNotFoundError
@@ -100,6 +101,8 @@ add_sentry(app)
 add_pagination(app)
 
 # Add custom exception handlers
+
+register_ukrdc_stats_exception_handlers(app)
 
 
 @app.exception_handler(ResourceNotFoundError)
