@@ -108,7 +108,7 @@ jobs:
             type=raw,value=edge
 
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v4
+        uses: docker/login-action@v4.6.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -260,6 +260,15 @@ jobs:
           node-version: "24"
           check-latest: true
           registry-url: "https://registry.npmjs.org"
+
+      - name: Pin axios to a known-good version
+        # Works around https://github.com/axios/axios/releases/tag/v1.17.0
+        # which changed AxiosHeaders.toJSON()/symbol-key typings and breaks
+        # tsc's declaration emit for the generated common.ts
+        # (TS2527: inferred type references an inaccessible 'unique symbol').
+        # Remove this once the generator template or axios types fix lands.
+        working-directory: typescript-axios-client
+        run: npm pkg set dependencies.axios="1.16.0"
 
       - name: Install Axios Client
         working-directory: typescript-axios-client
