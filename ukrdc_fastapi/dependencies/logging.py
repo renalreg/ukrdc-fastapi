@@ -15,10 +15,14 @@ instead of uvicorn's default:
 import logging
 import logging.config
 import time
+import warnings
 from typing import ClassVar
 
+from fastapi import FastAPI
+from fastapi.responses import PlainTextResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
+from ukrdc_stats.exceptions import EmptyCohortError, NoCohortError, NoTestsError
 
 from ukrdc_fastapi.config import settings
 
@@ -104,6 +108,16 @@ LOGGING = {
         "uvicorn": {"handlers": ["console"], "level": "INFO", "propagate": False},
         "uvicorn.error": {"handlers": ["console"], "level": "INFO", "propagate": False},
         "uvicorn.access": {"handlers": [], "level": "CRITICAL", "propagate": False},
+        "ukrdc_stats": {  # TODO revist once the ukrdc-stats issues have been fixed
+            "handlers": ["console"],
+            "level": "CRITICAL",
+            "propagate": False,
+        },
+        "py.warnings": {
+            "handlers": ["console"],
+            "level": "WARNING",
+            "propagate": False,
+        },
     },
     "root": {"handlers": ["console"], "level": "WARNING"},
 }
@@ -111,7 +125,68 @@ LOGGING = {
 
 def configure_logging() -> None:
     """Apply the LOGGING dict. Call this once, before the app is created."""
+    # ukrdc_stats occasionally calls numpy's nanmean on an empty group (e.g. a
+    # facility/stat with no matching data), which is expected and not
+    # actionable - suppress it at the source rather than logging it.
+    warnings.filterwarnings(
+        "ignore",
+        message="Mean of empty slice",
+        category=RuntimeWarning,
+        module="numpy",
+    )
+    # Route any other warnings.warn() calls into the logging system so they're
+    # subject to the same level filtering/formatting as everything else.
+    logging.captureWarnings(True)
+
     logging.config.dictConfig(LOGGING)
+
+
+def _raise_site(exc: BaseException) -> tuple[str, int, str]:
+    """
+    Walk to the innermost frame of exc's traceback - i.e. where it was
+    actually raised, not wherever we're currently catching it - and return
+    (pathname, lineno, func_name) for that frame. Tracebacks grow a new
+    frame at the front each time an exception propagates up a call stack,
+    so the *last* tb_next is the original raise site.
+    """
+    tb = exc.__traceback__
+    if tb is None:
+        return (__file__, 0, "unknown")
+    while tb.tb_next is not None:
+        tb = tb.tb_next
+    frame = tb.tb_frame
+    return (frame.f_code.co_filename, tb.tb_lineno, frame.f_code.co_name)
+
+
+async def _ukrdc_stats_error_handler(_, exc):
+    """
+    Handles NoCohortError/EmptyCohortError/NoTestsError raised by ukrdc_stats
+    when a facility has no feed, an empty cohort, or no test results to
+    compute stats from. Logged at ERROR and attributed to where ukrdc_stats
+    actually raised it (not this handler), so the log line still points at
+    the real source without a full traceback.
+    """
+    logger = logging.getLogger("ukrdc_fastapi")
+    if logger.isEnabledFor(logging.ERROR):
+        pathname, lineno, func_name = _raise_site(exc)
+        record = logger.makeRecord(
+            logger.name,
+            logging.ERROR,
+            pathname,
+            lineno,
+            "ukrdc_stats error: %s",
+            (exc,),
+            None,
+            func=func_name,
+        )
+        logger.handle(record)
+    return PlainTextResponse(str(exc), status_code=404)
+
+
+def register_ukrdc_stats_exception_handlers(app: FastAPI) -> None:
+    """Register ukrdc_stats data-availability exceptions as 404s instead of 500s."""
+    for exc_class in (NoCohortError, EmptyCohortError, NoTestsError):
+        app.add_exception_handler(exc_class, _ukrdc_stats_error_handler)
 
 
 class RequestLoggingMiddleware(BaseHTTPMiddleware):
