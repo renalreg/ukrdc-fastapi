@@ -35,8 +35,8 @@ from ukrdc_fastapi.query.facilities import (
     all_feedshare,
     get_facilities,
     get_facility,
+    get_facility_descriptions,
     get_facility_extracts,
-    get_facility_descriptions
 )
 from ukrdc_fastapi.query.facilities.errors import (
     get_errors_history,
@@ -111,7 +111,7 @@ def facility_descriptions(
     facility_codes: list[str] = QueryParam(...),
     ukrdc3: Session = Depends(get_ukrdc3),
     user: UKRDCUser = Security(get_current_user),
-): 
+):
     """Retrieve id/description for multiple facilities (satellites of a given main unit)"""
     assert_facility_permission(facility_code, user)
     return get_facility_descriptions(ukrdc3, facility_codes)

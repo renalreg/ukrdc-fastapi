@@ -13,8 +13,8 @@ from ukrdc_fastapi.schemas.facility import (
     FacilityDataFlowSchema,
     FacilityDetailsSchema,
     FacilityExtractsSchema,
-    FacilityStatisticsSchema,
     FacilitySchema,
+    FacilityStatisticsSchema,
 )
 from ukrdc_fastapi.utils.cache import BasicCache, CacheKey
 from ukrdc_fastapi.utils.records import ABSTRACT_FACILITIES
@@ -104,8 +104,7 @@ def get_facility_descriptions(
     facilities = ukrdc3.scalars(stmt).all()
 
     return [
-        FacilitySchema(id=f.facilitycode, description=f.description)
-        for f in facilities
+        FacilitySchema(id=f.facilitycode, description=f.description) for f in facilities
     ]
 
 
