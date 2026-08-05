@@ -9,6 +9,7 @@ from ukrdc_fastapi.query.facilities import (
     build_facilities_list,
     get_facilities,
     get_facility,
+    get_facility_descriptions,
     get_facility_extracts,
 )
 from ukrdc_fastapi.query.facilities.errors import (
@@ -257,3 +258,16 @@ def test_get_facility_report_pm001(ukrdc3_session, jtrace_session):
 
     assert len(report1) == 1
     assert {record.pid for record in report1} == {"PYTEST04:PV:00000000A"}
+
+
+def test_get_facility_descriptions(ukrdc3_session):
+    descriptions = get_facility_descriptions(
+        ukrdc3_session,
+        ["TSF01", "TSF02"],
+    )
+
+    assert {d.id for d in descriptions} == {"TSF01", "TSF02"}
+    assert {d.description for d in descriptions} == {
+        "TSF01_DESCRIPTION",
+        "TSF02_DESCRIPTION",
+    }

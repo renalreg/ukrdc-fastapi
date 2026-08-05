@@ -153,3 +153,20 @@ async def test_facility_reports_radar_missing_denied(client_authenticated):
         f"{configuration.base_url}/facilities/TSF02/reports/radar_missing"
     )
     assert response.status_code == 403
+
+
+async def test_facility_descriptions(client_authenticated):
+    response = await client_authenticated.get(
+        f"{configuration.base_url}/facilities/descriptions"
+        f"?facility_code=TSF01&facility_codes=TSF01"
+    )
+    json = response.json()
+    assert json[0]["id"] == "TSF01"
+
+
+async def test_facility_descriptions_denied(client_authenticated):
+    response = await client_authenticated.get(
+        f"{configuration.base_url}/facilities/descriptions"
+        f"?facility_code=TSF02&facility_codes=TSF02"
+    )
+    assert response.status_code == 403
