@@ -16,6 +16,7 @@ import logging
 import logging.config
 import time
 import warnings
+from contextlib import contextmanager
 from typing import ClassVar
 
 from fastapi import FastAPI
@@ -108,7 +109,7 @@ LOGGING = {
         "uvicorn": {"handlers": ["console"], "level": "INFO", "propagate": False},
         "uvicorn.error": {"handlers": ["console"], "level": "INFO", "propagate": False},
         "uvicorn.access": {"handlers": [], "level": "CRITICAL", "propagate": False},
-        "ukrdc_stats": {  # TODO revist once the ukrdc-stats issues have been fixed
+        "ukrdc_stats": {
             "handlers": ["console"],
             "level": "CRITICAL",
             "propagate": False,
@@ -125,17 +126,18 @@ LOGGING = {
 
 def configure_logging() -> None:
     """Apply the LOGGING dict. Call this once, before the app is created."""
-    # ukrdc_stats occasionally calls numpy's nanmean on an empty group (e.g. a
-    # facility/stat with no matching data), which is expected and not
-    # actionable - suppress it at the source rather than logging it.
+    # Silences any warning that gets attributed back to ukrdc_stats itself
     warnings.filterwarnings(
         "ignore",
         message="Mean of empty slice",
         category=RuntimeWarning,
         module="numpy",
     )
-    # Route any other warnings.warn() calls into the logging system so they're
-    # subject to the same level filtering/formatting as everything else.
+    warnings.filterwarnings("ignore", module=r"ukrdc_stats(\.|$)")
+
+    # Route any other warnings.warn() calls into the logging system so
+    # they're subject to the same level filtering/formatting as everything
+    # else.
     logging.captureWarnings(True)
 
     logging.config.dictConfig(LOGGING)
