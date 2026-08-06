@@ -1,5 +1,22 @@
 # Changelog
 
+## [6.8.0](https://github.com/renalreg/ukrdc-fastapi/compare/v6.7.2...v6.8.0) (2026-08-06)
+
+
+### Features
+
+* **deps:** bump ukrr-extract from 3.7.0 to 3.9.0 ([#1265](https://github.com/renalreg/ukrdc-fastapi/issues/1265)) ([8f8ae53](https://github.com/renalreg/ukrdc-fastapi/commit/8f8ae53dfbf96130ffb0d9a21b0f4427249e4da5))
+* **UK-153:** FastAPI - Define Logging ([#1268](https://github.com/renalreg/ukrdc-fastapi/issues/1268)) ([467614e](https://github.com/renalreg/ukrdc-fastapi/commit/467614e53e144e7627042609ada02d8981ef7bf8))
+* **UK-320:** FastAPI - Reduce ukrdc-stats logs ([#1280](https://github.com/renalreg/ukrdc-fastapi/issues/1280)) ([bcd9f7c](https://github.com/renalreg/ukrdc-fastapi/commit/bcd9f7cff08f8a584d15ff0a7f15ef2cbb09f0d0))
+* **UK-57:** Support PKB message exclusions by sending extract ([551ffed](https://github.com/renalreg/ukrdc-fastapi/commit/551ffed46095e2bfc54989efa68b32d522031f5e))
+* **UK-57:** Support PKB message exclusions by sending extract ([ce3a09b](https://github.com/renalreg/ukrdc-fastapi/commit/ce3a09ba5981dff25d28b1e83547a566ddf8d0c6))
+
+
+### Bug Fixes
+
+* **linting:** updated to use new ruff linting rules ([822617c](https://github.com/renalreg/ukrdc-fastapi/commit/822617c9982fadeec1b0609157923998e6573c21))
+* **pydantic-v2:** updated pydantic models and attributes to use v2 versions ([8dd5959](https://github.com/renalreg/ukrdc-fastapi/commit/8dd59596a7d3e2b8b6d4e6fe0b4987e7f8cfd547))
+
 ## [6.7.2](https://github.com/renalreg/ukrdc-fastapi/compare/v6.7.1...v6.7.2) (2026-07-20)
 
 
