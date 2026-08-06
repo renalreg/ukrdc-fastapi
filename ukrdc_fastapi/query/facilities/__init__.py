@@ -92,14 +92,33 @@ def get_facility(
     )
 
 
-# Bulk lookup of facility id/description by facility code
+# Get satellites for a main unit facility
 
 
-def get_facility_descriptions(
+def get_facility_satellites(
     ukrdc3: Session,
-    facility_codes: list[str],
+    facility_code: str,
 ) -> list[FacilitySchema]:
-    """Get id/description for multiple facilities by facility code"""
+    """Get satellite units of a given main unit facility
+
+    Args:
+        ukrdc3 (Session): SQLAlchemy session
+        facility_code (str): Main unit facility code
+    
+    Returns:
+        list[FacilitySchema]: Matched satellite facilities
+    """
+    stmt = select(
+        FacilityRelationship.parentfacilitycode,
+        FacilityRelationship.childfacilitycode,
+    ).where(
+        FacilityRelationship.relationshiptype == RelationshipType.main_satellite,
+        FacilityRelationship.parentfacilitycode == facility_code,
+    )
+
+    rows = ukrdc3.execute(stmt).all()
+    facility_codes = [row.childfacilitycode for row in rows]
+
     stmt = select(Facility).where(Facility.facilitycode.in_(facility_codes))
     facilities = ukrdc3.scalars(stmt).all()
 

@@ -1,6 +1,6 @@
 import datetime
 
-from fastapi import APIRouter, Depends, Security
+from fastapi import APIRouter, Depends, HTTPException, Security
 from fastapi import Query as QueryParam
 from redis import Redis
 from sqlalchemy.orm import Session
@@ -35,8 +35,8 @@ from ukrdc_fastapi.query.facilities import (
     all_feedshare,
     get_facilities,
     get_facility,
-    get_facility_descriptions,
     get_facility_extracts,
+    get_facility_satellites
 )
 from ukrdc_fastapi.query.facilities.errors import (
     get_errors_history,
@@ -103,18 +103,24 @@ def facility_feedshare(
     return cache.get()
 
 
-@router.get("/descriptions", response_model=list[FacilitySchema])
-def facility_descriptions(
-    # Main facility code
+@router.get("/satellites", response_model=list[FacilitySchema])
+def facility_satellites(
     facility_code: str,
-    # List of facility codes - each one a satellite associated with the main facility
-    facility_codes: list[str] = QueryParam(...),
     ukrdc3: Session = Depends(get_ukrdc3),
     user: UKRDCUser = Security(get_current_user),
 ):
-    """Retrieve id/description for multiple facilities (satellites of a given main unit)"""
+    """Retrieve id/description for satellites of a given main unit"""
     assert_facility_permission(facility_code, user)
-    return get_facility_descriptions(ukrdc3, facility_codes)
+
+    satellites = get_facility_satellites(ukrdc3, facility_code)
+
+    if not satellites:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Facility '{facility_code}' has no satellite facilities",
+        )
+
+    return satellites
 
 
 @router.get("/{code}", response_model=FacilityDetailsSchema)
