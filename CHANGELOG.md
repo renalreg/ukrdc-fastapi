@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.8.1](https://github.com/renalreg/ukrdc-fastapi/compare/v6.8.0...v6.8.1) (2026-08-06)
+
+
+### Bug Fixes
+
+* **UK-320:** broaden the warnings captured ([#1287](https://github.com/renalreg/ukrdc-fastapi/issues/1287)) ([160eadc](https://github.com/renalreg/ukrdc-fastapi/commit/160eadc7c2f1d97bafffa5d2232ef2c481d2555c))
+
 ## [6.8.0](https://github.com/renalreg/ukrdc-fastapi/compare/v6.7.2...v6.8.0) (2026-08-06)
 
 
