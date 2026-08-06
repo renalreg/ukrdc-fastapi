@@ -281,3 +281,99 @@ def test_build_pkb_sync_message_null_exclusions_include_all_messages(
         "ORU_R01_OBS",
         "ORU_R01_OBS",
     ]
+
+
+def test_build_pkb_sync_disabled_ukrdc_out_pkb(ukrdc3_session):
+    pid_1 = "PYTEST01:PV:00000000A"
+    _create_membership(pid_1, ukrdc3_session)
+
+    record = ukrdc3_session.get(PatientRecord, pid_1)
+    assert record is not None
+
+    facility = ukrdc3_session.get(Facility, (record.sendingfacility, "RR1+"))
+    assert facility is not None
+
+    record.sendingextract = "UKRDC"
+    facility.pkb_out = True
+    facility.ukrdcoutpkb = False
+
+    ukrdc3_session.commit()
+
+    # Reject UKRDC to PKB sync when ukrdcoutpkb is disabled
+    with pytest.raises(
+        PKBOutboundDisabledError,
+        match="UKRDC to PKB outbound sending disabled",
+    ):
+        build_pkb_sync_messages(record, ukrdc3_session)
+
+
+def test_build_pkb_sync_disabled_pv_out_pkb(ukrdc3_session):
+    pid_1 = "PYTEST01:PV:00000000A"
+    _create_membership(pid_1, ukrdc3_session)
+
+    record = ukrdc3_session.get(PatientRecord, pid_1)
+    assert record is not None
+
+    facility = ukrdc3_session.get(Facility, (record.sendingfacility, "RR1+"))
+    assert facility is not None
+
+    record.sendingextract = "PV"
+    facility.pkb_out = True
+    facility.pvoutpkb = False
+
+    ukrdc3_session.commit()
+
+    # Reject PV to PKB sync when pvoutpkb is disabled
+    with pytest.raises(
+        PKBOutboundDisabledError,
+        match="PV to PKB outbound sending disabled",
+    ):
+        build_pkb_sync_messages(record, ukrdc3_session)
+
+
+def test_pv_out_pkb_does_not_control_ukrdc_records(ukrdc3_session):
+    pid_1 = "PYTEST01:PV:00000000A"
+    _create_membership(pid_1, ukrdc3_session)
+
+    record = ukrdc3_session.get(PatientRecord, pid_1)
+    assert record is not None
+
+    facility = ukrdc3_session.get(Facility, (record.sendingfacility, "RR1+"))
+    assert facility is not None
+
+    record.sendingextract = "UKRDC"
+    facility.pkb_out = True
+    facility.ukrdcoutpkb = True
+    # pvoutpkb=False does not block UKRDC messages
+    facility.pvoutpkb = False
+    facility.pkb_ukrdc_msg_exclusions = []
+
+    ukrdc3_session.commit()
+
+    messages = build_pkb_sync_messages(record, ukrdc3_session)
+
+    assert messages
+
+
+def test_ukrdc_out_pkb_does_not_control_pv_records(ukrdc3_session):
+    pid_1 = "PYTEST01:PV:00000000A"
+    _create_membership(pid_1, ukrdc3_session)
+
+    record = ukrdc3_session.get(PatientRecord, pid_1)
+    assert record is not None
+
+    facility = ukrdc3_session.get(Facility, (record.sendingfacility, "RR1+"))
+    assert facility is not None
+
+    record.sendingextract = "PV"
+    facility.pkb_out = True
+    facility.pvoutpkb = True
+    # ukrdcoutpkb=False does not block PV messages
+    facility.ukrdcoutpkb = False
+    facility.pkb_pv_msg_exclusions = []
+
+    ukrdc3_session.commit()
+
+    messages = build_pkb_sync_messages(record, ukrdc3_session)
+
+    assert messages
