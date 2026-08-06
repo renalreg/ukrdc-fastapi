@@ -44,21 +44,33 @@ def build_pkb_membership_message(ukrdcid: str) -> str:
 # PKB record data
 
 
-def _get_facility_exclusions(facility: Facility) -> list[str]:
-    """
-    Fetch a list of PKB HL7 message types that should be excluded for
-    a given sending facility
+def _get_facility_exclusions(
+    facility: Facility, sending_extract: str | None
+) -> list[str]:
+    """Return the PKB message exclusions for a facility and sending extract
+
+    Exclusions specific to the sending extract are prioritised over the legacy
+    facility exclusions. If an extract-specific exclusion field is null, the
+    legacy pkb_msg_exclusions field is used.
 
     Args:
-        facility (Facility): Sending facility
+        facility: Sending facility
+        sending_extract: Extract associated with the patient record
 
     Returns:
-        [type]: [description]
+        PKB HL7 message types excluded for this facility and extract
     """
-    excl: list[str] | None = (
-        list(facility.pkb_msg_exclusions) if facility.pkb_msg_exclusions else None
-    )
-    return excl or []
+    if sending_extract == "PV":
+        excl = facility.pkb_pv_msg_exclusions
+    elif sending_extract == "UKRDC":
+        excl = facility.pkb_ukrdc_msg_exclusions
+    else:
+        excl = None
+
+    if excl is None:
+        excl = facility.pkb_msg_exclusions
+
+    return list(excl) if excl else []
 
 
 def _build_pkb_sync_base_xml(record: PatientRecord, msg_type: MessageType) -> Element:
@@ -212,7 +224,7 @@ def build_pkb_sync_messages(record: PatientRecord, ukrdc3: Session) -> list[str]
             f"PV to PKB outbound sending disabled for {facility.facilitycode}"
         )
 
-    msg_type_exclusions = _get_facility_exclusions(facility)
+    msg_type_exclusions = _get_facility_exclusions(facility, record.sendingextract)
     includes_message_types: list[str] = [
         t for t in ALL_MSG_TYPES if t not in msg_type_exclusions
     ]
