@@ -30,6 +30,7 @@ from ukrdc_sqla.ukrdc import (
     CodingStandards,
     DialysisSession,
     Document,
+    FacilityRelationship,
     LabOrder,
     Level,
     Medication,
@@ -41,7 +42,6 @@ from ukrdc_sqla.ukrdc import (
     Score,
     Survey,
     Treatment,
-    FacilityRelationship
 )
 from ukrdc_sqla.utils.constants import CodeMapFacilityType, RelationshipType
 
@@ -750,6 +750,7 @@ def populate_workitems(session: Session):
     session.add(work_item_closed)
 
     session.commit()
+
 
 # Create a MAIN-SATELLITE relationship between TSF01(main) and TSF02(satellite)
 def populate_main_satellite_relationship(ukrdc3):

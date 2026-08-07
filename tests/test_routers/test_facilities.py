@@ -1,7 +1,7 @@
+from tests.conftest import populate_main_satellite_relationship
 from ukrdc_fastapi.config import configuration
 
 from ..utils import days_ago
-from tests.conftest import populate_main_satellite_relationship
 
 
 async def test_facilities(client_authenticated):
