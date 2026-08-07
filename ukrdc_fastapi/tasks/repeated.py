@@ -66,14 +66,15 @@ async def update_facilities_cache() -> None:
     """
 
     async def innerfunc():
-        await _run_in_threadpool(
-            get_facilities,
-            ukrdc3_session(),
-            errors_session(),
-            get_redis(),
-            True,  # include_inactive
-            True,  # include_empty
-        )
+        with ukrdc3_session() as ukrdc3, errors_session() as errors:
+            await _run_in_threadpool(
+                get_facilities,
+                ukrdc3,
+                errors,
+                get_redis(),
+                True,  # include_inactive
+                True,  # include_empty
+            )
 
     task = get_root_task_tracker().create(innerfunc, name="Update Facilities Cache")
     return await task.tracked()
