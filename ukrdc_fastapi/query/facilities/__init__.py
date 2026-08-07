@@ -104,11 +104,11 @@ def get_facility_satellites(
     Args:
         ukrdc3 (Session): SQLAlchemy session
         facility_code (str): Main unit facility code
-    
+
     Returns:
         list[FacilitySchema]: Matched satellite facilities
     """
-    stmt = select(
+    relationship_stmt = select(
         FacilityRelationship.parentfacilitycode,
         FacilityRelationship.childfacilitycode,
     ).where(
@@ -116,11 +116,11 @@ def get_facility_satellites(
         FacilityRelationship.parentfacilitycode == facility_code,
     )
 
-    rows = ukrdc3.execute(stmt).all()
+    rows = ukrdc3.execute(relationship_stmt).all()
     facility_codes = [row.childfacilitycode for row in rows]
 
-    stmt = select(Facility).where(Facility.facilitycode.in_(facility_codes))
-    facilities = ukrdc3.scalars(stmt).all()
+    facility_stmt = select(Facility).where(Facility.facilitycode.in_(facility_codes))
+    facilities = ukrdc3.scalars(facility_stmt).all()
 
     return [
         FacilitySchema(id=f.facilitycode, description=f.description) for f in facilities

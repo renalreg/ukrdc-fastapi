@@ -36,7 +36,7 @@ from ukrdc_fastapi.query.facilities import (
     get_facilities,
     get_facility,
     get_facility_extracts,
-    get_facility_satellites
+    get_facility_satellites,
 )
 from ukrdc_fastapi.query.facilities.errors import (
     get_errors_history,
