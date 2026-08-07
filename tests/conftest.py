@@ -41,8 +41,9 @@ from ukrdc_sqla.ukrdc import (
     Score,
     Survey,
     Treatment,
+    FacilityRelationship
 )
-from ukrdc_sqla.utils.constants import CodeMapFacilityType
+from ukrdc_sqla.utils.constants import CodeMapFacilityType, RelationshipType
 
 from ukrdc_fastapi.dependencies import (
     auth,
@@ -749,6 +750,18 @@ def populate_workitems(session: Session):
     session.add(work_item_closed)
 
     session.commit()
+
+# Create a MAIN-SATELLITE relationship between TSF01(main) and TSF02(satellite)
+def populate_main_satellite_relationship(ukrdc3):
+    relationship = FacilityRelationship(
+        parentfacilitycode="TSF01",
+        parentfacilitycodestd="RR1+",
+        childfacilitycode="TSF02",
+        childfacilitycodestd="RR1+",
+        relationshiptype=RelationshipType.main_satellite,
+    )
+    ukrdc3.add(relationship)
+    ukrdc3.commit()
 
 
 def populate_all(ukrdc3: Session, jtrace: Session, errorsdb: Session, statsdb: Session):

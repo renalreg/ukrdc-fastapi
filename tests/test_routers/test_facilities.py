@@ -1,6 +1,7 @@
 from ukrdc_fastapi.config import configuration
 
 from ..utils import days_ago
+from tests.conftest import populate_main_satellite_relationship
 
 
 async def test_facilities(client_authenticated):
@@ -155,18 +156,18 @@ async def test_facility_reports_radar_missing_denied(client_authenticated):
     assert response.status_code == 403
 
 
-async def test_facility_descriptions(client_authenticated):
+async def test_facility_satellites(client_authenticated, ukrdc3_session):
+    populate_main_satellite_relationship(ukrdc3_session)
+
     response = await client_authenticated.get(
-        f"{configuration.base_url}/facilities/descriptions"
-        f"?facility_code=TSF01&facility_codes=TSF01"
+        f"{configuration.base_url}/facilities/satellites?facility_code=TSF01"
     )
     json = response.json()
-    assert json[0]["id"] == "TSF01"
+    assert json[0]["id"] == "TSF02"
 
 
-async def test_facility_descriptions_denied(client_authenticated):
+async def test_facility_satellites_denied(client_authenticated):
     response = await client_authenticated.get(
-        f"{configuration.base_url}/facilities/descriptions"
-        f"?facility_code=TSF02&facility_codes=TSF02"
+        f"{configuration.base_url}/facilities/satellites?facility_code=TSF02"
     )
     assert response.status_code == 403

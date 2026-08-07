@@ -4,12 +4,12 @@ import pytest
 from sqlalchemy import select
 from ukrdc_sqla.ukrdc import Code, Facility, ProgramMembership
 
-from tests.conftest import UKRDCID_1
+from tests.conftest import UKRDCID_1, populate_main_satellite_relationship
 from ukrdc_fastapi.query.facilities import (
     build_facilities_list,
     get_facilities,
     get_facility,
-    get_facility_descriptions,
+    get_facility_satellites,
     get_facility_extracts,
 )
 from ukrdc_fastapi.query.facilities.errors import (
@@ -260,14 +260,9 @@ def test_get_facility_report_pm001(ukrdc3_session, jtrace_session):
     assert {record.pid for record in report1} == {"PYTEST04:PV:00000000A"}
 
 
-def test_get_facility_descriptions(ukrdc3_session):
-    descriptions = get_facility_descriptions(
-        ukrdc3_session,
-        ["TSF01", "TSF02"],
-    )
+def test_get_facility_satellites(ukrdc3_session):
+    populate_main_satellite_relationship(ukrdc3_session)
+    satellites = get_facility_satellites(ukrdc3_session, "TSF01")
 
-    assert {d.id for d in descriptions} == {"TSF01", "TSF02"}
-    assert {d.description for d in descriptions} == {
-        "TSF01_DESCRIPTION",
-        "TSF02_DESCRIPTION",
-    }
+    assert {s.id for s in satellites} == {"TSF02"}
+    assert {s.description for s in satellites} == {"TSF02_DESCRIPTION"}
