@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.8.2](https://github.com/renalreg/ukrdc-fastapi/compare/v6.8.1...v6.8.2) (2026-08-07)
+
+
+### Bug Fixes
+
+* **UK-150:** fixed facility cache fix ([4476649](https://github.com/renalreg/ukrdc-fastapi/commit/4476649a64a9123f467484cb4d2fe99eb27a3a63))
+
 ## [6.8.1](https://github.com/renalreg/ukrdc-fastapi/compare/v6.8.0...v6.8.1) (2026-08-06)
 
 
