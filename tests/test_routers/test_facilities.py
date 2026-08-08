@@ -1,3 +1,4 @@
+from tests.conftest import populate_main_satellite_relationship
 from ukrdc_fastapi.config import configuration
 
 from ..utils import days_ago
@@ -151,5 +152,22 @@ async def test_facility_reports_radar_missing(client_superuser):
 async def test_facility_reports_radar_missing_denied(client_authenticated):
     response = await client_authenticated.get(
         f"{configuration.base_url}/facilities/TSF02/reports/radar_missing"
+    )
+    assert response.status_code == 403
+
+
+async def test_facility_satellites(client_authenticated, ukrdc3_session):
+    populate_main_satellite_relationship(ukrdc3_session)
+
+    response = await client_authenticated.get(
+        f"{configuration.base_url}/facilities/satellites?facility_code=TSF01"
+    )
+    json = response.json()
+    assert json[0]["id"] == "TSF02"
+
+
+async def test_facility_satellites_denied(client_authenticated):
+    response = await client_authenticated.get(
+        f"{configuration.base_url}/facilities/satellites?facility_code=TSF02"
     )
     assert response.status_code == 403

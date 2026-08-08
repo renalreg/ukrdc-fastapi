@@ -52,6 +52,7 @@ class FacilityCachePrefix(CachePrefix):
     FEEDSHARE = "facilities:feedshare"
     DEMOGRAPHICS = "facilities:stats:demographics"
     KRT = "facilities:stats:krt"
+    SATELLITES = "facilities:satellites"
 
 
 class PytestCachePrefix(CachePrefix):
