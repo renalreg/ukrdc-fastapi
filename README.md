@@ -9,6 +9,20 @@
 - [OpenAPI Specification](https://renalreg.github.io/ukrdc-fastapi/openapi.json)
 - [`@ukkidney/ukrdc-axios-ts` Documentation](https://renalreg.github.io/ukrdc-fastapi/typescript-axios-client/)
 
+## Dev Notes
+
+### Beta releases
+
+Normal releases are handled by [release-please](https://github.com/googleapis/release-please) — merges to `main` are what bump the version in `pyproject.toml` and drive changelog generation. That version is the source of truth for the OpenAPI spec, docs, and Docker image on a standard release.
+
+If you want to test a branch's changes end-to-end (published spec, docs, Axios client, and a built Docker image) before you're confident it's ready to merge, you don't need to merge to `main` or bump `pyproject.toml` by hand. Instead, tag a release directly with `-beta` in the tag name, e.g.:
+
+    6.8.0-beta.1
+
+CI detects the `-beta` tag and uses it as the version for that build only — it overrides the Poetry version on the runner for the OpenAPI spec, Redoc docs, Axios client, and Docker image, but never commits anything back to the repo. `pyproject.toml` on `main` and release-please's own version tracking are unaffected, so there's nothing to revert afterwards.
+
+Beta tags can be created from any branch and don't require a merge to `main` first.
+
 ## Developer Installation
 
 ### Prerequisites
