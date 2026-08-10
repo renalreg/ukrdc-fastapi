@@ -179,6 +179,14 @@ jobs:
       - name: Install Dependencies
         run: poetry install
 
+      - name: Set beta version from release tag
+        # Beta releases are tagged directly (e.g. 6.8.0-beta.1) rather than
+        # bumped in pyproject.toml, so pull the version from the tag itself.
+        # Only applies to `release` events - workflow_dispatch/push/PR runs
+        # keep whatever version is already in pyproject.toml.
+        if: github.event_name == 'release' && contains(github.event.release.tag_name, '-beta')
+        run: poetry version "${{ github.event.release.tag_name }}"
+
       - name: Generate API Spec
         run: poetry run python clients/generate_spec.py
 
