@@ -1,5 +1,17 @@
 # Changelog
 
+## [6.9.0](https://github.com/renalreg/ukrdc-fastapi/compare/v6.8.2...v6.9.0) (2026-08-10)
+
+
+### Features
+
+* **UK-157:** UKRDC UI - Show Satellites ([4b89ee6](https://github.com/renalreg/ukrdc-fastapi/commit/4b89ee69962e32d0032d1273d164421b16298e94))
+
+
+### Bug Fixes
+
+* **logging:** logging is now used on the repeated task rather than printing ([1258f71](https://github.com/renalreg/ukrdc-fastapi/commit/1258f711227ed5c9725acd0e1c0fe394c311cea6))
+
 ## [6.8.2](https://github.com/renalreg/ukrdc-fastapi/compare/v6.8.1...v6.8.2) (2026-08-07)
 
 
