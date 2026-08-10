@@ -1,4 +1,5 @@
 import datetime
+from http import HTTPStatus
 
 from fastapi import APIRouter, Depends, HTTPException, Security
 from fastapi import Query as QueryParam
@@ -132,7 +133,7 @@ def facility_satellites(
 
     if not result:
         raise HTTPException(
-            status_code=404,
+            status_code=HTTPStatus.NOT_FOUND,
             detail=f"Facility '{facility_code}' has no satellite facilities",
         )
 
