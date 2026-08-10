@@ -13,6 +13,7 @@ from ukrdc_fastapi.schemas.facility import (
     FacilityDataFlowSchema,
     FacilityDetailsSchema,
     FacilityExtractsSchema,
+    FacilitySchema,
     FacilityStatisticsSchema,
 )
 from ukrdc_fastapi.utils.cache import BasicCache, CacheKey
@@ -89,6 +90,41 @@ def get_facility(
             pkb_message_exclusions=facility.pkb_msg_exclusions or [],
         ),
     )
+
+
+# Get satellites for a main unit facility
+
+
+def get_facility_satellites(
+    ukrdc3: Session,
+    facility_code: str,
+) -> list[FacilitySchema]:
+    """Get satellite units of a given main unit facility
+
+    Args:
+        ukrdc3 (Session): SQLAlchemy session
+        facility_code (str): Main unit facility code
+
+    Returns:
+        list[FacilitySchema]: Matched satellite facilities
+    """
+    relationship_stmt = select(
+        FacilityRelationship.parentfacilitycode,
+        FacilityRelationship.childfacilitycode,
+    ).where(
+        FacilityRelationship.relationshiptype == RelationshipType.main_satellite,
+        FacilityRelationship.parentfacilitycode == facility_code,
+    )
+
+    rows = ukrdc3.execute(relationship_stmt).all()
+    facility_codes = [row.childfacilitycode for row in rows]
+
+    facility_stmt = select(Facility).where(Facility.facilitycode.in_(facility_codes))
+    facilities = ukrdc3.scalars(facility_stmt).all()
+
+    return [
+        FacilitySchema(id=f.facilitycode, description=f.description) for f in facilities
+    ]
 
 
 # Facility extract statistics

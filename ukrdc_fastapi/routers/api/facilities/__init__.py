@@ -1,9 +1,12 @@
 import datetime
+from http import HTTPStatus
 
-from fastapi import APIRouter, Depends, Security
+from fastapi import APIRouter, Depends, HTTPException, Security
 from fastapi import Query as QueryParam
 from redis import Redis
 from sqlalchemy.orm import Session
+from starlette.requests import Request
+from starlette.responses import Response
 
 from ukrdc_fastapi.dependencies import get_errorsdb, get_redis, get_statsdb, get_ukrdc3
 from ukrdc_fastapi.dependencies.audit import (
@@ -31,10 +34,12 @@ from ukrdc_fastapi.permissions.facilities import (
 from ukrdc_fastapi.query.facilities import (
     FacilityDetailsSchema,
     FacilityExtractsSchema,
+    FacilitySchema,
     all_feedshare,
     get_facilities,
     get_facility,
     get_facility_extracts,
+    get_facility_satellites,
 )
 from ukrdc_fastapi.query.facilities.errors import (
     get_errors_history,
@@ -42,7 +47,11 @@ from ukrdc_fastapi.query.facilities.errors import (
 )
 from ukrdc_fastapi.schemas.common import HistoryPoint
 from ukrdc_fastapi.schemas.message import MessageSchema
-from ukrdc_fastapi.utils.cache import ResponseCache
+from ukrdc_fastapi.utils.cache import (
+    DynamicCacheKey,
+    FacilityCachePrefix,
+    ResponseCache,
+)
 from ukrdc_fastapi.utils.paginate import Page, paginate
 from ukrdc_fastapi.utils.sort import ObjectSorter, SQLASorter
 
@@ -99,6 +108,36 @@ def facility_feedshare(
 
     # Fetch the cached value and return
     return cache.get()
+
+
+@router.get("/satellites", response_model=list[FacilitySchema])
+def facility_satellites(
+    facility_code: str,
+    request: Request,
+    response: Response,
+    ukrdc3: Session = Depends(get_ukrdc3),
+    user: UKRDCUser = Security(get_current_user),
+    redis: Redis = Depends(get_redis),
+):
+    """Retrieve id/description for satellites of a given main unit"""
+    assert_facility_permission(facility_code, user)
+
+    cachekey = DynamicCacheKey(FacilityCachePrefix.SATELLITES, facility_code)
+    cache = ResponseCache(redis, cachekey, request, response)
+
+    if not cache.exists:
+        cache.set(get_facility_satellites(ukrdc3, facility_code), expire=3600)
+
+    cache.prepare_response()
+    result = cache.get()
+
+    if not result:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND,
+            detail=f"Facility '{facility_code}' has no satellite facilities",
+        )
+
+    return result
 
 
 @router.get("/{code}", response_model=FacilityDetailsSchema)
