@@ -192,9 +192,9 @@ class TrackableTask:
                 self._sync()
                 # Expire the task after the configured time
                 self.task_redis.expire(self._key, settings.redis_tasks_expire)
-            except Exception as e:  # pylint: disable=broad-except
+            except Exception as e:
                 logger.exception(
-                    f"[{self.id}] Failed Permanently {self.name} with error: {e}"
+                    f"[{self.id}] Failed Permanently {self.name} with error: {e}"  # noqa: TRY401
                 )
                 # Mark the task as errored
                 self.status = "failed"
