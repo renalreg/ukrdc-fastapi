@@ -1,5 +1,6 @@
 import datetime
 import inspect
+import logging
 from collections.abc import Callable
 from functools import wraps
 from typing import Any, Literal
@@ -18,6 +19,8 @@ _LOCK_PREFIX = "_LOCK_"
 
 VisibilityType = Literal["public", "private"]
 StatusType = Literal["pending", "running", "finished", "failed"]
+
+logger = logging.getLogger(__name__)
 
 
 class TrackableTaskSchema(JSONModel):
@@ -170,7 +173,9 @@ class TrackableTask:
             )
 
             # Update the task status to running
-            print(f"[{self.id}] Started {self.name} with arguments: {func_args_str}")
+            logger.info(
+                f"[{self.id}] Started {self.name} with arguments: {func_args_str}"
+            )
             self.status = "running"
             self.started = datetime.datetime.now()
             self._sync()
@@ -181,14 +186,16 @@ class TrackableTask:
 
             try:
                 await self._func(*args, **kwargs)
-                print(f"[{self.id}] Finished {self.name} Successfully")
+                logger.info(f"[{self.id}] Finished {self.name} Successfully")
                 # Mark the task as finished
                 self.status = "finished"
                 self._sync()
                 # Expire the task after the configured time
                 self.task_redis.expire(self._key, settings.redis_tasks_expire)
-            except Exception as e:  # pylint: disable=broad-except
-                print(f"[{self.id}] Failed Permanently {self.name} with error: {e}")
+            except Exception as e:
+                logger.exception(
+                    f"[{self.id}] Failed Permanently {self.name} with error: {e}"  # noqa: TRY401
+                )
                 # Mark the task as errored
                 self.status = "failed"
                 # Set the error message
