@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.9.1](https://github.com/renalreg/ukrdc-fastapi/compare/v6.9.0...v6.9.1) (2026-08-20)
+
+
+### Bug Fixes
+
+* **bump-ukrr-extract:** bumped ukrr-extract ([#1303](https://github.com/renalreg/ukrdc-fastapi/issues/1303)) ([bc5fc9b](https://github.com/renalreg/ukrdc-fastapi/commit/bc5fc9b9a27b3afad3dc2738c7e9bc7b7c5a346a))
+
 ## [6.9.0](https://github.com/renalreg/ukrdc-fastapi/compare/v6.8.2...v6.9.0) (2026-08-10)
 
 
