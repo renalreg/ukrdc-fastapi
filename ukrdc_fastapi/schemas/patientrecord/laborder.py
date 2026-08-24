@@ -41,7 +41,7 @@ class ResultItemSchema(OrmModel):
         None, description="Observation timestamp"
     )
     interpretation_codes: str | None = Field(
-        None, description="Code(s) indicating interpretation of the result (POS, NEG, UNK)"
+        None, description="Interpretation code of the result (POS, NEG, UNK)"
     )
 
 
