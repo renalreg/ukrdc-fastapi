@@ -40,6 +40,9 @@ class ResultItemSchema(OrmModel):
     observation_time: datetime.datetime | None = Field(
         None, description="Observation timestamp"
     )
+    interpretation_codes: str | None = Field(
+        None, description="Interpretation code of the result (POS, NEG, UNK)"
+    )
 
 
 class ResultItemServiceSchema(OrmModel):
