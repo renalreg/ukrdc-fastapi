@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.10.0](https://github.com/renalreg/ukrdc-fastapi/compare/v6.9.1...v6.10.0) (2026-09-04)
+
+
+### Features
+
+* **UK-334:** Show interpretationcodes  ([#1306](https://github.com/renalreg/ukrdc-fastapi/issues/1306)) ([cb65d53](https://github.com/renalreg/ukrdc-fastapi/commit/cb65d537e88c36a069f884c10c5a1edaa42d6053))
+
 ## [6.9.1](https://github.com/renalreg/ukrdc-fastapi/compare/v6.9.0...v6.9.1) (2026-08-20)
 
 
