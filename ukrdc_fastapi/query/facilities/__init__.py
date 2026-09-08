@@ -135,7 +135,7 @@ def get_facility_parent_unit(
     facility_codes: set[str],
 ) -> dict[str, str]:
     """Find the parent unit of each given facility code
-    
+
     Facilities that are satellites resolve to their parent unit's code.
     Facilities that are not satellites (i.e. are themselves a main unit)
     are not included in the returned mapping.
