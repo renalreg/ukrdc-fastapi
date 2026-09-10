@@ -127,7 +127,7 @@ def get_facility_satellites(
     ]
 
 
-# Get parent unit for each facility in a set, and for the sending facility itself
+# Get parent unit for each facility in a set
 
 
 def get_facility_parent_unit(
