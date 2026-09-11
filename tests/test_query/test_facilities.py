@@ -10,6 +10,7 @@ from ukrdc_fastapi.query.facilities import (
     get_facilities,
     get_facility,
     get_facility_extracts,
+    get_facility_parent_unit,
     get_facility_satellites,
 )
 from ukrdc_fastapi.query.facilities.errors import (
@@ -266,3 +267,21 @@ def test_get_facility_satellites(ukrdc3_session):
 
     assert {s.id for s in satellites} == {"TSF02"}
     assert {s.description for s in satellites} == {"TSF02_DESCRIPTION"}
+
+
+def test_get_facility_parent_unit_satellite(ukrdc3_session):
+    """Input is a satellite"""
+    populate_main_satellite_relationship(ukrdc3_session)
+
+    parent_lookup = get_facility_parent_unit(ukrdc3_session, {"TSF02"})
+
+    assert parent_lookup == {"TSF02": "TSF01"}
+
+
+def test_get_facility_parent_unit_main_unit(ukrdc3_session):
+    """Input is a main unit"""
+    populate_main_satellite_relationship(ukrdc3_session)
+
+    parent_lookup = get_facility_parent_unit(ukrdc3_session, {"TSF01"})
+
+    assert parent_lookup == {}

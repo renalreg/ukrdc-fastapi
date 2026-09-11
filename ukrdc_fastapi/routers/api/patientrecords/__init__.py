@@ -51,6 +51,7 @@ from ukrdc_fastapi.query.delete import (
     delete_patientrecord,
     summarise_delete_patientrecord,
 )
+from ukrdc_fastapi.query.facilities import get_facility_parent_unit
 from ukrdc_fastapi.query.messages import select_messages_related_to_patientrecord
 from ukrdc_fastapi.schemas.audit import AuditEventSchema
 from ukrdc_fastapi.schemas.delete import DeletePidRequest, DeletePIDResponseSchema
@@ -317,6 +318,14 @@ def patient_treatments(
 ):
     """Retreive a specific patient's treatments"""
     stmt = select(Treatment).where(Treatment.pid == patient_record.pid)
+    treatments = ukrdc3.scalars(sorter.sort(stmt)).all()
+
+    # Collect facility codes from treatments to find any satellite relationships
+    facility_codes = {
+        t.healthcarefacilitycode for t in treatments if t.healthcarefacilitycode
+    }
+
+    parent_lookup = get_facility_parent_unit(ukrdc3, facility_codes)
 
     audit.add_event(
         Resource.TREATMENTS,
@@ -327,7 +336,18 @@ def patient_treatments(
         ),
     )
 
-    return ukrdc3.scalars(sorter.sort(stmt)).all()
+    result = []
+    for t in treatments:
+        treatment_parent_unit = (
+            parent_lookup.get(t.healthcarefacilitycode) or t.healthcarefacilitycode
+        )
+        schema = TreatmentSchema.model_validate(t)
+        schema.isexternallocation = (
+            treatment_parent_unit != patient_record.sendingfacility
+        )
+        result.append(schema)
+
+    return result
 
 
 @router.get(
