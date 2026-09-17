@@ -18,6 +18,7 @@ from ukrdc_sqla.ukrdc import (
     Transplant,
     Treatment,
 )
+from ukrdc_sqla.utils.facilities import get_facility_parent_unit
 
 from ukrdc_fastapi.dependencies import get_auditdb, get_errorsdb, get_jtrace, get_ukrdc3
 from ukrdc_fastapi.dependencies.audit import (
@@ -51,7 +52,6 @@ from ukrdc_fastapi.query.delete import (
     delete_patientrecord,
     summarise_delete_patientrecord,
 )
-from ukrdc_fastapi.query.facilities import get_facility_parent_unit
 from ukrdc_fastapi.query.messages import select_messages_related_to_patientrecord
 from ukrdc_fastapi.schemas.audit import AuditEventSchema
 from ukrdc_fastapi.schemas.delete import DeletePidRequest, DeletePIDResponseSchema
