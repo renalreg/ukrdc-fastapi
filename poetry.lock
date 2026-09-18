@@ -4327,14 +4327,14 @@ markers = {dev = "sys_platform == \"win32\""}
 
 [[package]]
 name = "ukrdc-sqla"
-version = "4.6.1"
+version = "4.7.0"
 description = "SQLAlchemy models for the UKRDC"
 optional = false
 python-versions = "<4.0,>=3.10.0"
 groups = ["main"]
 files = [
-    {file = "ukrdc_sqla-4.6.1-py3-none-any.whl", hash = "sha256:92b9cae45c45294c6e370005ff717fbedf614653288f8e65e4c0a5b695317209"},
-    {file = "ukrdc_sqla-4.6.1.tar.gz", hash = "sha256:08da4a89c9dfcbe7a5292c6e805dcb8604125cf65eb999de99e69a4cff404829"},
+    {file = "ukrdc_sqla-4.7.0-py3-none-any.whl", hash = "sha256:2abb1e3e674b0a692f6b4282712e74e0bce051f70be37a827946ba600c926fbd"},
+    {file = "ukrdc_sqla-4.7.0.tar.gz", hash = "sha256:d707d558688bacd3635ee146a91a2709dd64085b4add744f64094d0fa9b6b00c"},
 ]
 
 [package.dependencies]
