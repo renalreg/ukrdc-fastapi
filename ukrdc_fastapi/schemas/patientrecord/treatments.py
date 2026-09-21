@@ -100,6 +100,11 @@ class TreatmentSchema(OrmModel):
 
     visitdescription: str | None = Field(None, description="Visit description")
 
+    isexternallocation: bool = Field(
+        False,
+        description="Whether this treatment occurred at a facility external to the patient record's sending facility",
+    )
+
     # updatedon: Currently unused
     # actioncode: Currently unused
 
