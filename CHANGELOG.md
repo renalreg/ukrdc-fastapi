@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.11.0](https://github.com/renalreg/ukrdc-fastapi/compare/v6.10.0...v6.11.0) (2026-09-25)
+
+
+### Features
+
+* **UK-355:** Show External Treatment Locations  ([#1316](https://github.com/renalreg/ukrdc-fastapi/issues/1316)) ([feafe97](https://github.com/renalreg/ukrdc-fastapi/commit/feafe97b5313fc5ff9d27438cc297ab696172f12))
+
 ## [6.10.0](https://github.com/renalreg/ukrdc-fastapi/compare/v6.9.1...v6.10.0) (2026-09-17)
 
 
