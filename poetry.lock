@@ -1115,19 +1115,19 @@ standard-no-fastapi-cloud-cli = ["email-validator (>=2.0.0)", "fastapi-cli[stand
 
 [[package]]
 name = "fastapi-pagination"
-version = "0.15.16"
+version = "0.16.0"
 description = "FastAPI pagination"
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "fastapi_pagination-0.15.16-py3-none-any.whl", hash = "sha256:86dc73620812d47c297a7b8baca4eba2bac5d3f1d73aa75dc6e3bb12c0b803f7"},
-    {file = "fastapi_pagination-0.15.16.tar.gz", hash = "sha256:739a4e904729dc01e03ce95e260ed9be050d48a3659be8463e5c4fcdd0cf25b0"},
+    {file = "fastapi_pagination-0.16.0-py3-none-any.whl", hash = "sha256:7f68942d3240f6813c679559fb87beb84d345cad2840b46b95cd3dbc62f6cd99"},
+    {file = "fastapi_pagination-0.16.0.tar.gz", hash = "sha256:315824873062e1a1784877bca5f274089a4dbb29f342aeff822ca1f50bc9946a"},
 ]
 
 [package.dependencies]
-fastapi = ">=0.93.0"
-pydantic = ">=1.9.1"
+fastapi = ">=0.140.13"
+pydantic = ">=2.13.4"
 sqlakeyset = {version = ">=2.0.1680321678", optional = true, markers = "extra == \"sqlalchemy\""}
 sqlalchemy = {version = ">=1.3.20", optional = true, markers = "extra == \"sqlalchemy\""}
 typing-extensions = ">=4.8.0"
@@ -1136,19 +1136,14 @@ typing-extensions = ">=4.8.0"
 aiosqlite = ["aiosqlite (>=0.19.0,!=0.22.0,!=0.22.1)"]
 asyncpg = ["asyncpg (>=0.24.0)", "sqlalchemy (>=1.3.20)"]
 beanie = ["beanie (>=2.1.0)"]
-bunnet = ["bunnet (>=1.1.0)"]
-databases = ["databases (>=0.6.0)"]
-django = ["databases (>=0.6.0)", "django (<6.0.0)"]
-elasticsearch = ["elasticsearch-dsl (>=8.13.0)"]
+django = ["django (<6.0.0)"]
+elasticsearch = ["elasticsearch (>=8.18.0)"]
 firestore = ["google-cloud-firestore (>=2.19.0)"]
 mongoengine = ["mongoengine (>=0.23.1)"]
-motor = ["motor (>=3.6.0)"]
-odmantic = ["odmantic (>=1.0.2)"]
-orm = ["databases (>=0.6.0)", "orm (>=0.3.1)"]
 ormar = ["ormar (>=0.21.0)"]
 peewee = ["aiosqlite (>=0.19.0,!=0.22.0,!=0.22.1)", "greenlet", "peewee (>=4.0)"]
 peewee-sync = ["peewee (>=4.0)"]
-piccolo = ["piccolo (>=0.89)"]
+piccolo = ["piccolo (>=1.0)"]
 psycopg = ["psycopg[binary] (>=3.3.2)"]
 scylla-driver = ["scylla-driver (>=3.25.6)"]
 sqlalchemy = ["sqlakeyset (>=2.0.1680321678)", "sqlalchemy (>=1.3.20)"]
