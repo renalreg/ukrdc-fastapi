@@ -54,7 +54,7 @@ class TrackableTaskSchema(JSONModel):
                 normalized_dict[key] = None
             else:
                 normalized_dict[key] = value
-        return cls(**normalized_dict)
+        return cls(**normalized_dict)  # type: ignore[arg-type]
 
 
 class TrackableTask:
