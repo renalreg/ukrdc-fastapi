@@ -2,7 +2,6 @@ from collections.abc import Sequence
 from time import time
 
 from sqlalchemy import and_, desc, select
-from sqlalchemy.dialects.postgresql import distinct_on
 from ukrdc_sqla.errorsdb import Message
 from ukrdc_sqla.ukrdc import Code
 
@@ -24,7 +23,7 @@ for code in codes:
         select(Message.ni, Message.received, Message.msg_status)
         .where(and_(Message.facility == facility, Message.ni.isnot(None)))
         .order_by(Message.ni, desc(Message.received))
-        .ext(distinct_on(Message.ni))
+        .distinct(Message.ni)
     )
 
     messages = session.scalars(message_stmt).all()

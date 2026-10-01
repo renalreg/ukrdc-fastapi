@@ -4,7 +4,6 @@ from fastapi import APIRouter, Depends, Security
 from fastapi import Query as QueryParam
 from fastapi.responses import Response
 from sqlalchemy import select
-from sqlalchemy.dialects.postgresql import distinct_on
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_204_NO_CONTENT
 from ukrdc_sqla.errorsdb import Message
@@ -494,7 +493,7 @@ def patient_result_services(
         select(ResultItem)
         .join(LabOrder)
         .where(LabOrder.pid == patient_record.pid)
-        .ext(distinct_on(ResultItem.service_id))
+        .distinct(ResultItem.service_id)
     )
 
     services = ukrdc3.scalars(stmt).all()
