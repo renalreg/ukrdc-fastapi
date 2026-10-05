@@ -9,7 +9,7 @@ version = "6.11.1"
 python = ">=3.12,<4.0"
 SQLAlchemy = ">=2.0.0,<2.1.0"
 cryptography = ">=49.0.0" # Needed to get round this issue https://github.com/okta/okta-jwt-verifier-python/issues/72
-fastapi = ">=0.139,<0.142"
+fastapi = ">=0.139,<0.143"
 fastapi-pagination = { extras = ["sqlalchemy"], version = "^ 0.15.16" } # pydantic v1 support drops on 0.16
 httpx = ">=0.23,<0.28.1"
 matplotlib = "3.11.0"
