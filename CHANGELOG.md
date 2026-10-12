@@ -1,5 +1,19 @@
 # Changelog
 
+## [6.11.1](https://github.com/renalreg/ukrdc-fastapi/compare/v6.11.0...v6.11.1) (2026-10-01)
+
+
+### Bug Fixes
+
+* **deps:** rollback sqlalchemy ([#1338](https://github.com/renalreg/ukrdc-fastapi/issues/1338)) ([abfcb56](https://github.com/renalreg/ukrdc-fastapi/commit/abfcb564196b3b7fcc7e40d88db01140a50fc1a2))
+
+## [6.11.0](https://github.com/renalreg/ukrdc-fastapi/compare/v6.10.0...v6.11.0) (2026-09-29)
+
+
+### Features
+
+* **UK-355:** Show External Treatment Locations  ([#1316](https://github.com/renalreg/ukrdc-fastapi/issues/1316)) ([feafe97](https://github.com/renalreg/ukrdc-fastapi/commit/feafe97b5313fc5ff9d27438cc297ab696172f12))
+
 ## [6.10.0](https://github.com/renalreg/ukrdc-fastapi/compare/v6.9.1...v6.10.0) (2026-09-17)
 
 
