@@ -181,7 +181,9 @@ def facility_patients_latest_errors(
     """Retreive time-series new error counts for the last year for a particular facility"""
     assert_facility_permission(code, user)
 
-    stmt = query_patients_latest_errors(ukrdc3, code, channels=channel, programs=program)
+    stmt = query_patients_latest_errors(
+        ukrdc3, code, channels=channel, programs=program
+    )
 
     audit.add_event(
         Resource.MESSAGES,

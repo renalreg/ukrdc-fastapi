@@ -5,9 +5,10 @@ from sqlalchemy.orm import Session
 from sqlalchemy.sql.selectable import Select
 from ukrdc_sqla.errorsdb import Latest, Message
 from ukrdc_sqla.stats import ErrorHistory
-from ukrdc_sqla.ukrdc import Code, Facility, PatientNumber, ProgramMembership, PatientRecord
+from ukrdc_sqla.ukrdc import Code, Facility
 
 from ukrdc_fastapi.exceptions import MissingFacilityError
+from ukrdc_fastapi.query.common import get_nis_for_programs
 from ukrdc_fastapi.schemas.common import HistoryPoint
 from ukrdc_fastapi.utils import daterange
 
@@ -24,7 +25,7 @@ def query_patients_latest_errors(
         ukrdc3 (Session): SQLAlchemy session
         facility_code (str): Facility/unit code
         channels (Optional[list[str]]): List of channels to retrieve errors for
-        programs (Optional[list[str]]): List of program names to retrieve errors for
+        programs (Optional[list[str]]): "PKB" and/or "RADAR". Only errors for patients with a matching record are kept.
     Returns:
         Query: SQLAlchemy query
     """
@@ -45,50 +46,11 @@ def query_patients_latest_errors(
     if channels is not None:
         stmt_errors = stmt_errors.where(Message.channel_id.in_(channels))
 
-    # Optionally filter by patient program membership
+    # Optionally filter by patient program membership - patients who have a PKB or RADAR record
     if programs is not None:
-    # Only run this if block if the user selected one or more programs in the UI filter
-        stmt_ukrdcids = (
-            # Build a query selecting the ukrdcid column from PatientRecord.
-            # ukrdcid identifies the patient since 1 patient can have multiple
-            # PatientRecord rows (multiple pids).
-            select(PatientRecord.ukrdcid)
-            # Join to ProgramMembership, matching where ProgramMembership.pid equals
-            # this PatientRecord's pid - i.e. does this specific patient record have a
-            # membership row attached to it?
-            .join(ProgramMembership, ProgramMembership.pid == PatientRecord.pid)
-            # Only keep rows where the membership's program name is one of the programs
-            # the user selected in the filter.
-            .where(ProgramMembership.programname.in_(programs))
-            # A patient could have multiple qualifying membership rows but we only want 
-            # their ukrdcid once
-            .distinct()
+        stmt_errors = stmt_errors.where(
+            Message.ni.in_(get_nis_for_programs(ukrdc3, programs))
         )
-        # Run the query above against the ukrdc3 db and collect the results into a list of
-        # ukrdcid values
-        matching_ukrdcids = ukrdc3.scalars(stmt_ukrdcids).all()
-
-        # Find all NHS numbers across patient records sharing those ukrdcids
-        stmt_ni = (
-            # Build a query selecting the patientid column from PatientNumber
-            # this column holds the NHS number value.
-            select(PatientNumber.patientid)
-            # Join to PatientRecord, matching where PatientRecord.pid equals 
-            # PatientNumber's pid - which patient record does this number belong to.
-            .join(PatientRecord, PatientRecord.pid == PatientNumber.pid)
-            # Only keep rows where that PatientRecord's ukrdcid is one of the ukrdcids
-            # found above - this looks across all PatientRecords for each matching 
-            # patient, not just the one pid that had ProgramMembership, so no NHS number is missed.
-            .where(PatientRecord.ukrdcid.in_(matching_ukrdcids))
-            # Only keep NHS numbers specifically (PatientNumber can hold other number types too)
-            .where(PatientNumber.organization == "NHS")
-        )
-        # Run the query against ukrdc3, collecting all NHS numbers into a list.
-        matching_nis = ukrdc3.scalars(stmt_ni).all()
-
-        # Filter the facility's error list down to only errors where Message.ni matches
-        # one of the NHS numbers found (errors belonging to program members).
-        stmt_errors = stmt_errors.where(Message.ni.in_(matching_nis))
 
     return stmt_errors
 

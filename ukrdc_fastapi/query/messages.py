@@ -11,6 +11,7 @@ from ukrdc_sqla.errorsdb import Message
 from ukrdc_sqla.ukrdc import PatientRecord
 
 from ukrdc_fastapi.exceptions import ResourceNotFoundError
+from ukrdc_fastapi.query.common import get_nis_for_programs
 from ukrdc_fastapi.query.masterrecords import (
     select_masterrecords_related_to_masterrecord,
 )
@@ -31,6 +32,8 @@ def select_messages(
     facility: str | None = None,
     since: datetime.datetime | None = None,
     until: datetime.datetime | None = None,
+    programs: list[str] | None = None,
+    ukrdc3: Session | None = None,
 ) -> Select:
     """Get a list of error messages from the errorsdb
 
@@ -71,6 +74,12 @@ def select_messages(
 
     if nis:
         stmt = stmt.where(Message.ni.in_(nis))
+
+    # Optionally filter to patients who have a PKB or RADAR record
+    if programs is not None:
+        if ukrdc3 is None:
+            raise ValueError("ukrdc3 session is required to filter by programs")
+        stmt = stmt.where(Message.ni.in_(get_nis_for_programs(ukrdc3, programs)))
 
     return stmt
 
