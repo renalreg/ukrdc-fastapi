@@ -209,7 +209,10 @@ def build_facilities_list(
 
     # Build statistics
     stmt_total_records = (
-        select(PatientRecord.sendingfacility, func.count("*"))
+        select(
+            PatientRecord.sendingfacility,
+            func.count().label("record_count"),
+        )
         .where(PatientRecord.sendingextract.notin_(["PVMIG", "HSMIG"]))
         .where(
             PatientRecord.sendingfacility.in_(
@@ -219,14 +222,19 @@ def build_facilities_list(
         .group_by(PatientRecord.sendingfacility)
     )
 
-    total_records = ukrdc3.execute(stmt_total_records).all()
-    total_records_dict = {row[0].upper(): row[1] for row in total_records}
-
+    total_records_dict: dict[str, int] = {
+        row.sendingfacility.upper(): row.record_count
+        for row in ukrdc3.execute(stmt_total_records)
+    }
     # Get a count of each facility-status combination from latest messages
     # We can use these counts to build up all "current status" statistics,
     # e.g. number of patients most recently receiving error messages
     stmt_status_counts = (
-        select(Latest.facility, Message.msg_status, func.count(Message.msg_status))
+        select(
+            Latest.facility,
+            Message.msg_status,
+            func.count(Message.msg_status).label("status_count"),
+        )
         .join(Message)
         .where(
             Latest.facility.in_(
@@ -236,14 +244,16 @@ def build_facilities_list(
         .group_by(Latest.facility, Message.msg_status)
     )
 
-    status_counts = errorsdb.execute(stmt_status_counts).all()
-
     # Create an empty dict to store facility status counts
     status_counts_dict: dict[str, dict[str, int]] = {}
     # Iterate over each row in the query result
-    for row in status_counts:
-        # Set dict[facility][status] = count
-        status_counts_dict.setdefault(row[0].upper(), {})[row[1]] = row[2]
+    for row in errorsdb.execute(stmt_status_counts):
+        if row.msg_status is None:
+            # this should not trigger
+            continue
+        status_counts_dict.setdefault(row.facility.upper(), {})[row.msg_status] = (
+            row.status_count
+        )
 
     # Get the most recent message received time for each facility
     stmt_most_recent = (
