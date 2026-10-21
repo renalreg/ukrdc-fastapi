@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.11.2](https://github.com/renalreg/ukrdc-fastapi/compare/v6.11.1...v6.11.2) (2026-10-21)
+
+
+### Bug Fixes
+
+* **1340:** Axios pin ([#1369](https://github.com/renalreg/ukrdc-fastapi/issues/1369)) ([d600882](https://github.com/renalreg/ukrdc-fastapi/commit/d60088220035bec74be4cd9310450b3d28c4f1e7))
+
 ## [6.11.1](https://github.com/renalreg/ukrdc-fastapi/compare/v6.11.0...v6.11.1) (2026-10-01)
 
 
