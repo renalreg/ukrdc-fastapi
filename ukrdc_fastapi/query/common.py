@@ -56,4 +56,4 @@ def get_nis_for_programs(ukrdc3: Session, programs: list[str]) -> list[str]:
         .where(PatientRecord.ukrdcid.in_(matching_ukrdcids))
         .where(PatientNumber.organization.in_(["NHS", "CHI", "HSC"]))
     )
-    return list(ukrdc3.scalars(stmt_ni).all())
+    return [ni for ni in ukrdc3.scalars(stmt_ni).all() if ni is not None]
