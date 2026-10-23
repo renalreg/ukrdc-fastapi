@@ -1100,14 +1100,14 @@ vectorset = ["jsonpath-ng (>=1.6) ; python_version >= \"3.11\"", "numpy (>=2.4.0
 
 [[package]]
 name = "fastapi"
-version = "0.144.0"
+version = "0.152.0"
 description = "FastAPI framework, high performance, easy to learn, fast to code, ready for production"
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "fastapi-0.144.0-py3-none-any.whl", hash = "sha256:ce62d92f1abe5e06f9111a3d39c675340d440ee7095beab06ec31fee7c070a71"},
-    {file = "fastapi-0.144.0.tar.gz", hash = "sha256:7392b2609ebaf7e2dbffd38b8a927499e61a50e55dd0e57323ebee30efc1a462"},
+    {file = "fastapi-0.152.0-py3-none-any.whl", hash = "sha256:ecea8d7b0d00a7a4f4ababc1848593441e6c344cbf40615f5390ce1572f43d78"},
+    {file = "fastapi-0.152.0.tar.gz", hash = "sha256:8356eab05470647405cf280fa51b34f7693527b9d2e43288d6425970e43db768"},
 ]
 
 [package.dependencies]
@@ -4715,4 +4715,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<4.0"
-content-hash = "ff154dadb15f1be2a7c410e170e908e0a862db18e0fabaf1b70daddcb3399faf"
+content-hash = "d60f2d7d82c98c9d3cda97c370f93389bf9c2047771870828c541979d0f233b8"
