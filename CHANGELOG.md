@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.12.0](https://github.com/renalreg/ukrdc-fastapi/compare/v6.11.2...v6.12.0) (2026-10-26)
+
+
+### Features
+
+* **UK-356:** filter errors and messages by program membership (PKB/RADAR) ([#1366](https://github.com/renalreg/ukrdc-fastapi/issues/1366)) ([d549ada](https://github.com/renalreg/ukrdc-fastapi/commit/d549adaaa63f7b01c0785fe18c0d315b8e25d9f2))
+
 ## [6.11.2](https://github.com/renalreg/ukrdc-fastapi/compare/v6.11.1...v6.11.2) (2026-10-21)
 
 
