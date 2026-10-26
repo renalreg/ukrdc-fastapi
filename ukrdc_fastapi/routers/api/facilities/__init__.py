@@ -171,6 +171,7 @@ def facility(
 def facility_patients_latest_errors(
     code: str,
     channel: list[str] | None = QueryParam(None),
+    program: list[str] | None = QueryParam(None),
     ukrdc3: Session = Depends(get_ukrdc3),
     errorsdb: Session = Depends(get_errorsdb),
     user: UKRDCUser = Security(get_current_user),
@@ -180,7 +181,9 @@ def facility_patients_latest_errors(
     """Retreive time-series new error counts for the last year for a particular facility"""
     assert_facility_permission(code, user)
 
-    stmt = query_patients_latest_errors(ukrdc3, code, channels=channel)
+    stmt = query_patients_latest_errors(
+        ukrdc3, code, channels=channel, programs=program
+    )
 
     audit.add_event(
         Resource.MESSAGES,

@@ -74,6 +74,8 @@ def messages(
     errorsdb: Session = Depends(get_errorsdb),
     sorter: SQLASorter = ERROR_SORTER,
     audit: Auditer = Depends(get_auditer),
+    program: list[str] | None = QueryParam(None),
+    ukrdc3: Session = Depends(get_ukrdc3),
 ):
     """
     Retreive a list of error messages, optionally filtered by NI, facility, or date.
@@ -86,6 +88,8 @@ def messages(
         facility=facility,
         since=since,
         until=until,
+        programs=program,
+        ukrdc3=ukrdc3,
     )
     stmt = apply_message_list_permissions(stmt, user)
 

@@ -8,6 +8,7 @@ from ukrdc_sqla.stats import ErrorHistory
 from ukrdc_sqla.ukrdc import Code, Facility
 
 from ukrdc_fastapi.exceptions import MissingFacilityError
+from ukrdc_fastapi.query.common import get_nis_for_programs
 from ukrdc_fastapi.schemas.common import HistoryPoint
 from ukrdc_fastapi.utils import daterange
 
@@ -16,6 +17,7 @@ def query_patients_latest_errors(
     ukrdc3: Session,
     facility_code: str,
     channels: list[str] | None = None,
+    programs: list[str] | None = None,
 ) -> Select:
     """Retrieve the most recent error messages for each patient currently receiving errors.
 
@@ -23,6 +25,7 @@ def query_patients_latest_errors(
         ukrdc3 (Session): SQLAlchemy session
         facility_code (str): Facility/unit code
         channels (Optional[list[str]]): List of channels to retrieve errors for
+        programs (Optional[list[str]]): "PKB" and/or "RADAR". Only errors for patients with a matching record are kept.
     Returns:
         Query: SQLAlchemy query
     """
@@ -42,6 +45,12 @@ def query_patients_latest_errors(
     # Optionally filter by channels
     if channels is not None:
         stmt_errors = stmt_errors.where(Message.channel_id.in_(channels))
+
+    # Optionally filter by patient program membership - patients who have a PKB or RADAR record
+    if programs is not None:
+        stmt_errors = stmt_errors.where(
+            Message.ni.in_(get_nis_for_programs(ukrdc3, programs))
+        )
 
     return stmt_errors
 
