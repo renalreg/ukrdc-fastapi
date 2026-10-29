@@ -44,6 +44,7 @@ from ukrdc_sqla.ukrdc import (
     Treatment,
 )
 from ukrdc_sqla.utils.constants import CodeMapFacilityType, RelationshipType
+from ukrdc_sqla.utils.extras import db_metadata
 
 from ukrdc_fastapi.dependencies import (
     auth,
@@ -869,7 +870,7 @@ def jtrace_sessionmaker(postgresql_my):
         autoflush=False,
         bind=engine,
     )
-    JtraceBase.metadata.create_all(bind=engine)
+    db_metadata(JtraceBase.metadata).create_all(bind=engine)
     return JtraceTestSession
 
 
@@ -891,7 +892,7 @@ def ukrdc3_sessionmaker(postgresql_my):
         autoflush=False,
         bind=engine,
     )
-    UKRDC3Base.metadata.create_all(bind=engine)
+    db_metadata(UKRDC3Base.metadata).create_all(bind=engine)
     return ukrdc_test_session
 
 
@@ -913,7 +914,7 @@ def errorsdb_sessionmaker(postgresql_my):
         autoflush=False,
         bind=engine,
     )
-    ErrorsBase.metadata.create_all(bind=engine)
+    db_metadata(ErrorsBase.metadata).create_all(bind=engine)
     return errors_test_session
 
 
@@ -935,7 +936,7 @@ def statsdb_sessionmaker(postgresql_my):
         autoflush=False,
         bind=engine,
     )
-    StatsBase.metadata.create_all(bind=engine)
+    db_metadata(StatsBase.metadata).create_all(bind=engine)
     return stats_test_session
 
 
@@ -957,7 +958,7 @@ def auditdb_sessionmaker(postgresql_my):
         autoflush=False,
         bind=engine,
     )
-    AuditBase.metadata.create_all(bind=engine)
+    db_metadata(AuditBase.metadata).create_all(bind=engine)
     return stats_test_session
 
 
@@ -971,7 +972,7 @@ def usersdb_sessionmaker():
         "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
     )
     users_test_session = sessionmaker(bind=engine)
-    UsersBase.metadata.create_all(bind=engine)
+    db_metadata(UsersBase.metadata).create_all(bind=engine)
     return users_test_session
 
 
