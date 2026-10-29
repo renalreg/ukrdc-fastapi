@@ -71,7 +71,14 @@ Type-9 work items, in essence, are raised when a data file is received which sim
 1. The work item attributes must be manually checked to ensure they do indeed correspond to the claimed patient.
 2. Data files blocked by the work item must be reprocessed in two parts. First, we modify the incoming file to use the _current_ local hospital number, but include the new demographics. Then, we reprocess the original incoming file with both the new local hospital number and new demographics.
 
-This script automates step 2.
+This script automates step 2 by:
+
+1. Fetching the workitem by the provided ID from the JTRACE database.
+2. Retrieving associated patients and masterrecords, using linkrecords form JTRACE.
+3. Retrieving mirth message metadata (IDs) from errordb.
+4. Iterating over relevant MIRTH messages and resubmitting them with in-database hospital number, while reprocessing the original.
+
+The mirth message's content is re-formatted before re-submitting to avoid issues where unnecessary `\n` newlines and spaces are introduced.
 
 ### Find all records with multiple UKRDC IDs
 
