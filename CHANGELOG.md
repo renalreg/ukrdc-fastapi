@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.12.2](https://github.com/renalreg/ukrdc-fastapi/compare/v6.12.1...v6.12.2) (2026-10-29)
+
+
+### Bug Fixes
+
+* fixed tests to work with new ukrdc sqla models and restrictions ([51b0172](https://github.com/renalreg/ukrdc-fastapi/commit/51b01721fc030bdf24c745a9179fa75be183db4f))
+
 ## [6.12.1](https://github.com/renalreg/ukrdc-fastapi/compare/v6.12.0...v6.12.1) (2026-10-29)
 
 
