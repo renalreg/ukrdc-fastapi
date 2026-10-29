@@ -5,6 +5,7 @@ from unittest.mock import AsyncMock, MagicMock, Mock, call
 
 import scripts.type_9_resolver.process as script
 
+
 def test_process_workitem_submits_corrections_and_reprocesses(monkeypatch):
     workitem_id = 123
     incoming_id = "OLD123"
@@ -45,7 +46,7 @@ def test_process_workitem_submits_corrections_and_reprocesses(monkeypatch):
         SimpleNamespace(
             message_id=202,
             channel_id=script.PV_INBOUND,
-        )
+        ),
     ]
 
     # Mock the database sessions and query helpers.
@@ -117,7 +118,7 @@ def test_process_workitem_submits_corrections_and_reprocesses(monkeypatch):
     mirth_session.return_value.__aenter__.return_value = api
     monkeypatch.setattr(script, "mirth_session", mirth_session)
 
-    # The real script waits for 5 seconds between sending corrections and reprocessing the original message. 
+    # The real script waits for 5 seconds between sending corrections and reprocessing the original message.
     # We can just mock it so that the test runs without delay.
     sleep = Mock()
     monkeypatch.setattr(script.time, "sleep", sleep)
