@@ -17,10 +17,10 @@ def _create_membership(pid: str, ukrdc3_session):
 
 
 def test_build_mrc_sync_message(ukrdc3_session):
-    pid_1 = "PYTEST01:PV:00000000A"
+    pid_1 = "PYTEST01PV"
     _create_membership(pid_1, ukrdc3_session)
     record = ukrdc3_session.get(PatientRecord, pid_1)
 
     message = build_mrc_sync_message(record, ukrdc3_session)
 
-    assert message == "<result><pid>PYTEST01:PV:00000000A</pid></result>"
+    assert message == "<result><pid>PYTEST01PV</pid></result>"

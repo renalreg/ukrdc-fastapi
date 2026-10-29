@@ -98,10 +98,12 @@ MINIMAL_PDF_BYTES = (
     + b"%%EOF"
 )
 
-PID_1 = "PYTEST01:PV:00000000A"
-PID_2 = "PYTEST02:PV:00000000A"
-PID_3 = "PYTEST03:PV:00000000A"
-PID_4 = "PYTEST04:PV:00000000A"
+# PIDs are also written to JTRACE's pidxref.pid, which is VARCHAR(10) as of
+# ukrdc-sqla 5.x, so every test PID must be 10 characters or fewer.
+PID_1 = "PYTEST01PV"
+PID_2 = "PYTEST02PV"
+PID_3 = "PYTEST03PV"
+PID_4 = "PYTEST04PV"
 NI_1 = "888888888"
 NI_2 = "888888887"
 NI_3 = "888888886"

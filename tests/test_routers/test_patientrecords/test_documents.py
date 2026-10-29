@@ -3,21 +3,21 @@ from ukrdc_fastapi.config import configuration
 
 async def test_record_documents(client_authenticated):
     response = await client_authenticated.get(
-        f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/documents"
+        f"{configuration.base_url}/patientrecords/PYTEST01PV/documents"
     )
     assert response.status_code == 200
 
 
 async def test_record_document_detail(client_authenticated):
     response = await client_authenticated.get(
-        f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/documents/DOCUMENT_PDF"
+        f"{configuration.base_url}/patientrecords/PYTEST01PV/documents/DOCUMENT_PDF"
     )
     assert response.status_code == 200
 
 
 async def test_record_document_download_txt(client_authenticated):
     response = await client_authenticated.get(
-        f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/documents/DOCUMENT_TXT/download"
+        f"{configuration.base_url}/patientrecords/PYTEST01PV/documents/DOCUMENT_TXT/download"
     )
     assert response.status_code == 200
     assert (
@@ -29,7 +29,7 @@ async def test_record_document_download_txt(client_authenticated):
 
 async def test_record_document_download_pdf(client_authenticated, minimal_pdf):
     response = await client_authenticated.get(
-        f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/documents/DOCUMENT_PDF/download"
+        f"{configuration.base_url}/patientrecords/PYTEST01PV/documents/DOCUMENT_PDF/download"
     )
     assert response.status_code == 200
     assert (
@@ -41,13 +41,13 @@ async def test_record_document_download_pdf(client_authenticated, minimal_pdf):
 
 async def test_record_documents_denied(client_authenticated):
     response = await client_authenticated.get(
-        f"{configuration.base_url}/patientrecords/PYTEST03:PV:00000000A/documents"
+        f"{configuration.base_url}/patientrecords/PYTEST03PV/documents"
     )
     assert response.status_code == 403
 
 
 async def test_record_document_detail_denied(client_authenticated):
     response = await client_authenticated.get(
-        f"{configuration.base_url}/patientrecords/PYTEST03:PV:00000000A/documents/DOCUMENT_PDF"
+        f"{configuration.base_url}/patientrecords/PYTEST03PV/documents/DOCUMENT_PDF"
     )
     assert response.status_code == 403

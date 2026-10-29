@@ -6,56 +6,56 @@ from ukrdc_fastapi.query.mirth import export
 
 async def test_export_all_to_pv(ukrdc3_session, redis_session, mirth_session):
     response = await export.export_all_to_pv(
-        ukrdc3_session.get(PatientRecord, "PYTEST01:PV:00000000A"),
+        ukrdc3_session.get(PatientRecord, "PYTEST01PV"),
         mirth_session,
         redis_session,
     )
     assert response.status == "success"
     assert (
         response.message
-        == "<result><pid>PYTEST01:PV:00000000A</pid><tests>FULL</tests><documents>FULL</documents></result>"
+        == "<result><pid>PYTEST01PV</pid><tests>FULL</tests><documents>FULL</documents></result>"
     )
 
 
 async def test_record_export_tests(ukrdc3_session, redis_session, mirth_session):
     response = await export.export_tests_to_pv(
-        ukrdc3_session.get(PatientRecord, "PYTEST01:PV:00000000A"),
+        ukrdc3_session.get(PatientRecord, "PYTEST01PV"),
         mirth_session,
         redis_session,
     )
     assert response.status == "success"
     assert (
         response.message
-        == "<result><pid>PYTEST01:PV:00000000A</pid><tests>FULL</tests></result>"
+        == "<result><pid>PYTEST01PV</pid><tests>FULL</tests></result>"
     )
 
 
 async def test_record_export_docs(ukrdc3_session, redis_session, mirth_session):
     response = await export.export_docs_to_pv(
-        ukrdc3_session.get(PatientRecord, "PYTEST01:PV:00000000A"),
+        ukrdc3_session.get(PatientRecord, "PYTEST01PV"),
         mirth_session,
         redis_session,
     )
     assert response.status == "success"
     assert (
         response.message
-        == "<result><pid>PYTEST01:PV:00000000A</pid><documents>FULL</documents></result>"
+        == "<result><pid>PYTEST01PV</pid><documents>FULL</documents></result>"
     )
 
 
 async def test_record_export_radar(ukrdc3_session, redis_session, mirth_session):
     response = await export.export_all_to_radar(
-        ukrdc3_session.get(PatientRecord, "PYTEST01:PV:00000000A"),
+        ukrdc3_session.get(PatientRecord, "PYTEST01PV"),
         mirth_session,
         redis_session,
     )
     assert response.status == "success"
-    assert response.message == "<result><pid>PYTEST01:PV:00000000A</pid></result>"
+    assert response.message == "<result><pid>PYTEST01PV</pid></result>"
 
 
 async def test_export_all_to_mrc(ukrdc3_session, redis_session, mirth_session):
     # Ensure MRC membership
-    pid_1 = "PYTEST01:PV:00000000A"
+    pid_1 = "PYTEST01PV"
     membership = ProgramMembership(
         id="MEMBERSHIP_MRC",
         pid=pid_1,
@@ -67,19 +67,19 @@ async def test_export_all_to_mrc(ukrdc3_session, redis_session, mirth_session):
     ukrdc3_session.commit()
 
     response = await export.export_all_to_mrc(
-        ukrdc3_session.get(PatientRecord, "PYTEST01:PV:00000000A"),
+        ukrdc3_session.get(PatientRecord, "PYTEST01PV"),
         ukrdc3_session,
         mirth_session,
         redis_session,
     )
 
     assert response.status == "success"
-    assert response.message == "<result><pid>PYTEST01:PV:00000000A</pid></result>"
+    assert response.message == "<result><pid>PYTEST01PV</pid></result>"
 
 
 async def test_record_export_pkb(ukrdc3_session, redis_session, mirth_session):
     # Ensure PKB membership
-    pid_1 = "PYTEST01:PV:00000000A"
+    pid_1 = "PYTEST01PV"
     membership = ProgramMembership(
         id="MEMBERSHIP_PKB",
         pid=pid_1,
@@ -104,13 +104,13 @@ async def test_record_export_pkb(ukrdc3_session, redis_session, mirth_session):
         assert response.status == "success"
 
     assert messages == [
-        "<result><msg_type>ADT_A28</msg_type><pid>PYTEST01:PV:00000000A</pid></result>",
-        "<result><msg_type>MDM_T02_CP</msg_type><pid>PYTEST01:PV:00000000A</pid></result>",
-        "<result><msg_type>MDM_T02_DOC</msg_type><pid>PYTEST01:PV:00000000A</pid><id>DOCUMENT_PDF</id></result>",
-        "<result><msg_type>MDM_T02_DOC</msg_type><pid>PYTEST01:PV:00000000A</pid><id>DOCUMENT_TXT</id></result>",
-        "<result><msg_type>ORU_R01_LAB</msg_type><pid>PYTEST01:PV:00000000A</pid><id>LABORDER1</id></result>",
-        "<result><msg_type>ORU_R01_LAB</msg_type><pid>PYTEST01:PV:00000000A</pid><id>LABORDER2</id></result>",
-        "<result><msg_type>ORU_R01_OBS</msg_type><pid>PYTEST01:PV:00000000A</pid><id>OBSERVATION1</id></result>",
-        "<result><msg_type>ORU_R01_OBS</msg_type><pid>PYTEST01:PV:00000000A</pid><id>OBSERVATION_DIA_1</id></result>",
-        "<result><msg_type>ORU_R01_OBS</msg_type><pid>PYTEST01:PV:00000000A</pid><id>OBSERVATION_SYS_1</id></result>",
+        "<result><msg_type>ADT_A28</msg_type><pid>PYTEST01PV</pid></result>",
+        "<result><msg_type>MDM_T02_CP</msg_type><pid>PYTEST01PV</pid></result>",
+        "<result><msg_type>MDM_T02_DOC</msg_type><pid>PYTEST01PV</pid><id>DOCUMENT_PDF</id></result>",
+        "<result><msg_type>MDM_T02_DOC</msg_type><pid>PYTEST01PV</pid><id>DOCUMENT_TXT</id></result>",
+        "<result><msg_type>ORU_R01_LAB</msg_type><pid>PYTEST01PV</pid><id>LABORDER1</id></result>",
+        "<result><msg_type>ORU_R01_LAB</msg_type><pid>PYTEST01PV</pid><id>LABORDER2</id></result>",
+        "<result><msg_type>ORU_R01_OBS</msg_type><pid>PYTEST01PV</pid><id>OBSERVATION1</id></result>",
+        "<result><msg_type>ORU_R01_OBS</msg_type><pid>PYTEST01PV</pid><id>OBSERVATION_DIA_1</id></result>",
+        "<result><msg_type>ORU_R01_OBS</msg_type><pid>PYTEST01PV</pid><id>OBSERVATION_SYS_1</id></result>",
     ]

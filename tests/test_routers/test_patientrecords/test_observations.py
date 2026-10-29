@@ -6,7 +6,7 @@ from ukrdc_fastapi.schemas.patientrecord.observation import ObservationSchema
 
 async def test_record_observations(client_superuser):
     response = await client_superuser.get(
-        f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/observations"
+        f"{configuration.base_url}/patientrecords/PYTEST01PV/observations"
     )
     assert response.status_code == 200
 
@@ -17,14 +17,14 @@ async def test_record_observations(client_superuser):
 
 async def test_record_observations_denied(client_authenticated):
     response = await client_authenticated.get(
-        f"{configuration.base_url}/patientrecords/PYTEST03:PV:00000000A/observations"
+        f"{configuration.base_url}/patientrecords/PYTEST03PV/observations"
     )
     assert response.status_code == 403
 
 
 async def test_record_observation_codes(client_superuser):
     response = await client_superuser.get(
-        f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/observation_codes"
+        f"{configuration.base_url}/patientrecords/PYTEST01PV/observation_codes"
     )
     assert response.status_code == 200
     assert set(response.json()) == {"bpdia", "OBSERVATION_CODE", "bpsys"}
@@ -36,7 +36,7 @@ async def test_ui_261(client_superuser, ukrdc3_session):
     obs = (
         ukrdc3_session.query(PatientRecord)
         .join(Observation)
-        .where(PatientRecord.pid == "PYTEST01:PV:00000000A")
+        .where(PatientRecord.pid == "PYTEST01PV")
         .first()
         .observations[0]
     )
@@ -44,7 +44,7 @@ async def test_ui_261(client_superuser, ukrdc3_session):
     ukrdc3_session.commit()
 
     response = await client_superuser.get(
-        f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/observations"
+        f"{configuration.base_url}/patientrecords/PYTEST01PV/observations"
     )
     assert response.status_code == 200
 

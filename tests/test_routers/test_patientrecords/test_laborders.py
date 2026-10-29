@@ -7,7 +7,7 @@ from ukrdc_fastapi.schemas.patientrecord.laborder import LabOrderShortSchema
 
 async def test_record_laborders(client_authenticated):
     response = await client_authenticated.get(
-        f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/laborders"
+        f"{configuration.base_url}/patientrecords/PYTEST01PV/laborders"
     )
     assert response.status_code == 200
 
@@ -18,21 +18,21 @@ async def test_record_laborders(client_authenticated):
 
 async def test_record_laborders_denied(client_authenticated):
     response = await client_authenticated.get(
-        f"{configuration.base_url}/patientrecords/PYTEST03:PV:00000000A/laborders"
+        f"{configuration.base_url}/patientrecords/PYTEST03PV/laborders"
     )
     assert response.status_code == 403
 
 
 async def test_laborder(client_authenticated):
     response = await client_authenticated.get(
-        f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/laborders/LABORDER1"
+        f"{configuration.base_url}/patientrecords/PYTEST01PV/laborders/LABORDER1"
     )
     assert response.status_code == 200
 
 
 async def test_laborder_denied(client_authenticated):
     response = await client_authenticated.get(
-        f"{configuration.base_url}/patientrecords/PYTEST03:PV:00000000A/laborders/LABORDER1"
+        f"{configuration.base_url}/patientrecords/PYTEST03PV/laborders/LABORDER1"
     )
     assert response.status_code == 403
 
@@ -40,7 +40,7 @@ async def test_laborder_denied(client_authenticated):
 async def test_laborder_delete(client_authenticated, ukrdc3_session):
     laborder = LabOrder(
         id="LABORDER_TEMP",
-        pid="PYTEST01:PV:00000000A",
+        pid="PYTEST01PV",
         externalid="EXTERNAL_ID_TEMP",
         ordercategorycode="ORDER_CATEGORY_TEMP",
         specimencollectedtime=days_ago(365),
@@ -63,19 +63,19 @@ async def test_laborder_delete(client_authenticated, ukrdc3_session):
     assert ukrdc3_session.get(LabOrder, "LABORDER_TEMP")
     assert ukrdc3_session.get(ResultItem, "RESULTITEM_TEMP")
     response = await client_authenticated.get(
-        f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/laborders/LABORDER_TEMP"
+        f"{configuration.base_url}/patientrecords/PYTEST01PV/laborders/LABORDER_TEMP"
     )
     assert response.status_code == 200
 
     # Delete the lab order
     response = await client_authenticated.delete(
-        f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/laborders/LABORDER_TEMP"
+        f"{configuration.base_url}/patientrecords/PYTEST01PV/laborders/LABORDER_TEMP"
     )
     assert response.status_code == 204
 
     # Make sure the lab order was deleted
     response = await client_authenticated.get(
-        f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/laborders/LABORDER_TEMP"
+        f"{configuration.base_url}/patientrecords/PYTEST01PV/laborders/LABORDER_TEMP"
     )
     assert response.status_code == 404
     assert not ukrdc3_session.get(LabOrder, "LABORDER_TEMP")
@@ -84,6 +84,6 @@ async def test_laborder_delete(client_authenticated, ukrdc3_session):
 
 async def test_laborder_delete_denied(client_authenticated):
     response = await client_authenticated.delete(
-        f"{configuration.base_url}/patientrecords/PYTEST03:PV:00000000A/laborders/LABORDER1"
+        f"{configuration.base_url}/patientrecords/PYTEST03PV/laborders/LABORDER1"
     )
     assert response.status_code == 403
