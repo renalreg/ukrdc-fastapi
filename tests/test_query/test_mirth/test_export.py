@@ -25,8 +25,7 @@ async def test_record_export_tests(ukrdc3_session, redis_session, mirth_session)
     )
     assert response.status == "success"
     assert (
-        response.message
-        == "<result><pid>PYTEST01PV</pid><tests>FULL</tests></result>"
+        response.message == "<result><pid>PYTEST01PV</pid><tests>FULL</tests></result>"
     )
 
 
