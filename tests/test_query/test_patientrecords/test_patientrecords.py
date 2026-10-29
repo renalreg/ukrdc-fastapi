@@ -19,7 +19,7 @@ def _create_related_records(ukrdc3_session, jtrace_session):
     # Basic record under facility 1
     create_basic_patient(
         105,
-        "PYTEST02:TPR:TEST1",
+        "PYTEST02T1",
         ukrdcid,
         nhs,
         f1,
@@ -35,7 +35,7 @@ def _create_related_records(ukrdc3_session, jtrace_session):
     # Basic record under facility 1
     create_basic_patient(
         106,
-        "PYTEST02:TPR:TEST2",
+        "PYTEST02T2",
         ukrdcid,
         nhs,
         f1,
@@ -51,7 +51,7 @@ def _create_related_records(ukrdc3_session, jtrace_session):
     # Basic record under facility 2
     create_basic_patient(
         107,
-        "PYTEST02:TPR:TEST3",
+        "PYTEST02T3",
         ukrdcid,
         nhs,
         f2,
@@ -67,7 +67,7 @@ def _create_related_records(ukrdc3_session, jtrace_session):
     # PKB membership record
     create_basic_patient(
         108,
-        "PYTEST02:TPR:TEST4",
+        "PYTEST02T4",
         ukrdcid,
         nhs,
         "PKB",
@@ -90,10 +90,10 @@ def test_get_patientrecords_related_to_masterrecord(ukrdc3_session, jtrace_sessi
     records = ukrdc3_session.scalars(stmt).all()
 
     assert {record.pid for record in records} == {
-        "PYTEST02:TPR:TEST1",
-        "PYTEST02:TPR:TEST2",
-        "PYTEST02:TPR:TEST3",
-        "PYTEST02:TPR:TEST4",
+        "PYTEST02T1",
+        "PYTEST02T2",
+        "PYTEST02T3",
+        "PYTEST02T4",
     }
 
 
@@ -105,12 +105,12 @@ def test_get_patientrecords_related_to_ni(ukrdc3_session, jtrace_session):
 
     assert {record.pid for record in records} == {
         # The original
-        "PYTEST04:PV:00000000A",
+        "PYTEST04PV",
         # Newly created test records
-        "PYTEST02:TPR:TEST1",
-        "PYTEST02:TPR:TEST2",
-        "PYTEST02:TPR:TEST3",
-        "PYTEST02:TPR:TEST4",
+        "PYTEST02T1",
+        "PYTEST02T2",
+        "PYTEST02T3",
+        "PYTEST02T4",
     }
 
 
