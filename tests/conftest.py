@@ -44,6 +44,7 @@ from ukrdc_sqla.ukrdc import (
     Treatment,
 )
 from ukrdc_sqla.utils.constants import CodeMapFacilityType, RelationshipType
+from ukrdc_sqla.utils.extras import db_metadata
 
 from ukrdc_fastapi.dependencies import (
     auth,
@@ -97,10 +98,12 @@ MINIMAL_PDF_BYTES = (
     + b"%%EOF"
 )
 
-PID_1 = "PYTEST01:PV:00000000A"
-PID_2 = "PYTEST02:PV:00000000A"
-PID_3 = "PYTEST03:PV:00000000A"
-PID_4 = "PYTEST04:PV:00000000A"
+# PIDs are also written to JTRACE's pidxref.pid, which is VARCHAR(10) as of
+# ukrdc-sqla 5.x, so every test PID must be 10 characters or fewer.
+PID_1 = "PYTEST01PV"
+PID_2 = "PYTEST02PV"
+PID_3 = "PYTEST03PV"
+PID_4 = "PYTEST04PV"
 NI_1 = "888888888"
 NI_2 = "888888887"
 NI_3 = "888888886"
@@ -869,7 +872,7 @@ def jtrace_sessionmaker(postgresql_my):
         autoflush=False,
         bind=engine,
     )
-    JtraceBase.metadata.create_all(bind=engine)
+    db_metadata(JtraceBase.metadata).create_all(bind=engine)
     return JtraceTestSession
 
 
@@ -891,7 +894,7 @@ def ukrdc3_sessionmaker(postgresql_my):
         autoflush=False,
         bind=engine,
     )
-    UKRDC3Base.metadata.create_all(bind=engine)
+    db_metadata(UKRDC3Base.metadata).create_all(bind=engine)
     return ukrdc_test_session
 
 
@@ -913,7 +916,7 @@ def errorsdb_sessionmaker(postgresql_my):
         autoflush=False,
         bind=engine,
     )
-    ErrorsBase.metadata.create_all(bind=engine)
+    db_metadata(ErrorsBase.metadata).create_all(bind=engine)
     return errors_test_session
 
 
@@ -935,7 +938,7 @@ def statsdb_sessionmaker(postgresql_my):
         autoflush=False,
         bind=engine,
     )
-    StatsBase.metadata.create_all(bind=engine)
+    db_metadata(StatsBase.metadata).create_all(bind=engine)
     return stats_test_session
 
 
@@ -957,7 +960,7 @@ def auditdb_sessionmaker(postgresql_my):
         autoflush=False,
         bind=engine,
     )
-    AuditBase.metadata.create_all(bind=engine)
+    db_metadata(AuditBase.metadata).create_all(bind=engine)
     return stats_test_session
 
 
@@ -971,7 +974,7 @@ def usersdb_sessionmaker():
         "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
     )
     users_test_session = sessionmaker(bind=engine)
-    UsersBase.metadata.create_all(bind=engine)
+    db_metadata(UsersBase.metadata).create_all(bind=engine)
     return users_test_session
 
 

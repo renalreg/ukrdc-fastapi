@@ -5,7 +5,7 @@ from ukrdc_fastapi.models.audit import AuditEvent
 
 
 async def test_access_event(client_superuser, audit_session):
-    path = f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A"
+    path = f"{configuration.base_url}/patientrecords/PYTEST01PV"
     response = await client_superuser.get(path)
     assert response.status_code == 200
 
@@ -15,7 +15,7 @@ async def test_access_event(client_superuser, audit_session):
     event = events[0]
     assert event.resource == "PATIENT_RECORD"
     assert event.operation == "READ"
-    assert event.resource_id == "PYTEST01:PV:00000000A"
+    assert event.resource_id == "PYTEST01PV"
     assert event.parent_id is None
     assert event.children == []
 

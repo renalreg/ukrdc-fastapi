@@ -19,7 +19,7 @@ async def test_record_update_demographics(client_superuser):
         },
     }
     response = await client_superuser.post(
-        f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/update/demographics",
+        f"{configuration.base_url}/patientrecords/PYTEST01PV/update/demographics",
         json=demographics,
     )
 
@@ -43,7 +43,7 @@ async def test_record_update_demographics_no_address(client_superuser):
         "gender": "9",
     }
     response = await client_superuser.post(
-        f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/update/demographics",
+        f"{configuration.base_url}/patientrecords/PYTEST01PV/update/demographics",
         json=demographics,
     )
 
@@ -59,7 +59,7 @@ async def test_record_update_demographics_no_address(client_superuser):
 
 async def test_record_update_demographics_denied(client_authenticated):
     response = await client_authenticated.post(
-        f"{configuration.base_url}/patientrecords/PYTEST03:PV:00000000A/update/demographics",
+        f"{configuration.base_url}/patientrecords/PYTEST03PV/update/demographics",
         json={},
     )
     assert response.status_code == 403

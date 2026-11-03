@@ -196,7 +196,7 @@ async def test_search_permissions(client_authenticated):
     response = await client_authenticated.get(url)
     assert response.status_code == 200
     returned_ids = {item["pid"] for item in response.json()["items"]}
-    assert returned_ids == {"PYTEST04:PV:00000000A", "PYTEST01:PV:00000000A"}
+    assert returned_ids == {"PYTEST04PV", "PYTEST01PV"}
 
     url = f"{configuration.base_url}/search/records?facility=TSF02"
     response = await client_authenticated.get(url)
@@ -211,10 +211,10 @@ async def test_search_permissions_superuser(client_superuser):
     response = await client_superuser.get(url)
     assert response.status_code == 200
     returned_ids = {item["pid"] for item in response.json()["items"]}
-    assert returned_ids == {"PYTEST04:PV:00000000A", "PYTEST01:PV:00000000A"}
+    assert returned_ids == {"PYTEST04PV", "PYTEST01PV"}
 
     url = f"{configuration.base_url}/search/records?facility=TSF02"
     response = await client_superuser.get(url)
     assert response.status_code == 200
     returned_ids = {item["pid"] for item in response.json()["items"]}
-    assert returned_ids == {"PYTEST02:PV:00000000A"}
+    assert returned_ids == {"PYTEST02PV"}

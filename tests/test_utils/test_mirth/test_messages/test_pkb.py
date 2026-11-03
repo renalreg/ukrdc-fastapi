@@ -47,26 +47,26 @@ def test_build_pkb_membership_message():
 
 
 def test_build_pkb_sync_message(ukrdc3_session):
-    pid_1 = "PYTEST01:PV:00000000A"
+    pid_1 = "PYTEST01PV"
     _create_membership(pid_1, ukrdc3_session)
     record = ukrdc3_session.get(PatientRecord, pid_1)
 
     messages = build_pkb_sync_messages(record, ukrdc3_session)
     assert messages == [
-        "<result><msg_type>ADT_A28</msg_type><pid>PYTEST01:PV:00000000A</pid></result>",
-        "<result><msg_type>MDM_T02_CP</msg_type><pid>PYTEST01:PV:00000000A</pid></result>",
-        "<result><msg_type>MDM_T02_DOC</msg_type><pid>PYTEST01:PV:00000000A</pid><id>DOCUMENT_PDF</id></result>",
-        "<result><msg_type>MDM_T02_DOC</msg_type><pid>PYTEST01:PV:00000000A</pid><id>DOCUMENT_TXT</id></result>",
-        "<result><msg_type>ORU_R01_LAB</msg_type><pid>PYTEST01:PV:00000000A</pid><id>LABORDER1</id></result>",
-        "<result><msg_type>ORU_R01_LAB</msg_type><pid>PYTEST01:PV:00000000A</pid><id>LABORDER2</id></result>",
-        "<result><msg_type>ORU_R01_OBS</msg_type><pid>PYTEST01:PV:00000000A</pid><id>OBSERVATION1</id></result>",
-        "<result><msg_type>ORU_R01_OBS</msg_type><pid>PYTEST01:PV:00000000A</pid><id>OBSERVATION_DIA_1</id></result>",
-        "<result><msg_type>ORU_R01_OBS</msg_type><pid>PYTEST01:PV:00000000A</pid><id>OBSERVATION_SYS_1</id></result>",
+        "<result><msg_type>ADT_A28</msg_type><pid>PYTEST01PV</pid></result>",
+        "<result><msg_type>MDM_T02_CP</msg_type><pid>PYTEST01PV</pid></result>",
+        "<result><msg_type>MDM_T02_DOC</msg_type><pid>PYTEST01PV</pid><id>DOCUMENT_PDF</id></result>",
+        "<result><msg_type>MDM_T02_DOC</msg_type><pid>PYTEST01PV</pid><id>DOCUMENT_TXT</id></result>",
+        "<result><msg_type>ORU_R01_LAB</msg_type><pid>PYTEST01PV</pid><id>LABORDER1</id></result>",
+        "<result><msg_type>ORU_R01_LAB</msg_type><pid>PYTEST01PV</pid><id>LABORDER2</id></result>",
+        "<result><msg_type>ORU_R01_OBS</msg_type><pid>PYTEST01PV</pid><id>OBSERVATION1</id></result>",
+        "<result><msg_type>ORU_R01_OBS</msg_type><pid>PYTEST01PV</pid><id>OBSERVATION_DIA_1</id></result>",
+        "<result><msg_type>ORU_R01_OBS</msg_type><pid>PYTEST01PV</pid><id>OBSERVATION_SYS_1</id></result>",
     ]
 
 
 def test_build_pkb_sync_message_no_membership(ukrdc3_session):
-    pid_1 = "PYTEST01:PV:00000000A"
+    pid_1 = "PYTEST01PV"
     record = ukrdc3_session.get(PatientRecord, pid_1)
 
     with pytest.raises(NoActiveMembershipError):
@@ -74,7 +74,7 @@ def test_build_pkb_sync_message_no_membership(ukrdc3_session):
 
 
 def test_build_pkb_sync_message_missing_facility(ukrdc3_session):
-    pid_1 = "PYTEST01:PV:00000000A"
+    pid_1 = "PYTEST01PV"
     _create_membership(pid_1, ukrdc3_session)
     record = ukrdc3_session.get(PatientRecord, pid_1)
 
@@ -86,7 +86,7 @@ def test_build_pkb_sync_message_missing_facility(ukrdc3_session):
 
 
 def test_build_pkb_sync_disabled_facility(ukrdc3_session):
-    pid_1 = "PYTEST01:PV:00000000A"
+    pid_1 = "PYTEST01PV"
     _create_membership(pid_1, ukrdc3_session)
     record = ukrdc3_session.get(PatientRecord, pid_1)
 
@@ -100,7 +100,7 @@ def test_build_pkb_sync_disabled_facility(ukrdc3_session):
 
 @pytest.mark.parametrize("extract", EXCLUDED_EXTRACTS)
 def test_build_pkb_sync_disabled_extract(ukrdc3_session, extract):
-    pid_1 = "PYTEST01:PV:00000000A"
+    pid_1 = "PYTEST01PV"
     _create_membership(pid_1, ukrdc3_session)
     record = ukrdc3_session.get(PatientRecord, pid_1)
 
@@ -112,7 +112,7 @@ def test_build_pkb_sync_disabled_extract(ukrdc3_session, extract):
 
 
 def test_build_pkb_sync_message_legacy_facility_exclusions(ukrdc3_session):
-    pid_1 = "PYTEST01:PV:00000000A"
+    pid_1 = "PYTEST01PV"
     _create_membership(pid_1, ukrdc3_session)
 
     record = ukrdc3_session.get(PatientRecord, pid_1)
@@ -142,7 +142,7 @@ def test_build_pkb_sync_message_legacy_facility_exclusions(ukrdc3_session):
 
 
 def test_build_pkb_sync_message_pv_exclusions(ukrdc3_session):
-    pid_1 = "PYTEST01:PV:00000000A"
+    pid_1 = "PYTEST01PV"
     _create_membership(pid_1, ukrdc3_session)
 
     record = ukrdc3_session.get(PatientRecord, pid_1)
@@ -181,7 +181,7 @@ def test_build_pkb_sync_message_pv_exclusions(ukrdc3_session):
 
 
 def test_build_pkb_sync_message_ukrdc_exclusions(ukrdc3_session):
-    pid_1 = "PYTEST01:PV:00000000A"
+    pid_1 = "PYTEST01PV"
     _create_membership(pid_1, ukrdc3_session)
 
     record = ukrdc3_session.get(PatientRecord, pid_1)
@@ -217,7 +217,7 @@ def test_build_pkb_sync_message_ukrdc_exclusions(ukrdc3_session):
 def test_build_pkb_sync_message_empty_pv_exclusions_override_legacy(
     ukrdc3_session,
 ):
-    pid_1 = "PYTEST01:PV:00000000A"
+    pid_1 = "PYTEST01PV"
     _create_membership(pid_1, ukrdc3_session)
 
     record = ukrdc3_session.get(PatientRecord, pid_1)
@@ -252,7 +252,7 @@ def test_build_pkb_sync_message_empty_pv_exclusions_override_legacy(
 def test_build_pkb_sync_message_null_exclusions_include_all_messages(
     ukrdc3_session,
 ):
-    pid_1 = "PYTEST01:PV:00000000A"
+    pid_1 = "PYTEST01PV"
     _create_membership(pid_1, ukrdc3_session)
 
     record = ukrdc3_session.get(PatientRecord, pid_1)
@@ -284,7 +284,7 @@ def test_build_pkb_sync_message_null_exclusions_include_all_messages(
 
 
 def test_build_pkb_sync_disabled_ukrdc_out_pkb(ukrdc3_session):
-    pid_1 = "PYTEST01:PV:00000000A"
+    pid_1 = "PYTEST01PV"
     _create_membership(pid_1, ukrdc3_session)
 
     record = ukrdc3_session.get(PatientRecord, pid_1)
@@ -308,7 +308,7 @@ def test_build_pkb_sync_disabled_ukrdc_out_pkb(ukrdc3_session):
 
 
 def test_build_pkb_sync_disabled_pv_out_pkb(ukrdc3_session):
-    pid_1 = "PYTEST01:PV:00000000A"
+    pid_1 = "PYTEST01PV"
     _create_membership(pid_1, ukrdc3_session)
 
     record = ukrdc3_session.get(PatientRecord, pid_1)
@@ -332,7 +332,7 @@ def test_build_pkb_sync_disabled_pv_out_pkb(ukrdc3_session):
 
 
 def test_pv_out_pkb_does_not_control_ukrdc_records(ukrdc3_session):
-    pid_1 = "PYTEST01:PV:00000000A"
+    pid_1 = "PYTEST01PV"
     _create_membership(pid_1, ukrdc3_session)
 
     record = ukrdc3_session.get(PatientRecord, pid_1)
@@ -356,7 +356,7 @@ def test_pv_out_pkb_does_not_control_ukrdc_records(ukrdc3_session):
 
 
 def test_ukrdc_out_pkb_does_not_control_pv_records(ukrdc3_session):
-    pid_1 = "PYTEST01:PV:00000000A"
+    pid_1 = "PYTEST01PV"
     _create_membership(pid_1, ukrdc3_session)
 
     record = ukrdc3_session.get(PatientRecord, pid_1)

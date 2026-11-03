@@ -21,7 +21,7 @@ def _last_sent_mirth_message(httpx_mock) -> str:
 @pytest.mark.asyncio
 async def test_record_export_data(client_authenticated):
     response = await client_authenticated.post(
-        f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/export/pv",
+        f"{configuration.base_url}/patientrecords/PYTEST01PV/export/pv",
         json={},
     )
 
@@ -33,7 +33,7 @@ async def test_record_export_data(client_authenticated):
 @pytest.mark.asyncio
 async def test_record_export_tests(client_authenticated, httpx_mock):
     response = await client_authenticated.post(
-        f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/export/pv-tests",
+        f"{configuration.base_url}/patientrecords/PYTEST01PV/export/pv-tests",
         json={},
     )
 
@@ -45,7 +45,7 @@ async def test_record_export_tests(client_authenticated, httpx_mock):
 @pytest.mark.asyncio
 async def test_record_export_docs(client_authenticated, httpx_mock):
     response = await client_authenticated.post(
-        f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/export/pv-docs",
+        f"{configuration.base_url}/patientrecords/PYTEST01PV/export/pv-docs",
         json={},
     )
 
@@ -57,7 +57,7 @@ async def test_record_export_docs(client_authenticated, httpx_mock):
 @pytest.mark.asyncio
 async def test_record_export_radar(client_authenticated, httpx_mock):
     response = await client_authenticated.post(
-        f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/export/radar",
+        f"{configuration.base_url}/patientrecords/PYTEST01PV/export/radar",
         json={},
     )
 
@@ -68,7 +68,7 @@ async def test_record_export_radar(client_authenticated, httpx_mock):
 
 @pytest.mark.asyncio
 async def test_patient_export_mrc(client_authenticated, ukrdc3_session):
-    pid_1 = "PYTEST01:PV:00000000A"
+    pid_1 = "PYTEST01PV"
     membership = ProgramMembership(
         id="MEMBERSHIP_MRC",
         pid=pid_1,
@@ -81,7 +81,7 @@ async def test_patient_export_mrc(client_authenticated, ukrdc3_session):
     ukrdc3_session.commit()
 
     response = await client_authenticated.post(
-        f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/export/mrc",
+        f"{configuration.base_url}/patientrecords/PYTEST01PV/export/mrc",
         json={},
     )
 
@@ -93,7 +93,7 @@ async def test_patient_export_mrc(client_authenticated, ukrdc3_session):
 @pytest.mark.asyncio
 async def test_record_export_pkb(client_authenticated, ukrdc3_session):
     # Ensure PKB membership
-    pid_1 = "PYTEST01:PV:00000000A"
+    pid_1 = "PYTEST01PV"
     membership = ProgramMembership(
         id="MEMBERSHIP_PKB",
         pid=pid_1,
@@ -105,7 +105,7 @@ async def test_record_export_pkb(client_authenticated, ukrdc3_session):
     ukrdc3_session.commit()
 
     response = await client_authenticated.post(
-        f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/export/pkb",
+        f"{configuration.base_url}/patientrecords/PYTEST01PV/export/pkb",
         json={},
     )
     assert response.status_code == 200
@@ -117,7 +117,7 @@ async def test_record_export_pkb(client_authenticated, ukrdc3_session):
 async def test_record_export_pkb_no_memberships(client_authenticated):
     with pytest.raises(NoActiveMembershipError):
         await client_authenticated.post(
-            f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/export/pkb",
+            f"{configuration.base_url}/patientrecords/PYTEST01PV/export/pkb",
             json={},
         )
 
@@ -127,7 +127,7 @@ async def test_record_ukrdc_to_pkb_export_disabled(
     client_authenticated, ukrdc3_session
 ):
     # Add PKB membership
-    pid_1 = "PYTEST01:PV:00000000A"
+    pid_1 = "PYTEST01PV"
     membership = ProgramMembership(
         id="MEMBERSHIP_PKB",
         pid=pid_1,
@@ -144,7 +144,7 @@ async def test_record_ukrdc_to_pkb_export_disabled(
 
     with pytest.raises(PKBOutboundDisabledError):
         await client_authenticated.post(
-            f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/export/pkb",
+            f"{configuration.base_url}/patientrecords/PYTEST01PV/export/pkb",
             json={},
         )
 
@@ -152,7 +152,7 @@ async def test_record_ukrdc_to_pkb_export_disabled(
 @pytest.mark.parametrize("route", ["pv", "pv-tests", "pv-docs", "radar", "pkb"])
 async def test_record_export_denied(client_authenticated, route):
     response = await client_authenticated.post(
-        f"{configuration.base_url}/patientrecords/PYTEST03:PV:00000000A/export/{route}",
+        f"{configuration.base_url}/patientrecords/PYTEST03PV/export/{route}",
         json={},
     )
 

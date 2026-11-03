@@ -192,7 +192,7 @@ def test_get_facility_report_cc001(ukrdc3_session):
 
     # Only 1 default test record has no treatments or memberships
     assert len(report1) == 1
-    assert report1[0].pid == "PYTEST04:PV:00000000A"
+    assert report1[0].pid == "PYTEST04PV"
 
     report2 = ukrdc3_session.scalars(
         select_facility_report_cc001(
@@ -215,13 +215,13 @@ def test_get_facility_report_pm001(ukrdc3_session, jtrace_session):
 
     assert len(report1) == 2
     assert {record.pid for record in report1} == {
-        "PYTEST01:PV:00000000A",
-        "PYTEST04:PV:00000000A",
+        "PYTEST01PV",
+        "PYTEST04PV",
     }
 
     # Add a PKB membership record
 
-    membership_test_pid = "PYTEST:PKB:1"
+    membership_test_pid = "PYTESTPKB1"
     create_basic_patient(
         901,
         membership_test_pid,
@@ -257,7 +257,7 @@ def test_get_facility_report_pm001(ukrdc3_session, jtrace_session):
     ).all()
 
     assert len(report1) == 1
-    assert {record.pid for record in report1} == {"PYTEST04:PV:00000000A"}
+    assert {record.pid for record in report1} == {"PYTEST04PV"}
 
 
 def test_get_facility_satellites(ukrdc3_session):

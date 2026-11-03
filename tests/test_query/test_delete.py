@@ -8,11 +8,11 @@ from ukrdc_fastapi.query.delete import (
     summarise_delete_patientrecord,
 )
 
-# We use "PYTEST03:PV:00000000A" as the pid to delete because it has no open workitems
+# We use "PYTEST03PV" as the pid to delete because it has no open workitems
 
 
 def test_summarise_delete_pid_superuser(ukrdc3_session, jtrace_session):
-    record_to_delete = ukrdc3_session.get(PatientRecord, "PYTEST03:PV:00000000A")
+    record_to_delete = ukrdc3_session.get(PatientRecord, "PYTEST03PV")
 
     summary_1 = summarise_delete_patientrecord(record_to_delete, jtrace_session)
     summary_2 = summarise_delete_patientrecord(record_to_delete, jtrace_session)
@@ -22,12 +22,12 @@ def test_summarise_delete_pid_superuser(ukrdc3_session, jtrace_session):
 
 
 def test_delete_pid_superuser(ukrdc3_session, jtrace_session):
-    record_to_delete = ukrdc3_session.get(PatientRecord, "PYTEST03:PV:00000000A")
+    record_to_delete = ukrdc3_session.get(PatientRecord, "PYTEST03PV")
 
     summary = summarise_delete_patientrecord(record_to_delete, jtrace_session)
 
     # Assert all expected records exist
-    assert ukrdc3_session.get(PatientRecord, "PYTEST03:PV:00000000A")
+    assert ukrdc3_session.get(PatientRecord, "PYTEST03PV")
 
     assert summary.empi
     for person in summary.empi.persons:
@@ -48,7 +48,7 @@ def test_delete_pid_superuser(ukrdc3_session, jtrace_session):
     assert deleted.hash == summary.hash
 
     # Assert all expected records have been deleted
-    assert not ukrdc3_session.get(PatientRecord, "PYTEST03:PV:00000000A")
+    assert not ukrdc3_session.get(PatientRecord, "PYTEST03PV")
     for person in summary.empi.persons:
         assert not jtrace_session.get(Person, person.id)
     for master_record in summary.empi.master_records:
@@ -62,7 +62,7 @@ def test_delete_pid_superuser(ukrdc3_session, jtrace_session):
 
 
 def test_delete_pid_badhash(ukrdc3_session, jtrace_session):
-    record_to_delete = ukrdc3_session.get(PatientRecord, "PYTEST03:PV:00000000A")
+    record_to_delete = ukrdc3_session.get(PatientRecord, "PYTEST03PV")
 
     with pytest.raises(ConfirmationError):
         delete_patientrecord(

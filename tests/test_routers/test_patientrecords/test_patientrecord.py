@@ -17,7 +17,7 @@ def _create_related_records(ukrdc3_session, jtrace_session):
     # Basic record under facility 1
     create_basic_patient(
         105,
-        "PYTEST02:TPR:TEST1",
+        "PYTEST02T1",
         ukrdcid,
         nhs,
         f1,
@@ -33,7 +33,7 @@ def _create_related_records(ukrdc3_session, jtrace_session):
     # Basic record under facility 1
     create_basic_patient(
         106,
-        "PYTEST02:TPR:TEST2",
+        "PYTEST02T2",
         ukrdcid,
         nhs,
         f1,
@@ -49,7 +49,7 @@ def _create_related_records(ukrdc3_session, jtrace_session):
     # Basic record under facility 2
     create_basic_patient(
         107,
-        "PYTEST02:TPR:TEST3",
+        "PYTEST02T3",
         ukrdcid,
         nhs,
         f2,
@@ -65,7 +65,7 @@ def _create_related_records(ukrdc3_session, jtrace_session):
     # PKB membership record
     create_basic_patient(
         108,
-        "PYTEST02:TPR:TEST4",
+        "PYTEST02T4",
         ukrdcid,
         nhs,
         "PKB",
@@ -86,7 +86,7 @@ async def test_get_record_superuser_direct(
     _create_related_records(ukrdc3_session, jtrace_session)
 
     response = await client_superuser.get(
-        f"{configuration.base_url}/patientrecords/PYTEST02:TPR:TEST1"
+        f"{configuration.base_url}/patientrecords/PYTEST02T1"
     )
     assert response.status_code == 200
 
@@ -98,7 +98,7 @@ async def test_get_record_superuser_indirect(
     _create_related_records(ukrdc3_session, jtrace_session)
 
     response = await client_superuser.get(
-        f"{configuration.base_url}/patientrecords/PYTEST02:TPR:TEST4"
+        f"{configuration.base_url}/patientrecords/PYTEST02T4"
     )
     assert response.status_code == 200
 
@@ -110,7 +110,7 @@ async def test_get_record_user_direct(
     _create_related_records(ukrdc3_session, jtrace_session)
 
     response = await client_authenticated.get(
-        f"{configuration.base_url}/patientrecords/PYTEST02:TPR:TEST1"
+        f"{configuration.base_url}/patientrecords/PYTEST02T1"
     )
     assert response.status_code == 200
 
@@ -122,7 +122,7 @@ async def test_get_record_user_indirect(
     _create_related_records(ukrdc3_session, jtrace_session)
 
     response = await client_authenticated.get(
-        f"{configuration.base_url}/patientrecords/PYTEST02:TPR:TEST4"
+        f"{configuration.base_url}/patientrecords/PYTEST02T4"
     )
     assert response.status_code == 200
 
@@ -134,7 +134,7 @@ async def test_get_record_user_direct_denied(
     _create_related_records(ukrdc3_session, jtrace_session)
 
     response = await client_authenticated.get(
-        f"{configuration.base_url}/patientrecords/PYTEST02:TPR:TEST3"
+        f"{configuration.base_url}/patientrecords/PYTEST02T3"
     )
     assert response.status_code == 403
 

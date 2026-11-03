@@ -212,7 +212,7 @@ async def test_masterrecord_patientrecords(client_superuser, audit_session):
     assert response.status_code == 200
     records = [PatientRecordSummarySchema(**item) for item in response.json()]
     returned_pids = {item.pid for item in records}
-    assert returned_pids == {"PYTEST01:PV:00000000A", "PYTEST04:PV:00000000A"}
+    assert returned_pids == {"PYTEST01PV", "PYTEST04PV"}
 
     events = audit_session.scalars(select(AuditEvent)).all()
     assert len(events) == 3

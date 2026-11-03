@@ -1,5 +1,13 @@
 # Changelog
 
+## [6.12.1](https://github.com/renalreg/ukrdc-fastapi/compare/v6.12.0...v6.12.1) (2026-10-29)
+
+
+### Bug Fixes
+
+* **deps:** bumped deps to support ukrdc-sqla update ([#1391](https://github.com/renalreg/ukrdc-fastapi/issues/1391)) ([d79b251](https://github.com/renalreg/ukrdc-fastapi/commit/d79b251ecad552064447e2c1ad431c061e13ecc9))
+* **tests:** disabled tests temporarily ([#1393](https://github.com/renalreg/ukrdc-fastapi/issues/1393)) ([ca4903d](https://github.com/renalreg/ukrdc-fastapi/commit/ca4903de0860734913f12061c2e1361bb045f666))
+
 ## [6.12.0](https://github.com/renalreg/ukrdc-fastapi/compare/v6.11.2...v6.12.0) (2026-10-26)
 
 

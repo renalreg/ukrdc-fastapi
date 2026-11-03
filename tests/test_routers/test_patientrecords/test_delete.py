@@ -7,14 +7,14 @@ from ukrdc_fastapi.schemas.delete import DeletePIDResponseSchema
 
 async def test_delete_summary(client_superuser, ukrdc3_session, jtrace_session):
     response = await client_superuser.post(
-        f"{configuration.base_url}/patientrecords/PYTEST03:PV:00000000A/delete"
+        f"{configuration.base_url}/patientrecords/PYTEST03PV/delete"
     )
     assert response.status_code == 200
 
     summary = DeletePIDResponseSchema(**response.json())
 
     # Assert all expected records exist
-    assert ukrdc3_session.get(PatientRecord, "PYTEST03:PV:00000000A")
+    assert ukrdc3_session.get(PatientRecord, "PYTEST03PV")
 
     assert summary.empi
 
@@ -32,14 +32,14 @@ async def test_delete_summary(client_superuser, ukrdc3_session, jtrace_session):
 
 async def test_delete(client_superuser, ukrdc3_session, jtrace_session):
     response = await client_superuser.post(
-        f"{configuration.base_url}/patientrecords/PYTEST03:PV:00000000A/delete"
+        f"{configuration.base_url}/patientrecords/PYTEST03PV/delete"
     )
     assert response.status_code == 200
 
     summary = DeletePIDResponseSchema(**response.json())
 
     # Assert all expected records exist
-    assert ukrdc3_session.get(PatientRecord, "PYTEST03:PV:00000000A")
+    assert ukrdc3_session.get(PatientRecord, "PYTEST03PV")
 
     assert summary.empi
     for person in summary.empi.persons:
@@ -54,7 +54,7 @@ async def test_delete(client_superuser, ukrdc3_session, jtrace_session):
         assert jtrace_session.get(LinkRecord, link_record.id)
 
     deleted_response = await client_superuser.post(
-        f"{configuration.base_url}/patientrecords/PYTEST03:PV:00000000A/delete",
+        f"{configuration.base_url}/patientrecords/PYTEST03PV/delete",
         json={"hash": summary.hash},
     )
     assert deleted_response.status_code == 200
@@ -65,7 +65,7 @@ async def test_delete(client_superuser, ukrdc3_session, jtrace_session):
     assert deleted.hash == summary.hash
 
     # Assert all expected records have been deleted
-    assert not ukrdc3_session.get(PatientRecord, "PYTEST03:PV:00000000A")
+    assert not ukrdc3_session.get(PatientRecord, "PYTEST03PV")
     for person in summary.empi.persons:
         assert not jtrace_session.get(Person, person.id)
     for master_record in summary.empi.master_records:
@@ -80,17 +80,17 @@ async def test_delete(client_superuser, ukrdc3_session, jtrace_session):
 
 async def test_delete_badhash(client_superuser, ukrdc3_session):
     response = await client_superuser.post(
-        f"{configuration.base_url}/patientrecords/PYTEST03:PV:00000000A/delete",
+        f"{configuration.base_url}/patientrecords/PYTEST03PV/delete",
         json={"hash": "BADHASH"},
     )
     assert response.status_code == 400
 
     # Assert expected record still exists
-    assert ukrdc3_session.get(PatientRecord, "PYTEST03:PV:00000000A")
+    assert ukrdc3_session.get(PatientRecord, "PYTEST03PV")
 
 
 async def test_delete_denied(client_authenticated):
     response = await client_authenticated.post(
-        f"{configuration.base_url}/patientrecords/PYTEST03:PV:00000000A/delete"
+        f"{configuration.base_url}/patientrecords/PYTEST03PV/delete"
     )
     assert response.status_code == 403

@@ -23,7 +23,7 @@ def test_get_nis_for_programs(ukrdc3_session, jtrace_session):
 
     create_basic_patient(
         901,
-        "PYTEST:PKB:1",
+        "PYTESTPKB1",
         UKRDCID_1,
         NI_1,
         "PKB",
@@ -38,7 +38,7 @@ def test_get_nis_for_programs(ukrdc3_session, jtrace_session):
 
     create_basic_patient(
         902,
-        "PYTEST:RADAR:1",
+        "PYTESTRDR1",
         UKRDCID_2,
         NI_2,
         "TSF02",

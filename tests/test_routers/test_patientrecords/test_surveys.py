@@ -4,7 +4,7 @@ from ukrdc_fastapi.schemas.patientrecord.survey import SurveySchema
 
 async def test_record_surveys(client_superuser):
     response = await client_superuser.get(
-        f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/surveys"
+        f"{configuration.base_url}/patientrecords/PYTEST01PV/surveys"
     )
     assert response.status_code == 200
 
@@ -14,6 +14,6 @@ async def test_record_surveys(client_superuser):
 
 async def test_record_surveys_denied(client_authenticated):
     response = await client_authenticated.get(
-        f"{configuration.base_url}/patientrecords/PYTEST03:PV:00000000A/surveys"
+        f"{configuration.base_url}/patientrecords/PYTEST03PV/surveys"
     )
     assert response.status_code == 403

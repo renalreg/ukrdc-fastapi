@@ -138,7 +138,7 @@ async def test_masterrecord_patientrecords(client_authenticated):
 
     records = [PatientRecordSummarySchema(**item) for item in response.json()]
     pids = {record.pid for record in records}
-    assert pids == {"PYTEST01:PV:00000000A", "PYTEST04:PV:00000000A"}
+    assert pids == {"PYTEST01PV", "PYTEST04PV"}
 
 
 async def test_masterrecord_patientrecords_denied(client_authenticated):
