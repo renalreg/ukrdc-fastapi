@@ -55,7 +55,7 @@ async def test_ui_261(client_superuser, ukrdc3_session):
 
 async def test_observations_trend(client_superuser):
     response = await client_superuser.get(
-        f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/observations/trend?code=bpsys"
+        f"{configuration.base_url}/patientrecords/PYTEST01PV/observations/trend?code=bpsys"
     )
     assert response.status_code == 200
 
@@ -66,7 +66,7 @@ async def test_observations_trend(client_superuser):
 
 async def test_observations_trend_oldest_first(client_superuser):
     response = await client_superuser.get(
-        f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/observations/trend?code=bpsys"
+        f"{configuration.base_url}/patientrecords/PYTEST01PV/observations/trend?code=bpsys"
     )
     assert response.status_code == 200
 
@@ -77,13 +77,13 @@ async def test_observations_trend_oldest_first(client_superuser):
 
 async def test_observations_trend_denied(client_authenticated):
     response = await client_authenticated.get(
-        f"{configuration.base_url}/patientrecords/PYTEST03:PV:00000000A/observations/trend?code=bpsys"
+        f"{configuration.base_url}/patientrecords/PYTEST03PV/observations/trend?code=bpsys"
     )
     assert response.status_code == 403
 
 
 async def test_observations_trend_matches_list(client_superuser):
-    base = f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/observations"
+    base = f"{configuration.base_url}/patientrecords/PYTEST01PV/observations"
 
     list_response = await client_superuser.get(f"{base}?code=bpsys")
     trend_response = await client_superuser.get(f"{base}/trend?code=bpsys")

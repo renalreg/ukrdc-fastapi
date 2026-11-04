@@ -115,7 +115,7 @@ async def test_record_resultitem_services(client_superuser):
 
 async def test_resultitems_trend(client_superuser):
     response = await client_superuser.get(
-        f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/results/trend?service_id=SERVICE_ID_2"
+        f"{configuration.base_url}/patientrecords/PYTEST01PV/results/trend?service_id=SERVICE_ID_2"
     )
     assert response.status_code == 200
 
@@ -126,7 +126,7 @@ async def test_resultitems_trend(client_superuser):
 
 async def test_resultitems_trend_oldest_first(client_superuser):
     response = await client_superuser.get(
-        f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/results/trend?service_id=SERVICE_ID_2"
+        f"{configuration.base_url}/patientrecords/PYTEST01PV/results/trend?service_id=SERVICE_ID_2"
     )
     assert response.status_code == 200
 
@@ -137,13 +137,13 @@ async def test_resultitems_trend_oldest_first(client_superuser):
 
 async def test_resultitems_trend_denied(client_authenticated):
     response = await client_authenticated.get(
-        f"{configuration.base_url}/patientrecords/PYTEST03:PV:00000000A/results/trend?service_id=SERVICE_ID_2"
+        f"{configuration.base_url}/patientrecords/PYTEST03PV/results/trend?service_id=SERVICE_ID_2"
     )
     assert response.status_code == 403
 
 
 async def test_resultitems_trend_matches_list(client_superuser):
-    base = f"{configuration.base_url}/patientrecords/PYTEST01:PV:00000000A/results"
+    base = f"{configuration.base_url}/patientrecords/PYTEST01PV/results"
 
     list_response = await client_superuser.get(f"{base}?service_id=SERVICE_ID_2")
     trend_response = await client_superuser.get(f"{base}/trend?service_id=SERVICE_ID_2")
