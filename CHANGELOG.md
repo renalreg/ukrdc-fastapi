@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.13.1](https://github.com/renalreg/ukrdc-fastapi/compare/v6.13.0...v6.13.1) (2026-11-04)
+
+
+### Bug Fixes
+
+* **tests:** fixed tests with correct params ([631bab8](https://github.com/renalreg/ukrdc-fastapi/commit/631bab88ee77673afdc69236906e17cf31c08ef3))
+
 ## [6.13.0](https://github.com/renalreg/ukrdc-fastapi/compare/v6.12.1...v6.13.0) (2026-11-04)
 
 
