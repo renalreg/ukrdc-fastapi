@@ -1,5 +1,17 @@
 # Changelog
 
+## [6.13.0](https://github.com/renalreg/ukrdc-fastapi/compare/v6.12.1...v6.13.0) (2026-11-04)
+
+
+### Features
+
+* **UK-453:** moved errors db query up, rather than being nested ([#1398](https://github.com/renalreg/ukrdc-fastapi/issues/1398)) ([5c3de67](https://github.com/renalreg/ukrdc-fastapi/commit/5c3de67698ec76739477ead0b91c719d41a43b17))
+
+
+### Bug Fixes
+
+* fixed tests to work with new ukrdc sqla models and restrictions ([51b0172](https://github.com/renalreg/ukrdc-fastapi/commit/51b01721fc030bdf24c745a9179fa75be183db4f))
+
 ## [6.12.1](https://github.com/renalreg/ukrdc-fastapi/compare/v6.12.0...v6.12.1) (2026-10-29)
 
 
