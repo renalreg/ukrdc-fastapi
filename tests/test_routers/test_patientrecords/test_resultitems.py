@@ -1,4 +1,6 @@
-from ukrdc_sqla.ukrdc import ResultItem
+import datetime
+
+from ukrdc_sqla.ukrdc import LabOrder, ResultItem
 
 from ukrdc_fastapi.config import configuration
 from ukrdc_fastapi.schemas.patientrecord.laborder import (
@@ -127,7 +129,32 @@ async def test_resultitems_trend(client_superuser):
     assert [ResultTrendPointSchema(**x) for x in items]
 
 
-async def test_resultitems_trend_oldest_first(client_superuser):
+async def test_resultitems_trend_oldest_first(client_superuser, ukrdc3_session):
+    # A second result of the same type is needed to test order
+    ukrdc3_session.add(
+        LabOrder(
+            id="LABORDER_TREND",
+            enteredatcode="TSF02",
+            pid="PYTEST01PV",
+            externalid="EXTERNAL_ID_TREND",
+            ordercategorycode="ORDER_CATEGORY",
+            specimencollectedtime=datetime.datetime.now() - datetime.timedelta(days=30),
+        )
+    )
+    ukrdc3_session.add(
+        ResultItem(
+            id="RESULTITEM_TREND",
+            order_id="LABORDER_TREND",
+            serviceidcodestd="SERVICE_ID_STD",
+            serviceidcode="SERVICE_ID_2",
+            serviceiddesc="SERVICE_ID_DESCRIPTION",
+            resultvalue="VALUE",
+            resultvalueunits="VALUE_UNITS",
+            observationtime=datetime.datetime.now() - datetime.timedelta(days=30),
+        )
+    )
+    ukrdc3_session.commit()
+
     response = await client_superuser.get(
         f"{configuration.base_url}/patientrecords/PYTEST01PV/results/trend?service_id=SERVICE_ID_2"
     )

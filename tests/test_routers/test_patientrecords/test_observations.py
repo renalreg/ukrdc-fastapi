@@ -1,3 +1,5 @@
+import datetime
+
 from ukrdc_sqla.ukrdc import Observation, PatientRecord
 
 from ukrdc_fastapi.config import configuration
@@ -67,7 +69,22 @@ async def test_observations_trend(client_superuser):
     assert [ObservationTrendPointSchema(**x) for x in items]
 
 
-async def test_observations_trend_oldest_first(client_superuser):
+async def test_observations_trend_oldest_first(client_superuser, ukrdc3_session):
+    # A second observation of same type is needed to test order
+    ukrdc3_session.add(
+        Observation(
+            id="OBSERVATION_SYS_TREND",
+            pid="PYTEST01PV",
+            observationcodestd="PV",
+            observationcode="bpsys",
+            observationdesc="OBSERVATION_SYS_TREND_DESC",
+            observationvalue="120",
+            observationunits="mmHg",
+            observationtime=datetime.datetime.now() - datetime.timedelta(days=1000),
+        )
+    )
+    ukrdc3_session.commit()
+
     response = await client_superuser.get(
         f"{configuration.base_url}/patientrecords/PYTEST01PV/observations/trend?code=bpsys"
     )
