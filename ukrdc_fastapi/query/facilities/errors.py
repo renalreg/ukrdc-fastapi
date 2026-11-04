@@ -8,13 +8,14 @@ from ukrdc_sqla.stats import ErrorHistory
 from ukrdc_sqla.ukrdc import Code, Facility
 
 from ukrdc_fastapi.exceptions import MissingFacilityError
-from ukrdc_fastapi.query.common import get_nis_for_programs
+from ukrdc_fastapi.query.common import filter_nis_by_programs
 from ukrdc_fastapi.schemas.common import HistoryPoint
 from ukrdc_fastapi.utils import daterange
 
 
 def query_patients_latest_errors(
     ukrdc3: Session,
+    errorsdb: Session,
     facility_code: str,
     channels: list[str] | None = None,
     programs: list[str] | None = None,
@@ -48,9 +49,20 @@ def query_patients_latest_errors(
 
     # Optionally filter by patient program membership - patients who have a PKB or RADAR record
     if programs is not None:
-        stmt_errors = stmt_errors.where(
-            Message.ni.in_(get_nis_for_programs(ukrdc3, programs))
-        )
+        # 1. NIs that actually have errors here (small set)
+        candidate_nis = [
+            ni
+            for ni in errorsdb.scalars(
+                stmt_errors.with_only_columns(Message.ni)
+                .where(Message.ni.is_not(None))
+                .distinct()
+            )
+            if ni is not None
+        ]
+        # 2. Keep only those in the requested programs
+        matching_nis = filter_nis_by_programs(ukrdc3, candidate_nis, programs)
+        # 3. Filter the paginated query
+        stmt_errors = stmt_errors.where(Message.ni.in_(matching_nis))
 
     return stmt_errors
 

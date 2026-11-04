@@ -90,6 +90,7 @@ def messages(
         until=until,
         programs=program,
         ukrdc3=ukrdc3,
+        errorsdb=errorsdb,
     )
     stmt = apply_message_list_permissions(stmt, user)
 

@@ -2,10 +2,11 @@
 Query code snippets that are useful in more than one type of resource query
 """
 
-from sqlalchemy import false, or_, select
+from sqlalchemy import exists, false, or_, select
 from sqlalchemy.orm import Session, aliased
 from ukrdc_sqla.empi import Person
 from ukrdc_sqla.ukrdc import PatientNumber, PatientRecord
+from ukrdc_sqla.utils.constants import PatientNumberOrganizationType
 
 
 def person_belongs_to_units(person: Person, units: list[str]) -> bool:
@@ -19,6 +20,47 @@ def person_belongs_to_units(person: Person, units: list[str]) -> bool:
         bool: True if the Person is associated with a unit from the list.
     """
     return any(xref.sending_facility in units for xref in person.xref_entries)
+
+
+def filter_nis_by_programs(
+    ukrdc3: Session, nis: list[str], programs: list[str]
+) -> list[str]:
+    """Return the subset of `nis` belonging to patients with a PKB and/or RADAR record."""
+    if not nis:
+        return []
+
+    number_record = aliased(PatientRecord)  # record the patient number belongs to
+    base = aliased(PatientRecord)  # PV/UKRDC record for the same ukrdcid
+    member = aliased(PatientRecord)  # PKB/RADAR record for the same ukrdcid
+
+    conditions = []
+    if "PKB" in programs:
+        conditions.append(member.sendingfacility == "PKB")
+    if "RADAR" in programs:
+        conditions.append(member.sendingextract == "RADAR")
+    if not conditions:
+        return []
+    org = PatientNumberOrganizationType
+    stmt = (
+        select(PatientNumber.patientid)
+        .join(number_record, number_record.pid == PatientNumber.pid)
+        .where(PatientNumber.patientid.in_(nis))
+        .where(PatientNumber.organization.in_([org.nhs, org.chi, org.hsc]))
+        .where(
+            exists().where(
+                base.ukrdcid == number_record.ukrdcid,
+                base.sendingextract.in_(["PV", "UKRDC"]),
+            )
+        )
+        .where(
+            exists().where(
+                member.ukrdcid == number_record.ukrdcid,
+                or_(*conditions),
+            )
+        )
+        .distinct()
+    )
+    return [ni for ni in ukrdc3.scalars(stmt) if ni is not None]
 
 
 def get_nis_for_programs(ukrdc3: Session, programs: list[str]) -> list[str]:
