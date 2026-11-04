@@ -1,7 +1,10 @@
 from ukrdc_sqla.ukrdc import Observation, PatientRecord
 
 from ukrdc_fastapi.config import configuration
-from ukrdc_fastapi.schemas.patientrecord.observation import ObservationSchema, ObservationTrendPointSchema
+from ukrdc_fastapi.schemas.patientrecord.observation import (
+    ObservationSchema,
+    ObservationTrendPointSchema,
+)
 
 
 async def test_record_observations(client_superuser):
