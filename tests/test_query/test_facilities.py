@@ -130,7 +130,9 @@ def test_get_facility_history_range(ukrdc3_session, errorsdb_session):
 
 def test_get_patients_latest_errors(ukrdc3_session, errorsdb_session):
     messages = errorsdb_session.scalars(
-        query_patients_latest_errors(ukrdc3=ukrdc3_session, facility_code="TSF01")
+        query_patients_latest_errors(
+            ukrdc3=ukrdc3_session, errorsdb=errorsdb_session, facility_code="TSF01"
+        )
     ).all()
     assert len(messages) == 1
     assert messages[0].id == 2
@@ -140,6 +142,7 @@ def test_get_patients_latest_errors_channel(ukrdc3_session, errorsdb_session):
     messages_1_1 = errorsdb_session.scalars(
         query_patients_latest_errors(
             ukrdc3=ukrdc3_session,
+            errorsdb=errorsdb_session,
             facility_code="TSF01",
             channels=["00000000-0000-0000-0000-111111111111"],
         )
@@ -148,8 +151,9 @@ def test_get_patients_latest_errors_channel(ukrdc3_session, errorsdb_session):
 
     messages_1_0 = errorsdb_session.scalars(
         query_patients_latest_errors(
-            ukrdc3_session,
-            "TSF01",
+            ukrdc3=ukrdc3_session,
+            errorsdb=errorsdb_session,
+            facility_code="TSF01",
             channels=["00000000-0000-0000-0000-000000000000"],
         )
     ).all()
@@ -157,8 +161,9 @@ def test_get_patients_latest_errors_channel(ukrdc3_session, errorsdb_session):
 
     messages_2_1 = errorsdb_session.scalars(
         query_patients_latest_errors(
-            ukrdc3_session,
-            "TSF02",
+            ukrdc3=ukrdc3_session,
+            errorsdb=errorsdb_session,
+            facility_code="TSF02",
             channels=["00000000-0000-0000-0000-111111111111"],
         )
     ).all()
@@ -166,8 +171,9 @@ def test_get_patients_latest_errors_channel(ukrdc3_session, errorsdb_session):
 
     messages_2_0 = errorsdb_session.scalars(
         query_patients_latest_errors(
-            ukrdc3_session,
-            "TSF02",
+            ukrdc3=ukrdc3_session,
+            errorsdb=errorsdb_session,
+            facility_code="TSF02",
             channels=["00000000-0000-0000-0000-000000000000"],
         )
     ).all()
