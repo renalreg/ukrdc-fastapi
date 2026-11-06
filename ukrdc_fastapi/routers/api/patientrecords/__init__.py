@@ -62,7 +62,10 @@ from ukrdc_fastapi.schemas.patientrecord import (
 )
 from ukrdc_fastapi.schemas.patientrecord.laborder import ResultItemServiceSchema
 from ukrdc_fastapi.schemas.patientrecord.medication import MedicationSchema
-from ukrdc_fastapi.schemas.patientrecord.observation import ObservationSchema
+from ukrdc_fastapi.schemas.patientrecord.observation import (
+    ObservationSchema,
+    ObservationTrendPointSchema,
+)
 from ukrdc_fastapi.schemas.patientrecord.procedure import TransplantSchema
 from ukrdc_fastapi.schemas.patientrecord.survey import SurveySchema
 from ukrdc_fastapi.schemas.patientrecord.treatments import TreatmentSchema
@@ -430,6 +433,38 @@ def patient_observations(
     )
 
     return paginate(ukrdc3, sorter.sort(stmt))
+
+
+@router.get(
+    "/{pid}/observations/trend",
+    response_model=list[ObservationTrendPointSchema],
+    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
+)
+def patient_observation_trend(
+    code: str,
+    patient_record: PatientRecord = Depends(_get_patientrecord),
+    ukrdc3: Session = Depends(get_ukrdc3),
+    audit: Auditer = Depends(get_auditer),
+):
+    """Retrieve every observation of one type for a patient, oldest first, for charting"""
+    stmt = (
+        select(Observation)
+        .where(Observation.pid == patient_record.pid)
+        .where(Observation.observation_code == code)
+        .where(Observation.observation_time.is_not(None))
+        .order_by(Observation.observation_time.asc())
+    )
+
+    audit.add_event(
+        Resource.OBSERVATIONS,
+        None,
+        AuditOperation.READ,
+        parent=audit.add_event(
+            Resource.PATIENT_RECORD, patient_record.pid, AuditOperation.READ
+        ),
+    )
+
+    return ukrdc3.scalars(stmt).all()
 
 
 @router.get(

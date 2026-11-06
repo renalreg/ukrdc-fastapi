@@ -59,3 +59,16 @@ class LabOrderSchema(LabOrderShortSchema):
     result_items: list[ResultItemSchema] = Field(
         ..., description="Result items for this lab order"
     )
+
+
+class ResultTrendPointSchema(OrmModel):
+    """A single result value for plotting a trend over time"""
+
+    observation_time: datetime.datetime = Field(
+        ..., description="Observation timestamp"
+    )
+    value: str | None = Field(None, description="Result value")
+    value_units: str | None = Field(
+        None, description="Result value units of measurement"
+    )
+    pre_post: str | None = Field(None, description="Pre- or post- dialysis")

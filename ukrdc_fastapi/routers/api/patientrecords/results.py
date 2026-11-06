@@ -16,7 +16,10 @@ from ukrdc_fastapi.dependencies.audit import (
 )
 from ukrdc_fastapi.dependencies.auth import Permissions, auth
 from ukrdc_fastapi.dependencies.sorters import RESULT_SORTER
-from ukrdc_fastapi.schemas.patientrecord.laborder import ResultItemSchema
+from ukrdc_fastapi.schemas.patientrecord.laborder import (
+    ResultItemSchema,
+    ResultTrendPointSchema,
+)
 from ukrdc_fastapi.utils.paginate import Page, paginate
 from ukrdc_fastapi.utils.sort import SQLASorter
 
@@ -62,6 +65,47 @@ def patient_results(
     )
 
     return paginate(ukrdc3, sorter.sort(stmt))
+
+
+@router.get(
+    "/trend",
+    response_model=list[ResultTrendPointSchema],
+    dependencies=[Security(auth.permission(Permissions.READ_RECORDS))],
+)
+def patient_result_trend(
+    service_id: str,
+    patient_record: PatientRecord = Depends(_get_patientrecord),
+    ukrdc3: Session = Depends(get_ukrdc3),
+    since: datetime.datetime | None = None,
+    until: datetime.datetime | None = None,
+    audit: Auditer = Depends(get_auditer),
+):
+    """Retrieve every result of one type for a patient, oldest first, for charting"""
+    stmt = (
+        select(ResultItem)
+        .join(LabOrder)
+        .where(LabOrder.pid == patient_record.pid)
+        .where(ResultItem.service_id == service_id)
+        .where(ResultItem.observation_time.is_not(None))
+    )
+
+    if since:
+        stmt = stmt.where(ResultItem.observation_time >= since)
+    if until:
+        stmt = stmt.where(ResultItem.observation_time <= until)
+
+    stmt = stmt.order_by(ResultItem.observation_time.asc())
+
+    audit.add_event(
+        Resource.RESULTITEMS,
+        None,
+        AuditOperation.READ,
+        parent=audit.add_event(
+            Resource.PATIENT_RECORD, patient_record.pid, AuditOperation.READ
+        ),
+    )
+
+    return ukrdc3.scalars(stmt).all()
 
 
 @router.get(

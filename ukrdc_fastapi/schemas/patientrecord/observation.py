@@ -26,3 +26,16 @@ class ObservationSchema(OrmModel):
     entered_at_description: str | None = Field(
         None, description="Entered at facility description"
     )
+
+
+class ObservationTrendPointSchema(OrmModel):
+    """A single observation value for plotting a trend over time"""
+
+    observation_time: datetime.datetime = Field(
+        ..., description="Observation timestamp"
+    )
+    observation_value: str | None = Field(None, description="Observation value")
+    observation_units: str | None = Field(
+        None, description="Observation units of measurement"
+    )
+    pre_post: str | None = Field(None, description="Pre- or post- dialysis")

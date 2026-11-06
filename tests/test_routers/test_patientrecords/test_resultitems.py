@@ -1,7 +1,12 @@
-from ukrdc_sqla.ukrdc import ResultItem
+import datetime
+
+from ukrdc_sqla.ukrdc import LabOrder, ResultItem
 
 from ukrdc_fastapi.config import configuration
-from ukrdc_fastapi.schemas.patientrecord.laborder import ResultItemSchema
+from ukrdc_fastapi.schemas.patientrecord.laborder import (
+    ResultItemSchema,
+    ResultTrendPointSchema,
+)
 
 
 async def test_record_resultitems(client_superuser):
@@ -111,3 +116,68 @@ async def test_record_resultitem_services(client_superuser):
     assert response.status_code == 200
     item_ids = {item.get("id") for item in response.json()}
     assert item_ids == {"SERVICE_ID_1", "SERVICE_ID_2"}
+
+
+async def test_resultitems_trend(client_superuser):
+    response = await client_superuser.get(
+        f"{configuration.base_url}/patientrecords/PYTEST01PV/results/trend?service_id=SERVICE_ID_2"
+    )
+    assert response.status_code == 200
+
+    items = response.json()
+    assert len(items) > 0
+    assert [ResultTrendPointSchema(**x) for x in items]
+
+
+async def test_resultitems_trend_oldest_first(client_superuser, ukrdc3_session):
+    # A second result of the same type is needed to test order
+    ukrdc3_session.add(
+        LabOrder(
+            id="LABORDER_TREND",
+            enteredatcode="TSF02",
+            pid="PYTEST01PV",
+            externalid="EXTERNAL_ID_TREND",
+            ordercategorycode="ORDER_CATEGORY",
+            specimencollectedtime=datetime.datetime.now() - datetime.timedelta(days=30),
+        )
+    )
+    ukrdc3_session.add(
+        ResultItem(
+            id="RESULTITEM_TREND",
+            order_id="LABORDER_TREND",
+            serviceidcodestd="SERVICE_ID_STD",
+            serviceidcode="SERVICE_ID_2",
+            serviceiddesc="SERVICE_ID_DESCRIPTION",
+            resultvalue="VALUE",
+            resultvalueunits="VALUE_UNITS",
+            observationtime=datetime.datetime.now() - datetime.timedelta(days=30),
+        )
+    )
+    ukrdc3_session.commit()
+
+    response = await client_superuser.get(
+        f"{configuration.base_url}/patientrecords/PYTEST01PV/results/trend?service_id=SERVICE_ID_2"
+    )
+    assert response.status_code == 200
+
+    times = [item["observationTime"] for item in response.json()]
+    assert len(times) > 1
+    assert times == sorted(times)
+
+
+async def test_resultitems_trend_denied(client_authenticated):
+    response = await client_authenticated.get(
+        f"{configuration.base_url}/patientrecords/PYTEST03PV/results/trend?service_id=SERVICE_ID_2"
+    )
+    assert response.status_code == 403
+
+
+async def test_resultitems_trend_matches_list(client_superuser):
+    base = f"{configuration.base_url}/patientrecords/PYTEST01PV/results"
+
+    list_response = await client_superuser.get(f"{base}?service_id=SERVICE_ID_2")
+    trend_response = await client_superuser.get(f"{base}/trend?service_id=SERVICE_ID_2")
+
+    assert list_response.status_code == 200
+    assert trend_response.status_code == 200
+    assert len(trend_response.json()) == list_response.json()["total"]
