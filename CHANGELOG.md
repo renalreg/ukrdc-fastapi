@@ -1,5 +1,17 @@
 # Changelog
 
+## [6.14.0](https://github.com/renalreg/ukrdc-fastapi/compare/v6.13.1...v6.14.0) (2026-11-06)
+
+
+### Features
+
+* **UK-247:** Add trend endpoints for patient results and observations ([#1397](https://github.com/renalreg/ukrdc-fastapi/issues/1397)) ([4f39e39](https://github.com/renalreg/ukrdc-fastapi/commit/4f39e3909b63f5437560035e689cb9886074f94f))
+
+
+### Bug Fixes
+
+* update deprecated .distinct() to .distinct_on() ([#1401](https://github.com/renalreg/ukrdc-fastapi/issues/1401)) ([d4ca4a8](https://github.com/renalreg/ukrdc-fastapi/commit/d4ca4a8bc2604fa7c4a348a2a63c7ab9dcb7d2f4))
+
 ## [6.13.1](https://github.com/renalreg/ukrdc-fastapi/compare/v6.13.0...v6.13.1) (2026-11-04)
 
 
