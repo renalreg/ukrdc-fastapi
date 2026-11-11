@@ -61,6 +61,12 @@ class FacilityStatisticsSchema(OrmModel):
     )
 
 
+class FacilityMetadataSchema(OrmModel):
+    """Descriptive metadata for a facility"""
+
+    facility_type: str | None = Field(None, description="Type of facility")
+
+
 class FacilityDetailsSchema(FacilitySchema):
     """Detailed information about a facility"""
 
@@ -72,4 +78,7 @@ class FacilityDetailsSchema(FacilitySchema):
     )
     data_flow: FacilityDataFlowSchema = Field(
         ..., description="Data flow information about the facility"
+    )
+    facility_metadata: FacilityMetadataSchema | None = Field(
+        None, description="Descriptive metadata about the facility"
     )
