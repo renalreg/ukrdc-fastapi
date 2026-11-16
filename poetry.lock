@@ -2525,14 +2525,14 @@ et-xmlfile = "*"
 
 [[package]]
 name = "opentelemetry-api"
-version = "1.45.1"
+version = "1.45.2"
 description = "OpenTelemetry Python API"
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "opentelemetry_api-1.45.1-py3-none-any.whl", hash = "sha256:b31553efa588ae44bc306f863c785c5333a9ecc091248c6ee68b4b6c87fdedfb"},
-    {file = "opentelemetry_api-1.45.1.tar.gz", hash = "sha256:aa38ed19bcc084ba42782a73255b3582283eced7ad6dddbd6695189e69adfb75"},
+    {file = "opentelemetry_api-1.45.2-py3-none-any.whl", hash = "sha256:2cbd737377e710ee740d261c94e93fa0f08e6d037c18f17513cc0a2d94479a34"},
+    {file = "opentelemetry_api-1.45.2.tar.gz", hash = "sha256:d7b0008e21e5fd61cbe7a7f34ca3b6905a78ab677d9bc395e299359c75cda6b4"},
 ]
 
 [package.dependencies]
@@ -3618,14 +3618,14 @@ dev = ["pre-commit", "pytest-asyncio", "tox"]
 
 [[package]]
 name = "pytest-postgresql"
-version = "9.1.0"
+version = "10.0.0"
 description = "Postgresql fixtures and fixture factories for Pytest."
 optional = false
-python-versions = ">=3.10"
+python-versions = ">=3.11"
 groups = ["dev"]
 files = [
-    {file = "pytest_postgresql-9.1.0-py3-none-any.whl", hash = "sha256:78d5b04e321c1d9b2ac86c837aa536f833f4141bd297196d54b6755a3aeba008"},
-    {file = "pytest_postgresql-9.1.0.tar.gz", hash = "sha256:d340789d6f43cac901fc14f52b15723279bd66db4db7a6506d969417c36cdf04"},
+    {file = "pytest_postgresql-10.0.0-py3-none-any.whl", hash = "sha256:447c81c7d389ba0f6209cecba37e5ee2ff14127058ed491a3c831f6744d7fe94"},
+    {file = "pytest_postgresql-10.0.0.tar.gz", hash = "sha256:fff4ccd1edd8131ae528fc6236eb11c3502678a2870624fb0ea304e6268dee8d"},
 ]
 
 [package.dependencies]
@@ -3633,7 +3633,7 @@ mirakuru = ">=2.6.0"
 packaging = "*"
 port-for = ">=0.7.3"
 psycopg = ">=3.0.0"
-pytest = ">=8.2"
+pytest = ">=8.4"
 
 [package.extras]
 async = ["aiofiles (>=23.0)", "pytest-asyncio (>=1.4)"]
@@ -3948,14 +3948,14 @@ native = ["fast-semver-rs-backend (>=0.1.1) ; platform_python_implementation == 
 
 [[package]]
 name = "sentry-sdk"
-version = "2.73.0"
+version = "2.74.0"
 description = "Python client for Sentry (https://sentry.io)"
 optional = false
 python-versions = ">=3.6"
 groups = ["main"]
 files = [
-    {file = "sentry_sdk-2.73.0-py3-none-any.whl", hash = "sha256:0bcfa6928ea5adbb89591858b514d27adac27c7a3cccc31b20ed10e0b09eda9e"},
-    {file = "sentry_sdk-2.73.0.tar.gz", hash = "sha256:4a2ab97b16e4693c325ab361c7bbbb346dbc7d0bc0150922d795a25bac8d5280"},
+    {file = "sentry_sdk-2.74.0-py3-none-any.whl", hash = "sha256:40b205af015649df3ec9986e057ce24ce85956bee3fb75efa72c93aa7036bdff"},
+    {file = "sentry_sdk-2.74.0.tar.gz", hash = "sha256:dd91d75aacaef636006b579ac3ddb2fdbc9dce35f00f4b353b6b1b110c6b256a"},
 ]
 
 [package.dependencies]
@@ -4709,4 +4709,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<4.0"
-content-hash = "2379a77f8b5634a58150b4578c93f775984f63ed9fb94e71d7b934bb367d1680"
+content-hash = "58c4f7a915e2bc5d806c035f193045ea96df176fce123d05807948de95f33df5"
