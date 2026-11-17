@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.15.0](https://github.com/renalreg/ukrdc-fastapi/compare/v6.14.0...v6.15.0) (2026-11-17)
+
+
+### Features
+
+* **UK-410:** add facility type to facility list and detail responses ([#1408](https://github.com/renalreg/ukrdc-fastapi/issues/1408)) ([60d760a](https://github.com/renalreg/ukrdc-fastapi/commit/60d760ae91041c4d05f69bdfee61c4ada86bf88b))
+
 ## [6.14.0](https://github.com/renalreg/ukrdc-fastapi/compare/v6.13.1...v6.14.0) (2026-11-06)
 
 
