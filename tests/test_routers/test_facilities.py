@@ -40,6 +40,22 @@ async def test_facility_detail_denied(client_authenticated):
     assert response.status_code == 403
 
 
+async def test_facility_detail_metadata(client_superuser):
+    response = await client_superuser.get(f"{configuration.base_url}/facilities/TSF01")
+    assert response.status_code == 200
+    assert response.json()["facilityMetadata"]["facilityType"] == "Adult Renal Centre"
+
+
+async def test_facilities_metadata(client_superuser):
+    response = await client_superuser.get(
+        f"{configuration.base_url}/facilities?include_inactive=true&include_empty=true"
+    )
+    assert response.status_code == 200
+    assert len(response.json()) == 2
+    for item in response.json():
+        assert item["facilityMetadata"]["facilityType"] == "Adult Renal Centre"
+
+
 async def test_facility_error_history(client_authenticated):
     response = await client_authenticated.get(
         f"{configuration.base_url}/facilities/TSF01/error_history"

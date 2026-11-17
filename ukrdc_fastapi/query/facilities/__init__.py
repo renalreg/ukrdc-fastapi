@@ -13,6 +13,7 @@ from ukrdc_fastapi.schemas.facility import (
     FacilityDataFlowSchema,
     FacilityDetailsSchema,
     FacilityExtractsSchema,
+    FacilityMetadataSchema,
     FacilitySchema,
     FacilityStatisticsSchema,
 )
@@ -89,6 +90,7 @@ def get_facility(
             pkb_out=facility.pkb_out,
             pkb_message_exclusions=facility.pkb_msg_exclusions or [],
         ),
+        facility_metadata=build_facility_metadata(facility),
     )
 
 
@@ -173,6 +175,11 @@ def get_facility_extracts(
 
 
 # Facility list
+
+
+def build_facility_metadata(facility: Facility) -> FacilityMetadataSchema:
+    """Build descriptive metadata for a facility from its database record"""
+    return FacilityMetadataSchema(facility_type=facility.facilitytype)
 
 
 def build_facilities_list(
@@ -306,6 +313,7 @@ def build_facilities_list(
                         patients_receiving_messages - patients_receiving_errors
                     ),
                 ),
+                facility_metadata=build_facility_metadata(facility),
             )
         )
 
