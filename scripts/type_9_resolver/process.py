@@ -2,6 +2,7 @@ import argparse
 import asyncio
 import time
 
+from lxml import etree
 from ukrdc_sqla.empi import WorkItem
 
 from ukrdc_fastapi.dependencies.database import errors_session, jtrace_session
@@ -13,6 +14,21 @@ from ukrdc_fastapi.schemas.message import MessageSchema
 PV_INBOUND = "3cdefad2-bf10-49ee-81c9-8ac6fd2fed67"
 RDA_INBOUND_FILE = "ed8216c6-cc25-45ad-adcc-e3dd4359e37a"
 CHANNEL_IDS = [RDA_INBOUND_FILE, PV_INBOUND]
+
+
+def normalise_xml(content: str) -> str:
+    parser = etree.XMLParser(
+        remove_blank_text=True,
+        resolve_entities=False,
+        no_network=True,
+    )
+    root = etree.fromstring(content.encode("utf-8"), parser)
+
+    for element in root.iter("*"):
+        if len(element) == 0 and element.text is not None:
+            element.text = element.text.strip()
+
+    return etree.tostring(root, encoding="unicode", pretty_print=False)
 
 
 async def process_workitem(workitem_id: int):
@@ -47,17 +63,18 @@ async def process_workitem(workitem_id: int):
     for CHANNEL_ID in CHANNEL_IDS:
         # Get message IDs
         messages_to_process = [msg for msg in messages if msg.channel_id == CHANNEL_ID]
+        print(
+            f"Found {len(messages_to_process)} messages to process for channel {CHANNEL_ID}..."
+        )
         message_ids = [m.message_id for m in messages_to_process]
         print(f"message_ids: {message_ids}")
 
         # Find incoming and current local IDs
         if workitem_obj.attributes:
             incoming_id = workitem_obj.attributes.localid
-            print(f"incoming id: {incoming_id}")
 
             sending_extract = workitem_obj.attributes.sending_extract
             sending_facility = workitem_obj.attributes.sending_facility
-
             destination_persons = [
                 person
                 for person in workitem_obj.destination.persons
@@ -92,6 +109,7 @@ async def process_workitem(workitem_id: int):
                             ]
 
                             if content:
+                                content = normalise_xml(content)
                                 content_current_id = content.replace(
                                     incoming_id, current_id
                                 )
