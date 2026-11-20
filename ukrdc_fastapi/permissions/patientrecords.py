@@ -1,4 +1,5 @@
-from sqlalchemy import and_, exists, literal, or_, select
+from sqlalchemy import and_, literal, exists, or_, select
+from sqlalchemy.orm import aliased
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.selectable import Select
 from ukrdc_sqla.ukrdc import PatientRecord
@@ -42,21 +43,20 @@ def apply_patientrecord_list_permission(stmt: Select, user: UKRDCUser):
     if Permissions.UNIT_WILDCARD in units:
         return stmt
 
-    # Find which records the user has explicit facility-permission to access
-    stmt_explicit_permissions = stmt.where(PatientRecord.sendingfacility.in_(units))
-
-    # Create a subquery to check if there are any rows that match the first condition
-    subquery = (
-        select(literal(1)).select_from(stmt_explicit_permissions.alias()).limit(1)
+    # Per-patient check, so abstract records are only shown for patients
+    # who have a record at one of the user's units
+    other_record = aliased(PatientRecord)
+    patient_has_record_in_units = exists().where(
+        other_record.ukrdcid == PatientRecord.ukrdcid,
+        other_record.sendingfacility.in_(units),
     )
 
-    # Add the second condition if there are any rows that match the first condition
     return stmt.where(
         or_(
             PatientRecord.sendingfacility.in_(units),
             and_(
-                exists(subquery),
                 PatientRecord.sendingfacility.in_(ABSTRACT_FACILITIES),
+                patient_has_record_in_units,
             ),
         )
     )
