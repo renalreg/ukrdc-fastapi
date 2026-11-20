@@ -1,13 +1,19 @@
 from datetime import datetime
-import pytest
-
 from urllib.parse import quote
 
+import pytest
+
+from tests.conftest import (
+    NI_2,
+    PID_1,
+    PID_2,
+    UKRDCID_1,
+    UKRDCID_2,
+    create_basic_patient,
+)
 from ukrdc_fastapi.config import configuration
 
 from .utils import TEST_NUMBERS, commit_extra_patients
-
-from tests.conftest import create_basic_patient, UKRDCID_2, NI_2, PID_1, PID_2, UKRDCID_1
 
 # NB: We only need the jtrace session here because our test utility function to create new patients uses it.
 # Long-term (post-JTRACE) it will not be required.
@@ -249,8 +255,8 @@ async def test_search_abstract_records_permissions(
         sending_facility,
         "UKRDC",
         "00000000E",
-        "Tentacles",
-        "Squidward",
+        "Test",
+        "Patient",
         datetime(1975, 10, 9),
         ukrdc3_session,
         jtrace_session,
@@ -267,6 +273,8 @@ async def test_search_abstract_records_permissions(
 
     returned_ids = {item["pid"] for item in response.json()["items"]}
 
+    # The search should find the patient this user has access to
     assert PID_1 in returned_ids
+    # None of patient 2's records should be returned
     assert PID_2 not in returned_ids
     assert "PYTEST02AB" not in returned_ids

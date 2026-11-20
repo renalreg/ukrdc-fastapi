@@ -39,24 +39,48 @@ def assert_patientrecord_permission(
 
 
 def apply_patientrecord_list_permission(stmt: Select, user: UKRDCUser):
+    """
+    Filter a query of PatientRecords down to those the user can access.
+
+    For queries across many patients, call restrict_records_to_accessible_patients
+    first, or other patients' membership/informational records may be included.
+    """
     units = Permissions.unit_codes(user.permissions)
     if Permissions.UNIT_WILDCARD in units:
         return stmt
 
-    # Per-patient check, so abstract records are only shown for patients
-    # who have a record at one of the user's units
-    other_record = aliased(PatientRecord)
-    patient_has_record_in_units = exists().where(
-        other_record.ukrdcid == PatientRecord.ukrdcid,
-        other_record.sendingfacility.in_(units),
+    # Find which records the user has explicit facility-permission to access
+    stmt_explicit_permissions = stmt.where(PatientRecord.sendingfacility.in_(units))
+
+    # Create a subquery to check if there are any rows that match the first condition
+    subquery = (
+        select(literal(1)).select_from(stmt_explicit_permissions.alias()).limit(1)
     )
 
+    # Add the second condition if there are any rows that match the first condition
     return stmt.where(
         or_(
             PatientRecord.sendingfacility.in_(units),
             and_(
+                exists(subquery),
                 PatientRecord.sendingfacility.in_(ABSTRACT_FACILITIES),
-                patient_has_record_in_units,
             ),
         )
     )
+
+
+def restrict_records_to_accessible_patients(stmt: Select, user: UKRDCUser):
+    """
+    Restrict a query of PatientRecords to patients (UKRDC IDs) with at least
+    one record at one of the user's units.
+    """
+    units = Permissions.unit_codes(user.permissions)
+    if Permissions.UNIT_WILDCARD in units:
+        return stmt
+
+    unit_record = aliased(PatientRecord)
+    accessible_ukrdcids = select(unit_record.ukrdcid).where(
+        unit_record.sendingfacility.in_(units)
+    )
+
+    return stmt.where(PatientRecord.ukrdcid.in_(accessible_ukrdcids))
