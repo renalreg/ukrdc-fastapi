@@ -1,4 +1,4 @@
-from sqlalchemy import and_, literal, exists, or_, select
+from sqlalchemy import and_, exists, literal, or_, select
 from sqlalchemy.orm import aliased
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.selectable import Select

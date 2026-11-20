@@ -19,7 +19,10 @@ from ukrdc_fastapi.dependencies.auth import (
     get_current_user,
 )
 from ukrdc_fastapi.permissions.masterrecords import apply_masterrecord_list_permissions
-from ukrdc_fastapi.permissions.patientrecords import apply_patientrecord_list_permission, restrict_records_to_accessible_patients
+from ukrdc_fastapi.permissions.patientrecords import (
+    apply_patientrecord_list_permission,
+    restrict_records_to_accessible_patients,
+)
 from ukrdc_fastapi.schemas.empi import MasterRecordSchema
 from ukrdc_fastapi.schemas.patientrecord import PatientRecordSummarySchema
 from ukrdc_fastapi.utils.paginate import Page, paginate
