@@ -79,8 +79,9 @@ def restrict_records_to_accessible_patients(stmt: Select, user: UKRDCUser):
         return stmt
 
     unit_record = aliased(PatientRecord)
-    accessible_ukrdcids = select(unit_record.ukrdcid).where(
-        unit_record.sendingfacility.in_(units)
+    return stmt.where(
+        exists().where(
+            unit_record.ukrdcid == PatientRecord.ukrdcid,
+            unit_record.sendingfacility.in_(units),
+        )
     )
-
-    return stmt.where(PatientRecord.ukrdcid.in_(accessible_ukrdcids))
