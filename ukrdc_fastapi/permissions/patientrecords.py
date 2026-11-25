@@ -1,4 +1,5 @@
 from sqlalchemy import and_, exists, literal, or_, select
+from sqlalchemy.orm import aliased
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.selectable import Select
 from ukrdc_sqla.ukrdc import PatientRecord
@@ -38,6 +39,12 @@ def assert_patientrecord_permission(
 
 
 def apply_patientrecord_list_permission(stmt: Select, user: UKRDCUser):
+    """
+    Filter a query of PatientRecords down to those the user can access.
+
+    For queries across many patients, call restrict_records_to_accessible_patients
+    first, or other patients' membership/informational records may be included.
+    """
     units = Permissions.unit_codes(user.permissions)
     if Permissions.UNIT_WILDCARD in units:
         return stmt
@@ -58,5 +65,23 @@ def apply_patientrecord_list_permission(stmt: Select, user: UKRDCUser):
                 exists(subquery),
                 PatientRecord.sendingfacility.in_(ABSTRACT_FACILITIES),
             ),
+        )
+    )
+
+
+def restrict_records_to_accessible_patients(stmt: Select, user: UKRDCUser):
+    """
+    Restrict a query of PatientRecords to patients (UKRDC IDs) with at least
+    one record at one of the user's units.
+    """
+    units = Permissions.unit_codes(user.permissions)
+    if Permissions.UNIT_WILDCARD in units:
+        return stmt
+
+    unit_record = aliased(PatientRecord)
+    return stmt.where(
+        exists().where(
+            unit_record.ukrdcid == PatientRecord.ukrdcid,
+            unit_record.sendingfacility.in_(units),
         )
     )

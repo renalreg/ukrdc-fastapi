@@ -1,5 +1,16 @@
+from datetime import datetime
 from urllib.parse import quote
 
+import pytest
+
+from tests.conftest import (
+    NI_2,
+    PID_1,
+    PID_2,
+    UKRDCID_1,
+    UKRDCID_2,
+    create_basic_patient,
+)
 from ukrdc_fastapi.config import configuration
 
 from .utils import TEST_NUMBERS, commit_extra_patients
@@ -218,3 +229,52 @@ async def test_search_permissions_superuser(client_superuser):
     assert response.status_code == 200
     returned_ids = {item["pid"] for item in response.json()["items"]}
     assert returned_ids == {"PYTEST02PV"}
+
+
+@pytest.mark.parametrize(
+    "sending_facility,include_param",
+    [
+        ("PV", "include_memberships"),
+        ("TRACING", "include_informational"),
+    ],
+)
+async def test_search_abstract_records_permissions(
+    ukrdc3_session,
+    jtrace_session,
+    client_authenticated,
+    sending_facility,
+    include_param,
+):
+    # Patient 2 only has a record at TSF02, which this user can't access.
+    # Give patient 2 a membership/informational record too (same UKRDC ID).
+    create_basic_patient(
+        5,
+        "PYTEST02AB",
+        UKRDCID_2,
+        NI_2,
+        sending_facility,
+        "UKRDC",
+        "00000000E",
+        "Test",
+        "Patient",
+        datetime(1975, 10, 9),
+        ukrdc3_session,
+        jtrace_session,
+        datetime.now(),
+    )
+
+    # Search for patient 1 (user can access) and patient 2 (user can't)
+    url = (
+        f"{configuration.base_url}/search/records"
+        f"?ukrdc_number={UKRDCID_1}&ukrdc_number={UKRDCID_2}&{include_param}=true"
+    )
+    response = await client_authenticated.get(url)
+    assert response.status_code == 200
+
+    returned_ids = {item["pid"] for item in response.json()["items"]}
+
+    # The search should find the patient this user has access to
+    assert PID_1 in returned_ids
+    # None of patient 2's records should be returned
+    assert PID_2 not in returned_ids
+    assert "PYTEST02AB" not in returned_ids
