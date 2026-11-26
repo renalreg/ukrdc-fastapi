@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.15.1](https://github.com/renalreg/ukrdc-fastapi/compare/v6.15.0...v6.15.1) (2026-11-25)
+
+
+### Bug Fixes
+
+* **UK-480:** Fix search record permissions ([#1417](https://github.com/renalreg/ukrdc-fastapi/issues/1417)) ([73629be](https://github.com/renalreg/ukrdc-fastapi/commit/73629be15af980ab6c1a04b54a09576e34c0417c))
+
 ## [6.15.0](https://github.com/renalreg/ukrdc-fastapi/compare/v6.14.0...v6.15.0) (2026-11-17)
 
 
