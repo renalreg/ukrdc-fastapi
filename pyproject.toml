@@ -20,7 +20,7 @@ pydantic-settings = "^2.0.0"
 python-dateutil = "^2.9.0"
 python-stdnum = "^2.2"
 redis = ">=7.4,<9.0"
-sentry-sdk = { extras = ["fastapi"], version = "^2.58.0" }
+sentry-sdk = { extras = ["fastapi"], version = ">=2.58,<4.0" }
 single-source = "^0.4.0"
 uvicorn = ">=0.5,<0.60"
 mirth-client = "5.0.0"
